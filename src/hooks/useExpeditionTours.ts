@@ -1,4 +1,4 @@
-﻿import { useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import type { TourDetail, TravelerPricing, GroupSizeBand, PricingTier, ItineraryDay, DayLogisticsMap } from '../lib/tourTypes'
 import { fetchWithAuth } from '../lib/api'
 import type { PickupAreaShape, PickupLocationShape } from '../lib/pickupZone'
@@ -1147,7 +1147,7 @@ async function enrichExpeditionRecords(records: ExpeditionTourRecord[]): Promise
   // There is no cheap way to detect staleness up front, so skip the old
   // "needsBatch" short-circuit to keep every listing price authoritative.
   try {
-    const allPayload = await expeditionFetchRaw('/tours?limit=500')
+    const allPayload = await expeditionFetchRaw('/travioghana/tours?limit=500')
     const allTours: any[] = allPayload.data?.tours ?? []
     const priceMap = new Map<string, number>()
     const cityMap = new Map<string, string | null>()
@@ -1340,7 +1340,7 @@ export function useTourFilterOptions() {
     queryKey: ['expedition', 'tours', 'filter-options'],
     staleTime: 60 * 60_000,
     queryFn: async (): Promise<TourFilterOptions> => {
-      const payload = await expeditionFetchRaw('/tours/filters/options')
+      const payload = await expeditionFetchRaw('/travioghana/tours/filters/options')
       const opts = payload.data?.filterOptions ?? {}
       return {
         categories: Array.isArray(opts.categories) ? opts.categories : [],
@@ -1540,7 +1540,7 @@ export interface TourDetailData extends Omit<TourDetail, 'guide' | 'contact' | '
  * max-age=60 response caching.
  */
 async function fetchRawTourBySlugOrId(idOrSlug: string, bypassCache = false): Promise<any | null> {
-  const res = await fetchWithAuth(`/tours/${encodeURIComponent(idOrSlug)}`, {
+  const res = await fetchWithAuth(`/travioghana/tours/${encodeURIComponent(idOrSlug)}`, {
     ...(bypassCache ? { cache: 'no-store' } : {}),
   })
   if (!res.ok) return null
@@ -1703,7 +1703,7 @@ export function useExpeditionTour(slug: string | undefined) {
         try {
           // Bypass HTTP caching so pricing/tier edits a supplier just
           // saved are reflected immediately on the tour detail page.
-          const rawRes = await fetchWithAuth(`/tours/${tour.id}`, {
+          const rawRes = await fetchWithAuth(`/travioghana/tours/${tour.id}`, {
             cache: 'no-store',
           })
           if (rawRes.ok) {
@@ -1997,7 +1997,7 @@ function getBadgeFieldMaps(): Promise<BadgeFieldMaps> {
   if (!badgeMapsCache || now >= badgeMapsCache.expiresAt) {
     badgeMapsCache = {
       promise: (async () => {
-        const payload = await expeditionFetchRaw('/tours?limit=500')
+        const payload = await expeditionFetchRaw('/travioghana/tours?limit=500')
         const allTours: any[] = payload.data?.tours ?? payload.tours ?? []
         const maps: BadgeFieldMaps = {
           languages: new Map(),
@@ -2117,7 +2117,7 @@ export function useExpeditionOffers(limit = 12) {
     queryKey: ['expedition', 'offers', limit],
     staleTime: 60_000,
     queryFn: async (): Promise<TourCardData[]> => {
-      const payload = await expeditionFetchRaw(`/tours?limit=${limit}&sortBy=viewCount&sortOrder=desc`)
+      const payload = await expeditionFetchRaw(`/travioghana/tours?limit=${limit}&sortBy=viewCount&sortOrder=desc`)
       const tours: any[] = payload.data?.tours ?? payload.tours ?? []
       // Offer data is now included in the /tours listing response via
       // specialOfferTargets — no need to fetch each tour individually.
@@ -2147,7 +2147,7 @@ export function useExpeditionOffers(limit = 12) {
  */
 async function fetchSimilarToursFallback(excludeTourId: string | undefined, category: string | null, city: string | null, country: string | null): Promise<TourCardData[]> {
   const tryFetch = async (params: URLSearchParams) => {
-    const payload = await expeditionFetchRaw(`/tours?${params.toString()}`)
+    const payload = await expeditionFetchRaw(`/travioghana/tours?${params.toString()}`)
     const tours: any[] = payload.data?.tours ?? payload.tours ?? []
     return tours.filter((t) => t.id !== excludeTourId)
   }
@@ -2192,7 +2192,7 @@ export function useRecommendedTours(limit: number = 12) {
     queryFn: async (): Promise<TourCardData[]> => {
       const [curatedResult, newestResult] = await Promise.allSettled([
         expeditionFetchRaw(`/travioghana/tours?limit=${limit}`),
-        expeditionFetchRaw(`/tours?limit=${limit}&sortBy=createdAt&sortOrder=desc`),
+        expeditionFetchRaw(`/travioghana/tours?limit=${limit}&sortBy=createdAt&sortOrder=desc`),
       ])
 
       const curatedTours: TourCardData[] = []
@@ -2288,7 +2288,7 @@ export function useSimilarTours(slug: string | undefined) {
       // by cross-referencing the full /tours listing.
       {
         try {
-          const allPayload = await expeditionFetchRaw('/tours?limit=500')
+          const allPayload = await expeditionFetchRaw('/travioghana/tours?limit=500')
           const allTours: any[] = allPayload.data?.tours ?? []
           const priceMap = new Map<string, number>()
           const cityMap = new Map<string, string | null>()

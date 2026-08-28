@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Homepage Section Hooks
  *
  * React Query hooks for each homepage section.
@@ -166,7 +166,7 @@ export function useHomepage() {
 // â”€â”€â”€ Fetcher â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function fetchHomepageSection<T>(path: string): Promise<T> {
-  const res = await fetchWithAuth(`/homepage${path}`)
+  const res = await fetchWithAuth(`/travioghana/homepage${path}`)
   const payload = await res.json().catch(() => ({}))
   if (!res.ok) {
     throw new Error(payload.message || `Request failed (${res.status})`)
