@@ -1,0 +1,25 @@
+.pagination-dots {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: background 0.3s;
+  padding: 0;
+}
+
+.dot.active {
+  background: #fff;
+}
+
+.dot:hover {
+  background: rgba(255, 255, 255, 0.7);
+}

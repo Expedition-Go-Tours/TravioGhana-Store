@@ -1,0 +1,138 @@
+/* ===== TOUR FAQ - MOBILE FIRST ===== */
+
+.tour-faq {
+  padding: 24px 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.faq-item {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.faq-item.expanded {
+  border-color: var(--primary);
+  box-shadow: 0 2px 8px rgba(23, 146, 55, 0.1);
+}
+
+.faq-question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  text-align: left;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 15px;
+  color: #1a1a1a;
+  line-height: 1.4;
+}
+
+.faq-question:hover {
+  background: #f8f9fb;
+}
+
+.faq-item.expanded .faq-question {
+  background: rgba(23, 146, 55, 0.03);
+  color: var(--primary);
+}
+
+.faq-chevron {
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.faq-item.expanded .faq-chevron {
+  color: var(--primary);
+}
+
+.faq-answer {
+  overflow: hidden;
+  background: #f8f9fb;
+}
+
+.faq-answer-inner {
+  padding: 0 18px 18px;
+}
+
+.faq-answer-inner p {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.7;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ===== TABLET VIEW (768px+) ===== */
+@media (min-width: 768px) {
+  .tour-faq {
+    padding: 32px 24px;
+  }
+
+  .faq-list {
+    gap: 14px;
+  }
+
+  .faq-question {
+    padding: 18px 22px;
+    font-size: 16px;
+  }
+
+  .faq-answer-inner {
+    padding: 0 22px 20px;
+  }
+
+  .faq-answer-inner p {
+    font-size: 16px;
+  }
+}
+
+/* ===== DESKTOP VIEW (1024px+) ===== */
+@media (min-width: 1024px) {
+  .tour-faq {
+    padding: 40px 32px;
+  }
+
+  .faq-list {
+    gap: 16px;
+  }
+
+  .faq-question {
+    padding: 20px 24px;
+    font-size: 17px;
+  }
+
+  .faq-answer-inner {
+    padding: 0 24px 22px;
+  }
+
+  .faq-answer-inner p {
+    font-size: 17px;
+  }
+}
+
+/* ===== LARGE DESKTOP (1400px+) ===== */
+@media (min-width: 1400px) {
+  .tour-faq {
+    padding: 48px 40px;
+  }
+
+  .faq-question {
+    font-size: 18px;
+  }
+}

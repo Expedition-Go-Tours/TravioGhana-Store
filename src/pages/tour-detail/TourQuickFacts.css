@@ -1,0 +1,353 @@
+/* Mobile (<640px): swipeable carousel of fact tiles. Tiles snap to the
+   center of the view so every tile is shown whole (never cut at the edge),
+   with two complete features per view. A "View all" button beneath the row
+   expands the strip into the full 2-up matrix; "View less" collapses it.
+   Desktop keeps the original full grid (no carousel, no toggle). */
+.tour-quick-facts-wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+/* The short-description teaser sits directly above the quick-facts strip —
+   drop the overview's divider rule line (and its extra top padding) here so
+   the facts flow right below the text instead of being separated by a line. */
+.tour-detail-overview > .tour-quick-facts-wrap {
+  border-top: none;
+  padding-top: 0;
+}
+
+.tour-quick-facts {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  margin-top: 20px;
+  margin-bottom: 0;
+  padding-top: 20px;
+  padding-bottom: 6px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.tour-quick-facts::-webkit-scrollbar {
+  display: none;
+}
+
+/* Fading edge hint that more tiles are scrollable to the right — subtle
+   production-polish cue so the carousel doesn't look like a dead-end row.
+   Sits above the track, ignores pointer events, and disappears once the
+   list is expanded into the full grid. */
+.tour-quick-facts-wrap::after {
+  content: '';
+  position: absolute;
+  top: 20px;
+  right: 0;
+  bottom: 6px;
+  width: 28px;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0), #fff 85%);
+  pointer-events: none;
+}
+
+.tour-quick-facts-wrap.tour-quick-facts-wrap-expanded::after {
+  display: none;
+}
+
+/* Mobile carousel chrome: a circular chevron overlaid on the right edge
+   (over the fade gradient) as a "swipeable" hint, and a dot indicator under
+   the cards. Both disappear when the strip expands into the full grid, and
+   on desktop where the grid is always shown. */
+.tour-quick-facts-arrow {
+  position: absolute;
+  top: 20px;
+  bottom: 24px;
+  right: 8px;
+  margin-block: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
+  color: #166534;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+  z-index: 2;
+  transition: opacity 0.2s ease, transform 0.1s ease, background-color 0.15s ease;
+}
+
+.tour-quick-facts-arrow:hover {
+  background: #f0fdf4;
+}
+
+.tour-quick-facts-arrow:active {
+  transform: scale(0.94);
+}
+
+.tour-quick-facts-arrow-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tour-quick-facts-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.tour-quick-facts-dot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: #d1d5db;
+  cursor: pointer;
+  transition: width 0.2s ease, background-color 0.2s ease;
+}
+
+.tour-quick-facts-dot-active {
+  width: 16px;
+  background: #16a34a;
+}
+
+.tour-quick-facts-wrap-expanded .tour-quick-facts-arrow,
+.tour-quick-facts-wrap-expanded .tour-quick-facts-dots {
+  display: none;
+}
+
+/* Two whole tiles per view — each tile is half the track minus its gap, so
+   a snapped pair is never clipped by the viewport edge. Styled as a proper
+   card (background, border, shadow) so the row reads as distinct,
+   production-quality tiles rather than bare flex items. */
+.tour-quick-fact {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 18px 12px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #eef1f5;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  flex: 0 0 calc(50% - 5px);
+  scroll-snap-align: center;
+  text-align: center;
+  box-sizing: border-box;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.tour-quick-fact:active {
+  transform: scale(0.98);
+  box-shadow: 0 1px 1px rgba(15, 23, 42, 0.05);
+}
+
+/* Expanded state: no scrolling, show every fact in a balanced 2-up grid.
+   overflow hidden clips the grid during AnimatePresence's height animation
+   so the accordion reveal doesn't spill below the growing box. */
+.tour-quick-facts-expanded {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  overflow: hidden;
+  scroll-snap-type: none;
+  padding-bottom: 0;
+}
+
+.tour-quick-facts-expanded .tour-quick-fact {
+  flex: none;
+  width: 100%;
+  scroll-snap-align: none;
+}
+
+.tour-quick-fact-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 11px;
+  background: #f0fdf4;
+  flex-shrink: 0;
+}
+
+.tour-quick-fact-icon-svg {
+  width: 20px;
+  height: 20px;
+  color: #16a34a;
+}
+
+/* On mobile the text is rendered directly inside the tile (no wrapping
+   box): the body div is removed from layout so title/badge sit as plain
+   flex children and center cleanly in the column. */
+.tour-quick-fact-body {
+  display: contents;
+  min-width: 0;
+}
+
+.tour-quick-fact-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.3;
+  max-width: 100%;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tour-quick-fact-desc {
+  margin: 4px 0 0;
+  font-size: 11.5px;
+  color: #64748b;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* When a description follows a Yes/No badge (e.g. food & drinks, pickup),
+   give it a touch more breathing room than a plain title+desc pairing. */
+.difficulty-grid-badge + .tour-quick-fact-desc {
+  margin-top: 6px;
+}
+
+/* Badges inside a mobile tile should never force the card wider than the
+   tile itself — long labels (e.g. a cancellation policy sentence) wrap and
+   stay centered instead of overflowing the card edge. */
+.tour-quick-fact .difficulty-grid-badge {
+  max-width: 100%;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* "View all" / "View less" toggle pinned below the strip — always visible on
+   mobile so the full list is one tap away. A full-width, understated ghost
+   button that reads as a natural extension of the card row above it (same
+   radius/border language) rather than a heavy floating pill — the chevron
+   flips to signal expanded state instead of swapping icons. */
+.tour-quick-facts-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin: 10px 0 28px;
+  padding: 8px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  color: #166534;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.1px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.tour-quick-facts-toggle-chevron {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.tour-quick-facts-toggle:active {
+  transform: scale(0.98);
+  background: #f8fafc;
+}
+
+.tour-quick-facts-toggle-open {
+  color: #64748b;
+}
+
+.tour-quick-facts-toggle-open .tour-quick-facts-toggle-chevron {
+  transform: rotate(180deg);
+}
+
+/* Desktop-first orderly row layout: icon on the left, text beside it.
+   Restores the full-width arrangement used on larger screens — the carousel
+   and its toggle are hidden and the grid is always fully expanded. */
+@media (min-width: 640px) {
+  .tour-quick-facts-wrap {
+    overflow: visible;
+  }
+
+  .tour-quick-facts-wrap::after {
+    display: none;
+  }
+
+  .tour-quick-facts-arrow,
+  .tour-quick-facts-dots {
+    display: none;
+  }
+
+  .tour-quick-facts,
+  .tour-quick-facts-expanded {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    overflow: visible;
+    scroll-snap-type: none;
+    padding-bottom: 0;
+    margin-bottom: 32px;
+  }
+
+  .tour-quick-fact,
+  .tour-quick-facts-expanded .tour-quick-fact {
+    flex: none;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 14px;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    text-align: left;
+    width: auto;
+  }
+
+  .tour-quick-fact:active {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .tour-quick-fact-icon {
+    border-radius: 8px;
+  }
+
+  .tour-quick-fact-body {
+    display: block;
+  }
+
+  .tour-quick-fact-title {
+    font-size: 14px;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+  }
+
+  .tour-quick-fact-desc {
+    font-size: 13px;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+  }
+
+  .tour-quick-facts-toggle {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .tour-quick-facts,
+  .tour-quick-facts-expanded {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

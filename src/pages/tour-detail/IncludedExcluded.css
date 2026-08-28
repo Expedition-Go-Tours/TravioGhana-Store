@@ -1,0 +1,126 @@
+/* ===== INCLUDED/EXCLUDED - MOBILE FIRST ===== */
+
+.included-excluded {
+  padding: 24px 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+}
+
+.included-excluded-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.included-section,
+.excluded-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.included-excluded-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 17px;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.included-excluded-subtitle svg {
+  color: var(--primary);
+}
+
+.excluded-section .included-excluded-subtitle svg {
+  color: #ef4444;
+}
+
+.included-excluded-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.included-excluded-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  color: #6b7280;
+}
+
+.item-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.included-excluded-item.included .item-icon {
+  color: #22c55e;
+}
+
+.included-excluded-item.excluded .item-icon {
+  color: #ef4444;
+}
+
+/* ===== TABLET VIEW (768px+) ===== */
+@media (min-width: 768px) {
+  .included-excluded {
+    padding: 32px 24px;
+  }
+
+  .included-excluded-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+
+  .included-excluded-subtitle {
+    font-size: 18px;
+  }
+
+  .included-excluded-item {
+    font-size: 16px;
+  }
+}
+
+/* ===== DESKTOP VIEW (1024px+) ===== */
+@media (min-width: 1024px) {
+  .included-excluded {
+    padding: 40px 32px;
+  }
+
+  .included-excluded-grid {
+    gap: 48px;
+  }
+
+  .included-excluded-subtitle {
+    font-size: 19px;
+  }
+
+  .included-excluded-list {
+    gap: 14px;
+  }
+}
+
+/* ===== LARGE DESKTOP (1400px+) ===== */
+@media (min-width: 1400px) {
+  .included-excluded {
+    padding: 48px 40px;
+  }
+
+  .included-excluded-subtitle {
+    font-size: 20px;
+  }
+
+  .included-excluded-item {
+    font-size: 17px;
+  }
+}

@@ -1,0 +1,118 @@
+.popular-location-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.3s;
+  height: 100%;
+}
+
+.popular-location-card:hover {
+  transform: translateY(-4px);
+}
+
+.popular-location-image {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #f1f1f1;
+}
+
+.popular-location-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s;
+}
+
+.popular-location-card:hover .popular-location-image img {
+  transform: scale(1.08);
+}
+
+.popular-location-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.1) 50%, transparent 70%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.popular-location-heart {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.88);
+  color: #555;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, background 0.2s, color 0.2s;
+}
+
+.popular-location-heart.liked {
+  color: #179237;
+}
+
+.popular-location-heart:hover {
+  background: #179237;
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.popular-location-heart:active {
+  transform: scale(0.95);
+}
+
+.popular-location-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.popular-location-title {
+  font-family: 'GT Esti Pro Display', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: #fff;
+  margin: 0;
+  line-height: 1.15;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.popular-location-tours {
+  font-family: 'Raleway', sans-serif;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  margin-top: 2px;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .popular-location-image {
+    height: 170px;
+  }
+
+  .popular-location-title {
+    font-size: 17px;
+  }
+
+  .popular-location-tours {
+    font-size: 12px;
+  }
+}

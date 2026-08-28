@@ -1,0 +1,146 @@
+/* Shared skeleton shimmer animation + card/category skeleton styles */
+
+@keyframes skeleton-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.skeleton-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+  animation: skeleton-shimmer 1.5s infinite;
+}
+
+.skeleton-line {
+  border-radius: 6px;
+  background: #e8e8e8;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-line::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+  animation: skeleton-shimmer 1.5s infinite;
+}
+
+/* ── Tour Card Skeleton ── */
+
+.tour-card-skeleton {
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  height: 100%;
+  min-width: 280px;
+}
+
+.tour-card-skeleton-image {
+  height: 190px;
+  background: #e8e8e8;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.tour-card-skeleton-body {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.skeleton-line-category {
+  width: 40%;
+  height: 12px;
+}
+
+.skeleton-line-title {
+  width: 90%;
+  height: 16px;
+}
+
+.skeleton-line-title-short {
+  width: 60%;
+  height: 16px;
+}
+
+.skeleton-line-features {
+  width: 70%;
+  height: 12px;
+  margin-top: 4px;
+}
+
+.skeleton-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.skeleton-line-price {
+  width: 80px;
+  height: 20px;
+}
+
+.skeleton-line-rating {
+  width: 60px;
+  height: 14px;
+}
+
+/* ── Category Skeleton ── */
+
+.category-skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.category-skeleton-image {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #e8e8e8;
+  position: relative;
+  overflow: hidden;
+}
+
+.category-skeleton-text {
+  width: 60px;
+  height: 12px;
+}
+
+/* ── Destination Skeleton ── */
+
+.destination-skeleton {
+  width: 295px;
+  height: 180px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #e8e8e8;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 640px) {
+  .tour-card-skeleton {
+    min-width: 260px;
+  }
+
+  .category-skeleton-image {
+    width: 60px;
+    height: 60px;
+  }
+}

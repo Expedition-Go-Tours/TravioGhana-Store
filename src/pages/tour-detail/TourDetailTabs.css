@@ -1,0 +1,94 @@
+.tour-detail-tabs {
+  position: sticky;
+  top: var(--navbar-offset, 64px);
+  z-index: 20;
+  /* Full-bleed bar: spans exactly the viewport regardless of how wide the
+     parent grid track is, so the bar can never widen the page (negative
+     margins against a mis-sized parent caused a horizontal scrollbar). */
+  width: 100vw;
+  margin: 20px calc(50% - 50vw) 0;
+  overflow-x: auto;
+  background: #fff;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Desktop: the booking widget sits in the right-hand grid column, so the tabs
+   bar must stay inside the main content column — a full-viewport bar runs its
+   border over the widget. `.tour-detail-page` clips stray overflow, so a
+   plain 100% width cannot introduce a horizontal scrollbar. */
+@media (min-width: 1024px) {
+  .tour-detail-tabs {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+.tour-detail-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tour-detail-tabs-inner {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding: 0 16px;
+}
+
+@media (min-width: 640px) {
+  .tour-detail-tabs-inner {
+    gap: 20px;
+    padding: 0 24px;
+  }
+}
+
+.tour-detail-tab {
+  flex-shrink: 0;
+  white-space: nowrap;
+  border: none;
+  background: none;
+  padding: 12px 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #166534;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s, color 0.2s;
+  font-family: var(--font-body);
+}
+
+.tour-detail-tab:hover {
+  border-color: rgba(22, 101, 52, 0.5);
+}
+
+.tour-detail-tab.active {
+  border-color: #166534;
+  color: #166534;
+}
+
+/* Mobile: fit all tabs on screen by letting them share the width evenly */
+@media (max-width: 639px) {
+  .tour-detail-tabs-inner {
+    gap: 2px;
+    padding: 0 8px;
+    justify-content: stretch;
+  }
+
+  .tour-detail-tab {
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: normal;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.25;
+    padding: 10px 2px;
+  }
+}
+
+@media (min-width: 640px) {
+  .tour-detail-tab {
+    font-size: 16px;
+    padding: 12px 10px;
+  }
+}

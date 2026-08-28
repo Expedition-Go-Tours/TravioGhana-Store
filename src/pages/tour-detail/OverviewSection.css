@@ -1,0 +1,445 @@
+.overview-section {
+  padding-bottom: 24px;
+}
+
+/* Description (GetYourGuide-style: title left, content right) */
+.overview-description {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 40px;
+}
+
+.overview-description .overview-section-title {
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .overview-description {
+    grid-template-columns: 240px 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+}
+
+.overview-description-content {
+  min-width: 0;
+}
+
+.overview-description-collapse {
+  position: relative;
+}
+
+.overview-description-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 48px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #fff);
+  pointer-events: none;
+}
+
+.overview-description-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+}
+
+.overview-description-step-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 6px;
+}
+
+@media (min-width: 640px) {
+  .overview-description-step-title {
+    font-size: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .overview-description-step-title {
+    font-size: 24px;
+  }
+}
+
+.overview-description-step-body {
+  margin: 6px 0 0;
+  font-size: 15px;
+  line-height: 1.75;
+  color: #000;
+}
+
+.overview-description-step-body .details-about,
+.overview-description-step-body .details-about-list,
+.overview-description-step-body .details-about-item,
+.overview-description-step-body .details-about-num,
+.overview-description-step-body .details-text {
+  color: #000;
+}
+
+.overview-description-step-body .details-text {
+  padding-left: 20px;
+}
+
+@media (min-width: 640px) {
+  .overview-description-step-body {
+    font-size: 16px;
+  }
+}
+
+.overview-description-toggle {
+  margin-top: 16px;
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #166534;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.overview-description-toggle:hover {
+  color: #14532d;
+}
+
+/* Travellers Loved */
+.overview-travellers {
+  margin-top: 24px;
+}
+
+.overview-travellers-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.overview-travellers-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+@media (min-width: 640px) {
+  .overview-travellers-title {
+    font-size: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .overview-travellers-title {
+    font-size: 24px;
+  }
+}
+
+.overview-travellers-link {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #166534;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.overview-travellers-link:hover {
+  text-decoration: underline;
+}
+
+.overview-travellers-scroll-wrapper {
+  position: relative;
+}
+
+.overview-travellers-scroll {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.overview-travellers-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.overview-traveller-card {
+  min-width: 360px;
+  max-width: 400px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  padding: 20px;
+}
+
+.overview-traveller-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.overview-traveller-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.overview-traveller-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.overview-traveller-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #000;
+  margin-top: 2px;
+  flex-wrap: wrap;
+}
+
+.overview-traveller-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border-radius: 4px;
+  background: #f0fdf4;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #16a34a;
+}
+
+.overview-traveller-stars {
+  display: flex;
+  gap: 2px;
+  margin-top: 10px;
+}
+
+.overview-traveller-stars .star-filled {
+  color: #179237;
+  fill: currentColor;
+}
+
+.overview-traveller-stars .star-empty {
+  color: #e2e8f0;
+}
+
+.overview-traveller-text {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #000;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.overview-traveller-readmore {
+  margin-top: 8px;
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  text-decoration: underline;
+  text-decoration-color: #cbd5e1;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.overview-traveller-readmore:hover {
+  color: #166534;
+  text-decoration-color: #166534;
+}
+
+.overview-travellers-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: none;
+  place-items: center;
+  cursor: pointer;
+  z-index: 10;
+  color: #475569;
+}
+
+.overview-travellers-arrow:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+@media (min-width: 1024px) {
+  .overview-travellers-arrow {
+    display: grid;
+  }
+}
+
+.overview-travellers-arrow.left {
+  left: -16px;
+}
+
+.overview-travellers-arrow.right {
+  right: -16px;
+}
+
+/* Mobile swipe hints (parity with the quick-facts carousel): a circular
+   chevron over the right edge of the card row and a dot indicator beneath
+   the cards. The side arrows stay desktop-only (>=1024px), so these give
+   sub-desktop users a clear "swipeable" affordance. */
+.overview-travellers-hint {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
+  color: #166534;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+  z-index: 10;
+  transition: opacity 0.2s ease, transform 0.15s ease, background-color 0.15s ease;
+}
+
+.overview-travellers-hint:hover {
+  background: #f0fdf4;
+}
+
+.overview-travellers-hint:active {
+  transform: translateY(-50%) scale(0.94);
+}
+
+.overview-travellers-hint-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.overview-travellers-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.overview-travellers-dot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: #d1d5db;
+  cursor: pointer;
+  transition: width 0.2s ease, background-color 0.2s ease;
+}
+
+.overview-travellers-dot-active {
+  width: 16px;
+  background: #16a34a;
+}
+
+@media (min-width: 1024px) {
+  .overview-travellers-hint,
+  .overview-travellers-dots {
+    display: none;
+  }
+}
+
+/* Section titles (shared: Highlights, Includes) */
+.overview-section-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 18px;
+  font-family: var(--font-body);
+}
+
+@media (min-width: 640px) {
+  .overview-section-title {
+    font-size: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .overview-section-title {
+    font-size: 24px;
+  }
+}
+
+/* Highlights (GetYourGuide-style: title left, bullets right) */
+.overview-highlights {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  margin-top: 64px;
+  padding-bottom: 32px;
+}
+
+.overview-highlights .overview-section-title {
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .overview-highlights {
+    grid-template-columns: 240px 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+}
+
+.overview-highlights-list {
+  list-style: disc;
+  padding-left: 20px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #000;
+}
+
+@media (min-width: 640px) {
+  .overview-highlights-list {
+    font-size: 16px;
+  }
+}

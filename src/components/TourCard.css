@@ -1,0 +1,631 @@
+﻿.tour-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  height: 100%;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  will-change: transform, box-shadow;
+}
+
+.tour-card:hover {
+  /* image pop handled by child img */
+}
+
+.tour-card-image {
+  position: relative;
+  height: 190px;
+  overflow: hidden;
+  background: #f1f1f1;
+  flex-shrink: 0;
+  /* The page owns vertical panning; JS handles horizontal swipes (carousel). */
+  touch-action: pan-y;
+}
+
+/* Image carousel — slides translate horizontally inside the fixed image box.
+   Vertical scrolling is untouched (touch-action: pan-y above). */
+.tour-card-slides {
+  display: flex;
+  height: 100%;
+  transition: transform 0.35s ease;
+  will-change: transform;
+}
+
+.tour-card-slide {
+  flex: 0 0 100%;
+  height: 100%;
+  min-width: 0;
+  position: relative;
+}
+
+/* The visible slide stacks above its neighbours so its hover zoom isn't
+   clipped/painted under the next photo. */
+.tour-card-slide-active {
+  z-index: 1;
+}
+
+.tour-card-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* Photo carousel chevrons — shown on hover on desktop, hidden on mobile. */
+.tour-card-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 4;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: #374151;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  transition: opacity 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.tour-card-arrow-prev {
+  left: 6px;
+}
+
+.tour-card-arrow-next {
+  right: 6px;
+}
+
+.tour-card-image:hover .tour-card-arrow,
+.tour-card:hover .tour-card-arrow {
+  opacity: 1;
+}
+
+/* Carousel dots — bottom-center, one per photo. */
+.tour-card-dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 7px;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  pointer-events: none;
+}
+
+.tour-card-dot {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background 0.2s ease, width 0.2s ease;
+}
+
+.tour-card-dot.tour-card-dot-active {
+  background: #fff;
+  width: 18px;
+}
+
+.tour-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.5s;
+}
+
+.tour-card:hover .tour-card-slide-active img {
+  transform: scale(1.1);
+}
+
+.tour-card-image-fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.3) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tour-card-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-family: 'Raleway', sans-serif;
+}
+
+/* Industry-standard pill badges (GetYourGuide/Viator style): compact,
+   icon-led, neutral by default, with a distinct accent for the pickup
+   badge (primary trust signal) and a red variant for non-refundable
+   cancellation policies. Order in markup drives visual order: Pickup
+   included, Language, Cancellation policy, then category/difficulty. */
+.tour-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  color: #4b5563;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  padding: 4px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.tour-card-badge svg {
+  flex-shrink: 0;
+}
+
+.tour-card-badge-pickup {
+  color: #166534;
+  background: rgba(22, 101, 52, 0.08);
+  border-color: rgba(22, 101, 52, 0.18);
+}
+
+.tour-card-badge-meeting {
+  color: #0e7490;
+  background: rgba(8, 145, 178, 0.09);
+  border-color: rgba(8, 145, 178, 0.2);
+}
+
+.tour-card-badge-accommodation {
+  color: #6d28d9;
+  background: rgba(124, 58, 237, 0.08);
+  border-color: rgba(124, 58, 237, 0.18);
+}
+
+.tour-card-badge-language {
+  color: #1e40af;
+  background: rgba(30, 64, 175, 0.07);
+  border-color: rgba(30, 64, 175, 0.16);
+}
+
+.tour-card-badge-cancellation {
+  color: #166534;
+  background: rgba(22, 101, 52, 0.08);
+  border-color: rgba(22, 101, 52, 0.18);
+}
+
+.tour-card-badge-cancellation-negative {
+  color: #b91c1c;
+  background: rgba(185, 28, 28, 0.08);
+  border-color: rgba(185, 28, 28, 0.18);
+}
+
+.tour-card-badge-difficulty {
+  color: #6b7280;
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+}
+
+/* Product type badge (Tour / Activity / Transport) — each type gets its own
+   accent so the three read apart from each other at a glance. */
+.tour-card-badge-type {
+  font-weight: 700;
+}
+
+.tour-card-badge-type-tour {
+  color: #9a3412;
+  background: rgba(234, 88, 12, 0.09);
+  border-color: rgba(234, 88, 12, 0.2);
+}
+
+.tour-card-badge-type-activity {
+  color: #15803d;
+  background: rgba(22, 163, 74, 0.09);
+  border-color: rgba(22, 163, 74, 0.2);
+}
+
+.tour-card-badge-type-transport {
+  color: #0e7490;
+  background: rgba(8, 145, 178, 0.09);
+  border-color: rgba(8, 145, 178, 0.2);
+}
+
+.tour-card-badge-type-default {
+  color: #6b7280;
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+}
+
+.tour-card-duration {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-family: 'Raleway', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 4px;
+  z-index: 2;
+  backdrop-filter: blur(4px);
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.tour-card-wishlist {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.88);
+  color: #555;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  transition: transform 0.2s, background 0.2s, color 0.2s;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.tour-card-wishlist.wishlist-active {
+  color: #179237;
+}
+
+.tour-card-wishlist:hover {
+  background: #179237;
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.tour-card-wishlist:active {
+  transform: scale(0.95);
+}
+
+.tour-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  flex: 1;
+}
+
+.tour-card-location-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tour-card-location {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  font-family: 'Raleway', sans-serif;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tour-card-location svg {
+  flex-shrink: 0;
+  color: #9ca3af;
+}
+
+.tour-card-discount {
+  flex-shrink: 0;
+  font-family: 'Raleway', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #fff;
+  background: #ef4444;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.tour-card-title {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  color: #111827;
+  margin: 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tour-card-features {
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  font-family: 'Raleway', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tour-card-bottom {
+  margin-top: auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.tour-card-rating {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.tour-card-rating-value {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: #111827;
+}
+
+.tour-card-rating-reviews {
+  font-size: 12px;
+  color: #6b7280;
+  font-family: 'Raleway', sans-serif;
+}
+
+.tour-card-price {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.tour-card-from {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  font-family: 'Raleway', sans-serif;
+}
+
+.tour-card-price-value {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: #111827;
+}
+
+/* Offer pricing: the original (full) price is struck through and the promo
+   price is shown in red next to it. */
+.tour-card-price-strike {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: #9ca3af;
+  text-decoration: line-through;
+}
+
+.tour-card-price-promo {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: #dc2626;
+}
+
+@media (max-width: 1024px) {
+  .tour-card-image {
+    height: 160px;
+  }
+
+  .tour-card-body {
+    padding: 10px;
+  }
+
+  .tour-card-title {
+    font-size: 13px;
+  }
+
+  .tour-card-price-value {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 768px) {
+  .tour-card-image {
+    height: 175px;
+  }
+
+  .tour-card-body {
+    padding: 12px;
+  }
+
+  .tour-card-title {
+    font-size: 14px;
+  }
+
+  .tour-card-meta {
+    flex-wrap: wrap;
+  }
+
+  .tour-card-price-value {
+    font-size: 22px;
+  }
+
+  /* Mobile: swipe + dots only — no chevron buttons. */
+  .tour-card-arrow {
+    display: none;
+  }
+}
+
+/* "New" pill pinned to the top-left of the image — the same corner the
+   source logo badge occupies, since a tour flagged as new never shows the
+   Travio Ghana logo (see hideSourceBadge). White pill with black text so it
+   reads clearly against any photo. */
+.tour-card-new-pill {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Raleway', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: #000;
+  background: #fff;
+  padding: 5px 10px;
+  border-radius: 999px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+
+/* "Likely to sell out" urgency tag, pinned to the image's top-left corner
+   (same slot as the New pill, which it supersedes). Solid red so it reads as
+   an urgent signal against any photo; sentence case per product copy. */
+.tour-card-sellout-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: #dc2626;
+  padding: 5px 10px;
+  border-radius: 999px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+
+/* "Special Offer" tag, pinned to the image's top-left corner (same slot as
+   the New pill and sell-out tag, which it supersedes). Brand-green so it
+   reads as a discount signal against any photo. */
+.tour-card-special-offer {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Raleway', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(135deg, #179237 0%, #0e6b27 100%);
+  padding: 5px 10px;
+  border-radius: 999px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+
+.source-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 36px;
+  height: 36px;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  z-index: 10;
+  padding: 3px;
+}
+
+.source-badge img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+/* Product type badge pinned to the bottom-left of the image, matching
+   industry-standard placement (GetYourGuide/Viator show the product type
+   directly on the image, distinct from the trust/logo badge up top).
+   Uses solid, higher-contrast colors than the in-body badge variants
+   since this sits directly on a photo rather than a white background. */
+.tour-card-image-type-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  padding: 4px 9px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.tour-card-image-type-badge.tour-card-badge-type-tour {
+  background: rgba(234, 88, 12, 0.92);
+}
+
+.tour-card-image-type-badge.tour-card-badge-type-activity {
+  background: rgba(22, 163, 74, 0.92);
+}
+
+.tour-card-image-type-badge.tour-card-badge-type-transport {
+  background: rgba(8, 145, 178, 0.92);
+}
+
+.tour-card-image-type-badge.tour-card-badge-type-default {
+  background: rgba(55, 65, 81, 0.85);
+}
+
+/* Plain Bootstrap-style card variant (opt-in via `imageClean`): clean image on
+   top, no dark fade / floating pills over the photo, simple bordered box.
+   Duration and product type relocate to a muted subtitle in the body and the
+   wishlist heart sits in the image's top-right corner. Used by the homepage
+   carousels (New Experiences, Recommended, Top Rated, Sell Out, Deals). */
+.tour-card-clean {
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.tour-card-clean .tour-card-image {
+  height: 205px;
+}
+
+.tour-card-clean .tour-card-body {
+  padding: 14px;
+}
+
+@media (max-width: 768px) {
+  .tour-card-clean .tour-card-image {
+    height: 180px;
+  }
+}

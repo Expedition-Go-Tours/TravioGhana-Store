@@ -1,0 +1,394 @@
+.confirmation-page {
+  min-height: 100vh;
+  padding: 32px 16px 64px;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.confirmation-print-area {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.confirmation-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 12px 32px -16px rgba(0, 0, 0, 0.08);
+}
+
+.confirmation-card-hero {
+  padding: 32px 24px;
+}
+
+.confirmation-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.confirmation-hero-icon {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: #16a34a;
+  margin-bottom: 14px;
+}
+
+.confirmation-icon {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  margin-bottom: 14px;
+  background: #dcfce7;
+  color: #16a34a;
+}
+.confirmation-icon.warning {
+  background: #fef3c7;
+  color: #d97706;
+}
+.confirmation-icon.error {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.confirmation-title {
+  font-size: 26px;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.confirmation-subtitle {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #64748b;
+  max-width: 420px;
+}
+
+.confirmation-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.confirmation-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.confirmation-badge-code {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.confirmation-badge-paid {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.confirmation-badge-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.confirmation-section-title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 14px;
+}
+
+.confirmation-tour {
+  display: flex;
+  gap: 16px;
+}
+
+.confirmation-tour-image {
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.confirmation-tour-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.confirmation-tour-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.confirmation-tour-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.25;
+}
+
+.confirmation-tour-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.confirmation-tour-row svg {
+  flex-shrink: 0;
+  color: #94a3b8;
+}
+
+.confirmation-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.confirmation-grid-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.confirmation-grid-item-wide {
+  grid-column: 1 / -1;
+}
+
+.confirmation-grid-item > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #94a3b8;
+}
+
+.confirmation-grid-item > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.confirmation-grid-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.confirmation-grid-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  line-height: 1.4;
+}
+
+.confirmation-grid-sub {
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+.confirmation-list {
+  margin-top: 14px;
+  padding-left: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.confirmation-list li {
+  font-size: 13px;
+  color: #475569;
+  padding-left: 22px;
+  position: relative;
+}
+
+.confirmation-list li::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 7px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #179237;
+}
+
+.confirmation-note {
+  margin-top: 14px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #64748b;
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.confirmation-pending-note {
+  color: #047857;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+
+.confirmation-awaiting-note {
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+
+.confirmation-price {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.confirmation-price-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #475569;
+}
+
+.confirmation-price-row-discount {
+  color: #16a34a;
+}
+
+.confirmation-price-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 6px;
+  padding-top: 12px;
+}
+
+.confirmation-actions {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.confirmation-btn-primary,
+.confirmation-btn-secondary,
+.confirmation-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.confirmation-btn-primary {
+  background: #179237;
+  color: #fff;
+}
+
+.confirmation-btn-primary:hover {
+  filter: brightness(1.08);
+}
+
+.confirmation-btn-secondary {
+  background: #fff;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+
+.confirmation-btn-secondary:hover {
+  background: #f8fafc;
+}
+
+.confirmation-btn-ghost {
+  background: transparent;
+  color: #64748b;
+}
+
+.confirmation-btn-ghost:hover {
+  color: #334155;
+}
+
+.confirmation-message {
+  font-size: 15px;
+  color: #475569;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .confirmation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .confirmation-tour {
+    flex-direction: column;
+  }
+
+  .confirmation-tour-image {
+    width: 100%;
+    height: 180px;
+  }
+}
+
+@media print {
+  .confirmation-no-print {
+    display: none;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .confirmation-page {
+    padding: 0;
+    background: #fff;
+  }
+
+  .confirmation-card {
+    box-shadow: none;
+    border-color: #e2e8f0;
+    break-inside: avoid;
+  }
+
+  .confirmation-card-hero {
+    text-align: center;
+  }
+}

@@ -1,0 +1,103 @@
+/* ==================================================================
+   Premium ATV / quad-bike loader scene
+   ================================================================== */
+
+.atv-scene {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.atv-rig {
+  position: relative;
+  will-change: transform;
+}
+
+.atv-body {
+  position: relative;
+  display: inline-block;
+  transform-origin: center bottom;
+  will-change: transform;
+}
+
+.atv-img {
+  display: block;
+  height: clamp(120px, 28vh, 260px);
+  width: auto;
+  user-select: none;
+  pointer-events: none;
+  /* Blend the illustration's white backdrop away so the moving background
+     shows through instead of a solid white box. */
+  mix-blend-mode: multiply;
+}
+
+/* Spinning wheels — blurred spoke discs positioned over each hub. */
+.atv-wheel {
+  position: absolute;
+  border-radius: 50%;
+  transform-origin: center center;
+  filter: blur(0.6px);
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    rgba(15, 25, 20, 0.45) 0deg 14deg,
+    rgba(15, 25, 20, 0) 14deg 60deg,
+    rgba(15, 25, 20, 0.45) 60deg 74deg,
+    rgba(15, 25, 20, 0) 74deg 120deg,
+    rgba(15, 25, 20, 0.45) 120deg 134deg,
+    rgba(15, 25, 20, 0) 134deg 180deg,
+    rgba(15, 25, 20, 0.45) 180deg 194deg,
+    rgba(15, 25, 20, 0) 194deg 240deg,
+    rgba(15, 25, 20, 0.45) 240deg 254deg,
+    rgba(15, 25, 20, 0) 254deg 300deg,
+    rgba(15, 25, 20, 0.45) 300deg 314deg,
+    rgba(15, 25, 20, 0) 314deg 360deg
+  );
+  /* mask to a ring so the hub centre stays clear */
+  -webkit-mask: radial-gradient(circle, transparent 22%, #000 24%);
+  mask: radial-gradient(circle, transparent 22%, #000 24%);
+}
+
+/* Wheel positions (tuned to the artwork). */
+.atv-wheel-rear {
+  width: 15%;
+  padding-bottom: 15%;
+  height: 0;
+  left: 30%;
+  bottom: 10%;
+}
+
+.atv-wheel-front {
+  width: 15%;
+  padding-bottom: 15%;
+  height: 0;
+  left: 54%;
+  bottom: 10%;
+}
+
+/* Ground shadow */
+.atv-shadow {
+  display: block;
+  width: clamp(100px, 22vh, 210px);
+  height: 15px;
+  border-radius: 50%;
+  transform-origin: center center;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.28) 0%,
+    rgba(0, 0, 0, 0) 70%
+  );
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atv-rig,
+  .atv-body,
+  .atv-wheel,
+  .atv-shadow {
+    animation: none;
+  }
+}

@@ -1,0 +1,76 @@
+/* ===== TOUR OVERVIEW - MOBILE FIRST ===== */
+
+.tour-overview {
+  padding: 24px 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+}
+
+.tour-section-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 20px;
+  color: #1a1a1a;
+  margin: 0 0 16px 0;
+}
+
+.tour-overview-content p {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.7;
+  color: #6b7280;
+  margin: 0 0 16px 0;
+}
+
+.tour-overview-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* ===== TABLET VIEW (768px+) ===== */
+@media (min-width: 768px) {
+  .tour-overview {
+    padding: 32px 24px;
+  }
+
+  .tour-section-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  .tour-overview-content p {
+    font-size: 16px;
+    margin-bottom: 18px;
+  }
+}
+
+/* ===== DESKTOP VIEW (1024px+) ===== */
+@media (min-width: 1024px) {
+  .tour-overview {
+    padding: 40px 32px;
+  }
+
+  .tour-section-title {
+    font-size: 28px;
+    margin-bottom: 24px;
+  }
+
+  .tour-overview-content p {
+    font-size: 17px;
+    margin-bottom: 20px;
+  }
+}
+
+/* ===== LARGE DESKTOP (1400px+) ===== */
+@media (min-width: 1400px) {
+  .tour-overview {
+    padding: 48px 40px;
+  }
+
+  .tour-section-title {
+    font-size: 30px;
+  }
+
+  .tour-overview-content p {
+    font-size: 18px;
+  }
+}

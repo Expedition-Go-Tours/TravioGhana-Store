@@ -1,0 +1,135 @@
+.whybook-section {
+  padding: 45px 0;
+  background: #fff;
+}
+
+.whybook-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.whybook-viewport {
+  max-width: calc(295px * 5 + 16px * 4);
+  margin: 0 auto;
+}
+
+.whybook-heading {
+  font-family: 'GT Esti Pro Display', sans-serif;
+  font-weight: 700;
+  font-size: clamp(24px, 2.2vw, 32px);
+  color: #1a1a1a;
+  margin: 0 0 24px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.whybook-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.whybook-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 28px 20px;
+  border-radius: 14px;
+  border: 1px solid #e5e4e7;
+  background: #fff;
+  gap: 10px;
+}
+
+.whybook-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: #dcefe0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a1a1a;
+}
+
+.whybook-title {
+  font-family: 'Raleway', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.whybook-text {
+  font-family: 'Raleway', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.whybook-dots {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .whybook-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .whybook-section {
+    padding: 30px 0;
+  }
+
+  .whybook-container {
+    padding: 0 16px;
+  }
+
+  .whybook-viewport {
+    max-width: 100%;
+  }
+
+  .whybook-grid {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 4px 0 8px;
+  }
+
+  .whybook-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .whybook-card {
+    flex: 0 0 100%;
+    width: 100%;
+    scroll-snap-align: center;
+    padding: 22px 18px;
+  }
+
+  .whybook-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .whybook-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ddd;
+    transition: background 0.3s;
+  }
+
+  .whybook-dot.active {
+    background: #179237;
+  }
+}

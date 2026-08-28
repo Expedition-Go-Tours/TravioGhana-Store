@@ -1,0 +1,121 @@
+/* Review Summary - Mobile First */
+.review-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+/* Score Section */
+.review-summary-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border, #e5e4e7);
+}
+
+.review-score-number {
+  font-size: 48px;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  color: var(--text-h, #08060d);
+  line-height: 1;
+}
+
+.review-score-stars {
+  display: flex;
+  gap: 4px;
+}
+
+.review-score-label {
+  font-size: 14px;
+  color: var(--text, #6b6375);
+  margin-top: 4px;
+}
+
+/* Breakdown Section */
+.review-summary-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.review-breakdown-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 30px;
+  align-items: center;
+  gap: 12px;
+}
+
+.review-breakdown-label {
+  font-size: 14px;
+  color: var(--text, #6b6375);
+}
+
+.review-breakdown-bar-container {
+  height: 8px;
+  background: var(--border, #e5e4e7);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.review-breakdown-bar {
+  height: 100%;
+  background: #179237;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.review-breakdown-count {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-h, #08060d);
+  text-align: right;
+}
+
+/* Tablet - 768px+ */
+@media (min-width: 768px) {
+  .review-summary {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 32px;
+  }
+
+  .review-summary-score {
+    min-width: 180px;
+    padding-bottom: 0;
+    padding-right: 32px;
+    border-bottom: none;
+    border-right: 1px solid var(--border, #e5e4e7);
+  }
+
+  .review-summary-breakdown {
+    flex: 1;
+  }
+
+  .review-breakdown-row {
+    grid-template-columns: 90px 1fr 35px;
+    gap: 16px;
+  }
+}
+
+/* Desktop - 1024px+ */
+@media (min-width: 1024px) {
+  .review-summary {
+    gap: 40px;
+  }
+
+  .review-breakdown-row {
+    grid-template-columns: 100px 1fr 40px;
+  }
+
+  .review-breakdown-label {
+    font-size: 15px;
+  }
+
+  .review-breakdown-bar-container {
+    height: 10px;
+  }
+}

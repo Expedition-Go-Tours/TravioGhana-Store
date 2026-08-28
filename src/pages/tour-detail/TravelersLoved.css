@@ -1,0 +1,354 @@
+/* What travellers loved — GetYourGuide-style review highlight section */
+.travelers-loved {
+  width: 100%;
+  min-width: 0;
+  /* Generous breathing room between the review cards and the divider line
+     that separates this section from the itinerary below it. */
+  padding-bottom: 64px;
+}
+
+.travelers-loved-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.travelers-loved-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  font-family: var(--font-body);
+}
+
+.travelers-loved-view-all {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: auto;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--primary, #179237);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.travelers-loved-view-all:hover {
+  color: var(--primary-hover, #137a2e);
+  text-decoration: underline;
+}
+
+/* Prev / next chevron controls — shown on tablet+ to drive the review
+   carousel. Hidden on mobile, where the row is swiped instead. */
+.travelers-loved-arrows {
+  display: none;
+  gap: 8px;
+}
+
+.travelers-loved-arrow {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--border, #e5e4e7);
+  background: #fff;
+  color: #166534;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+    box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.travelers-loved-arrow:hover {
+  background: #fff;
+  border-color: var(--primary, #179237);
+  color: var(--primary, #179237);
+  box-shadow: 0 4px 14px rgba(23, 146, 55, 0.18);
+  transform: translateY(-1px);
+}
+
+.travelers-loved-arrow:active {
+  transform: scale(0.92);
+}
+
+.travelers-loved-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+  /* Mobile: swipeable horizontal row of review cards with snap-to-card
+     behavior, mirroring the GetYourGuide mobile experience. */
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+
+.travelers-loved-grid::-webkit-scrollbar {
+  display: none;
+}
+
+.travelers-loved-card {
+  border: 1px solid var(--border, #e5e4e7);
+  border-radius: 12px;
+  background: #fff;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  min-width: min(85%, 360px);
+  scroll-snap-align: start;
+}
+
+.travelers-loved-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.travelers-loved-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary, #179237), var(--dash-accent, #69c982));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.travelers-loved-author {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.travelers-loved-author-name {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-h, #08060d);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.travelers-loved-meta {
+  font-size: 12px;
+  color: var(--text, #6b6375);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.travelers-loved-verified {
+  color: var(--primary, #179237);
+}
+
+.travelers-loved-stars {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.travelers-loved-card-title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-h, #08060d);
+  margin: 0 0 8px;
+}
+
+.travelers-loved-card-text {
+  position: relative;
+  overflow: hidden;
+}
+
+.travelers-loved-card-text.collapsed .travelers-loved-card-paragraph {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.travelers-loved-card-paragraph {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text, #6b6375);
+}
+
+.travelers-loved-card-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 8px;
+  align-self: flex-start;
+  color: var(--primary, #179237);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.travelers-loved-card-toggle:hover {
+  color: var(--primary-hover, #137a2e);
+  text-decoration: underline;
+}
+
+/* Tablet - 768px+ */
+@media (min-width: 768px) {
+  .travelers-loved-title {
+    font-size: 20px;
+  }
+
+  .travelers-loved-view-all {
+    font-size: 15px;
+  }
+
+  .travelers-loved-arrows {
+    display: inline-flex;
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  /* On tablet+ the arrows own the far-right slot (where "See all reviews"
+     used to sit); the view-all link tucks in right next to them. */
+  .travelers-loved-view-all {
+    margin-left: 0;
+  }
+
+  /* The grid becomes a chevron-driven carousel: a horizontal scroll track
+     with fixed-width, snap-aligned cards. Cards peek fully per view (two on
+     tablet, three on desktop) and the arrows nudge the track by one card. */
+  .travelers-loved-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 20px;
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 8px;
+  }
+
+  .travelers-loved-card {
+    flex: 0 0 calc((100% - 20px) / 2);
+    padding: 24px;
+    min-width: 0;
+    scroll-snap-align: start;
+  }
+}
+
+/* Desktop - 1200px+ (wider main column fits three cards per view) */
+@media (min-width: 1200px) {
+  .travelers-loved-title {
+    font-size: 24px;
+  }
+
+  .travelers-loved-grid {
+    gap: 20px;
+  }
+
+  .travelers-loved-card {
+    flex: 0 0 calc((100% - 40px) / 3);
+    padding: 28px;
+  }
+}
+
+/* Review modal — full-detail popup opened from a card's "See more". */
+.travelers-loved-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(8, 6, 13, 0.55);
+  backdrop-filter: blur(3px);
+}
+
+.travelers-loved-modal {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  max-height: min(82vh, 640px);
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 24px 64px rgba(8, 6, 13, 0.28);
+}
+
+.travelers-loved-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border, #e5e4e7);
+  border-radius: 50%;
+  background: #fff;
+  color: #6b6375;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.travelers-loved-modal-close:hover {
+  background: #f8fafc;
+  border-color: #d1d5db;
+  color: #111827;
+}
+
+.travelers-loved-modal-close:active {
+  transform: scale(0.92);
+}
+
+.travelers-loved-modal-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-right: 40px;
+}
+
+.travelers-loved-modal-author {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.travelers-loved-modal-title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--text-h, #08060d);
+  margin: 0 0 12px;
+}
+
+.travelers-loved-modal-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text, #6b6375);
+  white-space: pre-wrap;
+}

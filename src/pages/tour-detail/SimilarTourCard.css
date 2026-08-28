@@ -1,0 +1,447 @@
+/* Similar Tour Card - Mobile First */
+
+.similar-tour-card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  height: 100%;
+  transition: box-shadow 0.3s;
+}
+
+.similar-tour-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Image Container */
+.similar-tour-image {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  background: #f3f4f6;
+  flex-shrink: 0;
+}
+
+.similar-tour-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.similar-tour-card:hover .similar-tour-image img {
+  transform: scale(1.05);
+}
+
+.similar-tour-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0) 40%,
+    rgba(0, 0, 0, 0) 60%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Duration Badge — bottom-right, leaving top-left free for the source
+   logo badge and bottom-left free for the product type badge. */
+.similar-tour-duration {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 4px;
+  z-index: 2;
+  backdrop-filter: blur(4px);
+  letter-spacing: 0.2px;
+}
+
+/* Wishlist Button */
+.similar-tour-wishlist {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  color: #fff;
+  transition: all 0.2s ease;
+}
+
+.similar-tour-wishlist.wishlist-active {
+  color: #179237;
+}
+
+.similar-tour-wishlist:hover {
+  background: #179237;
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.similar-tour-wishlist:active {
+  transform: scale(0.95);
+}
+
+/* Content */
+.similar-tour-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  flex: 1;
+}
+
+/* Location */
+.similar-tour-location {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  line-height: 1;
+}
+
+.similar-tour-location svg {
+  flex-shrink: 0;
+  color: #9ca3af;
+}
+
+/* Title */
+.similar-tour-title {
+  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 42px;
+}
+
+/* Features */
+.similar-tour-features {
+  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-size: 12px;
+  font-weight: 400;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Meta badges (category, language) */
+.similar-tour-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.similar-tour-meta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  padding: 3px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.similar-tour-meta-badge svg {
+  flex-shrink: 0;
+}
+
+.similar-tour-meta-badge-pickup {
+  color: #166534;
+  background: rgba(22, 101, 52, 0.08);
+  border-color: rgba(22, 101, 52, 0.18);
+}
+
+.similar-tour-meta-badge-meeting {
+  color: #0e7490;
+  background: rgba(8, 145, 178, 0.09);
+  border-color: rgba(8, 145, 178, 0.2);
+}
+
+.similar-tour-meta-badge-language {
+  color: #1e40af;
+  background: rgba(30, 64, 175, 0.07);
+  border-color: rgba(30, 64, 175, 0.16);
+}
+
+.similar-tour-meta-badge-cancellation {
+  color: #166534;
+  background: rgba(22, 101, 52, 0.08);
+  border-color: rgba(22, 101, 52, 0.18);
+}
+
+.similar-tour-meta-badge-cancellation-negative {
+  color: #b91c1c;
+  background: rgba(185, 28, 28, 0.08);
+  border-color: rgba(185, 28, 28, 0.18);
+}
+
+/* Product type badge (Tour / Activity / Transport) */
+.similar-tour-meta-badge-type {
+  font-weight: 700;
+}
+
+.similar-tour-meta-badge-type-tour {
+  color: #9a3412;
+  background: rgba(234, 88, 12, 0.09);
+  border-color: rgba(234, 88, 12, 0.2);
+}
+
+.similar-tour-meta-badge-type-activity {
+  color: #7e22ce;
+  background: rgba(147, 51, 234, 0.09);
+  border-color: rgba(147, 51, 234, 0.2);
+}
+
+.similar-tour-meta-badge-type-transport {
+  color: #0e7490;
+  background: rgba(8, 145, 178, 0.09);
+  border-color: rgba(8, 145, 178, 0.2);
+}
+
+.similar-tour-meta-badge-type-default {
+  color: #6b7280;
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+}
+
+/* Footer */
+.similar-tour-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+/* Rating */
+.similar-tour-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.similar-tour-rating svg {
+  flex-shrink: 0;
+}
+
+.similar-tour-rating-value {
+  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1;
+}
+
+.similar-tour-rating-count {
+  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-size: 12px;
+  font-weight: 400;
+  color: #9ca3af;
+  line-height: 1;
+}
+
+/* Price */
+.similar-tour-price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.similar-tour-price-label {
+  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-size: 11px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.similar-tour-price-value {
+  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Tablet - 768px+ */
+@media (min-width: 768px) {
+  .similar-tour-image {
+    height: 200px;
+  }
+
+  .similar-tour-content {
+    padding: 16px;
+  }
+
+  .similar-tour-title {
+    font-size: 14px;
+  }
+
+  .similar-tour-features {
+    font-size: 11px;
+  }
+}
+
+/* Desktop - 1024px+ */
+@media (min-width: 1024px) {
+  .similar-tour-image {
+    height: 220px;
+  }
+
+  .similar-tour-duration {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .similar-tour-content {
+    padding: 14px;
+    gap: 6px;
+  }
+
+  .similar-tour-title {
+    font-size: 14px;
+    min-height: 40px;
+  }
+
+  .similar-tour-features {
+    font-size: 11px;
+  }
+
+  .similar-tour-rating-value {
+    font-size: 12px;
+  }
+
+  .similar-tour-rating-count {
+    font-size: 11px;
+  }
+
+  .similar-tour-price-value {
+    font-size: 20px;
+  }
+}
+
+/* Large Desktop - 1400px+ */
+@media (min-width: 1400px) {
+  .similar-tour-image {
+    height: 240px;
+  }
+
+  .similar-tour-content {
+    padding: 16px;
+  }
+
+  .similar-tour-title {
+    font-size: 15px;
+  }
+
+  .similar-tour-features {
+    font-size: 12px;
+  }
+
+  .similar-tour-price-value {
+    font-size: 20px;
+  }
+}
+
+.source-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 36px;
+  height: 36px;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  z-index: 10;
+  padding: 3px;
+}
+
+.source-badge img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+/* Product type badge pinned to the bottom-left of the image — mirrors
+   TourCard's placement so type is recognizable at a glance everywhere. */
+.similar-tour-image-type-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  padding: 4px 9px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.similar-tour-image-type-badge.similar-tour-meta-badge-type-tour {
+  background: rgba(234, 88, 12, 0.92);
+}
+
+.similar-tour-image-type-badge.similar-tour-meta-badge-type-activity {
+  background: rgba(147, 51, 234, 0.92);
+}
+
+.similar-tour-image-type-badge.similar-tour-meta-badge-type-transport {
+  background: rgba(8, 145, 178, 0.92);
+}
+
+.similar-tour-image-type-badge.similar-tour-meta-badge-type-default {
+  background: rgba(55, 65, 81, 0.85);
+}

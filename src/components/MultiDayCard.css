@@ -1,0 +1,252 @@
+.multiday-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  height: 100%;
+}
+
+.multiday-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.multiday-card-image {
+  position: relative;
+  height: 180px;
+  overflow: hidden;
+  background: #f1f1f1;
+  flex-shrink: 0;
+}
+
+.multiday-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s;
+}
+
+.multiday-card:hover .multiday-card-image img {
+  transform: scale(1.05);
+}
+
+.multiday-card-image-fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.3) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.multiday-card-days {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-family: 'Raleway', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  z-index: 2;
+  line-height: 1.3;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.multiday-card-wishlist {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.88);
+  color: #555;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  transition: transform 0.2s, background 0.2s, color 0.2s;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.multiday-card-wishlist.wishlist-active {
+  color: #179237;
+}
+
+.multiday-card-wishlist:hover {
+  background: #179237;
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.multiday-card-wishlist:active {
+  transform: scale(0.95);
+}
+
+.multiday-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  flex: 1;
+}
+
+.multiday-card-location {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  font-family: 'Raleway', sans-serif;
+}
+
+.multiday-card-location svg {
+  flex-shrink: 0;
+  color: #9ca3af;
+}
+
+.multiday-card-title {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: #111827;
+  margin: 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.multiday-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.multiday-card-accommodation {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  font-family: 'Raleway', sans-serif;
+}
+
+.multiday-card-accommodation svg {
+  flex-shrink: 0;
+  color: #9ca3af;
+}
+
+.multiday-card-highlights {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  font-family: 'Raleway', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.multiday-card-bottom {
+  margin-top: auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.multiday-card-rating {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.multiday-card-rating-value {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: #111827;
+}
+
+.multiday-card-rating-reviews {
+  font-size: 12px;
+  color: #6b7280;
+  font-family: 'Raleway', sans-serif;
+}
+
+.multiday-card-price {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.multiday-card-from {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  font-family: 'Raleway', sans-serif;
+}
+
+.multiday-card-price-value {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: #111827;
+}
+
+@media (max-width: 768px) {
+  .multiday-card-image {
+    height: 170px;
+  }
+
+  .multiday-card-body {
+    padding: 12px;
+  }
+
+  .multiday-card-title {
+    font-size: 14px;
+  }
+
+  .multiday-card-price-value {
+    font-size: 20px;
+  }
+}
+
+.source-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  width: 36px;
+  height: 36px;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  z-index: 10;
+  padding: 3px;
+}
+
+.source-badge img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+}

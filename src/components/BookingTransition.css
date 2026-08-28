@@ -1,0 +1,123 @@
+/* ==================================================================
+   Booking transition — vehicle fixed centre, background scrolls
+   ================================================================== */
+
+.bt-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000; /* above navbar and all page chrome */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+/* Moving clouds */
+.bt-cloud {
+  position: absolute;
+  border-radius: 999px;
+  background: #bfeeff;
+  opacity: 0.55;
+  filter: blur(1px);
+  will-change: transform;
+  pointer-events: none;
+}
+
+.bt-cloud::before,
+.bt-cloud::after {
+  content: '';
+  position: absolute;
+  background: inherit;
+  border-radius: 999px;
+}
+
+.bt-cloud::before {
+  width: 55%;
+  height: 130%;
+  left: 12%;
+  bottom: 25%;
+}
+
+.bt-cloud::after {
+  width: 45%;
+  height: 110%;
+  right: 12%;
+  bottom: 20%;
+}
+
+/* Speed lines */
+.bt-speedline {
+  position: absolute;
+  right: 0;
+  width: 90px;
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, rgba(23, 146, 55, 0.5) 0%, rgba(23, 146, 55, 0) 100%);
+  will-change: transform;
+  pointer-events: none;
+}
+
+/* Fixed, centred vehicle */
+.bt-vehicle {
+  position: relative;
+  z-index: 2;
+  height: clamp(110px, 26vh, 240px);
+  width: auto;
+  will-change: transform;
+  user-select: none;
+  pointer-events: none;
+  /* Blend the illustration's white backdrop away so the background shows through. */
+  mix-blend-mode: multiply;
+}
+
+.bt-caption {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-heading, 'GT Esti Pro Display', sans-serif);
+  font-size: clamp(16px, 3vw, 20px);
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.bt-dots {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding-bottom: 2px;
+}
+
+.bt-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #179237;
+}
+
+.bt-bar {
+  position: relative;
+  z-index: 3;
+  width: min(280px, 70vw);
+  height: 4px;
+  border-radius: 999px;
+  background: #eceef0;
+  overflow: hidden;
+}
+
+.bt-bar-fill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transform-origin: 0 50%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #179237, #22c55e);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bt-cloud, .bt-speedline, .bt-vehicle { animation: none; }
+}

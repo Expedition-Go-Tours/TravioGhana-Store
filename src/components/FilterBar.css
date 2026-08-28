@@ -1,0 +1,84 @@
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.filter-bar-label {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.filter-bar-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 2px 0;
+}
+
+.filter-bar-pills::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #4b5563;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.filter-pill:active {
+  transform: scale(0.95);
+}
+
+.filter-pill:hover {
+  background: #e5e7eb;
+}
+
+.filter-pill.active {
+  background: #179237;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(23, 146, 55, 0.25);
+}
+
+.filter-pill.active:hover {
+  background: #137a2e;
+}
+
+@media (max-width: 768px) {
+  .filter-bar {
+    gap: 8px;
+  }
+
+  .filter-bar-label {
+    font-size: 11px;
+  }
+
+  .filter-pill {
+    padding: 5px 12px;
+    font-size: 12px;
+  }
+}
