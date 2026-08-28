@@ -171,6 +171,9 @@
     "profile": "Profil",
     "signingOut": "Abmelden",
     "signInSignUp": "Anmelden / Registrieren",
+    "loginOrSignUp": "Anmelden oder registrieren",
+    "logout": "Abmelden",
+    "updates": "Updates",
     "signOut": "Abmelden",
     "wishlist": "Merkliste"
   },

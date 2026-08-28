@@ -2,7 +2,7 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion, type Variants } from 'framer-motion'
 import { toast } from 'sonner'
-import { Clock, X, Globe, Megaphone, ChevronRight } from 'lucide-react'
+import { Clock, X, Globe, Megaphone, ChevronRight, LogIn, LogOut, DollarSign, Bell } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n/config'
 import { useCurrency } from '../contexts/CurrencyContext'
@@ -15,6 +15,7 @@ import { useMyBookingsCount } from '../hooks/useExpeditionBookings'
 import { useSearchAutocomplete, type SearchSuggestion } from '../hooks/useSearchAutocomplete'
 import { useRecentSearches } from '../hooks/useRecentSearches'
 import LanguageCurrencyModal from './LanguageCurrencyModal'
+import MobileSubDrawer, { type SubDrawerTab } from './MobileSubDrawer'
 import './Navbar.css'
 import OptimizedImage from '@/components/shared/OptimizedImage'
 
@@ -46,6 +47,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   const [searchBarSticky, setSearchBarSticky] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [subDrawerTab, setSubDrawerTab] = useState<SubDrawerTab | null>(null)
   const [signingOut, setSigningOut] = useState(false)
   const [langCurrencyOpen, setLangCurrencyOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -62,6 +64,24 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   const { isApproved } = useSupplierStatus()
   // Counter of the user's confirmed bookings shown on the "Bookings" menu item.
   const { data: bookingsCount = 0 } = useMyBookingsCount('CONFIRMED,PENDING', !!user)
+  // Bookings counter is dismissed once the user taps the Bookings item — it
+  // only comes back when the count grows beyond what was last seen.
+  const [bookingsSeen, setBookingsSeen] = useState(() => {
+    try {
+      return Number(localStorage.getItem('navBookingsSeen') ?? 0) || 0
+    } catch {
+      return 0
+    }
+  })
+  const showBookingsBadge = bookingsCount > 0 && bookingsCount > bookingsSeen
+  const markBookingsSeen = useCallback(() => {
+    setBookingsSeen(bookingsCount)
+    try {
+      localStorage.setItem('navBookingsSeen', String(bookingsCount))
+    } catch {
+      /* storage unavailable */
+    }
+  }, [bookingsCount])
 
   useEffect(() => {
     const unsub = subscribeToAuthState((u) => setUser(u))
@@ -153,6 +173,32 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
     window.open(path, '_blank', 'noopener')
     setMobileMenuOpen(false)
   }, [user])
+
+  useEffect(() => {
+    if (!mobileMenuOpen) setSubDrawerTab(null)
+  }, [mobileMenuOpen])
+
+  // Prefetch the dashboard chunk so navigating to Bookings / Dashboard /
+  // Updates from the drawer (or avatar menu) is instant, not a lazy fetch.
+  useEffect(() => {
+    if (!user) return
+    import('../pages/dashboard/DashboardLayout').catch(() => {})
+  }, [user])
+
+  useEffect(() => {
+    if (mobileMenuOpen && user) {
+      import('../pages/dashboard/DashboardLayout').catch(() => {})
+    }
+  }, [mobileMenuOpen, user])
+
+  // "Back to menu" from the dashboard reopens the mobile drawer on arrival.
+  useEffect(() => {
+    const state = location.state as { openMobileMenu?: boolean } | null
+    if (state?.openMobileMenu) {
+      setMobileMenuOpen(true)
+      window.history.replaceState({}, '')
+    }
+  }, [location.state])
 
   const handleNavKeyDown = (e: React.KeyboardEvent) => {
     if (!showNavDropdown) {
@@ -484,6 +530,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                           navigate('/dashboard')
                         }
                         if (link.key === 'Bookings') {
+                          markBookingsSeen()
                           navigate('/dashboard/bookings')
                         }
                       }}
@@ -517,7 +564,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                         </svg>
                       )}
                       {link.label}
-                      {link.key === 'Bookings' && bookingsCount > 0 && (
+                      {link.key === 'Bookings' && showBookingsBadge && (
                         <span className="nav-dropdown-badge">{bookingsCount}</span>
                       )}
                     </a>
@@ -601,16 +648,9 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>
-            <a href="#" className="nav-mobile-list-experience" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMobileListExperience() }}>
-              <span className="nav-mobile-list-experience-icon">
-                <Megaphone size={19} strokeWidth={2} />
-              </span>
-              <span className="nav-mobile-list-experience-text">
-                <span className="nav-mobile-list-experience-title">{isApproved ? t('nav.supplierDashboard') : t('nav.listAnExperience', 'List an Experience')}</span>
-                <span className="nav-mobile-list-experience-sub">{isApproved ? t('nav.supplierDashboardSub') : t('nav.listAnExperienceSub', 'Become a supplier and start earning')}</span>
-              </span>
-              <ChevronRight size={18} className="nav-mobile-list-experience-chevron" />
-            </a>
+
+            <h3 className="nav-mobile-heading">{t('nav.profile')}</h3>
+
             {user ? (
               <div className="nav-mobile-user">
                 <img src={user.photoURL || userSrc} alt="" className="nav-mobile-user-avatar" onError={(e) => { (e.target as HTMLImageElement).src = userSrc }} />
@@ -620,28 +660,39 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                 </div>
               </div>
             ) : (
-              <a href="#" className="nav-mobile-link">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="8" r="4" />
-                  <path d="M20 21a8 8 0 1 0-16 0" />
-                </svg>
-                {t('nav.profile')}
-              </a>
+              <div className="nav-mobile-login" onClick={() => { setMobileMenuOpen(false); onOpenAuth?.('signup') }}>
+                <LogIn size={18} />
+                {t('nav.loginOrSignUp', 'Login or sign up')}
+              </div>
             )}
-            <div className="nav-mobile-link" onClick={() => { setMobileMenuOpen(false); setLangCurrencyOpen(true) }}>
-              <Globe size={18} />
-              <span>Language &amp; Currency</span>
-            </div>
+
             <div className="nav-mobile-divider" />
+
+            <div className="nav-mobile-link" onClick={() => {
+              if (!user) { setMobileMenuOpen(false); onOpenAuth?.('signin'); return }
+              setSubDrawerTab('updates')
+            }}>
+              <Bell size={18} />
+              {t('nav.updates', 'Updates')}
+            </div>
+            <div className="nav-mobile-link" onClick={() => setSubDrawerTab('language')}>
+              <Globe size={18} />
+              {t('nav.language')}
+            </div>
+            <div className="nav-mobile-link" onClick={() => setSubDrawerTab('currency')}>
+              <DollarSign size={18} />
+              {t('nav.currency')}
+            </div>
+
             {user && (
-              <a href="#" className="nav-mobile-link" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMobileMenuOpen(false); navigate('/dashboard/bookings') }}>
+              <a href="#" className="nav-mobile-link" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMobileMenuOpen(false); markBookingsSeen(); navigate('/dashboard/bookings') }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
                   <line x1="3" y1="6" x2="21" y2="6" />
                   <path d="M16 10a4 4 0 0 1-8 0" />
                 </svg>
                 {t('nav.bookings')}
-                {bookingsCount > 0 && <span className="nav-mobile-badge">{bookingsCount}</span>}
+                {showBookingsBadge && <span className="nav-mobile-badge">{bookingsCount}</span>}
               </a>
             )}
             {user && (
@@ -671,8 +722,20 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
               </svg>
               {t('nav.contact')}
             </a>
+
+            <a href="#" className="nav-mobile-list-experience" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMobileListExperience() }}>
+              <span className="nav-mobile-list-experience-icon">
+                <Megaphone size={19} strokeWidth={2} />
+              </span>
+              <span className="nav-mobile-list-experience-text">
+                <span className="nav-mobile-list-experience-title">{isApproved ? t('nav.supplierDashboard') : t('nav.listAnExperience', 'List an Experience')}</span>
+                <span className="nav-mobile-list-experience-sub">{isApproved ? t('nav.supplierDashboardSub') : t('nav.listAnExperienceSub', 'Become a supplier and start earning')}</span>
+              </span>
+              <ChevronRight size={18} className="nav-mobile-list-experience-chevron" />
+            </a>
+
             <div className="nav-mobile-divider" />
-            {user ? (
+            {user && (
               signingOut ? (
                 <div className="nav-mobile-signingout">
                   <div className="nav-spinner-sm" />
@@ -689,22 +752,10 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                     duration: 3000,
                   })
                 }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                    <polyline points="16 17 21 12 16 7" />
-                    <line x1="21" y1="12" x2="9" y2="12" />
-                  </svg>
-                  {t('nav.signOut')}
+                  <LogOut size={18} />
+                  {t('nav.logout', 'Logout')}
                 </div>
               )
-            ) : (
-              <div className="nav-mobile-sign" onClick={() => { setMobileMenuOpen(false); onOpenAuth?.('signup') }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="8" r="4" />
-                  <path d="M20 21a8 8 0 1 0-16 0" />
-                </svg>
-                {t('nav.signInSignUp')}
-              </div>
             )}
             </motion.div>
           </motion.div>
@@ -714,6 +765,16 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
       <AnimatePresence>
         {langCurrencyOpen && <LanguageCurrencyModal onClose={() => setLangCurrencyOpen(false)} />}
       </AnimatePresence>
+
+      <MobileSubDrawer
+        tab={subDrawerTab}
+        onClose={() => setSubDrawerTab(null)}
+        onNavigate={(path) => {
+          setSubDrawerTab(null)
+          setMobileMenuOpen(false)
+          navigate(path)
+        }}
+      />
     </>
   )
 }

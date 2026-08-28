@@ -294,11 +294,11 @@
   }
 
   .attractions-card-wrap {
-    width: 280px;
-    min-width: 280px;
+    width: 270px;
+    min-width: 270px;
   }
 
   .attraction-card {
-    height: 18.75rem;
+    height: 20rem;
   }
 }

@@ -292,6 +292,52 @@
     padding: 6px 12px;
     font-size: 12px;
   }
+
+  /* Mobile: offer / likely-to-sell-out badges live in the card body after
+     the facts list — less rounded, tighter padding, sized like the fact
+     badges so they wrap in the same row. */
+  .all-tours-grid .tour-card-body-offer-badge {
+    color: #fff;
+    background: linear-gradient(135deg, #179237 0%, #0e6b27 100%);
+    border: none;
+    border-radius: 6px;
+    padding: 3px 7px;
+    font-size: 10px;
+    gap: 4px;
+  }
+
+  .all-tours-grid .tour-card-body-sellout-badge {
+    color: #fff;
+    background: #dc2626;
+    border: none;
+    border-radius: 6px;
+    padding: 3px 7px;
+    font-size: 10px;
+    gap: 4px;
+  }
+
+  /* Long type labels must not get clipped on narrow card images */
+  .all-tours-grid .tour-card-image-type-badge {
+    max-width: calc(100% - 12px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Compact pagination pills so Previous / Page X of Y / Next fit on one
+     line and the label text never wraps or truncates */
+  .all-tours-load-more {
+    padding-top: 24px;
+  }
+
+  .pagination-controls .all-tours-load-btn {
+    padding: 10px 18px;
+    font-size: 13px;
+  }
+
+  .pagination-indicator {
+    font-size: 13px;
+  }
 }
 
 /* ===== TOURS GRID ===== */
@@ -336,7 +382,9 @@
      vertical card. */
   .all-tours-grid .tour-card {
     flex-direction: row;
-    max-height: 180px;
+    /* The body now carries the offer/sell-out badges too, so let the card
+       grow to fit instead of clipping them at 180px. */
+    max-height: none;
   }
 
   .all-tours-grid .tour-card-image {
@@ -408,6 +456,23 @@
     width: 12px;
     height: 12px;
   }
+
+  /* Skeleton mirrors the horizontal card layout so it fills the same space */
+  .all-tours-grid .tour-card-skeleton {
+    flex-direction: row;
+  }
+
+  .all-tours-grid .tour-card-skeleton-image {
+    width: 35%;
+    height: auto;
+    flex-shrink: 0;
+  }
+
+  .all-tours-grid .tour-card-skeleton-body {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+  }
 }
 
 /* ===== LOAD MORE ===== */
@@ -416,6 +481,27 @@
   display: flex;
   justify-content: center;
   padding: 40px 0 0;
+}
+
+.pagination-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  row-gap: 10px;
+}
+
+.pagination-indicator {
+  font-size: 14px;
+  color: #666;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pagination-controls .all-tours-load-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .all-tours-load-btn {

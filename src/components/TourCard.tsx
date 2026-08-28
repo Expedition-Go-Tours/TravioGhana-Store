@@ -1,4 +1,4 @@
-﻿import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
@@ -13,6 +13,13 @@ import { getCategoryMeta } from './categoryMeta'
 import OptimizedImage from '@/components/shared/OptimizedImage'
 import type { SpecialOfferData } from '../hooks/useExpeditionTours'
 import { bestOfferDiscountAmount, hasActiveOffer } from '../hooks/useExpeditionTours'
+
+function shortDuration(d: string): string {
+  return d
+    .replace(/(\d+(?:\.\d+)?)\s*hours?/gi, '$1h')
+    .replace(/(\d+(?:\.\d+)?)\s*days?/gi, '$1d')
+    .replace(/(\d+)\s*minutes?/gi, '$1m')
+}
 
 interface TourCardProps extends Tour {
   discount?: string
@@ -35,15 +42,30 @@ interface TourCardProps extends Tour {
   /** Hide the "Special Offer" tag (used in sections where every card is an
       offer, e.g. the Special Offers carousel). */
   hideOfferBadge?: boolean
+  /** On mobile, compact the image duration badge ("9 hours" → "9h"). */
+  compactDurationOnMobile?: boolean
+  /** On mobile, render the offer / likely-to-sell-out badges in the card body
+      after the facts list instead of over the photo. */
+  bodyOfferBadgesOnMobile?: boolean
 }
 
-export default function TourCard({ id, title, duration, features, price, rating, reviews, location, image, photos, discount, difficulty, cancellationPolicy, pickupIncluded, accommodationIncluded, meetingMode, category, languages, source, externalUrl, slug, isNew, hideSourceBadge, hideFeatures, imageClean, priceValue, specialOffers, likelyToSellOut, hideOfferBadge }: TourCardProps) {
+export default function TourCard({ id, title, duration, features, price, rating, reviews, location, image, photos, discount, difficulty, cancellationPolicy, pickupIncluded, accommodationIncluded, meetingMode, category, languages, source, externalUrl, slug, isNew, hideSourceBadge, hideFeatures, imageClean, priceValue, specialOffers, likelyToSellOut, hideOfferBadge, compactDurationOnMobile, bodyOfferBadgesOnMobile }: TourCardProps) {
   const { t } = useTranslation()
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist()
   const { isLikelyToSellOut } = useSellOutContext()
   const showSellOutTag = likelyToSellOut || isLikelyToSellOut({ id, title })
   const item = toWishlistItem({ id, title, duration, features, price, rating: String(rating), reviews, location, image, source, externalUrl } as Tour)
   const inWishlist = isInWishlist(item.id)
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(max-width: 768px)').matches,
+  )
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+  const moveBadgesToBody = bodyOfferBadgesOnMobile && isMobile
 
   // "tour" / "activity" / "transport" is the supplier's Step 2 product type
   // choice — give each its own icon + accent so the badge reads at a glance,
@@ -191,13 +213,13 @@ export default function TourCard({ id, title, duration, features, price, rating,
   return (
     <div className={`tour-card${imageClean ? ' tour-card-clean' : ''}`} onClick={handleCardClick} onKeyDown={handleKeyDown} onMouseEnter={handleMouseEnter} role="link" tabIndex={0}>
       <div className={`tour-card-image${isCarousel ? ' tour-card-has-carousel' : ''}`}>
-        {showSellOutTag && !(showOfferBadge && !hideOfferBadge) && (
+        {!moveBadgesToBody && showSellOutTag && !(showOfferBadge && !hideOfferBadge) && (
           <span className="tour-card-sellout-tag">
             <TrendingUp size={12} strokeWidth={2.4} />
             {t('card.likelyToSellOut')}
           </span>
         )}
-        {showOfferBadge && !hideOfferBadge && <span className="tour-card-special-offer">{t('card.specialOffer')}</span>}
+        {!moveBadgesToBody && showOfferBadge && !hideOfferBadge && <span className="tour-card-special-offer">{t('card.specialOffer')}</span>}
         {!imageClean && isNew && !showSellOutTag && !showOfferBadge && <span className="tour-card-new-pill">New</span>}
         {!imageClean && !hideSourceBadge && !showSellOutTag && !showOfferBadge && source === 'travio-ghana' && (
           <div className="source-badge">
@@ -227,7 +249,7 @@ export default function TourCard({ id, title, duration, features, price, rating,
           })}
         </div>
         {!imageClean && <div className="tour-card-image-fade" />}
-        {duration && <span className="tour-card-duration">{duration}</span>}
+        {duration && <span className="tour-card-duration">{compactDurationOnMobile && isMobile ? shortDuration(duration) : duration}</span>}
         {categoryMeta && (
           <span className={`tour-card-image-type-badge tour-card-badge-type-${categoryMeta.variant}`}>
             <categoryMeta.Icon size={12} strokeWidth={2.4} />
@@ -331,6 +353,15 @@ export default function TourCard({ id, title, duration, features, price, rating,
             <span className="tour-card-badge tour-card-badge-difficulty">
               <TrendingUp size={12} strokeWidth={2.2} />
               {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+            </span>
+          )}
+          {moveBadgesToBody && showOfferBadge && !hideOfferBadge && (
+            <span className="tour-card-badge tour-card-body-offer-badge">{t('card.specialOffer')}</span>
+          )}
+          {moveBadgesToBody && showSellOutTag && !(showOfferBadge && !hideOfferBadge) && (
+            <span className="tour-card-badge tour-card-body-sellout-badge">
+              <TrendingUp size={12} strokeWidth={2.4} />
+              {t('card.likelyToSellOut')}
             </span>
           )}
         </div>

@@ -171,6 +171,9 @@
     "profile": "Perfil",
     "signingOut": "Cerrando Sesión",
     "signInSignUp": "Iniciar Sesión / Registrarse",
+    "loginOrSignUp": "Iniciar sesión o registrarse",
+    "logout": "Cerrar sesión",
+    "updates": "Actualizaciones",
     "signOut": "Cerrar Sesión",
     "wishlist": "Favoritos"
   },

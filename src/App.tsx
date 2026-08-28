@@ -145,7 +145,7 @@ function AppContent() {
     requestLocation()
   }, [])
 
-  const hideNav = currentPage === 'signin' || currentPage === 'signup' || location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/booking') || location.pathname.endsWith('/booking') || location.pathname.startsWith('/supplier/register') || location.pathname.startsWith('/supplier/list-experience') || location.pathname.startsWith('/login')
+  const hideNav = currentPage === 'signin' || currentPage === 'signup' || location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/booking') || location.pathname.endsWith('/booking') || location.pathname.startsWith('/supplier/register') || location.pathname.startsWith('/supplier/list-experience') || location.pathname.startsWith('/login') || location.pathname.startsWith('/auth/callback')
 
   return (
     <>
@@ -218,6 +218,11 @@ function AppContent() {
             onBack={() => navigate('/')}
             onAuthSuccess={() => navigate('/')}
           />
+        } />
+        <Route path="/auth/callback" element={
+          <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="spinner" />
+          </div>
         } />
         <Route path="/stories" element={<AllStoriesPage />} />
         <Route path="/stories/:slug" element={<StoryDetailPage />} />

@@ -1,7 +1,5 @@
 ﻿const AUTH_STORAGE_KEY = 'travio_ghana_auth'
 const AUTH_RETURN_TO_KEY = 'eg_auth_return_to'
-const AUTH_PROVIDER = import.meta.env.VITE_AUTH_PROVIDER || 'mock'
-const isBackend = AUTH_PROVIDER === 'backend'
 
 const rawBase = import.meta.env.VITE_AUTH_API_BASE_URL || import.meta.env.VITE_API_URL || '/api'
 
@@ -9,6 +7,21 @@ let API_BASE = rawBase.replace(/\/+$/, '')
 
 if (/^https?:\/\/[^/]+$/.test(API_BASE)) {
   API_BASE = `${API_BASE}/api`
+}
+
+// Provider resolution: default to the real backend whenever an API base is
+// configured (a silently-absent VITE_AUTH_PROVIDER used to ship "mock" Google
+// auth to production, logging everyone in as the hardcoded user@gmail.com).
+// Mock is only honored when explicitly requested via VITE_AUTH_PROVIDER=mock.
+const AUTH_PROVIDER = import.meta.env.VITE_AUTH_PROVIDER || (API_BASE ? 'backend' : 'mock')
+const isBackend = AUTH_PROVIDER === 'backend'
+const isMockExplicit = import.meta.env.VITE_AUTH_PROVIDER === 'mock'
+
+if (!isBackend && !isMockExplicit) {
+  console.warn(`[Auth] Unknown auth provider "${AUTH_PROVIDER}". Set VITE_AUTH_PROVIDER=backend (or 'mock' for local UI dev only).`)
+}
+if (isMockExplicit) {
+  console.warn('[Auth] Mock auth provider active (VITE_AUTH_PROVIDER=mock). No real accounts — this is for local UI development only and must not ship to production.')
 }
 
 interface StoredAuth {
@@ -47,6 +60,17 @@ try {
     localStorage.removeItem('user')
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
+  }
+} catch { /* ignore */ }
+
+// Purge stale mock sessions (e.g. builds that shipped mock Google auth and
+// logged everyone in as the hardcoded user@gmail.com) so users aren't left
+// "signed in" as a fake account after the provider is fixed.
+try {
+  const { user } = getStoredAuth()
+  const mockUid = getAuthUserId(user)
+  if (user && (mockUid?.startsWith('mock-') || (user.email === 'user@gmail.com' && !mockUid))) {
+    clearAuth()
   }
 } catch { /* ignore */ }
 
@@ -200,6 +224,10 @@ export async function signInWithEmail(email: string, password: string): Promise<
     return user
   }
 
+  if (!isMockExplicit) {
+    throw new Error('Sign-in is not configured. Set VITE_AUTH_PROVIDER=backend.')
+  }
+
   await new Promise((r) => setTimeout(r, 800))
   const user = {
     id: 'mock-' + Date.now(),
@@ -227,6 +255,10 @@ export async function registerWithEmail(name: string, email: string, password: s
     return user
   }
 
+  if (!isMockExplicit) {
+    throw new Error('Registration is not configured. Set VITE_AUTH_PROVIDER=backend.')
+  }
+
   await new Promise((r) => setTimeout(r, 1000))
   const user = {
     id: 'mock-' + Date.now(),
@@ -244,6 +276,10 @@ export async function signInWithGoogle(): Promise<{ redirected?: boolean } | Aut
     const origin = window.location.origin
     window.location.href = `${API_BASE}/auth/google?state=${encodeURIComponent(origin)}`
     return { redirected: true }
+  }
+
+  if (!isMockExplicit) {
+    throw new Error('Google sign-in is not configured. Set VITE_AUTH_PROVIDER=backend and VITE_GOOGLE_CLIENT_ID.')
   }
 
   await new Promise((r) => setTimeout(r, 1200))
@@ -272,6 +308,10 @@ export async function signInWithGoogleOneTap(credential: string): Promise<AuthUs
     storeAuth({ accessToken, refreshToken, user })
     notifyAuthStateChange(user)
     return user
+  }
+
+  if (!isMockExplicit) {
+    throw new Error('Google sign-in is not configured. Set VITE_AUTH_PROVIDER=backend and VITE_GOOGLE_CLIENT_ID.')
   }
 
   await new Promise((r) => setTimeout(r, 800))
@@ -428,6 +468,6 @@ export async function handleGoogleCallback(): Promise<boolean> {
     notifyAuthStateChange(fallbackUser)
   }
 
-  window.history.replaceState({}, '', window.location.origin)
+  window.history.replaceState({}, '', window.location.origin + window.location.pathname)
   return true
 }

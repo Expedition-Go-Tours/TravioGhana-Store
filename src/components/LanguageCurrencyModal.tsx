@@ -9,7 +9,7 @@ interface LanguageCurrencyModalProps {
   onClose: () => void
 }
 
-const LANGUAGES = [
+export const LANGUAGES = [
   { code: 'en', flag: '🇬🇧' },
   { code: 'es', flag: '🇪🇸' },
   { code: 'fr', flag: '🇫🇷' },

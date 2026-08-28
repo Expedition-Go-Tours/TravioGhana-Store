@@ -20,7 +20,7 @@ const navItems = [
   { label: "Booking History", path: "/dashboard/bookings", icon: CalendarDays },
   { label: "Wishlist", path: "/dashboard/wishlist", icon: Heart },
   { label: "Reviews", path: "/dashboard/reviews", icon: Star },
-  { label: "Notifications", path: "/dashboard/notifications", icon: Bell },
+  { label: "Updates", path: "/dashboard/notifications", icon: Bell },
   { label: "Chat", path: "/dashboard/chat", icon: MessageCircle },
   { label: "Settings", path: "/dashboard/settings", icon: Settings },
 ];
@@ -30,7 +30,7 @@ const pageTitles: Record<string, string> = {
   "/dashboard/bookings": "Booking History",
   "/dashboard/wishlist": "My Wishlist",
   "/dashboard/reviews": "My Reviews",
-  "/dashboard/notifications": "Notifications",
+  "/dashboard/notifications": "Updates",
   "/dashboard/chat": "Chat",
 };
 
@@ -302,6 +302,17 @@ export default function DashboardLayout() {
                 onClick={() => navigate("/")}
                 className="lg:hidden absolute right-0 flex h-9 w-9 items-center justify-center rounded-full border border-[#e5e4e7] bg-white text-[#1a1a1a] shadow-sm transition-colors hover:bg-[#f8f9fb]"
                 aria-label="Back to home"
+              >
+                <ArrowLeft size={16} strokeWidth={2.2} />
+              </button>
+            )}
+
+            {location.pathname === "/dashboard/bookings" && (
+              <button
+                type="button"
+                onClick={() => navigate("/", { state: { openMobileMenu: true } })}
+                className="lg:hidden absolute right-0 flex h-9 w-9 items-center justify-center rounded-full border border-[#e5e4e7] bg-white text-[#1a1a1a] shadow-sm transition-colors hover:bg-[#f8f9fb]"
+                aria-label="Back to menu"
               >
                 <ArrowLeft size={16} strokeWidth={2.2} />
               </button>

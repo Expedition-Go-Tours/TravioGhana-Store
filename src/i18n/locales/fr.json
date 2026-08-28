@@ -171,6 +171,9 @@
     "profile": "Profil",
     "signingOut": "Déconnexion",
     "signInSignUp": "Connexion / Inscription",
+    "loginOrSignUp": "Se connecter ou s'inscrire",
+    "logout": "Déconnexion",
+    "updates": "Mises à jour",
     "signOut": "Déconnexion",
     "wishlist": "Favoris"
   },

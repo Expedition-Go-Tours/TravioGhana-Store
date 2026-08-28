@@ -1986,18 +1986,19 @@ interface BadgeFieldMaps {
 let badgeMapsCache: { promise: Promise<BadgeFieldMaps>; expiresAt: number } | null = null
 
 /**
- * One shared batch fetch of the full /tours listing, extracting the tour-card
- * badge fields (languages, cancellation policy, pickup, meeting mode,
- * accommodation) into id-keyed maps. The homepage endpoints don't project
- * these fields at all, so every homepage section reuses this single request
- * (cached ~60s) instead of firing its own N+1 fetches.
+ * One shared batch fetch of the lightweight /tours/badges endpoint,
+ * extracting tour-card badge fields (languages, cancellation policy,
+ * pickup, meeting mode, accommodation) into id-keyed maps.
+ *
+ * Uses the dedicated badges endpoint (~20KB) instead of the full
+ * /tours listing (~500KB) for significantly faster homepage loads.
  */
 function getBadgeFieldMaps(): Promise<BadgeFieldMaps> {
   const now = Date.now()
   if (!badgeMapsCache || now >= badgeMapsCache.expiresAt) {
     badgeMapsCache = {
       promise: (async () => {
-        const payload = await expeditionFetchRaw('/tours?limit=500')
+        const payload = await expeditionFetchRaw('/tours/badges')
         const allTours: any[] = payload.data?.tours ?? payload.tours ?? []
         const maps: BadgeFieldMaps = {
           languages: new Map(),
@@ -2007,12 +2008,12 @@ function getBadgeFieldMaps(): Promise<BadgeFieldMaps> {
           accommodation: new Map(),
         }
         for (const t of allTours) {
-          const bt = parseJsonMaybe(t.bookingAndTickets)
-          maps.languages.set(t.id, extractContentLanguage(t))
-          maps.cancellation.set(t.id, extractCancellationFromTour(t))
-          maps.pickup.set(t.id, t.pickupIncluded ?? (bt?.pickupProvided ?? bt?.pickupAvailable) ?? undefined)
-          maps.meetingMode.set(t.id, extractMeetingInfo(t).meetingMode)
-          if (extractAccommodationIncluded(t)) maps.accommodation.set(t.id, true)
+          // The badges endpoint returns pre-extracted fields
+          if (t.languages?.length) maps.languages.set(t.id, t.languages)
+          if (t.cancellationPolicy) maps.cancellation.set(t.id, t.cancellationPolicy)
+          if (t.pickupIncluded != null) maps.pickup.set(t.id, t.pickupIncluded)
+          if (t.meetingMode) maps.meetingMode.set(t.id, t.meetingMode)
+          if (t.accommodationIncluded) maps.accommodation.set(t.id, true)
         }
         return maps
       })(),

@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, X, Star, ArrowLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import Navbar from '../components/Navbar'
 import TourCard from '../components/TourCard'
+import TourCardSkeleton from '../components/TourCardSkeleton'
 
 import { useAllExpeditionTours, useTourFilterOptions, type TourCardData } from '../hooks/useExpeditionTours'
 import { useSectionTourIds, useHomepageOffers, useAttractionTours, type HomepageOfferTour } from '../hooks/useHomepageSections'
@@ -324,7 +325,7 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
       <div className="all-tours-container">
         <div className="all-tours-header">
           <div className="all-tours-header-left">
-            {(sectionParam || moodParam || attractionParam) && (
+            {(sectionParam || moodParam || attractionParam || locationParam || categoryParam) && (
               <button
                 onClick={() => navigate('/')}
                 className="all-tours-back-btn"
@@ -428,8 +429,8 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
 
         {isLoading && (
           <div className="all-tours-grid">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="tour-card-skeleton" style={{ height: 280, background: '#f0f0f0', borderRadius: 12 }} />
+            {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+              <TourCardSkeleton key={i} />
             ))}
           </div>
         )}
@@ -475,6 +476,8 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
                       specialOffers={offersMap?.get(tour.id)?.specialOffers}
                       hideOfferBadge={isOffersSection}
                       likelyToSellOut={sectionParam === 'Sell Out'}
+                      compactDurationOnMobile
+                      bodyOfferBadgesOnMobile
                     />
                 </motion.div>
               ))}
@@ -496,7 +499,7 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
 
         {(hasNextPage || hasPrevPage) && (
           <div className="all-tours-load-more">
-            <div className="pagination-controls" style={{ display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center' }}>
+            <div className="pagination-controls">
               <button
                 className="all-tours-load-btn"
                 onClick={goPrevPage}
@@ -505,7 +508,7 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
               >
                 Previous
               </button>
-              <span style={{ fontSize: 14, color: '#666' }}>
+              <span className="pagination-indicator">
                 Page {page} of {totalPages}
               </span>
               <button

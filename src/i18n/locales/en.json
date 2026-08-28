@@ -84,7 +84,7 @@
   },
   "card": {
     "likelyToSellOut": "Likely to sell out",
-    "specialOffer": "Special Offer"
+    "specialOffer": "Special offer"
   },
   "common": {
     "back": "Back",
@@ -208,6 +208,9 @@
     "profile": "Profile",
     "signingOut": "Signing Out",
     "signInSignUp": "Sign In / Sign Up",
+    "loginOrSignUp": "Login or sign up",
+    "logout": "Logout",
+    "updates": "Updates",
     "signOut": "Sign Out",
     "wishlist": "Wishlist"
   },

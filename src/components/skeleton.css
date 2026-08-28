@@ -134,6 +134,20 @@
 
 /* ── Responsive ── */
 
+/* Match the real TourCard image height at each breakpoint
+   (see TourCard.css), so skeletons fill the same space. */
+@media (max-width: 1024px) {
+  .tour-card-skeleton-image {
+    height: 160px;
+  }
+}
+
+@media (max-width: 768px) {
+  .tour-card-skeleton-image {
+    height: 175px;
+  }
+}
+
 @media (max-width: 640px) {
   .tour-card-skeleton {
     min-width: 260px;
