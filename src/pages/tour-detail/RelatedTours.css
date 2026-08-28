@@ -1,0 +1,128 @@
+/* Related Tours */
+.related-tours {
+  padding: 40px 0;
+  background: #fff;
+}
+
+.related-tours-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.related-tours-title {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-h, #08060d);
+  margin: 0;
+}
+
+.related-tours-nav {
+  display: none;
+  gap: 8px;
+}
+
+@media (min-width: 1024px) {
+  .related-tours-nav {
+    display: flex;
+  }
+}
+
+.related-tours-nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.related-tours-nav-btn:hover {
+  border-color: var(--primary, #179237);
+  color: var(--primary, #179237);
+}
+
+.related-tours-container {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 8px;
+}
+
+.related-tours-container::-webkit-scrollbar {
+  display: none;
+}
+
+.related-tour-card-wrapper {
+  flex: 0 0 280px;
+  scroll-snap-align: start;
+  min-width: 0;
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+  .related-tours {
+    padding: 56px 0;
+  }
+
+  .related-tours-title {
+    font-size: 30px;
+  }
+
+  .related-tours-container {
+    gap: 18px;
+  }
+
+  .related-tour-card-wrapper {
+    flex: 0 0 280px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .related-tours {
+    padding: 72px 0;
+  }
+
+  .related-tours-title {
+    font-size: 34px;
+  }
+
+  .related-tours-container {
+    gap: 16px;
+  }
+
+  .related-tour-card-wrapper {
+    flex: 0 0 calc((100% - 64px) / 5);
+  }
+}
+
+/* Large Desktop */
+@media (min-width: 1400px) {
+  .related-tours {
+    padding: 80px 0;
+  }
+
+  .related-tours-title {
+    font-size: 36px;
+  }
+
+  .related-tours-container {
+    gap: 20px;
+  }
+
+  .related-tour-card-wrapper {
+    flex: 0 0 calc((100% - 80px) / 5);
+  }
+}

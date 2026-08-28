@@ -1,0 +1,979 @@
+/* ===== BOOKING WIDGET - MOBILE FIRST ===== */
+
+/* Mobile bar - hidden, widget is inline now */
+.booking-widget-mobile,
+.booking-mobile-backdrop,
+.booking-mobile-sheet,
+.booking-sheet-handle,
+.booking-sheet-header,
+.booking-sheet-title,
+.booking-sheet-close,
+.booking-sheet-content,
+.booking-sheet-content .booking-field,
+.booking-sheet-content .booking-input,
+.booking-sheet-content .booking-label,
+.booking-sheet-content .booking-total,
+.booking-sheet-content .booking-total-amount,
+.booking-sheet-content .booking-submit-btn,
+.booking-sheet-content .booking-footer,
+.booking-sheet-content .guest-selector-dropdown,
+.booking-sheet-content .guest-type,
+.booking-sheet-content .guest-type-info,
+.booking-sheet-content .guest-type-label,
+.booking-sheet-content .guest-type-desc,
+.booking-sheet-content .guest-type-controls,
+.booking-sheet-content .guest-btn,
+.booking-sheet-content .guest-count,
+.booking-sheet-content .guest-limit-notice {
+  display: none;
+}
+
+/* Widget Card - visible on all sizes */
+.booking-widget-desktop {
+  display: block;
+}
+
+.booking-widget-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+@media (min-width: 1024px) {
+  .booking-widget-card {
+    padding: 28px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .booking-widget-card {
+    padding: 32px;
+  }
+}
+
+/* Price Section */
+.booking-price-section {
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 20px;
+}
+
+.booking-price-main {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.booking-price-from {
+  font-size: 13px;
+  color: #64748b;
+}
+
+@media (min-width: 1024px) {
+  .booking-price-from {
+    font-size: 15px;
+  }
+}
+
+.booking-price-amount {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 26px;
+  color: #0f172a;
+  line-height: 1;
+}
+
+/* Offer pricing: the original unit price is struck through (smaller, gray)
+   and the discounted promo price is shown in red next to it. */
+.booking-price-amount--strike {
+  font-size: 18px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+
+.booking-price-amount--promo {
+  color: #dc2626;
+}
+
+@media (min-width: 1024px) {
+  .booking-price-amount {
+    font-size: 32px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .booking-price-amount {
+    font-size: 36px;
+  }
+}
+
+.booking-price-per {
+  font-size: 12px;
+  color: #64748b;
+}
+
+@media (min-width: 1024px) {
+  .booking-price-per {
+    font-size: 14px;
+  }
+}
+
+/* Special offers (applied on the supplier platform) */
+.booking-offers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 4px;
+}
+
+.booking-offer-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.booking-offer-chip svg {
+  flex-shrink: 0;
+}
+
+.booking-offer-chip-limited_time {
+  background: #eff6ff;
+  color: #1e40af;
+  border-color: #bfdbfe;
+}
+
+.booking-offer-chip-early_bird {
+  background: #fffbeb;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.booking-offer-chip-last_minute {
+  background: #fff7ed;
+  color: #9a3412;
+  border-color: #fed7aa;
+}
+
+.booking-offer-chip-promo {
+  background: #f5f3ff;
+  color: #5b21b6;
+  border-color: #ddd6fe;
+}
+
+.booking-offer-chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.booking-offer-chip-discount {
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+/* Extra offer terms on the chip: the code to enter and the days it is valid. */
+.booking-offer-chip-code {
+  width: 100%;
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
+/* Unmet condition / fully-redeemed state on the chip. */
+.booking-offer-chip-code-warn {
+  opacity: 1;
+  color: #b45309;
+}
+
+/* Form */
+.booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.booking-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+}
+
+.booking-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.booking-label svg {
+  color: #166534;
+  flex-shrink: 0;
+}
+
+/* Date-specific cancellation cutoff shown under the Book now button (same
+   text as the Quick facts section, e.g. "Free Cancellation before Aug 22nd
+   (local time)"). */
+.booking-cancel-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #166534;
+  line-height: 1.4;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.booking-cancel-note svg {
+  flex-shrink: 0;
+  color: #166534;
+}
+
+.booking-input {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 15px;
+  color: #0f172a;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  text-align: left;
+  font-family: var(--font-body);
+}
+
+.booking-input:hover {
+  border-color: #166534;
+  background: rgba(22, 101, 52, 0.02);
+}
+
+.booking-input:focus-visible {
+  outline: none;
+  border-color: #166534;
+  box-shadow: 0 0 0 3px rgba(22, 101, 52, 0.1);
+}
+
+.booking-input svg {
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+/* Date field content: date on its own line, chosen time / opening hours below it */
+.booking-input-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  line-height: 1.25;
+  min-width: 0;
+}
+
+.booking-input-date {
+  font-size: 15px;
+  color: #0f172a;
+}
+
+/* Guest Selector Dropdown */
+.guest-selector-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.group-size-bands {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 12px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.group-size-band {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #475569;
+}
+
+.group-size-band-active {
+  background: rgba(22, 101, 52, 0.08);
+  color: #14532d;
+  font-weight: 600;
+}
+
+.group-size-band-price {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.group-size-band-active .group-size-band-price {
+  color: #166534;
+}
+
+/* Active group-size band shown next to the headcount on the summary button */
+.booking-active-band {
+  color: #166534;
+  font-weight: 600;
+}
+
+/* Explains that per-person prices are tiered by total headcount */
+.booking-tier-hint {
+  margin: 0 0 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+/* Shown when a per-group tour has no group-size bands configured yet */
+.booking-group-unavailable {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.guest-type {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.guest-type:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.guest-type-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.guest-type-label {
+  font-weight: 600;
+  font-size: 15px;
+  color: #0f172a;
+}
+
+.guest-type-desc {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.guest-type-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.guest-type-unit {
+  font-weight: 700;
+  font-size: 15px;
+  color: #166534;
+  white-space: nowrap;
+}
+
+.guest-type-line {
+  font-size: 11px;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.guest-type-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.guest-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 50%;
+  color: #166534;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  padding: 0;
+}
+
+.guest-btn:hover:not(:disabled) {
+  border-color: #166534;
+  background: rgba(22, 101, 52, 0.05);
+}
+
+.guest-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.guest-count {
+  min-width: 28px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 16px;
+  color: #0f172a;
+}
+
+/* Manual price update button inside the traveler picker */
+.booking-update-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 10px 16px;
+  background: #166534;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.booking-update-btn:hover:not(:disabled) {
+  background: #14532d;
+}
+
+.booking-update-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Spinner shown in place of a price while it recalculates */
+.booking-price-spinner {
+  display: inline-flex;
+  align-items: center;
+  color: #166534;
+  vertical-align: middle;
+}
+
+.guest-limit-notice {
+  padding: 10px 12px;
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  font-size: 13px;
+  color: #ef4444;
+  text-align: center;
+}
+
+/* Time slot selector */
+.booking-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.booking-slot-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  font-family: var(--font-body);
+}
+
+.booking-slot-chip:hover:not(:disabled) {
+  border-color: #166534;
+  background: rgba(22, 101, 52, 0.04);
+}
+
+.booking-slot-chip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.booking-slot-chip-active {
+  border-color: #166534;
+  background: rgba(22, 101, 52, 0.08);
+  box-shadow: 0 0 0 3px rgba(22, 101, 52, 0.1);
+}
+
+.booking-slot-time {
+  font-weight: 600;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.booking-slot-chip-active .booking-slot-time {
+  color: #166534;
+}
+
+.booking-slot-cap {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.booking-slot-note {
+  font-size: 12px;
+  color: #64748b;
+  margin: 6px 0 0;
+  line-height: 1.4;
+}
+
+/* Change-booking modal scrollable body: hide the scrollbar while keeping it scrollable */
+.change-booking-body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.change-booking-body::-webkit-scrollbar {
+  display: none;
+}
+
+/* Selected time / opening hours shown on its own line under the date on the date field */
+.booking-selected-time {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #166534;
+}
+
+/* Time-slot / opening-hours sections rendered inside the calendar panel */
+.booking-calendar-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 170px;
+  overflow-y: auto;
+}
+
+.booking-calendar-footer-label {
+  gap: 6px;
+  font-size: 13px;
+}
+
+.booking-calendar-footer-label svg {
+  width: 15px;
+  height: 15px;
+}
+
+.booking-slot-grid-compact {
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+}
+
+.booking-slot-grid-compact .booking-slot-chip {
+  padding: 8px 8px;
+}
+
+.booking-calendar-hours {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.booking-calendar-hours .booking-slot-note {
+  margin: 0;
+}
+
+.booking-calendar-done-btn {
+  width: 100%;
+  margin-top: 2px;
+  padding: 10px 16px;
+  background: #166534;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.booking-calendar-done-btn:hover {
+  background: #14532d;
+}
+
+.booking-slot-warning {
+  font-size: 13px;
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+/* Total summary */
+.booking-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Pre-total breakdown: struck subtotal + applied special-offer / promo saving */
+.booking-savings {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.booking-savings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.booking-savings-strike {
+  text-decoration: line-through;
+  color: #94a3b8;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.booking-savings-discount {
+  color: #166534;
+  font-weight: 600;
+}
+
+.booking-savings-amount {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+/* Total */.booking-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  margin-top: 2px;
+  font-weight: 600;
+  font-size: 15px;
+  color: #0f172a;
+}
+
+.booking-total-amount {
+  font-weight: 700;
+  font-size: 25px;
+  color: #166534;
+}
+
+@media (min-width: 1024px) {
+  .booking-total-amount {
+    font-size: 27px;
+  }
+}
+
+/* Submit Button */
+.booking-submit-btn {
+  width: 100%;
+  background: #166534;
+  color: #fff;
+  font-weight: 600;
+  padding: 14px 24px;
+  font-size: 16px;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-body);
+}
+
+.booking-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.booking-submit-btn:hover:not(:disabled) {
+  background: #14532d;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(22, 101, 52, 0.25);
+}
+
+.booking-btn-loader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.booking-spinner {
+  animation: booking-spin 0.8s linear infinite;
+}
+
+@keyframes booking-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Promo Code */
+.booking-promo {
+  margin-top: 4px;
+}
+
+.booking-promo-row {
+  display: flex;
+  gap: 8px;
+}
+
+.booking-promo-input {
+  flex: 1;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #0f172a;
+  outline: none;
+  font-family: var(--font-body);
+}
+
+.booking-promo-input:focus {
+  border-color: #166534;
+  box-shadow: 0 0 0 3px rgba(22, 101, 52, 0.15);
+}
+
+.booking-promo-input::placeholder {
+  color: #94a3b8;
+}
+
+.booking-promo-input:disabled {
+  background: #f8fafc;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Invalid code state: red border + tint so the error is visible before focus. */
+.booking-promo-input-error,
+.booking-promo-input-error:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+/* Applied state: read-only code field + Remove action. */
+.booking-promo-input-applied {
+  background: #f0fdf4;
+  border-color: #86efac;
+  color: #166534;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.booking-promo-remove-btn {
+  border-color: #fca5a5;
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+.booking-promo-remove-btn:hover {
+  border-color: #dc2626;
+  color: #dc2626;
+  background: #fee2e2;
+}
+
+.booking-promo-btn {
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  font-family: var(--font-body);
+  white-space: nowrap;
+}
+
+.booking-promo-btn:hover {
+  border-color: #166534;
+  color: #166534;
+}
+
+.booking-promo-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  border-color: #e2e8f0;
+  color: #94a3b8;
+}
+
+.booking-promo-error {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #ef4444;
+}
+
+.booking-promo-success {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #16a34a;
+}
+
+/* Assistance */
+.booking-assistance {
+  margin-top: 12px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  padding: 12px;
+}
+
+.booking-assistance-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #166534;
+  margin: 0 0 8px;
+}
+
+.booking-assistance-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 400;
+  color: #166534;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.booking-assistance-btn:hover {
+  opacity: 0.85;
+}
+
+/* Unread-dot indicator on "Start a Chat" when the supplier has sent
+   messages the traveler hasn't opened yet. */
+.booking-assistance-unread {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #dc2626;
+  flex-shrink: 0;
+}
+
+/* Footer */
+.booking-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 16px;
+  margin-top: 16px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.booking-footer svg {
+  color: #22c55e;
+  flex-shrink: 0;
+}
+
+/* Non-refundable ("All sales final") footer state */
+.booking-footer-nonrefundable {
+  color: #dc2626;
+}
+
+.booking-footer-nonrefundable svg {
+  color: #dc2626;
+}
+
+/* ===== DESKTOP TWEAKS (1024px+) ===== */
+@media (min-width: 1024px) {
+  .booking-form {
+    gap: 20px;
+  }
+
+  .booking-price-section {
+    padding-bottom: 24px;
+    margin-bottom: 24px;
+  }
+
+  .booking-total {
+    font-size: 16px;
+  }
+
+  .booking-footer {
+    padding-top: 20px;
+    margin-top: 20px;
+  }
+}
+
+/* ===== LARGE DESKTOP (1400px+) ===== */
+@media (min-width: 1400px) {
+  .booking-submit-btn {
+    padding: 16px 24px;
+    font-size: 17px;
+  }
+}

@@ -1,0 +1,203 @@
+/* ===== TOUR INFO - MOBILE FIRST ===== */
+
+.tour-info {
+  padding: 24px 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+}
+
+.tour-info-grid {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 4px;
+}
+
+.tour-info-grid::-webkit-scrollbar {
+  display: none;
+}
+
+.tour-info-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 18px;
+  background: #f8f9fb;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  scroll-snap-align: start;
+  flex: 0 0 100%;
+}
+
+.tour-info-card:hover {
+  background: #f1f3f5;
+  border-color: var(--primary);
+}
+
+.tour-info-icon {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 10px;
+  color: var(--primary);
+}
+
+.tour-info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+.tour-info-label {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tour-info-value {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.tour-info-languages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.language-badge {
+  padding: 6px 14px;
+  background: #fff;
+  border: 1px solid var(--border);
+  color: #1a1a1a;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 20px;
+}
+
+.difficulty-badge {
+  padding: 6px 14px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 20px;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+/* Carousel dots */
+.tour-info-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.tour-info-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: none;
+  background: #d1d5db;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+.tour-info-dot.active {
+  width: 20px;
+  border-radius: 4px;
+  background: #179237;
+}
+
+/* ===== TABLET VIEW (768px+) ===== */
+@media (min-width: 768px) {
+  .tour-info-dots {
+    display: none;
+  }
+  .tour-info {
+    padding: 32px 24px;
+  }
+
+  .tour-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .tour-info-card {
+    padding: 20px;
+  }
+
+  .tour-info-label {
+    font-size: 12px;
+  }
+
+  .tour-info-value {
+    font-size: 17px;
+  }
+
+  .language-badge {
+    font-size: 15px;
+  }
+
+  .difficulty-badge {
+    font-size: 15px;
+  }
+}
+
+/* ===== DESKTOP VIEW (1024px+) ===== */
+@media (min-width: 1024px) {
+  .tour-info {
+    padding: 40px 32px;
+  }
+
+  .tour-info-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .tour-info-card {
+    padding: 24px;
+  }
+
+  .tour-info-icon {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+  }
+
+  .tour-info-value {
+    font-size: 18px;
+  }
+}
+
+/* ===== LARGE DESKTOP (1400px+) ===== */
+@media (min-width: 1400px) {
+  .tour-info {
+    padding: 48px 40px;
+  }
+
+  .tour-info-grid {
+    gap: 28px;
+  }
+}

@@ -1,0 +1,623 @@
+/* ===== SUPPLIER LANDING PAGE — MOBILE FIRST ===== */
+
+.supplier-landing-page {
+  min-height: 100vh;
+  background: #fff;
+  font-family: var(--font-body, 'Raleway', sans-serif);
+}
+
+/* ---------- Hero ---------- */
+.supplier-landing-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 116px 20px 48px;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(23, 146, 55, 0.14), transparent 55%),
+    radial-gradient(circle at 85% 0%, rgba(23, 146, 55, 0.08), transparent 45%),
+    #0f2418;
+  color: #fff;
+  text-align: center;
+}
+
+.supplier-landing-hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+}
+
+.supplier-landing-hero-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.supplier-landing-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #d1fae5;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  margin-bottom: 20px;
+}
+
+.supplier-landing-hero-title {
+  font-family: var(--font-heading, 'GT Esti Pro Display', sans-serif);
+  font-weight: 700;
+  font-size: clamp(26px, 6vw, 44px);
+  line-height: 1.2;
+  margin: 0 0 16px;
+  color: #fff;
+}
+
+.supplier-landing-hero-subtitle {
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 28px;
+  max-width: 560px;
+}
+
+.supplier-landing-hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 28px;
+}
+
+.supplier-landing-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  padding: 0 28px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #1ba845, #147a2e);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 20px -6px rgba(23, 146, 55, 0.5);
+  transition: filter 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.supplier-landing-cta-primary:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 10px 24px -6px rgba(23, 146, 55, 0.6);
+}
+
+.supplier-landing-cta-primary:active {
+  transform: scale(0.98);
+}
+
+.supplier-landing-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  padding: 0 28px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.supplier-landing-cta-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.supplier-landing-hero-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.supplier-landing-hero-stat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.supplier-landing-hero-stat svg {
+  color: #4ade80;
+  flex-shrink: 0;
+}
+
+/* ---------- Hero image carousel ---------- */
+.supplier-landing-carousel {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px -8px rgba(15, 36, 24, 0.45);
+  touch-action: pan-y;
+}
+
+.supplier-landing-carousel-track {
+  display: flex;
+  transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+
+.supplier-landing-carousel-slide {
+  flex: 0 0 100%;
+  min-width: 100%;
+}
+
+.supplier-landing-carousel-slide img {
+  display: block;
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+}
+
+.supplier-landing-carousel-dots {
+  position: absolute;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  z-index: 2;
+}
+
+.supplier-landing-carousel-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  transition: width 0.25s ease, background 0.25s ease;
+}
+
+.supplier-landing-carousel-dot.active {
+  width: 22px;
+  background: #fff;
+}
+
+/* ---------- Generic section shell ---------- */
+.supplier-landing-section {
+  padding: 48px 0;
+  background: #fff;
+}
+
+.supplier-landing-section-alt {
+  background: #f7faf8;
+}
+
+.supplier-landing-container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.supplier-landing-section-head {
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto 32px;
+}
+
+.supplier-landing-eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #179237;
+  margin-bottom: 8px;
+}
+
+.supplier-landing-section-title {
+  font-family: var(--font-heading, 'GT Esti Pro Display', sans-serif);
+  font-weight: 700;
+  font-size: clamp(22px, 4vw, 30px);
+  line-height: 1.3;
+  color: #0f172a;
+  margin: 0;
+}
+
+.supplier-landing-section-desc {
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #64748b;
+}
+
+/* ---------- How it works ---------- */
+.supplier-landing-steps {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 4px 12px;
+  scrollbar-width: none;
+}
+
+.supplier-landing-steps::-webkit-scrollbar {
+  display: none;
+}
+
+.supplier-landing-step-card {
+  position: relative;
+  flex: 0 0 100%;
+  max-width: none;
+  scroll-snap-align: start;
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 16px;
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.supplier-landing-step-number {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  font-family: var(--font-heading, 'GT Esti Pro Display', sans-serif);
+  font-size: 26px;
+  font-weight: 700;
+  color: #eef4ef;
+}
+
+.supplier-landing-step-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #f0fdf4;
+  color: #179237;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 14px;
+}
+
+.supplier-landing-step-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 6px;
+}
+
+.supplier-landing-step-desc {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ---------- Why sell with us ---------- */
+.supplier-landing-why-grid {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 4px 12px;
+  scrollbar-width: none;
+}
+
+.supplier-landing-why-grid::-webkit-scrollbar {
+  display: none;
+}
+
+.supplier-landing-why-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  flex: 0 0 100%;
+  max-width: none;
+  scroll-snap-align: start;
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.supplier-landing-why-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1px solid rgba(23, 146, 55, 0.15);
+  color: #179237;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(23, 146, 55, 0.06);
+}
+
+.supplier-landing-why-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 6px;
+  letter-spacing: -0.01em;
+}
+
+.supplier-landing-why-desc {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ---------- FAQ ---------- */
+.supplier-landing-faq-container {
+  max-width: 780px;
+}
+
+.supplier-faq-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.supplier-faq-group-heading {
+  font-size: 14px;
+  font-weight: 700;
+  color: #179237;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.supplier-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.supplier-faq-item {
+  border: 1px solid #e6e6e6;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.supplier-faq-item-open {
+  border-color: rgba(23, 146, 55, 0.35);
+  box-shadow: 0 2px 10px rgba(23, 146, 55, 0.08);
+}
+
+.supplier-faq-question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.4;
+}
+
+.supplier-faq-item-open .supplier-faq-question {
+  color: #14532d;
+}
+
+.supplier-faq-chevron {
+  flex-shrink: 0;
+  color: #94a3b8;
+  transition: transform 0.25s ease, color 0.2s ease;
+}
+
+.supplier-faq-item-open .supplier-faq-chevron {
+  color: #179237;
+  transform: rotate(180deg);
+}
+
+.supplier-faq-answer-wrap {
+  overflow: hidden;
+}
+
+.supplier-faq-answer {
+  margin: 0;
+  padding: 0 18px 16px;
+  font-size: 15px;
+  line-height: 1.65;
+  color: #64748b;
+}
+
+/* ---------- Bottom CTA band ---------- */
+.supplier-landing-cta-band {
+  padding: 44px 20px;
+  background: linear-gradient(135deg, #147a2e, #0f2418);
+  text-align: center;
+}
+
+.supplier-landing-cta-band-inner {
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.supplier-landing-cta-band-inner h2 {
+  font-family: var(--font-heading, 'GT Esti Pro Display', sans-serif);
+  font-size: clamp(20px, 4vw, 26px);
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 10px;
+}
+
+.supplier-landing-cta-band-inner p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 22px;
+}
+
+.supplier-landing-cta-band .supplier-landing-cta-primary {
+  min-width: 220px;
+}
+
+/* ===== TABLET (640px+) ===== */
+@media (min-width: 640px) {
+  .supplier-landing-hero {
+    padding: 132px 32px 64px;
+  }
+
+  .supplier-landing-hero-actions {
+    flex-direction: row;
+    max-width: none;
+    justify-content: center;
+  }
+
+  .supplier-landing-cta-primary,
+  .supplier-landing-cta-secondary {
+    min-width: 190px;
+  }
+
+  .supplier-landing-hero-stats {
+    flex-direction: row;
+    justify-content: center;
+    gap: 28px;
+  }
+
+  .supplier-landing-container {
+    padding: 0 32px;
+  }
+
+  .supplier-landing-section {
+    padding: 64px 0;
+  }
+
+  .supplier-landing-steps {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    overflow: visible;
+    scroll-snap-type: none;
+    padding: 0;
+  }
+
+  .supplier-landing-step-card {
+    flex: none;
+    max-width: none;
+  }
+
+  .supplier-landing-why-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    overflow: visible;
+    scroll-snap-type: none;
+    padding: 0;
+  }
+
+  .supplier-landing-why-card {
+    flex: none;
+    max-width: none;
+  }
+
+  .supplier-landing-carousel {
+    border-radius: 24px;
+  }
+
+  .supplier-landing-carousel-slide img {
+    height: 380px;
+  }
+}
+
+/* ===== DESKTOP (1024px+) ===== */
+@media (min-width: 1024px) {
+  .supplier-landing-hero {
+    padding: 148px 32px 80px;
+  }
+
+  .supplier-landing-hero-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 56px;
+    text-align: left;
+  }
+
+  .supplier-landing-hero-copy {
+    align-items: flex-start;
+  }
+
+  .supplier-landing-hero-actions {
+    justify-content: flex-start;
+  }
+
+  .supplier-landing-hero-title {
+    font-size: clamp(38px, 4.4vw, 52px);
+  }
+
+  .supplier-landing-hero-subtitle {
+    font-size: 17px;
+  }
+
+  .supplier-landing-carousel {
+    max-width: 560px;
+    margin-left: auto;
+  }
+
+  .supplier-landing-carousel-slide img {
+    height: 460px;
+  }
+
+  .supplier-landing-section {
+    padding: 80px 0;
+  }
+
+  .supplier-landing-steps {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .supplier-landing-step-card {
+    padding: 28px 22px;
+  }
+
+  .supplier-landing-why-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .supplier-faq-question {
+    padding: 18px 22px;
+    font-size: 15.5px;
+  }
+
+  .supplier-faq-answer {
+    padding: 0 22px 18px;
+    font-size: 16px;
+  }
+
+  .supplier-landing-cta-band {
+    padding: 64px 32px;
+  }
+}

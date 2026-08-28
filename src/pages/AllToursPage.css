@@ -1,0 +1,806 @@
+/* ===== ALL TOURS PAGE ===== */
+
+.all-tours-page {
+  width: 100%;
+  min-height: 100vh;
+  background: #f8f9fb;
+  padding-top: 64px;
+}
+
+.all-tours-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 40px 60px;
+}
+
+@media (max-width: 1024px) {
+  .all-tours-container {
+    padding: 24px 24px 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .all-tours-container {
+    padding: 20px 16px 32px;
+  }
+}
+
+/* Header */
+.all-tours-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.all-tours-header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.all-tours-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 10px;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.all-tours-back-btn:hover {
+  background: #f1f5f9;
+  color: #179237;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .all-tours-header {
+    flex-direction: column;
+    margin-bottom: 20px;
+  }
+}
+
+.all-tours-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+@media (max-width: 1024px) {
+  .all-tours-title {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 768px) {
+  .all-tours-title {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .all-tours-title {
+    font-size: 22px;
+  }
+}
+
+.all-tours-count {
+  font-size: 15px;
+  color: #6b7280;
+  margin: 4px 0 0;
+}
+
+.all-tours-clear {
+  background: none;
+  border: none;
+  color: #179237;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-family: var(--font-body);
+}
+
+.all-tours-clear:hover {
+  color: #137a2e;
+}
+
+/* ===== FILTER BAR ===== */
+
+.filter-bar-sticky {
+  position: sticky;
+  top: 64px;
+  z-index: 20;
+  background: #f8f9fb;
+  margin-bottom: 32px;
+}
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+}
+
+@media (max-width: 768px) {
+  .filter-bar-sticky {
+    margin-bottom: 24px;
+  }
+
+  .filter-bar {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+}
+
+/* Filters Drawer Button */
+.filter-drawer-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  font-family: var(--font-body);
+  white-space: nowrap;
+}
+
+.filter-drawer-btn:hover {
+  border-color: #179237;
+}
+
+.filter-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #179237;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .filter-drawer-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
+
+/* Chevron Arrows */
+.filter-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: opacity 0.2s, border-color 0.15s, visibility 0.2s;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.filter-arrow.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.filter-arrow:hover {
+  border-color: #179237;
+  color: #179237;
+}
+
+@media (max-width: 1024px) {
+  .filter-arrow {
+    display: none !important;
+  }
+}
+
+/* Pills Scroll Container */
+.filter-pills-scroll {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 2px 0;
+  flex: 1;
+}
+
+.filter-pills-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Individual Pill */
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 7px 14px;
+  border: none;
+  border-radius: 999px;
+  background: #f1f4f9;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+  font-family: var(--font-body);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.filter-pill:hover {
+  background: #e2e8f0;
+}
+
+.filter-pill:active {
+  transform: scale(0.95);
+}
+
+.filter-pill.active {
+  background: #179237;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(23, 146, 55, 0.2);
+}
+
+.filter-pill.active:hover {
+  background: #15803d;
+}
+
+.filter-pill-x {
+  margin-left: 2px;
+}
+
+@media (max-width: 768px) {
+  .filter-pill {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+/* ===== TOURS GRID ===== */
+
+.all-tours-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 1200px) {
+  .all-tours-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .all-tours-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .all-tours-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .all-tours-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* ===== HORIZONTAL CARD LAYOUT (mobile, All Tours page only) =====
+     On small screens the card switches to a side-by-side layout: image on
+     the left (~35% width) with title, badges, rating and price on the
+     right — matching the reference design from the View All pages. Other
+     surfaces (homepage carousels, related tours, ...) keep the classic
+     vertical card. */
+  .all-tours-grid .tour-card {
+    flex-direction: row;
+    max-height: 180px;
+  }
+
+  .all-tours-grid .tour-card-image {
+    width: 35%;
+    height: auto;
+    flex-shrink: 0;
+  }
+
+  .all-tours-grid .tour-card-body {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    justify-content: center;
+  }
+
+  .all-tours-grid .tour-card-title {
+    font-size: 13px;
+    line-height: 1.35;
+    -webkit-line-clamp: 2;
+  }
+
+  .all-tours-grid .tour-card-meta {
+    gap: 4px;
+  }
+
+  .all-tours-grid .tour-card-badge {
+    font-size: 10px;
+    padding: 3px 6px;
+    gap: 3px;
+  }
+
+  .all-tours-grid .tour-card-badge svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .all-tours-grid .tour-card-rating-value {
+    font-size: 13px;
+  }
+
+  .all-tours-grid .tour-card-rating-reviews {
+    font-size: 11px;
+  }
+
+  .all-tours-grid .tour-card-price-value,
+  .all-tours-grid .tour-card-price-promo {
+    font-size: 18px;
+  }
+
+  .all-tours-grid .tour-card-bottom {
+    gap: 6px;
+  }
+
+  .all-tours-grid .tour-card-duration {
+    bottom: 6px;
+    right: 6px;
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .all-tours-grid .tour-card-wishlist {
+    width: 30px;
+    height: 30px;
+    top: 6px;
+    right: 6px;
+  }
+
+  .all-tours-grid .tour-card-wishlist svg {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+/* ===== LOAD MORE ===== */
+
+.all-tours-load-more {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0 0;
+}
+
+.all-tours-load-btn {
+  background: transparent;
+  border: 2px solid #179237;
+  color: #179237;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 14px 40px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  font-family: var(--font-body);
+}
+
+.all-tours-load-btn:hover {
+  background: #179237;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(23, 146, 55, 0.2);
+}
+
+.all-tours-load-btn:active {
+  transform: scale(0.97);
+}
+
+@media (max-width: 768px) {
+  .all-tours-load-btn {
+    width: 100%;
+    padding: 12px 24px;
+  }
+}
+
+/* ===== EMPTY STATE ===== */
+
+.all-tours-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  text-align: center;
+  color: #9ca3af;
+  grid-column: 1 / -1;
+}
+
+.all-tours-empty svg {
+  margin-bottom: 16px;
+  color: #d1d5db;
+}
+
+.all-tours-empty h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #4b5563;
+  margin: 0 0 8px;
+}
+
+.all-tours-empty p {
+  font-size: 15px;
+  color: #9ca3af;
+  margin: 0 0 24px;
+}
+
+.all-tours-clear-btn {
+  background: #f3f4f6;
+  border: none;
+  color: #4b5563;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: var(--font-body);
+}
+
+.all-tours-clear-btn:hover {
+  background: #e5e7eb;
+}
+
+/* ===== FILTERS DRAWER ===== */
+
+.filter-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.filter-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 360px;
+  max-width: 90vw;
+  z-index: 201;
+  background: #fff;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.filter-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.filter-drawer-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.filter-drawer-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #f1f5f9;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: #475569;
+  transition: background 0.15s;
+}
+
+.filter-drawer-close:hover {
+  background: #e2e8f0;
+}
+
+.filter-drawer-clear {
+  margin: 12px 24px;
+  padding: 8px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: #179237;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: border-color 0.15s;
+}
+
+.filter-drawer-clear:hover {
+  border-color: #179237;
+}
+
+.filter-drawer-sections {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 24px 32px;
+}
+
+.filter-drawer-section {
+  margin-bottom: 24px;
+}
+
+.filter-drawer-section:last-child {
+  margin-bottom: 0;
+}
+
+.filter-drawer-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.filter-drawer-options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-drawer-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+  text-align: left;
+  transition: background 0.15s;
+  font-family: var(--font-body);
+}
+
+.filter-drawer-option:hover {
+  background: #f8fafc;
+}
+
+.filter-drawer-option.active {
+  color: #179237;
+  font-weight: 600;
+}
+
+.filter-rating-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.filter-rating-number {
+  font-weight: 600;
+  min-width: 10px;
+}
+
+.filter-star-icon {
+  color: #179237;
+  fill: #179237;
+}
+
+.filter-drawer-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1.5px solid #cbd5e1;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.filter-drawer-check.checked {
+  background: #179237;
+  border-color: #179237;
+}
+
+.filter-drawer-single-indicator {
+  margin-left: auto;
+  color: #179237;
+}
+
+/* ===== PRICE SLIDER ===== */
+
+.price-slider-container {
+  padding: 8px 4px 4px;
+}
+
+.price-slider-values {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.price-slider-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  background: #f1f5f9;
+  padding: 4px 14px;
+  border-radius: 8px;
+  min-width: 60px;
+  text-align: center;
+}
+
+.price-slider-sep {
+  font-size: 14px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.price-slider-track {
+  position: relative;
+  height: 6px;
+  margin: 0 2px;
+}
+
+.price-slider-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: #179237;
+  border-radius: 3px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.price-slider-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  pointer-events: none;
+  z-index: 2;
+  margin: 0;
+  padding: 0;
+}
+
+.price-slider-input::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #179237;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+
+.price-slider-input::-webkit-slider-thumb:hover {
+  box-shadow: 0 2px 10px rgba(23, 146, 55, 0.3);
+  transform: scale(1.1);
+}
+
+.price-slider-input::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #179237;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.price-slider-track::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #e2e8f0;
+  border-radius: 3px;
+  z-index: 0;
+}
+
+/* ===== CUSTOM SCROLLBARS ===== */
+
+.all-tours-page ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.all-tours-page ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.all-tours-page ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+  transition: background 0.2s;
+}
+
+.all-tours-page ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.filter-drawer-sections::-webkit-scrollbar {
+  width: 5px;
+}
+
+.filter-drawer-sections::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.filter-drawer-sections::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 999px;
+}
+
+.filter-drawer-sections::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}

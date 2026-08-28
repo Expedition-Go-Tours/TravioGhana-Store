@@ -1,0 +1,79 @@
+.sellout-section {
+  padding: 45px 0;
+  background: #fff;
+}
+
+.sellout-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 32px;
+  position: relative;
+}
+
+.sellout-viewport {
+  max-width: calc(295px * 5 + 16px * 4);
+  margin: 0 auto;
+}
+
+.sellout-clip {
+  overflow: hidden;
+}
+
+.sellout-carousel {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  align-items: stretch;
+  padding: 4px 0 8px;
+}
+
+.sellout-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.sellout-carousel {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.sellout-card-wrap {
+  width: 295px;
+  min-width: 295px;
+  flex-shrink: 0;
+  display: flex;
+  align-self: stretch;
+  scroll-snap-align: start;
+}
+
+.sellout-card-wrap > * {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .sellout-section {
+    padding: 30px 0;
+  }
+
+  .sellout-container {
+    padding: 0 16px;
+  }
+
+  .sellout-viewport {
+    max-width: 100%;
+  }
+
+  .sellout-clip {
+    max-width: 100%;
+  }
+
+  .sellout-carousel {
+    gap: 12px;
+  }
+
+  .sellout-card-wrap {
+    width: 280px;
+    min-width: 280px;
+  }
+}

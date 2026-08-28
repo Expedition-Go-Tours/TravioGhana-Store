@@ -1,0 +1,1158 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+  padding: 0 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: rgba(255, 255, 255, 0.95);
+  background-image: linear-gradient(180deg, rgba(23, 146, 55, 0.1) 0%, rgba(23, 146, 55, 0.04) 100%);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  color: #333;
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+/* Tour detail, all tours, supplier, review, stories, and story-detail pages: show shadow */
+.navbar--tour-detail,
+.tour-detail-page ~ .navbar,
+body:has(.tour-detail-page) .navbar,
+body:has(.all-tours-page) .navbar,
+body:has(.supplier-page) .navbar,
+body:has(.supplier-landing-page) .navbar,
+body:has(.review-page) .navbar,
+body:has(.all-stories-page) .navbar,
+body:has(.story-detail) .navbar {
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+}
+
+.navbar.scrolled {
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Search in the navbar (homepage scrolled, or pages that always show it):
+   flat white so the green tint doesn't linger behind the search bar */
+body.hero--search-sticky .navbar,
+.navbar--tour-detail,
+body:has(.tour-detail-page) .navbar,
+body:has(.all-tours-page) .navbar,
+body:has(.supplier-page) .navbar,
+body:has(.supplier-landing-page) .navbar,
+body:has(.review-page) .navbar,
+body:has(.all-stories-page) .navbar,
+body:has(.story-detail) .navbar {
+  background-color: #fff;
+  background-image: none;
+}
+
+/* Hamburger - hidden on desktop */
+.nav-hamburger {
+  display: none;
+}
+
+/* Mobile wishlist - hidden on desktop (desktop uses .nav-icons wishlist) */
+.nav-wishlist-mobile {
+  display: none;
+}
+
+/* Logo */
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+}
+
+.nav-logo a {
+  display: flex;
+  align-items: center;
+}
+
+.nav-logo-img {
+  width: 180px;
+  height: auto;
+  display: block;
+}
+
+/* Center - search */
+.nav-center {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  justify-content: center;
+  margin: 0 40px;
+}
+
+.navbar-compact-search {
+  display: flex;
+  flex: 0 1 640px;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.96);
+  pointer-events: none;
+  transition: opacity 150ms cubic-bezier(0.22, 1, 0.36, 1), transform 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Show search bar on homepage when scrolled */
+body.hero--search-sticky .navbar-compact-search {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* Always show search bar on tour detail, all tours, supplier, review, stories, and story-detail pages */
+.navbar--tour-detail .navbar-compact-search,
+body:has(.tour-detail-page) .navbar-compact-search,
+body:has(.all-tours-page) .navbar-compact-search,
+body:has(.supplier-page) .navbar-compact-search,
+body:has(.review-page) .navbar-compact-search,
+body:has(.all-stories-page) .navbar-compact-search,
+body:has(.story-detail) .navbar-compact-search {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.navbar-compact-search.searching .navbar-search-form {
+  animation: search-glow-pulse 1.6s ease-in-out infinite;
+}
+
+.navbar-search-form {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 640px;
+  border-radius: 999px;
+  border: 2px solid rgba(23, 146, 55, 0.2);
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(23, 146, 55, 0.08);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.navbar-search-form.focused {
+  border-color: rgba(23, 146, 55, 0.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 0 0 3px rgba(23, 146, 55, 0.1);
+}
+
+.navbar-search-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  padding: 10px 10px 10px 20px;
+}
+
+.navbar-search-icon {
+  flex-shrink: 0;
+  color: #94a3b8;
+  width: 20px;
+  height: 20px;
+}
+
+.navbar-search-input-inner {
+  min-width: 0;
+  flex: 1;
+}
+
+.navbar-search-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 15px;
+  font-family: 'Raleway', sans-serif;
+  color: #333;
+}
+
+.navbar-search-input::placeholder {
+  color: #94a3b8;
+}
+
+.navbar-search-btn-wrap {
+  padding: 4px 4px 4px 0;
+  flex-shrink: 0;
+}
+
+.navbar-search-btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  height: 38px;
+  padding: 0 22px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Raleway', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.navbar-search-btn:hover {
+  background: var(--primary-hover);
+}
+
+/* Navbar search dropdown */
+.navbar-search-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  z-index: 1000;
+  padding: 6px 0;
+}
+
+/* Recent Searches in Navbar */
+.navbar-search-dropdown .search-recent-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+  min-height: 48px;
+}
+
+.navbar-search-dropdown .search-recent-item:hover {
+  background: #f8fafc;
+}
+
+.navbar-search-dropdown .search-recent-remove {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: #9ca3af;
+  transition: background 0.15s, color 0.15s;
+  opacity: 0;
+}
+
+.navbar-search-dropdown .search-recent-item:hover .search-recent-remove {
+  opacity: 1;
+}
+
+.navbar-search-dropdown .search-recent-remove:hover {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.navbar-search-dropdown .search-recent-clear {
+  padding: 8px 16px 10px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #166534;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.navbar-search-dropdown .search-recent-clear:hover {
+  color: #14532d;
+  text-decoration: underline;
+}
+
+.navbar-search-dropdown .search-recent-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 2px 0;
+}
+
+/* Right - icons */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.nav-icons {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav-icon-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+}
+
+.nav-icon-item svg,
+.nav-icon-item .nav-avatar-btn {
+  transition: color 0.2s;
+}
+
+.nav-icon-item:hover svg,
+.nav-icon-item:hover .nav-avatar-btn {
+  color: var(--primary);
+}
+
+.nav-icon-item:hover .nav-icon-label {
+  color: var(--primary);
+}
+
+.nav-icon-label {
+  font-family: 'Raleway', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: inherit;
+  line-height: 1.1;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+/* List an Experience — desktop pill CTA. Sits inline with the icon items
+   but reads as a distinct, elevated action (pill instead of a bare icon+label
+   stack) since it's the primary supplier-acquisition link. Uses the same soft
+   green accent as the tour-detail quick facts (light green tint + green text)
+   rather than a solid filled button, so it stays consistent with the rest of
+   the brand's "green accent" treatment. */
+.nav-list-experience {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 16px 0 12px;
+  border: 1px solid rgba(23, 146, 55, 0.18);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(23, 146, 55, 0.1), rgba(23, 146, 55, 0.04));
+  color: #179237;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(23, 146, 55, 0.14);
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.nav-list-experience:hover {
+  background: rgba(23, 146, 55, 0.14);
+  box-shadow: 0 4px 10px rgba(23, 146, 55, 0.2);
+}
+
+.nav-list-experience:active {
+  transform: scale(0.97);
+}
+
+.nav-list-experience-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(23, 146, 55, 0.12);
+  flex-shrink: 0;
+}
+
+.nav-list-experience-label {
+  font-family: 'Raleway', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1px;
+  white-space: nowrap;
+}
+
+/* List an Experience — mobile menu banner. A distinct highlighted card at
+   the top of the drawer (icon chip + title/subtitle + chevron) rather than
+   a plain list item, so the supplier CTA stands out from the rest of the
+   navigation links. */
+.nav-mobile-list-experience {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 14px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(23, 146, 55, 0.1), rgba(23, 146, 55, 0.04));
+  border: 1px solid rgba(23, 146, 55, 0.18);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.2s ease;
+}
+
+.nav-mobile-list-experience:active {
+  background: rgba(23, 146, 55, 0.14);
+}
+
+.nav-mobile-list-experience-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--primary);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.nav-mobile-list-experience-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.nav-mobile-list-experience-title {
+  font-family: 'Raleway', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #14532d;
+  line-height: 1.3;
+}
+
+.nav-mobile-list-experience-sub {
+  font-family: 'Raleway', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #4b7a5c;
+  line-height: 1.3;
+}
+
+.nav-mobile-list-experience-chevron {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.nav-icon-item .nav-avatar-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+/* Globe language & currency switcher */
+.nav-icon-item:has(.nav-globe-dropdown) {
+  position: relative;
+}
+
+.nav-globe-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  z-index: 200;
+  min-width: 210px;
+  padding: 3px;
+}
+
+.nav-globe-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 7px 1px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+}
+
+.nav-globe-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.nav-globe-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 4px 7px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #1e293b;
+  font-family: 'Raleway', sans-serif;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.nav-globe-item:hover {
+  background: #f8fafc;
+}
+
+.nav-globe-item:active {
+  background: #f1f5f9;
+}
+
+.nav-globe-item.active {
+  background: rgba(23, 146, 55, 0.07);
+}
+
+.nav-globe-item-symbol {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+  border-radius: 5px;
+  background: #f1f5f9;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.nav-globe-item.active .nav-globe-item-symbol {
+  background: rgba(23, 146, 55, 0.12);
+  color: #179237;
+}
+
+.nav-globe-item-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.nav-globe-item-code {
+  font-size: 11px;
+  font-weight: 600;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+.nav-globe-item.active .nav-globe-item-code {
+  color: #179237;
+}
+
+.nav-globe-item-label {
+  font-size: 9px;
+  color: #94a3b8;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mobile nav continues using its own styles */
+
+/* Profile item: more gap between avatar and name */
+.nav-icon-item:has(.nav-avatar-wrapper) {
+  gap: 6px;
+}
+
+.nav-icon-item:has(.nav-avatar-wrapper) .nav-avatar-wrapper {
+  margin-top: -4px;
+}
+
+.nav-icons svg {
+  transition: color 0.2s;
+}
+
+/* Avatar dropdown */
+.nav-avatar-wrapper {
+  position: relative;
+  height: 22px;
+  display: flex;
+  align-items: center;
+}
+
+.nav-avatar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.nav-avatar-btn:hover {
+  color: var(--primary);
+}
+
+.nav-avatar-img {
+  width: 32px;
+  height: 32px;
+  display: block;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.nav-dropdown {
+  position: fixed;
+  top: 72px;
+  right: 48px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  min-width: 180px;
+  overflow: hidden;
+  z-index: 999;
+}
+
+.nav-dropdown-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.nav-dropdown-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.nav-dropdown-email {
+  font-family: 'Raleway', sans-serif;
+  font-size: 13px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.nav-dropdown-header {
+  padding: 16px 20px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  font-family: 'Raleway', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.nav-dropdown-header:hover {
+  background: #f5f5f5;
+}
+
+.nav-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 14px;
+  color: #333;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.nav-dropdown-item svg {
+  flex-shrink: 0;
+  color: #666;
+}
+
+.nav-dropdown-badge,
+.nav-mobile-badge {
+  margin-left: auto;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #179237;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.nav-dropdown-item:hover {
+  background: #f5f5f5;
+  color: var(--primary);
+}
+
+.nav-dropdown-signout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 14px;
+  color: #e53e3e;
+  text-decoration: none;
+  cursor: pointer;
+  border-top: 1px solid #eee;
+  transition: background 0.2s;
+}
+
+.nav-dropdown-signout:hover {
+  background: #f5f5f5;
+  color: #e53e3e;
+}
+
+.nav-dropdown-signout svg {
+  flex-shrink: 0;
+  color: #e53e3e;
+}
+
+.nav-dropdown-signout:hover svg {
+  color: #e53e3e;
+}
+
+.nav-dropdown-item:hover svg {
+  color: var(--primary);
+}
+
+/* Signing Out state inside dropdown */
+.nav-dropdown-signingout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e53e3e;
+  border-top: 1px solid #eee;
+}
+
+.nav-spinner-sm {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #fbb5b5;
+  border-top-color: #e53e3e;
+  border-radius: 50%;
+  animation: nav-spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes nav-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Mobile overlay */
+.nav-mobile-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 2200;
+}
+
+.nav-mobile-menu {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 280px;
+  background: #fff;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 2201;
+  overflow-y: auto;
+}
+
+.nav-mobile-close {
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: #333;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s;
+  margin-bottom: 8px;
+}
+
+.nav-mobile-close:hover {
+  background: #f5f5f5;
+  color: var(--primary);
+}
+
+.nav-mobile-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.nav-mobile-link svg {
+  flex-shrink: 0;
+  color: #666;
+}
+
+.nav-mobile-link:hover {
+  background: #f5f5f5;
+  color: var(--primary);
+}
+
+.nav-mobile-link:hover svg {
+  color: var(--primary);
+}
+
+.nav-mobile-sign {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  padding: 14px 16px;
+  font-family: 'Raleway', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: #333;
+  text-decoration: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.nav-mobile-sign:hover {
+  background: #f0faf3;
+}
+
+.nav-mobile-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: #f9f9f9;
+}
+
+.nav-mobile-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.nav-mobile-user-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.nav-mobile-user-name {
+  font-family: 'Raleway', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-mobile-user-email {
+  font-family: 'Raleway', sans-serif;
+  font-size: 12px;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-mobile-signout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  font-family: 'Raleway', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: #e53e3e;
+  text-decoration: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.nav-mobile-signout:hover {
+  background: #fef2f2;
+}
+
+.nav-mobile-signout svg {
+  flex-shrink: 0;
+  color: #e53e3e;
+}
+
+.nav-mobile-signingout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  font-family: 'Raleway', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: #e53e3e;
+  border-radius: 8px;
+}
+
+.nav-mobile-divider {
+  height: 1px;
+  background: #eee;
+  margin: 4px 0;
+}
+
+/* Mobile accordion */
+.nav-mobile-accordion {
+  border-bottom: none;
+}
+
+.nav-mobile-accordion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 16px;
+  background: transparent;
+  border: none;
+  color: #333;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: 'Raleway', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-align: left;
+}
+
+.nav-mobile-accordion-header:hover {
+  background: #f5f5f5;
+}
+
+.nav-mobile-accordion-chevron {
+  color: #666;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.nav-mobile-accordion-header.open .nav-mobile-accordion-chevron {
+  transform: rotate(180deg);
+}
+
+.nav-mobile-accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+}
+
+.nav-mobile-accordion-content.open {
+  max-height: 500px;
+  opacity: 1;
+}
+
+.nav-mobile-currency-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 16px 12px;
+}
+
+.nav-mobile-currency-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #1e293b;
+  font-family: 'Raleway', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.nav-mobile-currency-item:hover {
+  background: #f8fafc;
+}
+
+.nav-mobile-currency-item:active {
+  background: #f1f5f9;
+}
+
+.nav-mobile-currency-item.active {
+  background: rgba(23, 146, 55, 0.07);
+}
+
+.nav-mobile-currency-symbol {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #64748b;
+  border-radius: 8px;
+  background: #f1f5f9;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.nav-mobile-currency-item.active .nav-mobile-currency-symbol {
+  background: rgba(23, 146, 55, 0.12);
+  color: #179237;
+}
+
+.nav-mobile-currency-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.nav-mobile-currency-code {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  line-height: 1.3;
+}
+
+.nav-mobile-currency-item.active .nav-mobile-currency-code {
+  color: #179237;
+}
+
+.nav-mobile-currency-label {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.3;
+}
+
+@media (max-width: 1024px) {
+  .nav-hamburger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 4px;
+    transition: color 0.2s;
+  }
+
+  .nav-hamburger:hover {
+    color: var(--primary);
+  }
+
+  .nav-list-experience {
+    display: none;
+  }
+
+  .nav-globe-trigger {
+    display: none;
+  }
+
+  .nav-icons {
+    display: none;
+  }
+
+  .nav-wishlist-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .nav-wishlist-mobile:hover {
+    color: var(--primary);
+  }
+
+  .nav-right {
+    gap: 8px;
+  }
+
+  .nav-center {
+    display: none;
+  }
+
+  body.hero--search-sticky .nav-center {
+    display: flex;
+    margin: 0;
+  }
+
+  body.hero--search-sticky .navbar-compact-search {
+    flex: 1;
+    max-width: none;
+  }
+
+  body.hero--search-sticky .navbar-search-form {
+    max-width: none;
+  }
+
+  body.hero--search-sticky .nav-left {
+    display: none;
+  }
+
+  body.hero--search-sticky .nav-icons,
+  body:has(.all-tours-page) .nav-icons {
+    display: none;
+  }
+
+  body.hero--search-sticky .nav-globe-trigger,
+  body.hero--search-sticky .nav-hamburger,
+  body.hero--search-sticky .nav-wishlist-mobile {
+    display: none;
+  }
+
+  body.hero--search-sticky .navbar,
+  body:has(.all-tours-page) .navbar {
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    padding: 0 8px;
+  }
+
+  .navbar {
+    padding: 0 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-logo-img {
+    width: 140px;
+  }
+
+  .navbar-search-dropdown {
+    max-height: 40vh;
+    overflow-y: auto;
+  }
+}

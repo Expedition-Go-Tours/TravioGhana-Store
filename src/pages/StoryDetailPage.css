@@ -1,0 +1,562 @@
+/* ==================================================================
+   Story Detail Page — futuristic dark theme with green neon accents
+   ================================================================== */
+
+.story-detail {
+  --sd-bg: #ffffff;
+  --sd-surface: #f8fafc;
+  --sd-line: rgba(15, 23, 42, 0.08);
+  --sd-text: #0f172a;
+  --sd-muted: #64748b;
+  --sd-green: #179237;
+  --sd-green-deep: #0f7a2e;
+  background: var(--sd-bg);
+  color: var(--sd-text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Reading progress */
+.story-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--sd-green-deep), var(--sd-green), #7dffb0);
+  z-index: 100;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
+}
+
+/* ---------------- Hero ---------------- */
+.story-hero {
+  position: relative;
+  min-height: 78vh;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.story-hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.story-hero-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.05);
+  filter: saturate(1.05) contrast(1.02);
+}
+
+.story-hero-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, rgba(8, 12, 18, 0.88) 0%, rgba(8, 12, 18, 0.4) 45%, rgba(8, 12, 18, 0.12) 100%);
+}
+
+.story-hero-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.5;
+  pointer-events: none;
+  animation: sd-float 9s ease-in-out infinite;
+}
+
+.story-hero-glow-1 {
+  width: 460px;
+  height: 460px;
+  right: -80px;
+  top: -120px;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.55), transparent 70%);
+}
+
+.story-hero-glow-2 {
+  width: 380px;
+  height: 380px;
+  left: -100px;
+  bottom: -80px;
+  background: radial-gradient(circle, rgba(23, 146, 55, 0.5), transparent 70%);
+  animation-delay: 1.5s;
+}
+
+@keyframes sd-float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-24px) scale(1.06); }
+}
+
+/* Subtle tech grid overlay */
+.story-hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: radial-gradient(ellipse at 50% 40%, black 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 40%, black 30%, transparent 75%);
+  opacity: 0.5;
+}
+
+.story-hero-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 24px 64px;
+}
+
+.story-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 28px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--sd-line);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.story-back:hover {
+  background: rgba(34, 197, 94, 0.14);
+  border-color: rgba(34, 197, 94, 0.4);
+  transform: translateX(-2px);
+}
+
+.story-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  background: rgba(34, 197, 94, 0.12);
+  color: #7dffb0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.story-hero-title {
+  margin: 18px 0 0;
+  font-family: var(--font-heading, 'GT Esti Pro Display', sans-serif);
+  font-size: clamp(30px, 5.2vw, 56px);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: #fff;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  max-width: 18ch;
+}
+
+.story-hero-meta {
+  margin-top: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 14px;
+}
+
+.story-author {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.story-author-avatar {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--sd-green-deep), var(--sd-green));
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25), 0 4px 14px rgba(34, 197, 94, 0.4);
+}
+
+.story-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.story-meta-item svg { color: #7dffb0; }
+
+.story-meta-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+/* ---------------- Article ---------------- */
+.story-body {
+  position: relative;
+  z-index: 1;
+}
+
+.story-article {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 56px 24px 24px;
+}
+
+.story-lead {
+  font-size: clamp(18px, 2.4vw, 22px);
+  line-height: 1.6;
+  color: #334155;
+  font-weight: 400;
+  border-left: 3px solid var(--sd-green);
+  padding-left: 20px;
+}
+
+.story-section {
+  margin-top: 40px;
+}
+
+.story-section-heading {
+  font-family: var(--font-heading, 'GT Esti Pro Display', sans-serif);
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 700;
+  color: var(--sd-text);
+  margin-bottom: 14px;
+  position: relative;
+  padding-left: 16px;
+}
+
+.story-section-heading::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 4px;
+  border-radius: 4px;
+  background: linear-gradient(var(--sd-green), var(--sd-green-deep));
+}
+
+.story-section-body {
+  font-size: 16.5px;
+  line-height: 1.8;
+  color: var(--sd-muted);
+}
+
+/* Highlights card (glass) */
+.story-highlights {
+  position: relative;
+  margin-top: 28px;
+  padding: 24px;
+  border-radius: 18px;
+  border: 1px solid rgba(23, 146, 55, 0.18);
+  background: linear-gradient(180deg, #f0fdf4, #ffffff);
+  box-shadow: 0 8px 30px rgba(23, 146, 55, 0.08);
+  overflow: hidden;
+}
+
+.story-highlights-glow {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  right: -60px;
+  top: -80px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.3), transparent 70%);
+  filter: blur(30px);
+  pointer-events: none;
+}
+
+.story-highlights-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--sd-green-deep);
+  margin-bottom: 14px;
+}
+
+.story-highlights ul {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+}
+
+.story-highlights li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: var(--sd-text);
+}
+
+.story-highlights li svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--sd-green);
+}
+
+/* Pull quote */
+.story-quote {
+  position: relative;
+  margin: 34px 0 8px;
+  padding: 8px 0 8px 30px;
+}
+
+.story-quote::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(var(--sd-green), transparent);
+}
+
+.story-quote-mark {
+  position: absolute;
+  left: 14px;
+  top: -18px;
+  font-size: 64px;
+  line-height: 1;
+  color: rgba(23, 146, 55, 0.3);
+  font-family: Georgia, serif;
+}
+
+.story-quote p {
+  font-family: var(--font-heading, 'GT Esti Pro Display', sans-serif);
+  font-size: clamp(20px, 2.8vw, 26px);
+  line-height: 1.45;
+  font-weight: 600;
+  color: var(--sd-text);
+  font-style: italic;
+}
+
+/* Author card */
+.story-authorcard {
+  margin-top: 48px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid var(--sd-line);
+  background: var(--sd-surface);
+  flex-wrap: wrap;
+}
+
+.story-authorcard-avatar {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--sd-green-deep), var(--sd-green));
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+}
+
+.story-authorcard-info { flex: 1 1 220px; min-width: 0; }
+
+.story-authorcard-label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sd-muted);
+}
+
+.story-authorcard-name {
+  display: block;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--sd-text);
+  margin-top: 2px;
+}
+
+.story-authorcard-bio {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--sd-muted);
+}
+
+.story-share {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(23, 146, 55, 0.35);
+  background: rgba(23, 146, 55, 0.1);
+  color: var(--sd-green-deep);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.story-share:hover { background: rgba(23, 146, 55, 0.18); transform: translateY(-1px); }
+
+/* ---------------- Related ---------------- */
+.story-related {
+  border-top: 1px solid var(--sd-line);
+  margin-top: 40px;
+  padding: 56px 0;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(34, 197, 94, 0.08), transparent 60%);
+}
+
+.story-related-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.story-related-title {
+  font-family: var(--font-heading, 'GT Esti Pro Display', sans-serif);
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 800;
+  color: var(--sd-text);
+  margin-bottom: 26px;
+}
+
+.story-related-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.story-related-card {
+  display: block;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--sd-line);
+  background: var(--sd-surface);
+  text-decoration: none;
+}
+
+.story-related-image {
+  position: relative;
+  height: 168px;
+  overflow: hidden;
+}
+
+.story-related-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.story-related-card:hover .story-related-image img { transform: scale(1.07); }
+
+.story-related-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.35), transparent 60%);
+}
+
+.story-related-body { padding: 16px 18px 20px; }
+
+.story-related-date {
+  font-size: 12px;
+  color: var(--sd-green);
+  font-weight: 600;
+}
+
+.story-related-heading {
+  margin-top: 6px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--sd-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.story-related-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sd-muted);
+  transition: color 0.2s ease, gap 0.2s ease;
+}
+
+
+/* ---------------- Not found ---------------- */
+.story-notfound {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 120px 24px;
+  text-align: center;
+  color: var(--sd-text);
+}
+
+.story-notfound svg { color: var(--sd-green); margin-bottom: 16px; }
+.story-notfound h1 { font-size: 26px; font-weight: 800; color: var(--sd-text); }
+.story-notfound p { margin-top: 10px; color: var(--sd-muted); }
+
+.story-notfound-btn {
+  margin-top: 24px;
+  padding: 12px 26px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, var(--sd-green-deep), var(--sd-green));
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.story-notfound-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(34, 197, 94, 0.4);
+}
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 860px) {
+  .story-related-grid { grid-template-columns: 1fr; }
+  .story-hero { min-height: 70vh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-hero-glow { animation: none; }
+  .story-hero-bg img { transform: none; }
+}

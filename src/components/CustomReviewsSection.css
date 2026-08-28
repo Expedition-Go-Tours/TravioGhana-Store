@@ -1,0 +1,60 @@
+.reviews-section {
+  padding: 45px 0;
+  background: #fff;
+}
+
+.reviews-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.reviews-viewport {
+  max-width: calc(295px * 5 + 16px * 4);
+  margin: 0 auto;
+}
+
+/* ===== Elfsight Widget ===== */
+
+.reviews-elfsight {
+  margin-top: 20px;
+}
+
+/* ===== Powered by Tripadvisor ===== */
+
+.tripadvisor-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+  opacity: 0.7;
+}
+
+.tripadvisor-text {
+  font-family: 'Raleway', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: #888;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .reviews-section {
+    padding: 30px 0;
+  }
+
+  .reviews-container {
+    padding: 0 16px;
+  }
+
+  .reviews-viewport {
+    max-width: 100%;
+  }
+
+  .reviews-rating-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

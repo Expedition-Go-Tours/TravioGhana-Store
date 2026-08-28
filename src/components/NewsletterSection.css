@@ -1,0 +1,174 @@
+.newsletter-section {
+  padding: 45px 0;
+  background: #fff;
+}
+
+.newsletter-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.newsletter-viewport {
+  max-width: calc(295px * 5 + 16px * 4);
+  margin: 0 auto;
+}
+
+.newsletter-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.newsletter-image {
+  overflow: hidden;
+}
+
+.newsletter-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.newsletter-content {
+  background: #fff;
+  padding: 48px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+}
+
+.newsletter-heading {
+  font-family: 'GT Esti Pro Display', sans-serif;
+  font-weight: 700;
+  font-size: 34px;
+  color: #1a1f2e;
+  margin: 0;
+  line-height: 1.15;
+}
+
+.newsletter-text {
+  font-family: 'Raleway', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #2a3040;
+  margin: 0;
+  line-height: 1.55;
+  max-width: 460px;
+}
+
+.newsletter-form {
+  margin-top: 4px;
+}
+
+.newsletter-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 610px;
+}
+
+.newsletter-input {
+  width: 100%;
+  border: none;
+  border-radius: 999px;
+  padding: 16px 140px 16px 22px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 15px;
+  color: #333;
+  background: #f0f0f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  outline: none;
+}
+
+.newsletter-input::placeholder {
+  color: #aaa;
+}
+
+.newsletter-btn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  border-radius: 999px;
+  padding: 11px 24px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: #179237;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.newsletter-btn:hover {
+  background: #137a2e;
+}
+
+.newsletter-disclaimer {
+  font-family: 'Raleway', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #5a6470;
+  margin: 0;
+  line-height: 1.55;
+  max-width: 480px;
+}
+
+.newsletter-link {
+  color: #5a6470;
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .newsletter-card {
+    grid-template-columns: 1fr;
+  }
+
+  .newsletter-image {
+    height: 240px;
+  }
+
+  .newsletter-content {
+    padding: 32px 24px;
+  }
+
+  .newsletter-heading {
+    font-size: 28px;
+  }
+
+  .newsletter-form {
+    flex-direction: column;
+  }
+
+  .newsletter-input-wrap {
+    width: 100%;
+  }
+
+  .newsletter-input {
+    width: 100%;
+    padding-right: 140px;
+  }
+
+  .newsletter-btn {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: auto;
+    margin-top: 0;
+    padding: 11px 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .newsletter-section {
+    padding: 30px 0;
+  }
+}

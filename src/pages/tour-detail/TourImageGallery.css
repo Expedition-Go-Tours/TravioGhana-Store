@@ -1,0 +1,251 @@
+/* ===== TOUR IMAGE GALLERY NEW ===== */
+
+.tour-image-gallery-new {
+  display: grid;
+  gap: 8px;
+}
+
+/* Thumbnail Filmstrip */
+.tour-gallery-thumbnails {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.tour-gallery-thumb {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #f1f5f9;
+  border: 2px solid transparent;
+  padding: 0;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+}
+
+.tour-gallery-thumb.active {
+  border-color: #166534;
+}
+
+.tour-gallery-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.tour-gallery-thumb:hover img {
+  transform: scale(1.05);
+}
+
+/* Count tile: last square shows a photo with the number of photos overlaid */
+.tour-gallery-count-tile .tour-gallery-count-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: rgba(2, 6, 23, 0.55);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.3px;
+}
+
+.tour-gallery-count-tile:hover .tour-gallery-count-overlay {
+  background: rgba(2, 6, 23, 0.4);
+}
+
+/* Main Image */
+.tour-gallery-main-image {
+  position: relative;
+  height: 300px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #f1f5f9;
+}
+
+@media (min-width: 640px) {
+  .tour-gallery-main-image {
+    height: 430px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .tour-gallery-main-image {
+    height: 520px;
+  }
+}
+
+.tour-gallery-main-track {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  transition: transform 0.3s ease-out;
+}
+
+.tour-gallery-main-slide {
+  width: 100%;
+  height: 100%;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+/* Overlay buttons */
+.tour-gallery-overlay-top-left {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  transition: opacity 0.2s;
+}
+
+.tour-gallery-overlay-top-left.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tour-gallery-overlay-top-right {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.tour-gallery-overlay-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: #020617;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.18);
+  transition: background 0.15s, transform 0.1s;
+  touch-action: manipulation;
+}
+
+.tour-gallery-overlay-btn:hover {
+  background: #fff;
+}
+
+.tour-gallery-overlay-btn:active {
+  transform: scale(0.98);
+}
+
+.wishlist-active {
+  color: #166534;
+  fill: currentColor;
+}
+
+/* Wishlist heart hover mirrors the Recommended section cards: the button
+   fills green, the heart turns white against it, and it scales up. Works
+   for both the unfilled and the already-wishlisted (filled) states. */
+.tour-gallery-wishlist-btn {
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.tour-gallery-wishlist-btn:hover {
+  background: #179237;
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.tour-gallery-wishlist-btn:hover .wishlist-active {
+  color: #fff;
+}
+
+.tour-gallery-wishlist-btn:active {
+  transform: scale(0.95);
+}
+
+/* Nav arrows */
+.tour-gallery-nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  display: none;
+  place-items: center;
+  cursor: pointer;
+  color: #020617;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.18);
+  transition: background 0.15s;
+}
+
+@media (min-width: 1024px) {
+  .tour-gallery-nav-arrow {
+    display: grid;
+  }
+}
+
+.tour-gallery-nav-arrow:hover {
+  background: #fff;
+}
+
+.tour-gallery-nav-arrow.left {
+  left: 16px;
+}
+
+.tour-gallery-nav-arrow.right {
+  right: 16px;
+}
+
+/* Mobile dots */
+.tour-gallery-dots {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (min-width: 1024px) {
+  .tour-gallery-dots {
+    display: none;
+  }
+}
+
+.tour-gallery-dot {
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tour-gallery-dot {
+  width: 6px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.tour-gallery-dot.active {
+  width: 8px;
+  height: 8px;
+  background: #fff;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}

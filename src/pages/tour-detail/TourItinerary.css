@@ -1,0 +1,271 @@
+.tour-itinerary-new {
+  padding-bottom: 32px;
+}
+
+.itinerary-title {
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 24px;
+  letter-spacing: -0.01em;
+}
+
+@media (min-width: 640px) {
+  .itinerary-title {
+    font-size: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .itinerary-title {
+    font-size: 24px;
+  }
+}
+
+.itinerary-empty {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #000;
+}
+
+/* ───────────── Stops container ───────────── */
+
+.itinerary-stops-simple {
+  display: flex;
+  flex-direction: column;
+  max-width: 720px;
+  padding-left: 20px;
+}
+
+/* Mobile: the timeline rail (dots + connecting lines) aligns flush under the
+   section title instead of the desktop 20px indent. */
+@media (max-width: 639px) {
+  .itinerary-stops-simple {
+    padding-left: 0;
+  }
+}
+
+/* ───────────── Individual stop row ───────────── */
+
+.itinerary-stop-simple {
+  display: flex;
+  gap: 20px;
+}
+
+/* ───────────── Marker column ───────────── */
+
+.itinerary-stop-simple-marker-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.itinerary-stop-simple-marker {
+  position: relative;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #0f172a;
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.itinerary-stop-simple-line {
+  width: 3px;
+  flex: 1;
+  min-height: 24px;
+  margin-top: 4px;
+  background: #0f172a;
+}
+
+/* ───────────── Content ───────────── */
+
+.itinerary-stop-simple-content {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 32px;
+}
+
+.itinerary-stop-simple-title {
+  margin: 4px 0 6px;
+  font-family: var(--font-heading);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+/* Location line (city, country, address) under the stop title — mirrors the
+   supplier's itinerary preview. */
+.itinerary-stop-simple-loc {
+  margin: 0 0 8px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #4b5563;
+}
+
+/* "Day N" marker dot shown on the rail at the start of each day on multi-day
+   tours. Uses the same black circle as the numbered stop dots (matching the
+   pre-existing look); the day number sits in the circle and a "Day N" label
+   sits beside it, so the start of each day reads clearly while every day's
+   stops restart their numbering at 1. */
+.itinerary-day-label {
+  display: inline-flex;
+  align-items: center;
+  margin: 4px 0 0;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: #179237;
+  color: #fff;
+  white-space: nowrap;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.itinerary-stop-simple-desc {
+  margin: 0 0 8px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.65;
+  color: #1f2937;
+  white-space: pre-wrap;
+}
+
+.itinerary-stop-simple-meta {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #374151;
+}
+
+/* Duration • admission • meals line rendered as a polished accent chip so the
+   stop's key details read as one distinct, on-brand pill. */
+.itinerary-stop-simple-meta-pill {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 2px 0 0;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #effaf4;
+  border: 1px solid #d6efe2;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #166534;
+}
+
+/* ───────────── Start / end nodes (meeting point, pickup, drop-off) ───────────── */
+
+.itinerary-stop-simple-marker-start {
+  background: #0f172a;
+}
+
+.itinerary-stop-simple-marker-end {
+  background: #0f172a;
+}
+
+.itinerary-stop-simple-node-title {
+  margin: 4px 0 6px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.itinerary-stop-simple-node-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.itinerary-stop-simple-node-empty {
+  font-style: italic;
+  color: #9ca3af;
+}
+
+/* ───────────── Day logistics (overnight accommodation) ───────────── */
+
+/* ───────────── Day logistics (overnight accommodation + meals, together) ───────────── */
+
+.itinerary-day-logistics {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 28px;
+  margin: 2px 0 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.itinerary-day-logistics-indent {
+  padding-left: 60px;
+}
+
+.itinerary-day-logistics-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.itinerary-day-logistics-item svg {
+  flex-shrink: 0;
+  color: #179237;
+}
+
+/* ───────────── Multi-day: day-only rail dots + connected day-stop timeline ───────────── */
+
+/* Multi-day tours render one dot per day; each day's locations are listed
+   beneath as a connected sub-timeline (small dots joined by the same rail),
+   so the whole itinerary reads as one continuous set of joining lines. */
+.itinerary-day-stops {
+  display: flex;
+  flex-direction: column;
+}
+
+.itinerary-day-stop {
+  margin-bottom: 0;
+}
+
+/* Keep the marker column the same width as the day/stop rail so the dots,
+   lines and content all stay vertically aligned with the rest of the rail. */
+.itinerary-day-stop .itinerary-stop-simple-marker-col {
+  width: 40px;
+}
+
+.itinerary-day-stop-dot {
+  width: 14px;
+  height: 14px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: #0f172a;
+  flex-shrink: 0;
+}
