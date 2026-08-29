@@ -936,7 +936,18 @@ export function extractMeetingInfo(rawTour: any) {
   const pickupLocations = effectivePickupType === 'address' ? pickupLocationsRaw : []
 
   return {
-    meetingMode: (pick(bt?.meetingMode, pc?.meetingMode) || 'none') as 'meeting_point' | 'pickup' | 'none',
+    meetingMode: (() => {
+      const explicit = pick(bt?.meetingMode, pc?.meetingMode)
+      if (explicit) return explicit as 'meeting_point' | 'pickup' | 'none'
+      // The supplier data never stores an explicit mode field — the meeting
+      // point (bt.meetingPoint / pc.meetingPoint) is the signal: a tour with
+      // a configured meeting point starts there, never at pickup (the two
+      // configs are mutually exclusive in the builder). Deriving it here is
+      // what makes the "Meeting point" facts show on cards and the detail
+      // page start-point section.
+      const point = pick(bt?.meetingPoint, pc?.meetingPoint)
+      return point ? 'meeting_point' : 'none'
+    })(),
     meetingPoint: pointString(meetingPoint) || '',
     meetingPointAddress: typeof meetingPoint === 'object' && meetingPoint ? meetingPoint.address || undefined : undefined,
     meetingPointDescription: pick(bt?.meetingPointDescription, pc?.meetingPointDescription) || '',
@@ -1147,7 +1158,7 @@ async function enrichExpeditionRecords(records: ExpeditionTourRecord[]): Promise
   // There is no cheap way to detect staleness up front, so skip the old
   // "needsBatch" short-circuit to keep every listing price authoritative.
   try {
-    const allPayload = await expeditionFetchRaw('/travioghana/tours?limit=500')
+    const allPayload = await expeditionFetchRaw('/tours?limit=500')
     const allTours: any[] = allPayload.data?.tours ?? []
     const priceMap = new Map<string, number>()
     const cityMap = new Map<string, string | null>()
@@ -1540,7 +1551,7 @@ export interface TourDetailData extends Omit<TourDetail, 'guide' | 'contact' | '
  * max-age=60 response caching.
  */
 async function fetchRawTourBySlugOrId(idOrSlug: string, bypassCache = false): Promise<any | null> {
-  const res = await fetchWithAuth(`/travioghana/tours/${encodeURIComponent(idOrSlug)}`, {
+  const res = await fetchWithAuth(`/tours/${encodeURIComponent(idOrSlug)}`, {
     ...(bypassCache ? { cache: 'no-store' } : {}),
   })
   if (!res.ok) return null
@@ -1703,7 +1714,7 @@ export function useExpeditionTour(slug: string | undefined) {
         try {
           // Bypass HTTP caching so pricing/tier edits a supplier just
           // saved are reflected immediately on the tour detail page.
-          const rawRes = await fetchWithAuth(`/travioghana/tours/${tour.id}`, {
+          const rawRes = await fetchWithAuth(`/tours/${tour.id}`, {
             cache: 'no-store',
           })
           if (rawRes.ok) {
@@ -1986,42 +1997,70 @@ interface BadgeFieldMaps {
 let badgeMapsCache: { promise: Promise<BadgeFieldMaps>; expiresAt: number } | null = null
 
 /**
- * One shared batch fetch of the curated /travioghana/tours listing,
- * extracting tour-card badge fields (languages, cancellation policy,
- * pickup, meeting mode, accommodation) into id-keyed maps.
- *
- * The Ghana backend does not expose a dedicated badges endpoint yet, so
- * this uses the curated /travioghana/tours listing (single request, then
- * memoized for 60s) instead of fetching per-tour badge fields.
+ * One shared batch fetch of the tour-card badge fields (languages,
+ * cancellation policy, pickup, meeting mode, accommodation) into id-keyed
+ * maps. The full /tours listing is the authoritative source — it carries the
+ * JSON blobs (productContent, categorization, bookingAndTickets) the facts
+ * are extracted from. The lightweight /expedition/tours/badges endpoint is
+ * only a fallback: its pre-extracted projections are incomplete for the
+ * supplier's data (languages are stored as productContent.writingLanguage,
+ * the meeting point as bookingAndTickets.meetingPoint and accommodation as
+ * categorization.accommodationIncluded — none of which that endpoint reads),
+ * so cards would otherwise miss those facts.
  */
 function getBadgeFieldMaps(): Promise<BadgeFieldMaps> {
   const now = Date.now()
   if (!badgeMapsCache || now >= badgeMapsCache.expiresAt) {
     badgeMapsCache = {
       promise: (async () => {
-        const payload = await expeditionFetchRaw('/travioghana/tours?limit=500')
-        const allTours: any[] = payload.data?.tours ?? payload.tours ?? []
-        const maps: BadgeFieldMaps = {
-          languages: new Map(),
-          cancellation: new Map(),
-          pickup: new Map(),
-          meetingMode: new Map(),
-          accommodation: new Map(),
+        try {
+          const payload = await expeditionFetchRaw('/tours?limit=500')
+          const allTours: any[] = payload.data?.tours ?? payload.tours ?? []
+          if (allTours.length > 0) return extractBadgeFieldMaps(allTours)
+          console.warn('[enrichTourBadgeFields] full listing returned no tours, falling back to badges endpoint')
+        } catch (e) {
+          console.warn('[enrichTourBadgeFields] full listing failed, falling back to badges endpoint:', e)
         }
-        for (const t of allTours) {
-          // The badges endpoint returns pre-extracted fields
-          if (t.languages?.length) maps.languages.set(t.id, t.languages)
-          if (t.cancellationPolicy) maps.cancellation.set(t.id, t.cancellationPolicy)
-          if (t.pickupIncluded != null) maps.pickup.set(t.id, t.pickupIncluded)
-          if (t.meetingMode) maps.meetingMode.set(t.id, t.meetingMode)
-          if (t.accommodationIncluded) maps.accommodation.set(t.id, true)
-        }
-        return maps
+        const badgesPayload = await expeditionFetchRaw('/expedition/tours/badges')
+        const badgesTours: any[] = badgesPayload.data?.tours ?? badgesPayload.tours ?? []
+        return extractBadgeFieldMaps(badgesTours)
       })(),
       expiresAt: now + 60_000,
     }
   }
   return badgeMapsCache.promise
+}
+
+function extractBadgeFieldMaps(allTours: any[]): BadgeFieldMaps {
+  const maps: BadgeFieldMaps = {
+    languages: new Map(),
+    cancellation: new Map(),
+    pickup: new Map(),
+    meetingMode: new Map(),
+    accommodation: new Map(),
+  }
+  for (const t of allTours) {
+    const bt = parseJsonMaybe(t.bookingAndTickets)
+    // The badges endpoint returns pre-extracted fields; the full listing
+    // needs the same extraction the listing mappers use. The badges payload
+    // can carry cancellationPolicy as a structured object (the supplier
+    // builder stores it as JSON), so only trust a plain string here and let
+    // the normalizing extractor handle object-shaped policies — the card
+    // renders the label with .toLowerCase()/string ops.
+    const languages = Array.isArray(t.languages) && t.languages.length ? t.languages : extractContentLanguage(t)
+    if (languages?.length) maps.languages.set(t.id, languages)
+    const rawCancellation = t.cancellationPolicy
+    const cancellation = (typeof rawCancellation === 'string' && rawCancellation.trim().length > 0)
+      ? rawCancellation
+      : extractCancellationFromTour(t)
+    if (cancellation) maps.cancellation.set(t.id, cancellation)
+    const pickup = t.pickupIncluded ?? (bt?.pickupProvided ?? bt?.pickupAvailable) ?? undefined
+    if (pickup != null) maps.pickup.set(t.id, pickup)
+    const meetingMode = t.meetingMode ?? extractMeetingInfo(t).meetingMode
+    if (meetingMode) maps.meetingMode.set(t.id, meetingMode)
+    if (t.accommodationIncluded === true || extractAccommodationIncluded(t)) maps.accommodation.set(t.id, true)
+  }
+  return maps
 }
 
 /**
@@ -2290,7 +2329,7 @@ export function useSimilarTours(slug: string | undefined) {
       // by cross-referencing the full /tours listing.
       {
         try {
-          const allPayload = await expeditionFetchRaw('/travioghana/tours?limit=500')
+          const allPayload = await expeditionFetchRaw('/tours?limit=500')
           const allTours: any[] = allPayload.data?.tours ?? []
           const priceMap = new Map<string, number>()
           const cityMap = new Map<string, string | null>()

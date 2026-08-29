@@ -19,6 +19,7 @@ const GAP = 24
 
 function shortCancellation(policy?: string): string {
   if (!policy) return ''
+  if (typeof policy !== 'string') return String(policy)
   const lower = policy.toLowerCase()
   if (/non[ -]?refundable/.test(lower)) return 'Non-refundable'
   if (lower.includes('free')) return 'Free cancellation'

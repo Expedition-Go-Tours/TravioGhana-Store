@@ -77,8 +77,8 @@ export default function TourCard({ id, title, duration, features, price, rating,
   // tour guide conducts the experience in (e.g. "English Guide"), not the
   // language of e.g. printed materials or the page itself.
   const languageLabel = languages?.length ? `${languages.join(', ')} Guide` : ''
-  const isNonRefundable = !!cancellationPolicy && /non[- ]?refundable/i.test(cancellationPolicy)
-  const cancellationLabel = cancellationPolicy
+  const isNonRefundable = typeof cancellationPolicy === 'string' && /non[- ]?refundable/i.test(cancellationPolicy)
+  const cancellationLabel = typeof cancellationPolicy === 'string' && cancellationPolicy
     ? (isNonRefundable ? 'Non-refundable' : (cancellationPolicy.toLowerCase().includes('free') ? 'Free cancellation' : cancellationPolicy))
     : ''
   // The Accommodation badge only applies to overnight trips — gate it on a

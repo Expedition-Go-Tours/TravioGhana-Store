@@ -130,6 +130,8 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
     anyTieredPricing,
     formatPrice,
     travelerOptions,
+    adultGroup,
+    unitPriceFor,
   } = useTravelerSelection(tour)
 
   const doFetchPricing = useCallback(async (date: string, time?: string | null, forceCode?: string) => {
@@ -499,15 +501,25 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
   })()
 
   // Authoritative figure from the API when available; client mirror before that.
-  const displayTotal = pricingResult ? pricingResult.total : clientSubtotal
+  // The backend quote (pricingResult) is only fetched for a concrete date, and
+  // the auto-refresh re-quotes on traveler changes only once a date is picked.
+  // Before that the frozen quote reflects the initial mount-time selection, so
+  // a changed traveler mix would otherwise show a stale subtotal/total — the
+  // live client mirror (identical math to the checkout engine) stays accurate.
+  const hasLiveQuote = !!selectedDate && pricingResult != null
+  const displayTotal = hasLiveQuote ? pricingResult!.total : clientSubtotal
 
   // Special offers a supplier applied to this tour on the supplier platform.
   // The backend projection (GET /tours/:id) already filters to ACTIVE offers
   // whose date window includes today. The checkout engine auto-applies the
   // best one — `discounts` is the ground truth of what was actually applied.
+  // Offer figures only render once a live quote exists for the chosen date;
+  // pre-date the summary shows the accurate mirror without a discount.
   const activeOffers: SpecialOfferData[] = Array.isArray(tour.specialOffers) ? tour.specialOffers : []
-  const savedAmount = pricingResult?.discounts ?? 0
-  const subtotalAmount = pricingResult?.subtotal ?? 0
+  const savedAmount = hasLiveQuote ? (pricingResult?.discounts ?? 0) : 0
+  const subtotalAmount = hasLiveQuote
+    ? (pricingResult?.subtotal ?? 0)
+    : (clientSubtotal > 0 ? clientSubtotal : 0)
   // Round like the tour cards (FormattedPrice) so the widget's headline and
   // totals show the same rounded figures as the card on the homepage.
   const formatMoney = (n: number) => `${currency.symbol}${Math.round(convertPrice(n)).toLocaleString()}`
@@ -518,9 +530,21 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
   // price), so the widget and the card never disagree. The checkout-confirmed
   // discount (which reflects the real tier for the selected date/headcount)
   // is shown in the price summary below, not in the headline.
-  const originalUnitPrice = isPerGroup
-    ? (lowestGroupBand?.price ?? 0)
+  // The headline unit price tracks the traveler selector:
+  // - per-person: the adult category's tier-resolved per-person price for the
+  //   CURRENT total headcount (falls back to the "From" minimum while nothing
+  //   is selected or when the tour has no adult category).
+  // - per-group: the band that matches the current group size (falls back to
+  //   the lowest band when no selection maps to one).
+  const perPersonHeadline = adultGroup
+    ? (totalTravelers > 0
+        ? unitPriceFor(adultGroup)
+        : (lowestAdultFromTravelerPricing(travelerGroups) ?? tour.price))
     : (lowestAdultFromTravelerPricing(travelerGroups) ?? tour.price)
+  const headlineGroupBand = matchingGroupBand ?? lowestGroupBand
+  const originalUnitPrice = isPerGroup
+    ? (headlineGroupBand?.price ?? 0)
+    : perPersonHeadline
   const offerPerUnitDiscount =
     activeOffers.length > 0 && originalUnitPrice > 0
       ? bestOfferDiscountAmount(activeOffers, originalUnitPrice)
@@ -551,7 +575,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
           <div className="booking-price-section">
           <div className="booking-price-main">
             {isPerGroup ? (
-              lowestGroupBand ? (
+              headlineGroupBand ? (
                 <>
                   <span className="booking-price-from">{t('common.from')}</span>
                   {showPromoPrice ? (
@@ -561,7 +585,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                     </>
                   ) : (
                     <span className="booking-price-amount">
-                      {formatMoney(lowestGroupBand.price)}
+                      {formatMoney(headlineGroupBand.price)}
                     </span>
                   )}
                   <span className="booking-price-per">{t('booking.perGroup', 'per group')}</span>

@@ -23,7 +23,11 @@ export default function NewExperiencesSection({ isLoading }: Props) {
   const items = liveTours?.length
     ? liveTours.map(t => {
         const card = mapToTourCard(t)
-        return { ...card, photos: card.image ? [card.image] : card.photos }
+        // Carousel slides: the supplier-chosen cover photo leads, followed by
+        // the remaining unique photos — so cards get the same image carousel
+        // as every other section while the best-quality cover stays first.
+        const rest = (card.photos ?? []).filter(p => typeof p === 'string' && p.length > 0 && p !== card.image)
+        return { ...card, photos: card.image ? [card.image, ...rest] : card.photos }
       })
     : null
 

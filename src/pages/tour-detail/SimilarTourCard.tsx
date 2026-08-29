@@ -41,8 +41,8 @@ export default function SimilarTourCard({
   // "Guide" appended for the same reason as TourCard: makes clear this is
   // the language the tour guide conducts the experience in.
   const languageLabel = languages?.length ? `${languages.join(', ')} Guide` : ''
-  const isNonRefundable = !!cancellationPolicy && /non[- ]?refundable/i.test(cancellationPolicy)
-  const cancellationLabel = cancellationPolicy
+  const isNonRefundable = typeof cancellationPolicy === 'string' && /non[- ]?refundable/i.test(cancellationPolicy)
+  const cancellationLabel = typeof cancellationPolicy === 'string' && cancellationPolicy
     ? (isNonRefundable ? 'Non-refundable' : (cancellationPolicy.toLowerCase().includes('free') ? 'Free cancellation' : cancellationPolicy))
     : ''
 
