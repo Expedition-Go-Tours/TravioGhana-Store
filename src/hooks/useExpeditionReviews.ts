@@ -1,4 +1,4 @@
-﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchWithAuth } from '../lib/api'
 import { useMyExpeditionBookings } from './useExpeditionBookings'
 
@@ -41,7 +41,7 @@ export interface ReviewCardData {
  */
 async function fetchRawTourReviews(tourId: string, page: number, limit: number) {
   const res = await fetchWithAuth(
-    `/reviews/tours/${encodeURIComponent(tourId)}?page=${page}&limit=${limit}&sortBy=createdAt&sortOrder=desc`
+    `/reviews/tours/${encodeURIComponent(tourId)}?page=${page}&limit=${limit}&sortBy=newest&sortOrder=desc`
   )
   if (!res.ok) return null
   const payload = await res.json().catch(() => ({}))
