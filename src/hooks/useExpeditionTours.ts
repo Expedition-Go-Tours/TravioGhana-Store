@@ -1293,8 +1293,12 @@ export function useExpeditionTours(filters: ExpeditionToursFilters = {}) {
 
       await enrichExpeditionRecords(records)
 
+      const listings = records.map((r) => mapToListing(r.tour))
+      // Apply badge fields (languages, cancellation, accommodation, etc.)
+      // from the thin badges endpoint — the curated listing doesn't include
+      // the JSON blobs these are extracted from.
       return {
-        tours: records.map((r) => mapToListing(r.tour)),
+        tours: await enrichTourBadgeFields(listings),
         pagination,
       }
     },
@@ -1342,7 +1346,8 @@ export function useAllExpeditionTours(opts?: { mood?: string }) {
 
       await enrichExpeditionRecords(records)
 
-      return records.map((r) => mapToListing(r.tour))
+      const listings = records.map((r) => mapToListing(r.tour))
+      return enrichTourBadgeFields(listings)
     },
   })
 }
@@ -2152,11 +2157,12 @@ export function useExpeditionOffers(limit = 12) {
         })
         .filter((x): x is TourCardData => x != null)
       // Best deal (largest absolute saving) first.
-      return withOffers.sort((a, b) => {
+      const sorted = withOffers.sort((a, b) => {
         const bestA = bestOfferDiscountAmount(a.specialOffers || [], a.priceValue ?? 0)
         const bestB = bestOfferDiscountAmount(b.specialOffers || [], b.priceValue ?? 0)
         return bestB - bestA
       })
+      return enrichTourBadgeFields(sorted)
     },
   })
 }
@@ -2175,26 +2181,30 @@ async function fetchSimilarToursFallback(excludeTourId: string | undefined, cate
     return tours.filter((t) => t.id !== excludeTourId)
   }
 
+  let raw: any[] = []
+
   // 1) Same category first (closest match to the curated endpoint's intent)
   if (category) {
     const params = new URLSearchParams({ category, limit: '8' })
-    const results = await tryFetch(params)
-    if (results.length > 0) return results.slice(0, 4).map(mapRawTourToListing)
+    raw = (await tryFetch(params)).slice(0, 4)
   }
 
   // 2) Fall back to same city/country
-  if (city || country) {
+  if (raw.length === 0 && (city || country)) {
     const params = new URLSearchParams({ limit: '8' })
     if (city) params.set('city', city)
     if (country) params.set('country', country)
-    const results = await tryFetch(params)
-    if (results.length > 0) return results.slice(0, 4).map(mapRawTourToListing)
+    raw = (await tryFetch(params)).slice(0, 4)
   }
 
   // 3) Last resort: just show other active tours
-  const params = new URLSearchParams({ limit: '8', sortBy: 'popularity' })
-  const results = await tryFetch(params)
-  return results.slice(0, 4).map(mapRawTourToListing)
+  if (raw.length === 0) {
+    const params = new URLSearchParams({ limit: '8', sortBy: 'popularity' })
+    raw = (await tryFetch(params)).slice(0, 4)
+  }
+
+  const listings = raw.map(mapRawTourToListing)
+  return enrichTourBadgeFields(listings)
 }
 
 /**
@@ -2239,7 +2249,7 @@ export function useRecommendedTours(limit: number = 12) {
         merged.push(tour)
       }
 
-      return merged.slice(0, limit)
+      return enrichTourBadgeFields(merged.slice(0, limit))
     },
   })
 }
@@ -2262,7 +2272,7 @@ export function useNewestTours(limit: number = 10) {
       const payload = await expeditionFetchRaw(`/tours?limit=${limit}&sortBy=newest&sortOrder=desc`)
       const rawTours: any[] = payload.data?.tours ?? payload.tours ?? []
       const listings = rawTours.map(mapRawTourToListing)
-      return Promise.all(
+      const enriched = await Promise.all(
         listings.map(async (listing) => {
           try {
             const raw = await fetchRawTourBySlugOrId(listing.id)
@@ -2273,6 +2283,7 @@ export function useNewestTours(limit: number = 10) {
           }
         }),
       )
+      return enrichTourBadgeFields(enriched)
     },
   })
 }
@@ -2397,7 +2408,7 @@ export function useSimilarTours(slug: string | undefined) {
         }
       }
 
-      return records.map((r) => mapToListing(r.tour))
+      return enrichTourBadgeFields(records.map((r) => mapToListing(r.tour)))
     },
   })
 }
