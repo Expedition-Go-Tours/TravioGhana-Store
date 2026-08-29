@@ -1,4 +1,4 @@
-﻿import { MapPin, Star, Heart, Car, Compass, Languages as LanguagesIcon, ShieldCheck, Ban } from 'lucide-react'
+import { MapPin, Star, Heart, Car, Compass, Languages as LanguagesIcon, ShieldCheck, Ban } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import i18n from '../../i18n/config'
@@ -41,9 +41,10 @@ export default function SimilarTourCard({
   // "Guide" appended for the same reason as TourCard: makes clear this is
   // the language the tour guide conducts the experience in.
   const languageLabel = languages?.length ? `${languages.join(', ')} Guide` : ''
-  const isNonRefundable = !!cancellationPolicy && /non[- ]?refundable/i.test(cancellationPolicy)
-  const cancellationLabel = cancellationPolicy
-    ? (isNonRefundable ? 'Non-refundable' : (cancellationPolicy.toLowerCase().includes('free') ? 'Free cancellation' : cancellationPolicy))
+  const policy = typeof cancellationPolicy === 'string' ? cancellationPolicy : (cancellationPolicy as any)?.label || ''
+  const isNonRefundable = !!policy && /non[- ]?refundable/i.test(policy)
+  const cancellationLabel = policy
+    ? (isNonRefundable ? 'Non-refundable' : (policy.toLowerCase().includes('free') ? 'Free cancellation' : policy))
     : ''
 
   const handleWishlist = (e: React.MouseEvent) => {
