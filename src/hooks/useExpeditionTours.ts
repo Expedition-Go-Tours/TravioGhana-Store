@@ -1986,20 +1986,20 @@ interface BadgeFieldMaps {
 let badgeMapsCache: { promise: Promise<BadgeFieldMaps>; expiresAt: number } | null = null
 
 /**
- * One shared batch fetch of the curated /travioghana/tours listing,
- * extracting tour-card badge fields (languages, cancellation policy,
- * pickup, meeting mode, accommodation) into id-keyed maps.
+ * One shared batch fetch of the lightweight /travioghana/tours/badges
+ * endpoint, extracting tour-card badge fields (languages, cancellation
+ * policy, pickup, meeting mode, accommodation) into id-keyed maps.
  *
- * The Ghana backend does not expose a dedicated badges endpoint yet, so
- * this uses the curated /travioghana/tours listing (single request, then
- * memoized for 60s) instead of fetching per-tour badge fields.
+ * Uses the dedicated badges endpoint (~20KB, pre-extracted fields) instead
+ * of the full /travioghana/tours listing (~500KB) for faster homepage loads.
+ * Memoized for 60s.
  */
 function getBadgeFieldMaps(): Promise<BadgeFieldMaps> {
   const now = Date.now()
   if (!badgeMapsCache || now >= badgeMapsCache.expiresAt) {
     badgeMapsCache = {
       promise: (async () => {
-        const payload = await expeditionFetchRaw('/travioghana/tours?limit=500')
+        const payload = await expeditionFetchRaw('/travioghana/tours/badges')
         const allTours: any[] = payload.data?.tours ?? payload.tours ?? []
         const maps: BadgeFieldMaps = {
           languages: new Map(),
