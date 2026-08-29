@@ -1131,6 +1131,28 @@ export interface ExpeditionToursFilters {
 }
 
 /**
+ * Fetch the ENTIRE curated Ghana catalog by paging through
+ * /travioghana/tours (limit capped at 50 per request by the backend schema —
+ * a single limit=500 request is rejected with 400).
+ */
+async function fetchAllCuratedTours(): Promise<any[]> {
+  const CATALOG_PAGE_SIZE = 50
+  const MAX_CATALOG_PAGES = 20 // 1000 tours max
+  const first = await expeditionFetchRaw(`/travioghana/tours?page=1&limit=${CATALOG_PAGE_SIZE}`)
+  const tours: any[] = first.data?.tours ?? []
+  const totalPages = Math.min(first.pagination?.totalPages ?? 1, MAX_CATALOG_PAGES)
+  if (totalPages > 1 && tours.length > 0) {
+    const rest = await Promise.all(
+      Array.from({ length: totalPages - 1 }, (_, i) =>
+        expeditionFetchRaw(`/travioghana/tours?page=${i + 2}&limit=${CATALOG_PAGE_SIZE}`)
+      )
+    )
+    for (const payload of rest) tours.push(...(payload.data?.tours ?? []))
+  }
+  return tours
+}
+
+/**
  * The curated /travioghana/tours endpoint only selects a handful of
  * top-level Tour columns (city, country, category, etc.), which are
  * frequently null — the real values live inside the productContent /
@@ -1147,8 +1169,7 @@ async function enrichExpeditionRecords(records: ExpeditionTourRecord[]): Promise
   // There is no cheap way to detect staleness up front, so skip the old
   // "needsBatch" short-circuit to keep every listing price authoritative.
   try {
-    const allPayload = await expeditionFetchRaw('/travioghana/tours?limit=500')
-    const allTours: any[] = allPayload.data?.tours ?? []
+    const allTours = await fetchAllCuratedTours()
     const priceMap = new Map<string, number>()
     const cityMap = new Map<string, string | null>()
     const countryMap = new Map<string, string | null>()
@@ -2290,8 +2311,7 @@ export function useSimilarTours(slug: string | undefined) {
       // by cross-referencing the full /tours listing.
       {
         try {
-          const allPayload = await expeditionFetchRaw('/travioghana/tours?limit=500')
-          const allTours: any[] = allPayload.data?.tours ?? []
+          const allTours = await fetchAllCuratedTours()
           const priceMap = new Map<string, number>()
           const cityMap = new Map<string, string | null>()
           const countryMap = new Map<string, string | null>()
