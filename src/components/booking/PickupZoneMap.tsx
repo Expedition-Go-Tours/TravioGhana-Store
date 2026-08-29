@@ -159,8 +159,6 @@ export default function PickupZoneMap({
   const onUserAddressChangeRef = useRef(onUserAddressChange)
   const onFatalFailureRef = useRef(onFatalFailure)
   const onPinClickRef = useRef(onPinClick)
-  /** The traveller's chosen location name (drives the user pin's tooltip). */
-  const userMarkerLabelRef = useRef<string | null>(null)
   /** Last name shown in the user pin's tooltip — re-uses it so a freshly
       dragged pin never re-opens the tooltip with the stale address while the
       reverse geocode for the new position is still in flight. */
@@ -180,9 +178,8 @@ export default function PickupZoneMap({
     selectedPinLabelRef.current = selectedPinLabel ?? null
     suppressDraggablePinRef.current = suppressDraggablePin
     focusPointRef.current = focusPoint ?? null
-    userMarkerLabelRef.current = userMarker?.label ?? null
     routeRef.current = route ?? null
-  }, [onUserPointChange, onUserAddressChange, onFatalFailure, onPinClick, selectedPin, selectedPinLabel, suppressDraggablePin, focusPoint, userMarker, route])
+  }, [onUserPointChange, onUserAddressChange, onFatalFailure, onPinClick, selectedPin, selectedPinLabel, suppressDraggablePin, focusPoint, route])
 
   const failMap = (): void => {
     setMapFailed(true)
@@ -472,7 +469,11 @@ export default function PickupZoneMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapFailed, mapDisabled, hasMapData])
 
-  // Live-update overlays as the traveller picks/drags a location.
+  // Live-update overlays as the traveller picks/drags a location. The user
+  // marker's LABEL is a dependency too: after a drag, the reverse geocode
+  // resolves asynchronously and only the label changes (same coordinates) —
+  // without it the effect wouldn't re-run and the pin tooltip would keep
+  // showing the pre-drag address while the booking form shows the new one.
   useEffect(() => {
     const map = mapRef.current
     if (!map || !mapReady || !hasMapData) return
@@ -552,7 +553,7 @@ export default function PickupZoneMap({
     // otherwise the last shown text is re-used so a pin dropped at a new spot
     // never flashes the stale address while its reverse geocode is in flight.
     const applyUserPinTooltip = (marker: maplibregl.Marker, force = false): void => {
-      const label = userMarkerLabelRef.current?.trim() || ''
+      const label = userMarker?.label?.trim() || ''
       if (!label) return
       if (!force && label === lastUserPopupTextRef.current) return
       lastUserPopupTextRef.current = label
@@ -636,7 +637,7 @@ export default function PickupZoneMap({
         // Source/layer absent — nothing to clear.
       }
     }
-  }, [zones, exclusions, userPoint, mapReady, hasMapData, extraPoints, userOutOfRange, selectedPin, selectedPinLabel, suppressDraggablePin, route])
+  }, [zones, exclusions, userPoint, mapReady, hasMapData, extraPoints, userOutOfRange, selectedPin, selectedPinLabel, suppressDraggablePin, route, userMarker?.label])
 
   // Out-of-range location: move the camera to the point immediately so the
   // red × pin is front and centre — no need to hit Re-center first.

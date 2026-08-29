@@ -51,6 +51,11 @@ export interface TourScheduleInfo {
   weeklySchedule?: Record<string, { startTime: string; endTime: string }[]>
   operatingHoursStart?: string
   operatingHoursEnd?: string
+  /** The date window the tour runs in (ISO date or datetime). Days outside it
+      are not bookable — the checkout engine rejects them — so the calendar
+      must block them. Null/absent = unbounded. */
+  startDate?: string | null
+  endDate?: string | null
 }
 
 const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
@@ -79,13 +84,24 @@ export function supplierOperatingDays(schedule?: TourScheduleInfo): string[] | n
   return null
 }
 
-/** Whether the supplier's schedule has this date's weekday set to run. */
+/** Whether the supplier's schedule has this date's weekday set to run — and
+    whether the date falls inside the schedule's active window. The checkout
+    engine rejects dates before the schedule start (or after its end) with
+    "No pricing available for selected date/time", so the calendar must treat
+    those days as non-operating too. */
 export function isSupplierOperatingDay(schedule?: TourScheduleInfo, date?: Date | null): boolean {
   if (!date) return true
   const days = supplierOperatingDays(schedule)
-  if (!days) return true
-  const dayName = date.toLocaleDateString('en-US', { weekday: 'long' })
-  return days.includes(dayName)
+  if (days) {
+    const dayName = date.toLocaleDateString('en-US', { weekday: 'long' })
+    if (!days.includes(dayName)) return false
+  }
+  const key = date.toISOString().slice(0, 10)
+  const start = schedule?.startDate ? String(schedule.startDate).slice(0, 10) : null
+  const end = schedule?.endDate ? String(schedule.endDate).slice(0, 10) : null
+  if (start && key < start) return false
+  if (end && key > end) return false
+  return true
 }
 
 /**

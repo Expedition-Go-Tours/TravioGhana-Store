@@ -551,6 +551,12 @@ export interface AvailabilityScheduleInfo {
   weeklySchedule: Record<string, { startTime: string; endTime: string }[]>
   operatingHoursStart?: string
   operatingHoursEnd?: string
+  /** The date window the tour runs in (availability block, falling back to
+      the first pricing schedule) — the checkout engine rejects dates outside
+      it ("No pricing available for selected date/time"), so the calendar must
+      block them too. Null = unbounded. */
+  startDate?: string | null
+  endDate?: string | null
 }
 
 function hasWeeklyHours(ws: unknown): boolean {
@@ -632,6 +638,12 @@ export function extractAvailabilitySchedule(rawTour: any): AvailabilityScheduleI
       weeklySchedule,
       operatingHoursStart: avail.operatingHoursStart || undefined,
       operatingHoursEnd: avail.operatingHoursEnd || undefined,
+      startDate: typeof avail.startDate === 'string' && avail.startDate
+        ? avail.startDate
+        : (typeof firstSched.startDate === 'string' && firstSched.startDate ? firstSched.startDate : null),
+      endDate: typeof avail.endDate === 'string' && avail.endDate
+        ? avail.endDate
+        : (typeof firstSched.endDate === 'string' && firstSched.endDate ? firstSched.endDate : null),
     }
   } catch {
     return {
@@ -639,6 +651,8 @@ export function extractAvailabilitySchedule(rawTour: any): AvailabilityScheduleI
       timeSlots: [],
       daysOfWeek: [],
       weeklySchedule: {},
+      startDate: null,
+      endDate: null,
     }
   }
 }
@@ -1554,6 +1568,9 @@ export interface TourDetailData extends Omit<TourDetail, 'guide' | 'contact' | '
   /** Weekdays the supplier set the tour to run on (empty = all days). */
   daysOfWeek?: string[]
   weeklySchedule?: Record<string, { startTime: string; endTime: string }[]>
+  /** The date window the tour runs in — days outside it are not bookable. */
+  startDate?: string | null
+  endDate?: string | null
   operatingHoursStart?: string
   operatingHoursEnd?: string
   /**

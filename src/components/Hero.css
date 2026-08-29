@@ -1,7 +1,7 @@
 .hero {
   position: relative;
   min-height: 48vh;
-  background: linear-gradient(180deg, rgba(23, 146, 55, 0.08) 0%, rgba(23, 146, 55, 0.03) 40%, #ffffff 100%);
+  background: linear-gradient(180deg, rgba(201, 150, 33, 0.16) 0%, rgba(23, 146, 55, 0.06) 40%, #ffffff 100%);
 }
 
 .hero-content {

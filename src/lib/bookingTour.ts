@@ -59,6 +59,8 @@ export interface BookingTour {
   timeSlots?: TourScheduleInfo['timeSlots']
   daysOfWeek?: TourScheduleInfo['daysOfWeek']
   weeklySchedule?: TourScheduleInfo['weeklySchedule']
+  startDate?: TourScheduleInfo['startDate']
+  endDate?: TourScheduleInfo['endDate']
   operatingHoursStart?: string
   operatingHoursEnd?: string
   pricingModel?: 'perPerson' | 'perGroup'
@@ -211,6 +213,8 @@ export function buildBookingTour(tour: TourDetailData, opts: BuildBookingTourOpt
     timeSlots: tour.timeSlots,
     daysOfWeek: tour.daysOfWeek,
     weeklySchedule: tour.weeklySchedule,
+    startDate: tour.startDate,
+    endDate: tour.endDate,
     operatingHoursStart: tour.operatingHoursStart,
     operatingHoursEnd: tour.operatingHoursEnd,
     pricingModel: tour.pricingModel,

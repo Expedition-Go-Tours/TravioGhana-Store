@@ -186,8 +186,16 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
     pricingFetched.current = true
     const tomorrow = new Date()
     tomorrow.setDate(tomorrow.getDate() + 1)
-    doFetchPricing(tomorrow.toISOString().slice(0, 10))
-  }, [tour.id, doFetchPricing])
+    // The initial quote uses the next day — skip it when that day is outside
+    // the tour's operating window (the checkout engine rejects those days with
+    // "No pricing available for selected date/time"); the user quotes when
+    // they pick a valid date instead. Deferred a tick so the pricing call
+    // (which sets loading state) is never invoked synchronously from the
+    // effect body.
+    if (!isSupplierOperatingDay(tour, tomorrow)) return
+    const timer = window.setTimeout(() => doFetchPricing(tomorrow.toISOString().slice(0, 10)), 0)
+    return () => window.clearTimeout(timer)
+  }, [tour.id, tour, doFetchPricing])
 
   // Auto-refresh the real-time price when the date or traveler mix changes
   // (Viator re-checks on date+pax selection). Debounced so +/- taps don't
