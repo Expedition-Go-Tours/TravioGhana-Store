@@ -1,4 +1,4 @@
-﻿import { useRef, useState, useEffect, useCallback, useMemo } from 'react'
+import { useRef, useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Star, Heart, Car, Compass, Languages as LanguagesIcon, ShieldCheck, Ban, TrendingUp } from 'lucide-react'
@@ -19,11 +19,12 @@ const GAP = 24
 
 function shortCancellation(policy?: string): string {
   if (!policy) return ''
-  if (typeof policy !== 'string') return String(policy)
-  const lower = policy.toLowerCase()
+  // Coerce defensively — stale localStorage items can carry non-strings.
+  const raw = String(policy)
+  const lower = raw.toLowerCase()
   if (/non[ -]?refundable/.test(lower)) return 'Non-refundable'
   if (lower.includes('free')) return 'Free cancellation'
-  return policy.split(' up to')[0].trim()
+  return raw.split(' up to')[0].trim()
 }
 
 // Maps a Continue Planning item onto the TourCard props used by the

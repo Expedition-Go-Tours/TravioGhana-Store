@@ -10,7 +10,9 @@ const SellOutContext = createContext<SellOutContextValue | null>(null)
 // so id membership alone can't cover them — fall back to a normalized title
 // match against the homepage sell-out list.
 function normalizeTitle(title: string): string {
-  return title.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+  // Coerce defensively — stale localStorage continue-planning items can carry
+  // a truthy non-string title, which would crash the card (h.toLowerCase).
+  return String(title ?? '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
 }
 
 export function SellOutProvider({ tours, children }: { tours: { id: string; title: string }[]; children: ReactNode }) {

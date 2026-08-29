@@ -1142,6 +1142,28 @@ export interface ExpeditionToursFilters {
 }
 
 /**
+ * Fetch the ENTIRE curated Ghana catalog by paging through
+ * /travioghana/tours (limit capped at 50 per request by the backend schema —
+ * a single limit=500 request is rejected with 400).
+ */
+async function fetchAllCuratedTours(): Promise<any[]> {
+  const CATALOG_PAGE_SIZE = 50
+  const MAX_CATALOG_PAGES = 20 // 1000 tours max
+  const first = await expeditionFetchRaw(`/travioghana/tours?page=1&limit=${CATALOG_PAGE_SIZE}`)
+  const tours: any[] = first.data?.tours ?? []
+  const totalPages = Math.min(first.pagination?.totalPages ?? 1, MAX_CATALOG_PAGES)
+  if (totalPages > 1 && tours.length > 0) {
+    const rest = await Promise.all(
+      Array.from({ length: totalPages - 1 }, (_, i) =>
+        expeditionFetchRaw(`/travioghana/tours?page=${i + 2}&limit=${CATALOG_PAGE_SIZE}`)
+      )
+    )
+    for (const payload of rest) tours.push(...(payload.data?.tours ?? []))
+  }
+  return tours
+}
+
+/**
  * The curated /travioghana/tours endpoint only selects a handful of
  * top-level Tour columns (city, country, category, etc.), which are
  * frequently null — the real values live inside the productContent /
@@ -1158,8 +1180,7 @@ async function enrichExpeditionRecords(records: ExpeditionTourRecord[]): Promise
   // There is no cheap way to detect staleness up front, so skip the old
   // "needsBatch" short-circuit to keep every listing price authoritative.
   try {
-    const allPayload = await expeditionFetchRaw('/tours?limit=500')
-    const allTours: any[] = allPayload.data?.tours ?? []
+    const allTours = await fetchAllCuratedTours()
     const priceMap = new Map<string, number>()
     const cityMap = new Map<string, string | null>()
     const countryMap = new Map<string, string | null>()
@@ -1283,8 +1304,12 @@ export function useExpeditionTours(filters: ExpeditionToursFilters = {}) {
 
       await enrichExpeditionRecords(records)
 
+      const listings = records.map((r) => mapToListing(r.tour))
+      // Apply badge fields (languages, cancellation, accommodation, etc.)
+      // from the thin badges endpoint — the curated listing doesn't include
+      // the JSON blobs these are extracted from.
       return {
-        tours: records.map((r) => mapToListing(r.tour)),
+        tours: await enrichTourBadgeFields(listings),
         pagination,
       }
     },
@@ -1332,7 +1357,8 @@ export function useAllExpeditionTours(opts?: { mood?: string }) {
 
       await enrichExpeditionRecords(records)
 
-      return records.map((r) => mapToListing(r.tour))
+      const listings = records.map((r) => mapToListing(r.tour))
+      return enrichTourBadgeFields(listings)
     },
   })
 }
@@ -1997,70 +2023,42 @@ interface BadgeFieldMaps {
 let badgeMapsCache: { promise: Promise<BadgeFieldMaps>; expiresAt: number } | null = null
 
 /**
- * One shared batch fetch of the tour-card badge fields (languages,
- * cancellation policy, pickup, meeting mode, accommodation) into id-keyed
- * maps. The full /tours listing is the authoritative source — it carries the
- * JSON blobs (productContent, categorization, bookingAndTickets) the facts
- * are extracted from. The lightweight /expedition/tours/badges endpoint is
- * only a fallback: its pre-extracted projections are incomplete for the
- * supplier's data (languages are stored as productContent.writingLanguage,
- * the meeting point as bookingAndTickets.meetingPoint and accommodation as
- * categorization.accommodationIncluded — none of which that endpoint reads),
- * so cards would otherwise miss those facts.
+ * One shared batch fetch of the lightweight /travioghana/tours/badges
+ * endpoint, extracting tour-card badge fields (languages, cancellation
+ * policy, pickup, meeting mode, accommodation) into id-keyed maps.
+ *
+ * Uses the dedicated badges endpoint (~20KB, pre-extracted fields) instead
+ * of the full /travioghana/tours listing (~500KB) for faster homepage loads.
+ * Memoized for 60s.
  */
 function getBadgeFieldMaps(): Promise<BadgeFieldMaps> {
   const now = Date.now()
   if (!badgeMapsCache || now >= badgeMapsCache.expiresAt) {
     badgeMapsCache = {
       promise: (async () => {
-        try {
-          const payload = await expeditionFetchRaw('/tours?limit=500')
-          const allTours: any[] = payload.data?.tours ?? payload.tours ?? []
-          if (allTours.length > 0) return extractBadgeFieldMaps(allTours)
-          console.warn('[enrichTourBadgeFields] full listing returned no tours, falling back to badges endpoint')
-        } catch (e) {
-          console.warn('[enrichTourBadgeFields] full listing failed, falling back to badges endpoint:', e)
+        const payload = await expeditionFetchRaw('/travioghana/tours/badges')
+        const allTours: any[] = payload.data?.tours ?? payload.tours ?? []
+        const maps: BadgeFieldMaps = {
+          languages: new Map(),
+          cancellation: new Map(),
+          pickup: new Map(),
+          meetingMode: new Map(),
+          accommodation: new Map(),
         }
-        const badgesPayload = await expeditionFetchRaw('/expedition/tours/badges')
-        const badgesTours: any[] = badgesPayload.data?.tours ?? badgesPayload.tours ?? []
-        return extractBadgeFieldMaps(badgesTours)
+        for (const t of allTours) {
+          // The badges endpoint returns pre-extracted fields
+          if (t.languages?.length) maps.languages.set(t.id, t.languages)
+          if (t.cancellationPolicy) maps.cancellation.set(t.id, t.cancellationPolicy)
+          if (t.pickupIncluded != null) maps.pickup.set(t.id, t.pickupIncluded)
+          if (t.meetingMode) maps.meetingMode.set(t.id, t.meetingMode)
+          if (t.accommodationIncluded) maps.accommodation.set(t.id, true)
+        }
+        return maps
       })(),
       expiresAt: now + 60_000,
     }
   }
   return badgeMapsCache.promise
-}
-
-function extractBadgeFieldMaps(allTours: any[]): BadgeFieldMaps {
-  const maps: BadgeFieldMaps = {
-    languages: new Map(),
-    cancellation: new Map(),
-    pickup: new Map(),
-    meetingMode: new Map(),
-    accommodation: new Map(),
-  }
-  for (const t of allTours) {
-    const bt = parseJsonMaybe(t.bookingAndTickets)
-    // The badges endpoint returns pre-extracted fields; the full listing
-    // needs the same extraction the listing mappers use. The badges payload
-    // can carry cancellationPolicy as a structured object (the supplier
-    // builder stores it as JSON), so only trust a plain string here and let
-    // the normalizing extractor handle object-shaped policies — the card
-    // renders the label with .toLowerCase()/string ops.
-    const languages = Array.isArray(t.languages) && t.languages.length ? t.languages : extractContentLanguage(t)
-    if (languages?.length) maps.languages.set(t.id, languages)
-    const rawCancellation = t.cancellationPolicy
-    const cancellation = (typeof rawCancellation === 'string' && rawCancellation.trim().length > 0)
-      ? rawCancellation
-      : extractCancellationFromTour(t)
-    if (cancellation) maps.cancellation.set(t.id, cancellation)
-    const pickup = t.pickupIncluded ?? (bt?.pickupProvided ?? bt?.pickupAvailable) ?? undefined
-    if (pickup != null) maps.pickup.set(t.id, pickup)
-    const meetingMode = t.meetingMode ?? extractMeetingInfo(t).meetingMode
-    if (meetingMode) maps.meetingMode.set(t.id, meetingMode)
-    if (t.accommodationIncluded === true || extractAccommodationIncluded(t)) maps.accommodation.set(t.id, true)
-  }
-  return maps
 }
 
 /**
@@ -2158,7 +2156,7 @@ export function useExpeditionOffers(limit = 12) {
     queryKey: ['expedition', 'offers', limit],
     staleTime: 60_000,
     queryFn: async (): Promise<TourCardData[]> => {
-      const payload = await expeditionFetchRaw(`/travioghana/tours?limit=${limit}&sortBy=viewCount&sortOrder=desc`)
+      const payload = await expeditionFetchRaw(`/travioghana/tours?limit=${limit}&sortBy=views&sortOrder=desc`)
       const tours: any[] = payload.data?.tours ?? payload.tours ?? []
       // Offer data is now included in the /tours listing response via
       // specialOfferTargets — no need to fetch each tour individually.
@@ -2170,11 +2168,12 @@ export function useExpeditionOffers(limit = 12) {
         })
         .filter((x): x is TourCardData => x != null)
       // Best deal (largest absolute saving) first.
-      return withOffers.sort((a, b) => {
+      const sorted = withOffers.sort((a, b) => {
         const bestA = bestOfferDiscountAmount(a.specialOffers || [], a.priceValue ?? 0)
         const bestB = bestOfferDiscountAmount(b.specialOffers || [], b.priceValue ?? 0)
         return bestB - bestA
       })
+      return enrichTourBadgeFields(sorted)
     },
   })
 }
@@ -2193,26 +2192,30 @@ async function fetchSimilarToursFallback(excludeTourId: string | undefined, cate
     return tours.filter((t) => t.id !== excludeTourId)
   }
 
+  let raw: any[] = []
+
   // 1) Same category first (closest match to the curated endpoint's intent)
   if (category) {
     const params = new URLSearchParams({ category, limit: '8' })
-    const results = await tryFetch(params)
-    if (results.length > 0) return results.slice(0, 4).map(mapRawTourToListing)
+    raw = (await tryFetch(params)).slice(0, 4)
   }
 
   // 2) Fall back to same city/country
-  if (city || country) {
+  if (raw.length === 0 && (city || country)) {
     const params = new URLSearchParams({ limit: '8' })
     if (city) params.set('city', city)
     if (country) params.set('country', country)
-    const results = await tryFetch(params)
-    if (results.length > 0) return results.slice(0, 4).map(mapRawTourToListing)
+    raw = (await tryFetch(params)).slice(0, 4)
   }
 
   // 3) Last resort: just show other active tours
-  const params = new URLSearchParams({ limit: '8', sortBy: 'popularity' })
-  const results = await tryFetch(params)
-  return results.slice(0, 4).map(mapRawTourToListing)
+  if (raw.length === 0) {
+    const params = new URLSearchParams({ limit: '8', sortBy: 'popularity' })
+    raw = (await tryFetch(params)).slice(0, 4)
+  }
+
+  const listings = raw.map(mapRawTourToListing)
+  return enrichTourBadgeFields(listings)
 }
 
 /**
@@ -2233,7 +2236,7 @@ export function useRecommendedTours(limit: number = 12) {
     queryFn: async (): Promise<TourCardData[]> => {
       const [curatedResult, newestResult] = await Promise.allSettled([
         expeditionFetchRaw(`/travioghana/tours?limit=${limit}`),
-        expeditionFetchRaw(`/travioghana/tours?limit=${limit}&sortBy=createdAt&sortOrder=desc`),
+        expeditionFetchRaw(`/travioghana/tours?limit=${limit}&sortBy=newest&sortOrder=desc`),
       ])
 
       const curatedTours: TourCardData[] = []
@@ -2257,7 +2260,7 @@ export function useRecommendedTours(limit: number = 12) {
         merged.push(tour)
       }
 
-      return merged.slice(0, limit)
+      return enrichTourBadgeFields(merged.slice(0, limit))
     },
   })
 }
@@ -2277,10 +2280,10 @@ export function useNewestTours(limit: number = 10) {
   return useQuery({
     queryKey: ['expedition', 'tours', 'newest', limit],
     queryFn: async (): Promise<TourCardData[]> => {
-      const payload = await expeditionFetchRaw(`/tours?limit=${limit}&sortBy=createdAt&sortOrder=desc`)
+      const payload = await expeditionFetchRaw(`/tours?limit=${limit}&sortBy=newest&sortOrder=desc`)
       const rawTours: any[] = payload.data?.tours ?? payload.tours ?? []
       const listings = rawTours.map(mapRawTourToListing)
-      return Promise.all(
+      const enriched = await Promise.all(
         listings.map(async (listing) => {
           try {
             const raw = await fetchRawTourBySlugOrId(listing.id)
@@ -2291,6 +2294,7 @@ export function useNewestTours(limit: number = 10) {
           }
         }),
       )
+      return enrichTourBadgeFields(enriched)
     },
   })
 }
@@ -2329,8 +2333,7 @@ export function useSimilarTours(slug: string | undefined) {
       // by cross-referencing the full /tours listing.
       {
         try {
-          const allPayload = await expeditionFetchRaw('/tours?limit=500')
-          const allTours: any[] = allPayload.data?.tours ?? []
+          const allTours = await fetchAllCuratedTours()
           const priceMap = new Map<string, number>()
           const cityMap = new Map<string, string | null>()
           const countryMap = new Map<string, string | null>()
@@ -2416,7 +2419,7 @@ export function useSimilarTours(slug: string | undefined) {
         }
       }
 
-      return records.map((r) => mapToListing(r.tour))
+      return enrichTourBadgeFields(records.map((r) => mapToListing(r.tour)))
     },
   })
 }

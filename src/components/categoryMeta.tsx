@@ -1,4 +1,4 @@
-﻿// Maps a tour's product type / category into a badge-friendly icon + label
+// Maps a tour's product type / category into a badge-friendly icon + label
 // + accent color. The supplier chooses "Tour" / "Activity" / "Transport" in
 // Step 2 of the product builder (Travio Ghana-Supplier/.../Step02Category.jsx)
 // — that's the canonical taxonomy this maps against. Legacy mock listing
@@ -16,7 +16,9 @@ export interface CategoryMeta {
 
 export function getCategoryMeta(category?: string | null): CategoryMeta | null {
   if (!category) return null
-  const normalized = category.trim().toLowerCase()
+  // Coerce defensively: stale localStorage continue-planning items or legacy
+  // data can carry a truthy non-string category, which would crash the card.
+  const normalized = String(category).trim().toLowerCase()
 
   if (normalized === 'tour') {
     return { label: 'Tour', Icon: Compass, variant: 'tour' }
@@ -32,8 +34,9 @@ export function getCategoryMeta(category?: string | null): CategoryMeta | null {
 
   // Legacy/free-text category (e.g. "Accra · Day trip") — show as-is with a
   // neutral tag icon rather than mapping to one of the three known types.
+  const label = String(category)
   return {
-    label: category.charAt(0).toUpperCase() + category.slice(1),
+    label: label.charAt(0).toUpperCase() + label.slice(1),
     Icon: Tag,
     variant: 'default',
   }

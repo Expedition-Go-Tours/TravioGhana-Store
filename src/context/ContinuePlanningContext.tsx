@@ -1,4 +1,4 @@
-﻿import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react'
 import type { Tour, MultiDayTour } from '../components/data'
 import type { SpecialOfferData } from '../hooks/useExpeditionTours'
 
@@ -83,10 +83,31 @@ export function toContinuePlanningItem(tour: Tour | (MultiDayTour & { days?: str
 const STORAGE_KEY = 'travio_ghana_continue_planning'
 const MAX_ITEMS = 12
 
+function toSafeString(value: unknown): string | undefined {
+  if (value == null) return undefined
+  return typeof value === 'string' ? value : JSON.stringify(value)
+}
+
 function loadStorage(): ContinuePlanningItem[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
-    return stored ? JSON.parse(stored) : []
+    if (!stored) return []
+    const parsed = JSON.parse(stored)
+    if (!Array.isArray(parsed)) return []
+    // Sanitize: drop malformed/stale entries (older builds could persist a
+    // different shape) and coerce optional string fields so render-time
+    // consumers like getCategoryMeta/shortCancellation never see non-strings.
+    return parsed.filter((i): i is ContinuePlanningItem =>
+      i && typeof i === 'object' && typeof i.id === 'string' && typeof i.title === 'string'
+    ).map((i) => ({
+      ...i,
+      title: String(i.title),
+      location: toSafeString(i.location) || '',
+      category: toSafeString(i.category),
+      difficulty: toSafeString(i.difficulty),
+      cancellationPolicy: toSafeString(i.cancellationPolicy),
+      duration: toSafeString(i.duration) || '',
+    }))
   } catch {
     return []
   }

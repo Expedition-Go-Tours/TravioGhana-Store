@@ -77,9 +77,13 @@ export default function TourCard({ id, title, duration, features, price, rating,
   // tour guide conducts the experience in (e.g. "English Guide"), not the
   // language of e.g. printed materials or the page itself.
   const languageLabel = languages?.length ? `${languages.join(', ')} Guide` : ''
-  const isNonRefundable = typeof cancellationPolicy === 'string' && /non[- ]?refundable/i.test(cancellationPolicy)
-  const cancellationLabel = typeof cancellationPolicy === 'string' && cancellationPolicy
-    ? (isNonRefundable ? 'Non-refundable' : (cancellationPolicy.toLowerCase().includes('free') ? 'Free cancellation' : cancellationPolicy))
+  // Guard defensively: cancellationPolicy is typed as string|null but a
+  // stale localStorage item or a badges response can carry a raw JSON
+  // object ({type,label,...}) which would crash .toLowerCase().
+  const policy = typeof cancellationPolicy === 'string' ? cancellationPolicy : (cancellationPolicy as any)?.label || ''
+  const isNonRefundable = !!policy && /non[- ]?refundable/i.test(policy)
+  const cancellationLabel = policy
+    ? (isNonRefundable ? 'Non-refundable' : (policy.toLowerCase().includes('free') ? 'Free cancellation' : policy))
     : ''
   // The Accommodation badge only applies to overnight trips — gate it on a
   // duration of more than one day ("2 days", "3 days", ...). Hour-based
