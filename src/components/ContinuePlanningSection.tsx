@@ -176,7 +176,7 @@ function ContinuePlanningCard({ item, likelyToSellOut }: { item: ContinuePlannin
       <div className="cp-card-media">
         {item.source === 'travio-ghana' && (
           <div className="cp-card-source-badge">
-            <img src="/travio_logo.png" alt="Travio Africa" />
+            <img src="/travio_logo.png" alt="Travio Ghana" />
           </div>
         )}
         <OptimizedImage src={item.imageUrl} alt={item.title} width={400} />

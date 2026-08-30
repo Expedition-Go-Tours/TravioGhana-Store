@@ -1,4 +1,4 @@
-﻿import { toast } from 'sonner'
+import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n/config'
 import { parsePrice, getTourSlug, type MultiDayTour } from './data'
@@ -44,7 +44,7 @@ export default function MultiDayCard({ id, title, days, accommodation, highlight
       <div className="multiday-card-image">
         {source === 'travio-ghana' && (
           <div className="source-badge">
-            <img src="/travio_logo.png" alt="Travio Africa" />
+            <img src="/travio_logo.png" alt="Travio Ghana" />
           </div>
         )}
         <OptimizedImage src={image} alt={title} width={600} />

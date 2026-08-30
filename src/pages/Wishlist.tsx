@@ -1,4 +1,4 @@
-﻿import { useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { Button } from '../components/ui/button'
@@ -210,7 +210,7 @@ const handleBookNow = (item: WishlistItem) => {
                     {item.duration && <div className="wishlist-card-badge">{item.duration}</div>}
                     {item.source === 'travio-ghana' && (
                       <div className="source-badge">
-                        <img src="/travio_logo.png" alt="Travio Africa" />
+                        <img src="/travio_logo.png" alt="Travio Ghana" />
                       </div>
                     )}
                   </div>

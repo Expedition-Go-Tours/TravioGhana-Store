@@ -1,4 +1,4 @@
-﻿import { Component, useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { Component, useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
@@ -894,9 +894,9 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
                   border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
                   textAlign: 'center',
                 }}>
-                  <img src="/travio_logo.png" alt="Travio Africa" style={{ height: 32, marginBottom: 16 }} />
+                  <img src="/travio_logo.png" alt="Travio Ghana" style={{ height: 32, marginBottom: 16 }} />
                   <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>
-                    This tour is operated by a partner on Travio Africa
+                    This tour is operated by a partner on Travio Ghana
                   </p>
                   <a
                     href={tour.externalUrl}
@@ -908,7 +908,7 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
                       fontWeight: 600, textDecoration: 'none', fontSize: 16,
                     }}
                   >
-                    Book on Travio Africa
+                    Book on Travio Ghana
                   </a>
                 </div>
               ) : (

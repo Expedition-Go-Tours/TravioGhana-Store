@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -15,7 +15,7 @@ import { uploadChatImage } from '../chat/chatApi';
 import type { ChatRecipient } from '../chat/types';
 
 const SUPPORT_PHONE = "+233 XX XXX XXXX";
-const SUPPORT_EMAIL = "support@Travio Ghana.com";
+const SUPPORT_EMAIL = "support@travioghana.com";
 const SUPPORT_HOURS = [
   { label: "Mon - Fri", value: "8:00 AM - 6:00 PM" },
   { label: "Saturday", value: "9:00 AM - 2:00 PM" },
