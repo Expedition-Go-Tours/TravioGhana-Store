@@ -76,7 +76,7 @@ export default function SimilarTourCard({
       <div className="similar-tour-image">
         {source === 'travio-ghana' && (
           <div className="source-badge">
-            <img src="/travio_logo.png" alt="Travio Africa" />
+            <img src="/travio_logo.png" alt="Travio Ghana" />
           </div>
         )}
         <OptimizedImage src={image} alt={title} width={400} />

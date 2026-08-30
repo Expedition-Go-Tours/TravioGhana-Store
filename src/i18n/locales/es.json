@@ -1,4 +1,4 @@
-﻿{
+{
   "auth": {
     "alreadyHaveAccount": "¿Ya tienes una cuenta?",
     "createAccount": "Crear Cuenta",
@@ -259,8 +259,8 @@
     "welcomeTitle": "¡Hola! Bienvenido a Travio Ghana",
     "typicalReply": "Suele responder en minutos",
     "myChats": "Mis chats",
-    "ghanaSupport": "Soporte Expedition",
-    "chatWithSupportSub": "Habla con nuestro equipo de Expedition",
+    "ghanaSupport": "Soporte Travio Ghana",
+    "chatWithSupportSub": "Habla con nuestro equipo de Travio Ghana",
     "signInToChat": "Inicia sesión para chatear",
     "signInPrompt": "Inicia sesión para chatear con los proveedores de tours y nuestro equipo de soporte",
     "signIn": "Iniciar sesión",

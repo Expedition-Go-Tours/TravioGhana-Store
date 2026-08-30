@@ -227,7 +227,7 @@ export default function TourCard({ id, title, duration, features, price, rating,
         {!imageClean && isNew && !showSellOutTag && !showOfferBadge && <span className="tour-card-new-pill">New</span>}
         {!imageClean && !hideSourceBadge && !showSellOutTag && !showOfferBadge && source === 'travio-ghana' && (
           <div className="source-badge">
-            <img src="/travio_logo.png" alt="Travio Africa" />
+            <img src="/travio_logo.png" alt="Travio Ghana" />
           </div>
         )}
         <div
