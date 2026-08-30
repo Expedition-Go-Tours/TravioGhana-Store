@@ -13,6 +13,27 @@ import './AllToursPage.css'
 
 const PAGE_SIZE = 12
 
+/**
+ * Builds a windowed list of page numbers for the pagination bar: always shows
+ * the first and last page plus the pages around the current one, collapsing
+ * large gaps into an ellipsis (e.g. 1 … 4 5 6 … 24).
+ */
+function getPageWindow(current: number, total: number): (number | '…')[] {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1)
+  }
+  const pages = new Set<number>([1, total, current - 1, current, current + 1])
+  const sorted = [...pages].filter(p => p >= 1 && p <= total).sort((a, b) => a - b)
+  const out: (number | '…')[] = []
+  let prev = 0
+  for (const p of sorted) {
+    if (prev && p - prev > 1) out.push('…')
+    out.push(p)
+    prev = p
+  }
+  return out
+}
+
 function computeDiscountLabel(t: HomepageOfferTour): string | undefined {
   if (t.discountType === 'PERCENTAGE' && t.discountPercentage) {
     return `-${t.discountPercentage}%`
@@ -312,12 +333,26 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
   const handleScroll = useCallback(() => updateArrows(), [updateArrows])
 
   const goNextPage = () => {
-    if (hasNextPage) setPage(p => p + 1)
+    if (hasNextPage) goToPage(page + 1)
   }
 
   const goPrevPage = () => {
-    if (hasPrevPage) setPage(p => Math.max(1, p - 1))
+    if (hasPrevPage) goToPage(page - 1)
   }
+
+  const goToPage = (target: number) => {
+    const next = Math.min(Math.max(1, target), totalPages)
+    if (next === page) return
+    setPage(next)
+    requestAnimationFrame(() => {
+      document.querySelector('.filter-bar-sticky')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }
+
+  const pageWindow = useMemo(
+    () => getPageWindow(page, totalPages),
+    [page, totalPages],
+  )
 
   return (
     <div className="all-tours-page">
@@ -471,6 +506,7 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
                       cancellationPolicy={tour.cancellationPolicy}
                       pickupIncluded={tour.pickupIncluded}
                       meetingMode={tour.meetingMode}
+                      accommodationIncluded={tour.accommodationIncluded}
                       languages={tour.languages}
                       discount={offersMap?.get(tour.id) ? computeDiscountLabel(offersMap.get(tour.id)!) : undefined}
                       specialOffers={offersMap?.get(tour.id)?.specialOffers}
@@ -478,6 +514,7 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
                       likelyToSellOut={sectionParam === 'Sell Out'}
                       compactDurationOnMobile
                       bodyOfferBadgesOnMobile
+                      factsGridOnMobile
                     />
                 </motion.div>
               ))}
@@ -497,29 +534,44 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
           </div>
         )}
 
-        {(hasNextPage || hasPrevPage) && (
+        {totalPages > 1 && (
           <div className="all-tours-load-more">
-            <div className="pagination-controls">
+            <nav className="all-tours-pagination" aria-label="Pagination">
               <button
-                className="all-tours-load-btn"
+                className="pagination-btn pagination-prev"
                 onClick={goPrevPage}
                 disabled={!hasPrevPage}
-                style={{ opacity: hasPrevPage ? 1 : 0.4 }}
+                aria-label="Previous page"
               >
-                Previous
+                <ChevronLeft size={18} />
               </button>
-              <span className="pagination-indicator">
-                Page {page} of {totalPages}
-              </span>
+              {pageWindow.map((item, idx) =>
+                item === '…' ? (
+                  <span key={`ellipsis-${idx}`} className="pagination-ellipsis" aria-hidden="true">
+                    …
+                  </span>
+                ) : (
+                  <button
+                    key={item}
+                    className={`pagination-btn ${item === page ? 'active' : ''}`}
+                    onClick={() => goToPage(item)}
+                    disabled={item === page}
+                    aria-label={`Page ${item}`}
+                    aria-current={item === page ? 'page' : undefined}
+                  >
+                    {item}
+                  </button>
+                )
+              )}
               <button
-                className="all-tours-load-btn"
+                className="pagination-btn pagination-next"
                 onClick={goNextPage}
                 disabled={!hasNextPage}
-                style={{ opacity: hasNextPage ? 1 : 0.4 }}
+                aria-label="Next page"
               >
-                Next
+                <ChevronRight size={18} />
               </button>
-            </div>
+            </nav>
           </div>
         )}
       </div>

@@ -80,9 +80,9 @@ export default function SupportChatWidget({ initialOpen, initialRecipient, onOpe
     }
   }, [isOpen, initialRecipient, user, chat, t]);
 
-  // Track the mobile breakpoint (matches the full-screen popup CSS at 480px)
+  // Track the mobile breakpoint (matches the full-screen popup CSS at 768px)
   useEffect(() => {
-    const mq = window.matchMedia("(max-width: 480px)");
+    const mq = window.matchMedia("(max-width: 768px)");
     const update = () => setIsMobile(mq.matches);
     update();
     mq.addEventListener("change", update);

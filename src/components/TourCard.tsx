@@ -47,9 +47,12 @@ interface TourCardProps extends Tour {
   /** On mobile, render the offer / likely-to-sell-out badges in the card body
       after the facts list instead of over the photo. */
   bodyOfferBadgesOnMobile?: boolean
+  /** On mobile, hide the features/quick-facts section from the card body
+      entirely (used on dense listing pages like All Tours). */
+  factsGridOnMobile?: boolean
 }
 
-export default function TourCard({ id, title, duration, features, price, rating, reviews, location, image, photos, discount, difficulty, cancellationPolicy, pickupIncluded, accommodationIncluded, meetingMode, category, languages, source, externalUrl, slug, isNew, hideSourceBadge, hideFeatures, imageClean, priceValue, specialOffers, likelyToSellOut, hideOfferBadge, compactDurationOnMobile, bodyOfferBadgesOnMobile }: TourCardProps) {
+export default function TourCard({ id, title, duration, features, price, rating, reviews, location, image, photos, discount, difficulty, cancellationPolicy, pickupIncluded, accommodationIncluded, meetingMode, category, languages, source, externalUrl, slug, isNew, hideSourceBadge, hideFeatures, imageClean, priceValue, specialOffers, likelyToSellOut, hideOfferBadge, compactDurationOnMobile, bodyOfferBadgesOnMobile, factsGridOnMobile }: TourCardProps) {
   const { t } = useTranslation()
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist()
   const { isLikelyToSellOut } = useSellOutContext()
@@ -66,6 +69,7 @@ export default function TourCard({ id, title, duration, features, price, rating,
     return () => mq.removeEventListener('change', handler)
   }, [])
   const moveBadgesToBody = bodyOfferBadgesOnMobile && isMobile
+  const moveFactsToGrid = factsGridOnMobile && isMobile
 
   // "tour" / "activity" / "transport" is the supplier's Step 2 product type
   // choice — give each its own icon + accent so the badge reads at a glance,
@@ -369,7 +373,9 @@ export default function TourCard({ id, title, duration, features, price, rating,
             </span>
           )}
         </div>
-        {!hideFeatures && <div className="tour-card-features">{features}</div>}
+        {!hideFeatures && !moveFactsToGrid && (
+          <div className="tour-card-features">{features}</div>
+        )}
         <div className="tour-card-bottom">
           <div className="tour-card-rating">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="#39AD6C" stroke="#39AD6C" strokeWidth="1">

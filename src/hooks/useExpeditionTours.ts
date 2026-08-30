@@ -1097,6 +1097,15 @@ function mapToListing(tour: ExpeditionTourRecord['tour']): TourCardData {
   // reading productContent directly when it's actually present on `tour`.
   const languages = tour.languages?.length ? tour.languages : extractContentLanguage(tour)
 
+  // Feature line shown under the card title: prefer the stored column, else
+  // derive a compact summary from productContent.highlights (mirrors
+  // mapRawTourToListing so curated cards carry the same "Guide · Lunch ·
+  // Fees" style highlights instead of a blank row).
+  const features = tour.features
+    || (Array.isArray(parseProductContent(tour)?.highlights)
+      ? parseProductContent(tour).highlights.slice(0, 3).join(' · ')
+      : '')
+
   let effectiveDuration = tour.durationMinutes
   if (!effectiveDuration && tour.categorization) {
     const cat = typeof tour.categorization === 'string' ? JSON.parse(tour.categorization) : tour.categorization
@@ -1118,7 +1127,7 @@ function mapToListing(tour: ExpeditionTourRecord['tour']): TourCardData {
     title: tour.title,
     category: tour.category || '',
     duration: formatDuration(effectiveDuration),
-    features: tour.features || '',
+    features,
     price: formatPrice(effectivePrice),
     rating: tour.averageRating != null ? String(tour.averageRating) : '0',
     reviews: tour.reviewCount,
@@ -1178,6 +1187,30 @@ async function fetchAllCuratedTours(): Promise<any[]> {
 }
 
 /**
+ * Fetch the full /tours listing — the only endpoint that projects the
+ * productContent JSON blob (highlights), which the slim curated
+ * /travioghana/tours select doesn't include. Paging is handled
+ * defensively: today the endpoint returns the whole catalog in one
+ * response, but if it ever grows pagination it stays correct.
+ */
+async function fetchAllFullTours(): Promise<any[]> {
+  const CATALOG_PAGE_SIZE = 50
+  const MAX_CATALOG_PAGES = 20
+  const first = await expeditionFetchRaw(`/tours?page=1&limit=${CATALOG_PAGE_SIZE}`)
+  const tours: any[] = first.data?.tours ?? []
+  const totalPages = Math.min(first.pagination?.totalPages ?? 1, MAX_CATALOG_PAGES)
+  if (totalPages > 1 && tours.length > 0) {
+    const rest = await Promise.all(
+      Array.from({ length: totalPages - 1 }, (_, i) =>
+        expeditionFetchRaw(`/tours?page=${i + 2}&limit=${CATALOG_PAGE_SIZE}`)
+      )
+    )
+    for (const payload of rest) tours.push(...(payload.data?.tours ?? []))
+  }
+  return tours
+}
+
+/**
  * The curated /travioghana/tours endpoint only selects a handful of
  * top-level Tour columns (city, country, category, etc.), which are
  * frequently null — the real values live inside the productContent /
@@ -1185,7 +1218,8 @@ async function fetchAllCuratedTours(): Promise<any[]> {
  * doesn't fetch. This cross-references the full /tours listing (which
  * does include those JSON blobs) to backfill missing listing fields
  * (location, difficulty, cancellation policy, duration, pickup, languages,
- * price) on curated records by tour ID, mutating them in place.
+ * features/highlights, price) on curated records by tour ID, mutating
+ * them in place.
  */
 async function enrichExpeditionRecords(records: ExpeditionTourRecord[]): Promise<void> {
   // Always run: curated records carry a stored startingPrice that can be
@@ -1195,6 +1229,9 @@ async function enrichExpeditionRecords(records: ExpeditionTourRecord[]): Promise
   // "needsBatch" short-circuit to keep every listing price authoritative.
   try {
     const allTours = await fetchAllCuratedTours()
+    // The full /tours listing is the only source for the card's
+    // features/highlights line (the slim curated select never projects it).
+    const fullTours = await fetchAllFullTours()
     const priceMap = new Map<string, number>()
     const cityMap = new Map<string, string | null>()
     const countryMap = new Map<string, string | null>()
@@ -1207,13 +1244,32 @@ async function enrichExpeditionRecords(records: ExpeditionTourRecord[]): Promise
     const categoryMap = new Map<string, string | null>()
     const accommodationMap = new Map<string, boolean>()
     const photosMap = new Map<string, string[]>()
+    const featuresMap = new Map<string, string>()
+    for (const t of fullTours) {
+      // Full records carry the blobs the curated select omits — features
+      // falls back to a compact highlights line (mirrors mapRawTourToListing).
+      const highlights = parseProductContent(t)?.highlights
+      const features = t.features
+        || (Array.isArray(highlights) && highlights.length > 0
+          ? highlights.slice(0, 3).join(' · ')
+          : '')
+      if (features) featuresMap.set(t.id, features)
+      // Difficulty lives in categorization on full records; the curated
+      // select can't project it, so prefer the full listing when known.
+      const difficulty = extractDifficultyFromTour(t)
+      if (difficulty) difficultyMap.set(t.id, difficulty)
+      // Accommodation lives in categorization on full records too — the
+      // curated select never projects it, so extract it from the full
+      // listing (the previous source was the curated rows, which always
+      // read as false and the badge never rendered).
+      if (extractAccommodationIncluded(t)) accommodationMap.set(t.id, true)
+    }
     for (const t of allTours) {
       const p = extractStartingPriceFromRaw(t.schedulesAndPricing)
       if (p != null) priceMap.set(t.id, p)
       cityMap.set(t.id, extractCityFromTour(t))
       countryMap.set(t.id, extractCountryFromTour(t))
       durationMap.set(t.id, extractDurationFromTour(t))
-      difficultyMap.set(t.id, extractDifficultyFromTour(t))
       cancellationMap.set(t.id, extractCancellationFromTour(t))
       pickupMap.set(t.id, t.pickupIncluded ?? (t.bookingAndTickets?.pickupAvailable ?? t.bookingAndTickets?.pickupProvided) ?? undefined)
       meetingModeMap.set(t.id, extractMeetingInfo(t).meetingMode)
@@ -1222,7 +1278,6 @@ async function enrichExpeditionRecords(records: ExpeditionTourRecord[]): Promise
       languagesMap.set(t.id, extractContentLanguage(t))
       if (Array.isArray(t.photos) && t.photos.length > 1) photosMap.set(t.id, t.photos)
       categoryMap.set(t.id, t.category ?? null)
-      if (extractAccommodationIncluded(t)) accommodationMap.set(t.id, true)
     }
     for (const r of records) {
       // The curated /travioghana/tours records carry a stored startingPrice
@@ -1271,6 +1326,12 @@ async function enrichExpeditionRecords(records: ExpeditionTourRecord[]): Promise
       if (!r.tour.languages?.length) {
         const fallbackLanguages = languagesMap.get(r.tour.id)
         if (fallbackLanguages?.length) r.tour.languages = fallbackLanguages
+      }
+      // Backfill the features/amenities line from the full listing so the
+      // card's facts row isn't blank on the All Tours page.
+      if (!r.tour.features) {
+        const fallbackFeatures = featuresMap.get(r.tour.id)
+        if (fallbackFeatures) r.tour.features = fallbackFeatures
       }
     }
   } catch (e) {
@@ -2027,6 +2088,7 @@ export interface TourBadgeFields {
   pickupIncluded?: boolean
   meetingMode?: 'meeting_point' | 'pickup' | 'none'
   accommodationIncluded?: boolean
+  difficulty?: string | null
 }
 
 interface BadgeFieldMaps {
@@ -2035,6 +2097,7 @@ interface BadgeFieldMaps {
   pickup: Map<string, boolean | undefined>
   meetingMode: Map<string, 'meeting_point' | 'pickup' | 'none'>
   accommodation: Map<string, boolean>
+  difficulty: Map<string, string>
 }
 
 let badgeMapsCache: { promise: Promise<BadgeFieldMaps>; expiresAt: number } | null = null
@@ -2061,6 +2124,7 @@ function getBadgeFieldMaps(): Promise<BadgeFieldMaps> {
           pickup: new Map(),
           meetingMode: new Map(),
           accommodation: new Map(),
+          difficulty: new Map(),
         }
         for (const t of allTours) {
           // The badges endpoint returns pre-extracted fields
@@ -2069,6 +2133,7 @@ function getBadgeFieldMaps(): Promise<BadgeFieldMaps> {
           if (t.pickupIncluded != null) maps.pickup.set(t.id, t.pickupIncluded)
           if (t.meetingMode) maps.meetingMode.set(t.id, t.meetingMode)
           if (t.accommodationIncluded) maps.accommodation.set(t.id, true)
+          if (t.difficulty) maps.difficulty.set(t.id, t.difficulty)
         }
         return maps
       })(),
@@ -2100,8 +2165,9 @@ export async function enrichTourBadgeFields<T extends { id: string } & TourBadge
     const pickup = maps.pickup.get(tour.id)
     const meetingMode = maps.meetingMode.get(tour.id)
     const accommodation = maps.accommodation.get(tour.id)
+    const difficulty = maps.difficulty.get(tour.id)
     if (
-      !languages?.length && !cancellation && pickup == null && !meetingMode && !accommodation
+      !languages?.length && !cancellation && pickup == null && !meetingMode && !accommodation && !difficulty
     ) {
       return tour
     }
@@ -2110,7 +2176,11 @@ export async function enrichTourBadgeFields<T extends { id: string } & TourBadge
     if (!tour.cancellationPolicy && cancellation) enriched.cancellationPolicy = cancellation
     if (tour.pickupIncluded == null && pickup != null) enriched.pickupIncluded = pickup
     if (tour.meetingMode == null && meetingMode) enriched.meetingMode = meetingMode
-    if (tour.accommodationIncluded == null && accommodation) enriched.accommodationIncluded = accommodation
+    // `mapToListing` always projects accommodationIncluded as a boolean, so a
+    // `== null` guard would make the badges-endpoint backfill dead — treat
+    // false as missing so the authoritative badge data can correct it.
+    if (!tour.accommodationIncluded && accommodation) enriched.accommodationIncluded = accommodation
+    if (!tour.difficulty && difficulty) enriched.difficulty = difficulty
     return enriched as T
   })
 }

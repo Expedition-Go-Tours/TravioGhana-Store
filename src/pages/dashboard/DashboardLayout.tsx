@@ -283,6 +283,16 @@ export default function DashboardLayout() {
       >
         <div className="px-4 sm:px-6 lg:px-10 pb-10">
           <div className="flex items-center justify-center lg:justify-start mb-8 relative">
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="absolute right-0 lg:static lg:mr-3 flex h-9 w-9 items-center justify-center rounded-full border border-[#e5e4e7] bg-white text-[#1a1a1a] shadow-sm transition-colors hover:bg-[#f8f9fb]"
+              aria-label="Back to home"
+              title="Back to home"
+            >
+              <ArrowLeft size={16} strokeWidth={2.2} />
+            </button>
+
             <AnimatePresence mode="wait">
               <motion.h1
                 key={location.pathname}
@@ -295,28 +305,6 @@ export default function DashboardLayout() {
                 {title}
               </motion.h1>
             </AnimatePresence>
-
-            {location.pathname === "/dashboard/settings" && (
-              <button
-                type="button"
-                onClick={() => navigate("/")}
-                className="lg:hidden absolute right-0 flex h-9 w-9 items-center justify-center rounded-full border border-[#e5e4e7] bg-white text-[#1a1a1a] shadow-sm transition-colors hover:bg-[#f8f9fb]"
-                aria-label="Back to home"
-              >
-                <ArrowLeft size={16} strokeWidth={2.2} />
-              </button>
-            )}
-
-            {location.pathname === "/dashboard/bookings" && (
-              <button
-                type="button"
-                onClick={() => navigate("/", { state: { openMobileMenu: true } })}
-                className="lg:hidden absolute right-0 flex h-9 w-9 items-center justify-center rounded-full border border-[#e5e4e7] bg-white text-[#1a1a1a] shadow-sm transition-colors hover:bg-[#f8f9fb]"
-                aria-label="Back to menu"
-              >
-                <ArrowLeft size={16} strokeWidth={2.2} />
-              </button>
-            )}
           </div>
 
           <AnimatePresence mode="wait">

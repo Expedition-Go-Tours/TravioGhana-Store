@@ -1,5 +1,5 @@
 /** Backend ConversationType enum (prisma). */
-export type ConversationType = 'SUPPLIER_CUSTOMER' | 'SUPPLIER_ADMIN' | 'USER_SUPPORT' | 'GHANA_CUSTOMER'
+export type ConversationType = 'SUPPLIER_CUSTOMER' | 'SUPPLIER_ADMIN' | 'USER_SUPPORT' | 'EXPEDITION_CUSTOMER'
 
 /** Minimal user projection attached to conversations/messages. */
 export interface ChatUser {
@@ -52,5 +52,5 @@ export interface ChatRecipient {
 /** Delivery status of one of the current user's own messages. */
 export type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read'
 
-export const SUPPORT_CONVERSATION_TYPE: ConversationType = 'GHANA_CUSTOMER'
+export const SUPPORT_CONVERSATION_TYPE: ConversationType = 'EXPEDITION_CUSTOMER'
 export const SUPPLIER_CONVERSATION_TYPE: ConversationType = 'SUPPLIER_CUSTOMER'

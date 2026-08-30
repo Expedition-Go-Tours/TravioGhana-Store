@@ -272,6 +272,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
 
   const dropdownLinks: { label: string; key: string; icon: string }[] = [
     ...(user ? [{ label: t('nav.bookings'), key: 'Bookings' as const, icon: 'bag' as const }] : []),
+    ...(user ? [{ label: t('nav.updates', 'Updates'), key: 'Updates' as const, icon: 'bell' as const }] : []),
     ...(user ? [{ label: t('nav.dashboard'), key: 'Dashboard' as const, icon: 'grid' as const }] : []),
     { label: t('nav.about'), key: 'About' as const, icon: 'info' as const },
     { label: t('nav.contact'), key: 'Contact' as const, icon: 'mail' as const },
@@ -529,6 +530,9 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                         if (link.key === 'Dashboard') {
                           navigate('/dashboard')
                         }
+                        if (link.key === 'Updates') {
+                          navigate('/dashboard/notifications')
+                        }
                         if (link.key === 'Bookings') {
                           markBookingsSeen()
                           navigate('/dashboard/bookings')
@@ -548,6 +552,12 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                           <rect x="14" y="3" width="7" height="7" />
                           <rect x="14" y="14" width="7" height="7" />
                           <rect x="3" y="14" width="7" height="7" />
+                        </svg>
+                      )}
+                      {link.icon === 'bell' && (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                         </svg>
                       )}
                       {link.icon === 'info' && (

@@ -12,6 +12,7 @@ import { useAuthUser } from '../hooks/useAuthUser'
 import { getAuthToken, refreshAuthToken } from '../lib/auth'
 import * as api from './chatApi'
 import { connectChatSocket, disconnectChatSocket, getChatSocket } from './chatSocket'
+import { mergeConfirmedMessage } from './mergeMessage'
 import type {
   ChatConversation, ChatMessage, ChatRecipient, ConversationType, MessageStatus,
 } from './types'
@@ -75,6 +76,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   // open instead of leaving the thread permanently empty.
   const messageLoadsInFlight = useRef<Record<string, boolean>>({})
   const messagesRef = useRef<Record<string, ChatMessage[]>>({})
+  // Tracks socket-sent messages awaiting confirmation (emit ack or room echo)
+  // so a lost ack triggers the REST fallback exactly once.
+  const pendingSendsRef = useRef<
+    Record<string, { timer: ReturnType<typeof setTimeout> | null; conversationId: string; content: string; attachmentUrl: string | null; sentAt: number }>
+  >({})
 
   useEffect(() => {
     activeRef.current = activeConversationId
@@ -118,32 +124,51 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       const mine = message.senderId === userIdRef.current
       const active = activeRef.current === conversationId
 
+      if (mine) {
+        // Own messages are confirmed through the emit ack; never append the
+        // room echo or the message would show twice. The echo does confirm the
+        // server persisted the message, so cancel the REST fallback timer to
+        // stop a lost ack from double-sending.
+        const now = Date.now()
+        for (const [tmpId, pending] of Object.entries(pendingSendsRef.current)) {
+          if (
+            pending.conversationId === conversationId &&
+            pending.content === message.content &&
+            pending.attachmentUrl === message.attachmentUrl &&
+            now - pending.sentAt < 15000
+          ) {
+            if (pending.timer) clearTimeout(pending.timer)
+            delete pendingSendsRef.current[tmpId]
+            break
+          }
+        }
+        return
+      }
+
       setMessages((prev) => {
         const list = prev[conversationId] ?? []
         if (list.some((m) => m.id === message.id)) return prev
         return { ...prev, [conversationId]: [...list, message] }
       })
-      if (!mine) {
-        setConversations((prev) => {
-          const existing = prev.find((c) => c.id === conversationId)
-          if (existing) {
-            return prev.map((c) => {
-              if (c.id !== conversationId) return c
-              const delta = active ? -Math.min(c.unreadCount ?? 0, 1) : 1
-              return { ...c, unreadCount: Math.max(0, (c.unreadCount ?? 0) + delta), updatedAt: message.createdAt }
-            })
-          }
-          refreshConversations()
-          return prev
-        })
-        setUnreadCount((prev) => (active ? prev : prev + 1))
-        if (active) {
-          // Auto mark-read while the conversation is open.
-          getChatSocket()?.emit('chat:mark-read', { conversationId })
-          api.markConversationAsRead(conversationId).catch(() => {})
-        } else {
-          refreshConversations()
+      setConversations((prev) => {
+        const existing = prev.find((c) => c.id === conversationId)
+        if (existing) {
+          return prev.map((c) => {
+            if (c.id !== conversationId) return c
+            const delta = active ? -Math.min(c.unreadCount ?? 0, 1) : 1
+            return { ...c, unreadCount: Math.max(0, (c.unreadCount ?? 0) + delta), updatedAt: message.createdAt }
+          })
         }
+        refreshConversations()
+        return prev
+      })
+      setUnreadCount((prev) => (active ? prev : prev + 1))
+      if (active) {
+        // Auto mark-read while the conversation is open.
+        getChatSocket()?.emit('chat:mark-read', { conversationId })
+        api.markConversationAsRead(conversationId).catch(() => {})
+      } else {
+        refreshConversations()
       }
     },
     [refreshConversations],
@@ -369,18 +394,23 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       }))
       setMessageStatuses((prev) => ({ ...prev, [optimisticId]: 'sending' }))
 
-      const replaceOptimistic = (serverMessage: ChatMessage) => {
+      const confirm = (serverMessage: ChatMessage) => {
         setMessages((prev) => ({
           ...prev,
-          [conversationId]: (prev[conversationId] ?? []).map((m) =>
-            m.id === optimisticId ? serverMessage : m,
-          ),
+          [conversationId]: mergeConfirmedMessage(prev[conversationId] ?? [], optimisticId, serverMessage),
         }))
         setMessageStatuses((prev) => {
           const next = { ...prev }
           delete next[optimisticId]
           return next
         })
+        setMessageStatuses((prev) => ({ ...prev, [serverMessage.id]: 'sent' }))
+      }
+
+      const clearPending = () => {
+        const pending = pendingSendsRef.current[optimisticId]
+        if (pending?.timer) clearTimeout(pending.timer)
+        delete pendingSendsRef.current[optimisticId]
       }
 
       const socket = getChatSocket()
@@ -389,17 +419,26 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         api
           .sendMessageRest(conversationId, content, attachment)
           .then((serverMessage) => {
-            replaceOptimistic(serverMessage)
-            setMessageStatuses((prev) => ({ ...prev, [serverMessage.id]: 'sent' }))
+            confirm(serverMessage)
           })
           .catch(() => {
             setMessageStatuses((prev) => ({ ...prev, [optimisticId]: 'sent' }))
           })
       if (sendViaSocket) {
         const timer = setTimeout(() => {
-          // Ack lost — fall back to REST so the message is never dropped.
+          // No ack/echo confirmed delivery — fall back to REST so the message
+          // is never dropped. The pending entry is cleared first so a late ack
+          // can't trigger a second fallback.
+          delete pendingSendsRef.current[optimisticId]
           fallbackRest()
         }, 8000)
+        pendingSendsRef.current[optimisticId] = {
+          timer,
+          conversationId,
+          content,
+          attachmentUrl: attachment?.url ?? null,
+          sentAt: Date.now(),
+        }
         socket.emit(
           'chat:message',
           {
@@ -408,10 +447,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
             ...(attachment ? { attachmentUrl: attachment.url, attachmentType: attachment.type } : {}),
           },
           (ack?: { status: string; data?: { message?: ChatMessage } }) => {
-            clearTimeout(timer)
+            clearPending()
             if (ack?.status === 'success' && ack.data?.message) {
-              replaceOptimistic(ack.data.message)
-              setMessageStatuses((prev) => ({ ...prev, [ack.data!.message!.id]: 'sent' }))
+              confirm(ack.data.message)
             } else if (ack?.status === 'error') {
               fallbackRest()
             }

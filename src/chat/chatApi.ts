@@ -81,12 +81,22 @@ export async function getUnreadCount(): Promise<number> {
   return payload.data?.unreadCount ?? 0
 }
 
-/** Shared support identity (the account all travelers reach for support). */
+/**
+ * Shared support identity (the account all travelers reach for support).
+ * Prefers the expedition support account; falls back to the admin support
+ * account when no expedition identity is configured on the backend.
+ */
 export async function getSupportUserId(): Promise<string | null> {
-  const res = await fetchWithAuth('/chat/travioghana-support')
-  if (!res.ok) return null
-  const payload = (await res.json().catch(() => ({}))) as ApiEnvelope<{ expeditionId: string }>
-  return payload.data?.expeditionId ?? null
+  const res = await fetchWithAuth('/chat/expedition-support')
+  if (res.ok) {
+    const payload = (await res.json().catch(() => ({}))) as ApiEnvelope<{ expeditionId: string }>
+    return payload.data?.expeditionId ?? null
+  }
+  if (res.status !== 404) return null
+  const fallback = await fetchWithAuth('/chat/admin-support')
+  if (!fallback.ok) return null
+  const payload = (await fallback.json().catch(() => ({}))) as ApiEnvelope<{ adminId: string }>
+  return payload.data?.adminId ?? null
 }
 
 export async function uploadChatImage(file: File): Promise<{ url: string; type: string }> {
