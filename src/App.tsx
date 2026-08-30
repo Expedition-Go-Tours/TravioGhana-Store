@@ -147,11 +147,28 @@ function AppContent() {
 
   const hideNav = currentPage === 'signin' || currentPage === 'signup' || location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/booking') || location.pathname.endsWith('/booking') || location.pathname.startsWith('/supplier/register') || location.pathname.startsWith('/supplier/list-experience') || location.pathname.startsWith('/login') || location.pathname.startsWith('/auth/callback')
 
+  // The auth form only lives on "/" (currentPage) or the /login route; if a
+  // return-to redirect takes the user elsewhere while auth is still "open",
+  // reset it so the navbar/auth view don't stay stuck in auth mode.
+  // Render-phase adjustment (same pattern as the chat provider), guarded so it
+  // only fires when currentPage actually changes.
+  const [prevPage, setPrevPage] = useState<PageView>(currentPage)
+  if (currentPage !== prevPage) {
+    setPrevPage(currentPage)
+    if ((currentPage === 'signin' || currentPage === 'signup') && location.pathname !== '/') {
+      setCurrentPage('home')
+    }
+  }
+
+  // The chat widget disappears while the auth page is shown (kept mounted so
+  // it reopens where the user left off after signing in).
+  const authVisible = currentPage === 'signin' || currentPage === 'signup' || location.pathname.startsWith('/login') || location.pathname.startsWith('/auth/callback')
+
   return (
     <>
       <Toaster position="top-center" duration={2500} closeButton />
       {!hideNav && <Navbar onOpenAuth={handleOpenAuth} />}
-      {!location.pathname.startsWith('/tour') && <SupportChatWidget onOpenAuth={handleOpenAuth} />}
+      {!location.pathname.startsWith('/tour') && <SupportChatWidget onOpenAuth={handleOpenAuth} hidden={authVisible} />}
       <Suspense fallback={<div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="spinner" /></div>}>
       <Routes>
         <Route path="/dashboard/*" element={<DashboardLayout />} />

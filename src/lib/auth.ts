@@ -124,6 +124,36 @@ export function clearAuthReturnTo() {
   }
 }
 
+// "Return to the chat" intent: set when the support-chat widget sends the user
+// to sign in, so that after a successful login (email or the Google OAuth
+// full-page redirect, which reloads the tab) the widget reopens in the chat
+// area where the user left off. sessionStorage survives the same-tab redirect.
+const AUTH_CHAT_RETURN_KEY = 'eg_auth_chat_return'
+
+export function setChatAuthReturn() {
+  try {
+    sessionStorage.setItem(AUTH_CHAT_RETURN_KEY, '1')
+  } catch {
+    /* ignore */
+  }
+}
+
+export function getChatAuthReturn(): boolean {
+  try {
+    return sessionStorage.getItem(AUTH_CHAT_RETURN_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+export function clearChatAuthReturn() {
+  try {
+    sessionStorage.removeItem(AUTH_CHAT_RETURN_KEY)
+  } catch {
+    /* ignore */
+  }
+}
+
 export function getAuthUserId(user: AuthUser | null): string | null {
   return user?.id || user?._id || user?.uid || user?.firebaseUid || null
 }

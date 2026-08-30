@@ -12,6 +12,7 @@ import { useChat, otherParticipant } from '../chat/ChatContext';
 import { useAuthUser } from '../hooks/useAuthUser';
 import ChatThread from '../chat/ChatThread';
 import { uploadChatImage } from '../chat/chatApi';
+import { setChatAuthReturn, getChatAuthReturn, clearChatAuthReturn, setAuthReturnTo, type AuthUser } from '../lib/auth';
 import type { ChatRecipient } from '../chat/types';
 
 const SUPPORT_PHONE = "+233 XX XXX XXXX";
@@ -27,6 +28,10 @@ interface SupportChatWidgetProps {
   /** Opens straight into a chat with this recipient (e.g. the tour's supplier). */
   initialRecipient?: ChatRecipient | null
   onOpenAuth?: (mode: 'signin' | 'signup') => void
+  /** Hide the widget entirely (renders nothing) while keeping its internal
+      state — used while the auth page is shown so the chat area disappears
+      and reopens where the user left off after signing in. */
+  hidden?: boolean
 }
 
 function timeAgo(iso: string): string {
@@ -42,7 +47,7 @@ function timeAgo(iso: string): string {
   return new Date(iso).toLocaleDateString([], { month: "short", day: "numeric" });
 }
 
-export default function SupportChatWidget({ initialOpen, initialRecipient, onOpenAuth }: SupportChatWidgetProps) {
+export default function SupportChatWidget({ initialOpen, initialRecipient, onOpenAuth, hidden }: SupportChatWidgetProps) {
   const { t } = useTranslation();
   const location = useLocation();
   const isPublicPage = !location.pathname.startsWith("/dashboard") && !location.pathname.startsWith("/review");
@@ -79,6 +84,29 @@ export default function SupportChatWidget({ initialOpen, initialRecipient, onOpe
       });
     }
   }, [isOpen, initialRecipient, user, chat, t]);
+
+  // Return-to-chat: the user was sent to sign in from the chat widget. When a
+  // user becomes available (email flow, or the Google OAuth full-page redirect
+  // which remounts this component), reopen the widget in the chats list where
+  // they left off. Render-phase adjustment (same pattern as the chat
+  // provider), guarded so it only fires on the signed-out → signed-in edge.
+  const [prevAuthUser, setPrevAuthUser] = useState<AuthUser | null>(null)
+  if (user !== prevAuthUser) {
+    setPrevAuthUser(user)
+    if (user && getChatAuthReturn()) {
+      clearChatAuthReturn();
+      setIsOpen(true);
+      setView("chats");
+    }
+  }
+
+  // If the auth page was dismissed without signing in, drop the pending
+  // return-to-chat intent so an unrelated later login doesn't open the widget.
+  useEffect(() => {
+    if (!hidden && !user && getChatAuthReturn()) {
+      clearChatAuthReturn();
+    }
+  }, [hidden, user]);
 
   // Track the mobile breakpoint (matches the full-screen popup CSS at 768px)
   useEffect(() => {
@@ -129,7 +157,18 @@ export default function SupportChatWidget({ initialOpen, initialRecipient, onOpe
     setView("chat");
   }, [chat]);
 
-  if (!isPublicPage) return null;
+  // Sent to the auth page from the chat: remember to return to the chat after
+  // login. From a tour page also remember the tour path so the auth flow
+  // redirects back there and the supplier chat auto-opens.
+  const requestAuth = useCallback((mode: 'signin' | 'signup') => {
+    setChatAuthReturn();
+    if (initialRecipient?.id && location.pathname.startsWith('/tour')) {
+      setAuthReturnTo(location.pathname);
+    }
+    onOpenAuth?.(mode);
+  }, [initialRecipient, location.pathname, onOpenAuth]);
+
+  if (hidden || !isPublicPage) return null;
 
   const conversations = chat.conversations;
 
@@ -299,7 +338,7 @@ export default function SupportChatWidget({ initialOpen, initialRecipient, onOpe
                       <p className="support-chat-welcome-text">{t('supportChat.signInPrompt')}</p>
                       <button
                         className="support-chat-signin-btn"
-                        onClick={() => onOpenAuth?.('signup')}
+                        onClick={() => requestAuth('signup')}
                       >
                         {t('supportChat.signIn')}
                       </button>
