@@ -106,7 +106,6 @@
     "cancellationHelp": "Ayuda de Cancelación",
     "company": "Empresa",
     "connectWithUs": "Conéctate con nosotros",
-    "contact": "Contacto",
     "contactUs": "Contáctanos",
     "copyright": "© 2026 Travio Ghana. Todos los derechos reservados.",
     "faq": "Preguntas Frecuentes",
@@ -122,21 +121,13 @@
     "mobile": "Móvil",
     "supplierZone": "Zona de Proveedor",
     "explore": "Explorar",
-    "liveChat": "Chat en Vivo",
-    "bookingSupport": "Soporte de Reservas",
     "refundPolicy": "Política de Reembolso",
     "careers": "Carreras",
-    "affiliateProgram": "Programa de Afiliados",
-    "travelLiability": "Responsabilidad de Viaje",
     "cookiesPolicy": "Política de Cookies",
     "listYourTours": "Publica Tus Tours",
-    "becomeTourOperator": "Conviértete en Operador",
     "supplierDashboard": "Panel de Proveedor",
-    "apiAccess": "Acceso API",
     "supplierTerms": "Términos de Proveedor",
-    "tours": "Tours",
-    "destinations": "Destinos",
-    "deals": "Ofertas"
+    "tours": "Tours"
   },
   "gallery": {
     "tourImage": "Imagen del tour {{number}}"

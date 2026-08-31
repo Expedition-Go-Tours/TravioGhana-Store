@@ -217,8 +217,6 @@ export default function Footer() {
               <div className="footer-links">
                 <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.helpCentre')}</a>
                 <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.contactUs')}</a>
-                <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.liveChat')}</a>
-                <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.bookingSupport')}</a>
                 <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.refundPolicy')}</a>
                 <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.faq')}</a>
               </div>
@@ -232,10 +230,8 @@ export default function Footer() {
                 <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.aboutUs')}</a>
                 <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.careers')}</a>
                 <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.partnerships')}</a>
-                <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.affiliateProgram')}</a>
                 <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.termsConditions')}</a>
                 <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.privacyPolicy')}</a>
-                <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.travelLiability')}</a>
                 <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.cookiesPolicy')}</a>
               </div>
             </FooterAccordion>
@@ -250,12 +246,10 @@ export default function Footer() {
                 ) : (
                   <>
                     <a href={supplierStartPath} className="footer-link">{t('footer.listYourTours')}</a>
-                    <a href={supplierStartPath} className="footer-link">{t('footer.becomeTourOperator')}</a>
                     <a href="/supplier/register" className="footer-link">{t('footer.supplierDashboard')}</a>
+                    <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.supplierTerms')}</a>
                   </>
                 )}
-                <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.apiAccess')}</a>
-                <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.supplierTerms')}</a>
               </div>
             </FooterAccordion>
           </div>
@@ -266,10 +260,6 @@ export default function Footer() {
               <div className="footer-links">
                 <a href="/" className="footer-link">{t('footer.home')}</a>
                 <a href="/tours" className="footer-link">{t('footer.tours')}</a>
-                <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.destinations')}</a>
-                <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.deals')}</a>
-                <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.aboutUs')}</a>
-                <a href="#" className="footer-link" onClick={(e) => e.preventDefault()}>{t('footer.contact')}</a>
               </div>
             </FooterAccordion>
           </div>

@@ -106,7 +106,6 @@
     "cancellationHelp": "Annuleringshulp",
     "company": "Bedrijf",
     "connectWithUs": "Maak verbinding met ons",
-    "contact": "Contact",
     "contactUs": "Neem Contact Op",
     "copyright": "© 2026 Travio Ghana. Alle rechten voorbehouden.",
     "faq": "FAQ",
@@ -122,21 +121,13 @@
     "mobile": "Mobiel",
     "supplierZone": "Leverancierszone",
     "explore": "Ontdekken",
-    "liveChat": "Live Chat",
-    "bookingSupport": "Boekingsondersteuning",
     "refundPolicy": "Terugbetalingsbeleid",
     "careers": "Carrières",
-    "affiliateProgram": "Partnerprogramma",
-    "travelLiability": "Reisaansprakelijkheid",
     "cookiesPolicy": "Cookiebeleid",
     "listYourTours": "Tours Aanbieden",
-    "becomeTourOperator": "Touroperator Worden",
     "supplierDashboard": "Leveranciersdashboard",
-    "apiAccess": "API-toegang",
     "supplierTerms": "Leveranciersvoorwaarden",
-    "tours": "Tours",
-    "destinations": "Bestemmingen",
-    "deals": "Aanbiedingen"
+    "tours": "Tours"
   },
   "gallery": {
     "tourImage": "Tour afbeelding {{number}}"

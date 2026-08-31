@@ -490,6 +490,8 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
                   transition={{ duration: 0.25 }}
                 >
                     <TourCard
+                      imageClean
+                      hideFeatures
                       title={tour.title}
                       category={tour.category}
                       duration={tour.duration}
@@ -499,6 +501,7 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
                       reviews={tour.reviews}
                       location={tour.location}
                       image={tour.image}
+                      photos={tour.photos}
                       source={tour.source}
                       externalUrl={tour.externalUrl}
                       slug={tour.slug}
