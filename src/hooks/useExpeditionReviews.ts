@@ -20,6 +20,14 @@ interface ExpeditionReview {
   title?: string | null
   comment: string
   createdAt: string
+  photos?: string[]
+  supplierResponse?: string | null
+  supplierResponseAt?: string | null
+  valueForMoneyRating?: number | null
+  guideRating?: number | null
+  meetingRating?: number | null
+  travelMonth?: string | null
+  companions?: string[]
 }
 
 export interface ReviewCardData {
@@ -27,10 +35,19 @@ export interface ReviewCardData {
   author: string
   authorId?: string
   avatar?: string
+  bookingId?: string
   rating: number
   date: string
   title: string
   content: string
+  photos?: string[]
+  supplierResponse?: string | null
+  supplierResponseAt?: string | null
+  valueForMoneyRating?: number | null
+  guideRating?: number | null
+  meetingRating?: number | null
+  travelMonth?: string | null
+  companions?: string[]
 }
 
 /**
@@ -54,10 +71,19 @@ function mapReviewRecords(reviews: ExpeditionReview[]): ReviewCardData[] {
     author: r.customer?.name || 'Anonymous',
     authorId: r.customerId,
     avatar: r.customer?.photoURL || undefined,
+    bookingId: r.bookingId || undefined,
     rating: r.rating,
     date: r.createdAt,
     title: r.title || '',
     content: r.comment,
+    photos: Array.isArray(r.photos) && r.photos.length > 0 ? r.photos : undefined,
+    supplierResponse: r.supplierResponse || null,
+    supplierResponseAt: r.supplierResponseAt || null,
+    valueForMoneyRating: r.valueForMoneyRating ?? null,
+    guideRating: r.guideRating ?? null,
+    meetingRating: r.meetingRating ?? null,
+    travelMonth: r.travelMonth || null,
+    companions: Array.isArray(r.companions) && r.companions.length > 0 ? r.companions : undefined,
   }))
 }
 
