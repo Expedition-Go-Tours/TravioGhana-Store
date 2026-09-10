@@ -7,7 +7,7 @@ import { buildBookingTour } from '../../lib/bookingTour'
 import { Button } from '../../components/ui/button'
 import { CalendarPicker } from '../../components/ui/apple-calendar-picker'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CalendarDays, Users, Minus, Plus, MessageSquare, Clock as ClockIcon, BadgePercent, ShieldCheck } from 'lucide-react'
+import { CalendarDays, Users, Minus, Plus, MessageSquare, Clock as ClockIcon, BadgePercent, ShieldCheck, Zap } from 'lucide-react'
 import { toast } from 'sonner'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import type { DayAvailability, DayAvailabilityInfo, DayTimeSlot } from '../../lib/tourAvailability'
@@ -1062,6 +1062,15 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
               )}
             </div>
           </div>
+
+          {/* Instant-confirmation trust cue (Step 12 Options). Shown only when
+              the operator confirms automatically; manual tours omit it. */}
+          {tour.instantConfirmation !== false && (
+            <p className="booking-instant-confirm">
+              <Zap size={14} />
+              {t('tourDetail.instantConfirmation')}
+            </p>
+          )}
 
           {/* Submit */}
           <Button

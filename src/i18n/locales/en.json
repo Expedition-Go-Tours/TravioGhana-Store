@@ -432,6 +432,8 @@
     "freeCancellation": "Free cancellation up to 24 hours before",
     "fullDescription": "Full Description",
     "guideInformation": "Guide Information",
+    "instantConfirmation": "Instant confirmation",
+    "manualConfirmation": "Manual confirmation",
     "guideLanguage": "English",
     "guideMaterials": {
       "audioGuide": "Audio guide",

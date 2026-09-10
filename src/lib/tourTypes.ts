@@ -89,6 +89,8 @@ export interface TourDetail {
   /** Supplier capacity bounds for the whole party (Viator pax-mix parity). */
   minParticipants?: number | null
   maxParticipants?: number | null
+  /** Instant confirmation (Step 12 Options); false ⇒ the operator confirms manually. */
+  instantConfirmation?: boolean
 }
 
 export interface ItineraryDay {
