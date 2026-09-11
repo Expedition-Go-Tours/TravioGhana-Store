@@ -1,12 +1,13 @@
-import { useSearchParams, useNavigate, Link } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Search } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { fetchWithAuth } from '../lib/api'
 import { mapRawTourToListing, type TourCardData } from '../hooks/useExpeditionTours'
 import { mergeOffersIntoTours } from '../hooks/useHomepageSections'
 import TourCard from '../components/TourCard'
+import NoToursEmptyState from '../components/NoToursEmptyState'
 import './SearchResultsPage.css'
 
 async function fetchSearchResults(query: string): Promise<TourCardData[]> {
@@ -81,18 +82,7 @@ export default function SearchResultsPage() {
             ))}
           </div>
         ) : (
-          <div className="search-results-empty">
-            <Search size={48} strokeWidth={1.5} />
-            <h2>{t('search.noResults', { defaultValue: 'No tours found' })}</h2>
-            <p>
-              {t('search.noResultsHint', {
-                defaultValue: 'Try a different search term or browse all tours.',
-              })}
-            </p>
-            <Link to="/tours" className="search-results-browse-btn">
-              {t('search.browseAll', { defaultValue: 'Browse All Tours' })}
-            </Link>
-          </div>
+          <NoToursEmptyState location={query} onBrowseAll={() => navigate('/tours')} />
         )}
       </div>
     </div>

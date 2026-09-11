@@ -227,6 +227,20 @@
     "tour": "Tour",
     "toursAndExperiences": "Tours & Experiences"
   },
+  "empty": {
+    "title": "We're not quite there yet",
+    "body": "Our team is working hard to bring {{location}} to Expedition-Go. In the meantime, explore handpicked experiences and nearby destinations we think you’ll love.",
+    "thisPlace": "this destination",
+    "browseAll": "Browse all experiences",
+    "exploreNearby": "Explore nearby",
+    "clearFilters": "Clear filters",
+    "nearbyTitle": "Close by",
+    "recommendedTitle": "Recommended for you",
+    "alsoLikeTitle": "You may also like",
+    "experiencesCount_one": "{{count}} experience",
+    "experiencesCount_other": "{{count}} experiences",
+    "loading": "Finding great experiences for you…"
+  },
   "sections": {
     "allToursTitle": "Tours",
     "attractionsBadge": "Attractions",

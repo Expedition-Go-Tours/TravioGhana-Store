@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next'
 import Navbar from '../components/Navbar'
 import TourCard from '../components/TourCard'
 import TourCardSkeleton from '../components/TourCardSkeleton'
+import NoToursEmptyState from '../components/NoToursEmptyState'
+import { useLocationSearch } from '../context/LocationSearchContext'
 
 import { useAllExpeditionTours, useTourFilterOptions, type TourCardData } from '../hooks/useExpeditionTours'
 import { useSectionTourIds, useHomepageOffers, useAttractionTours, type HomepageOfferTour } from '../hooks/useHomepageSections'
@@ -144,6 +146,7 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
   const { t } = useTranslation()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const { currentLocation } = useLocationSearch()
   const sectionParam = searchParams.get('section') || ''
   const locationParam = searchParams.get('location') || ''
   const categoryParam = searchParams.get('category') || ''
@@ -564,15 +567,12 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
         )}
 
         {!isLoading && !isError && displayTours.length === 0 && (
-          <div className="all-tours-empty">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <h3>No tours match your filters</h3>
-            <p>Try adjusting or clearing your filters to see more results.</p>
-            <button className="all-tours-clear-btn" onClick={clearAll}>Clear All Filters</button>
-          </div>
+          <NoToursEmptyState
+            location={nearParam || locationParam || currentLocation || ''}
+            onBrowseAll={() => navigate('/tours')}
+            onSecondary={clearAll}
+            secondaryLabel={t('allTours.clearAll', { defaultValue: 'Clear All Filters' })}
+          />
         )}
 
         {totalPages > 1 && (
