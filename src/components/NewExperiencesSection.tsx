@@ -77,7 +77,7 @@ export default function NewExperiencesSection({ isLoading, title, location }: Pr
         <div className="newexp-viewport">
           <SectionHeading
             title={title || t('sections.newExperiences')}
-            viewAllLink={location ? `/tours?location=${encodeURIComponent(location)}&section=New Experiences` : "/tours?section=New Experiences"}
+            viewAllLink={location ? `/tours?near=${encodeURIComponent(location)}&section=New Experiences` : "/tours?section=New Experiences"}
             onScrollLeft={() => scroll('left')}
             onScrollRight={() => scroll('right')}
             disableLeft={!canScrollLeft}

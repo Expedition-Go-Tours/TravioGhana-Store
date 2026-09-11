@@ -149,6 +149,9 @@ interface ExpeditionTourRecord {
     viewCount: number
     city: string | null
     country: string | null
+    latitude?: number | null
+    longitude?: number | null
+    distanceKm?: number | null
     categorization?: any
     productContent?: any
     bookingAndTickets?: any
@@ -201,6 +204,11 @@ export interface TourCardData {
   discount?: string
   /** Whether the tour is flagged as likely to sell out (drives the red tag on the card image). */
   likelyToSellOut?: boolean
+  /** Geo coordinates + distance (km) from the searched location (`near`),
+   *  used by the All Tours page to order results "closest first". */
+  latitude?: number | null
+  longitude?: number | null
+  distanceKm?: number | null
 }
 function extractDurationFromTour(tour: any): number | null {
   try {
@@ -1160,6 +1168,9 @@ function mapToListing(tour: ExpeditionTourRecord['tour']): TourCardData {
     durationMinutes: effectiveDuration ?? tour.durationMinutes ?? null,
     priceValue: effectivePrice != null ? effectivePrice : null,
     ratingValue: tour.averageRating != null ? Number(tour.averageRating) : null,
+    latitude: tour.latitude ?? null,
+    longitude: tour.longitude ?? null,
+    distanceKm: tour.distanceKm ?? null,
   }
 }
 
@@ -1414,17 +1425,20 @@ export function useExpeditionTours(filters: ExpeditionToursFilters = {}) {
 const MAX_CATALOG_PAGES = 10
 const CATALOG_PAGE_SIZE = 50
 
-export function useAllExpeditionTours(opts?: { mood?: string }) {
+export function useAllExpeditionTours(opts?: { mood?: string; near?: string }) {
   const mood = opts?.mood || ''
+  const near = opts?.near || ''
   return useQuery({
-    queryKey: ['expedition', 'tours', 'all', mood],
+    queryKey: ['expedition', 'tours', 'all', mood, near],
     staleTime: 5 * 60_000,
     queryFn: async (): Promise<TourCardData[]> => {
       const records: ExpeditionTourRecord[] = []
       const moodParam = mood ? `&mood=${encodeURIComponent(mood)}` : ''
+      const nearParam = near ? `&near=${encodeURIComponent(near)}` : ''
+      const extra = `${moodParam}${nearParam}`
 
       // Fetch first page to get totalPages
-      const first = await expeditionFetchRaw(`/travioghana/tours?page=1&limit=${CATALOG_PAGE_SIZE}${moodParam}`)
+      const first = await expeditionFetchRaw(`/travioghana/tours?page=1&limit=${CATALOG_PAGE_SIZE}${extra}`)
       const firstBatch: ExpeditionTourRecord[] = first.data?.tours ?? first.tours ?? []
       records.push(...firstBatch)
       const totalPages = Math.min(first.pagination?.totalPages ?? 1, MAX_CATALOG_PAGES)
@@ -1433,7 +1447,7 @@ export function useAllExpeditionTours(opts?: { mood?: string }) {
       if (totalPages > 1 && firstBatch.length > 0) {
         const rest = await Promise.all(
           Array.from({ length: totalPages - 1 }, (_, i) =>
-            expeditionFetchRaw(`/travioghana/tours?page=${i + 2}&limit=${CATALOG_PAGE_SIZE}${moodParam}`)
+            expeditionFetchRaw(`/travioghana/tours?page=${i + 2}&limit=${CATALOG_PAGE_SIZE}${extra}`)
           )
         )
         for (const payload of rest) {

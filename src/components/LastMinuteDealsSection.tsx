@@ -107,7 +107,7 @@ export default function LastMinuteDealsSection({ preloaded, isLoading, title, lo
         <div className="lastminute-viewport">
           <SectionHeading
             title={title || t('sections.lastMinuteDeals')}
-            viewAllLink={location ? `/tours?location=${encodeURIComponent(location)}&section=Last Minute Deals` : "/tours?section=Last Minute Deals"}
+            viewAllLink={location ? `/tours?near=${encodeURIComponent(location)}&section=Last Minute Deals` : "/tours?section=Last Minute Deals"}
             onScrollLeft={() => scroll('left')}
             onScrollRight={() => scroll('right')}
             disableLeft={!canScrollLeft}

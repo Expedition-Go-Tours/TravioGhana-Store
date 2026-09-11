@@ -63,7 +63,7 @@ export default function TopRatedSection({ preloaded, isLoading, title, location 
         <div className="toprated-viewport">
           <SectionHeading
             title={title || t('sections.topRatedTitle')}
-            viewAllLink={location ? `/tours?location=${encodeURIComponent(location)}&section=Top Rated` : "/tours?section=Top Rated"}
+            viewAllLink={location ? `/tours?near=${encodeURIComponent(location)}&section=Top Rated` : "/tours?section=Top Rated"}
             onScrollLeft={() => scroll('left')}
             onScrollRight={() => scroll('right')}
             disableLeft={!canScrollLeft}

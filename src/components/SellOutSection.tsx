@@ -63,7 +63,7 @@ export default function SellOutSection({ preloaded, isLoading, title, location }
         <div className="sellout-viewport">
           <SectionHeading
             title={title || t('sections.likelyToSellOut')}
-            viewAllLink={location ? `/tours?location=${encodeURIComponent(location)}&section=Sell Out` : "/tours?section=Sell Out"}
+            viewAllLink={location ? `/tours?near=${encodeURIComponent(location)}&section=Sell Out` : "/tours?section=Sell Out"}
             onScrollLeft={() => scroll('left')}
             onScrollRight={() => scroll('right')}
             disableLeft={!canScrollLeft}

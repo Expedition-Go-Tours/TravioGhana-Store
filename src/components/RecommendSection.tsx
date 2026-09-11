@@ -97,7 +97,7 @@ export default function RecommendSection({ preloaded, isLoading, title, location
         <div className="carousel-viewport">
           <SectionHeading
             title={title || t('sections.recommendedTitle')}
-            viewAllLink={location ? `/tours?location=${encodeURIComponent(location)}&section=Recommended` : "/tours?section=Recommended"}
+            viewAllLink={location ? `/tours?near=${encodeURIComponent(location)}&section=Recommended` : "/tours?section=Recommended"}
             onScrollLeft={() => scroll('left')}
             onScrollRight={() => scroll('right')}
             disableLeft={!canScrollLeft}

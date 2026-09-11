@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { transformImage } from '@/lib/image'
 import { useMoodKeywords, type MoodKeyword } from '../hooks/useHomepageSections'
 import { trackMoodClick } from '../lib/analytics'
+import { useLocationSearch } from '../context/LocationSearchContext'
 import CategorySkeleton from './CategorySkeleton'
 import './MoodSection.css'
 
@@ -52,6 +53,7 @@ interface Props {
 export default function MoodSection({ preloaded, isLoading, title }: Props) {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { currentLocation, hasActiveSearch } = useLocationSearch()
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
@@ -132,7 +134,12 @@ export default function MoodSection({ preloaded, isLoading, title }: Props) {
                       className="mood-card"
                       onClick={() => {
                         trackMoodClick(cat.keyword, i)
-                        navigate(`/tours?mood=${encodeURIComponent(cat.keyword)}`)
+                        // Carry the searched city so the listing can order
+                        // results "closest to {city} first".
+                        const near = hasActiveSearch && currentLocation
+                          ? `&near=${encodeURIComponent(currentLocation)}`
+                          : ''
+                        navigate(`/tours?mood=${encodeURIComponent(cat.keyword)}${near}`)
                       }}
                     >
                       <img

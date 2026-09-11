@@ -160,7 +160,7 @@ export default function TopAttractionsNearbySection({ preloaded, title, location
         <div className="attractions-viewport">
           <SectionHeading
             title={title || t('sections.topAttractionsNearby')}
-            viewAllLink={location ? `/tours?location=${encodeURIComponent(location)}&section=Top Attractions Nearby` : "/tours?section=Top Attractions Nearby"}
+            viewAllLink={location ? `/tours?near=${encodeURIComponent(location)}&section=Top Attractions Nearby` : "/tours?section=Top Attractions Nearby"}
             onScrollLeft={() => scroll('left')}
             onScrollRight={() => scroll('right')}
             disableLeft={!canScrollLeft}
