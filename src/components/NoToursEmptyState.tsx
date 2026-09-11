@@ -70,7 +70,7 @@ export default function NoToursEmptyState({ location = '', onBrowseAll, onSecond
                 key={`${loc.city}-${loc.country ?? ''}`}
                 type="button"
                 className="no-tours-chip"
-                onClick={() => navigate(`/search?q=${encodeURIComponent(loc.city)}`)}
+                onClick={() => navigate(`/tours?place=${encodeURIComponent(loc.city)}`)}
               >
                 {loc.coverPhoto && <img src={loc.coverPhoto} alt="" loading="lazy" />}
                 <span className="no-tours-chip-body">

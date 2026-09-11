@@ -94,7 +94,10 @@ export default function SearchBar() {
     if (!q) return
 
     trackSearch(q)
-    navigate(`/search?q=${encodeURIComponent(q)}`)
+    // Always land on the listing page scoped to the query. If it resolves to a
+    // place (city / attraction) it shows "Tours in {place}"; otherwise the
+    // AllToursPage falls back to a plain text search.
+    navigate(`/tours?place=${encodeURIComponent(q)}`)
   }, [inputValue, navigate])
 
   useEffect(() => {

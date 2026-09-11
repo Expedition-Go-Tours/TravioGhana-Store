@@ -1430,19 +1430,21 @@ export function useExpeditionTours(filters: ExpeditionToursFilters = {}) {
 const MAX_CATALOG_PAGES = 10
 const CATALOG_PAGE_SIZE = 50
 
-export function useAllExpeditionTours(opts?: { mood?: string; near?: string; place?: string }) {
+export function useAllExpeditionTours(opts?: { mood?: string; near?: string; place?: string; search?: string }) {
   const mood = opts?.mood || ''
   const near = opts?.near || ''
   const place = opts?.place || ''
+  const search = opts?.search || ''
   return useQuery({
-    queryKey: ['expedition', 'tours', 'all', mood, near, place],
+    queryKey: ['expedition', 'tours', 'all', mood, near, place, search],
     staleTime: 5 * 60_000,
     queryFn: async (): Promise<TourCardData[]> => {
       const records: ExpeditionTourRecord[] = []
       const moodParam = mood ? `&mood=${encodeURIComponent(mood)}` : ''
       const nearParam = near ? `&near=${encodeURIComponent(near)}` : ''
       const placeParam = place ? `&place=${encodeURIComponent(place)}` : ''
-      const extra = `${moodParam}${nearParam}${placeParam}`
+      const searchParam = search ? `&search=${encodeURIComponent(search)}` : ''
+      const extra = `${moodParam}${nearParam}${placeParam}${searchParam}`
 
       // Fetch first page to get totalPages
       const first = await expeditionFetchRaw(`/travioghana/tours?page=1&limit=${CATALOG_PAGE_SIZE}${extra}`)
