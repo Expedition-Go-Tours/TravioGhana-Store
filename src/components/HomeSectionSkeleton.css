@@ -1,0 +1,85 @@
+/* HomeSectionSkeleton — placeholder for a lazy homepage section while its JS
+   chunk loads. Matches the carousel metrics (295px cards, 16px gap). */
+@keyframes homeSectionShimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.home-section-skeleton {
+  padding: 45px 0;
+  background: #fff;
+}
+
+.home-section-skeleton-heading {
+  width: 260px;
+  height: 24px;
+  border-radius: 6px;
+  margin: 0 auto 24px;
+  max-width: calc(295px * 5 + 16px * 4);
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 800px 100%;
+  animation: homeSectionShimmer 1.6s ease-in-out infinite;
+}
+
+.home-section-skeleton-cards {
+  display: flex;
+  gap: 16px;
+  overflow: hidden;
+  max-width: calc(295px * 5 + 16px * 4);
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.home-section-skeleton-card {
+  flex: 0 0 295px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.home-section-skeleton-img {
+  width: 100%;
+  height: 165px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 800px 100%;
+  animation: homeSectionShimmer 1.6s ease-in-out infinite;
+}
+
+.home-section-skeleton-lines {
+  padding: 12px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.home-section-skeleton-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 800px 100%;
+  animation: homeSectionShimmer 1.6s ease-in-out infinite;
+}
+
+.home-section-skeleton-line--long { width: 85%; }
+.home-section-skeleton-line--short { width: 40%; }
+.home-section-skeleton-line--medium { width: 60%; }
+
+@media (max-width: 768px) {
+  .home-section-skeleton {
+    padding: 30px 0;
+  }
+
+  .home-section-skeleton-cards {
+    padding: 0 16px;
+    gap: 12px;
+  }
+
+  .home-section-skeleton-card {
+    flex: 0 0 280px;
+  }
+
+  .home-section-skeleton-img {
+    height: 150px;
+  }
+}

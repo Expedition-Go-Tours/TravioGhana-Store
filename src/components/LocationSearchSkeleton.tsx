@@ -1,14 +1,25 @@
 import './LocationSearchSkeleton.css'
 
+interface Props {
+  /** The city being searched — shown in the status line. */
+  location?: string | null
+}
+
 /**
- * Full-page skeleton shown while the personalized homepage is loading.
- * Matches the layout of the real homepage: hero placeholder + 5 skeleton
- * section rows with card placeholders.
+ * Location-search loader shown while the personalized homepage data loads.
+ * The real hero stays visible above it (no gray placeholder), so the page
+ * paints instantly; below sits a spinner + status line and shimmer rows,
+ * matching the prototype's skeleton(loc).
  */
-export default function LocationSearchSkeleton() {
+export default function LocationSearchSkeleton({ location }: Props) {
   return (
-    <div className="location-skeleton" aria-label="Loading homepage">
-      <div className="location-skeleton-hero" />
+    <div className="location-loader" role="status" aria-live="polite">
+      <div className="location-loader-status">
+        <span className="location-loader-spinner" aria-hidden="true" />
+        <span>
+          Finding the best experiences{location ? ` in ${location}` : ''}...
+        </span>
+      </div>
       <div className="location-skeleton-sections">
         {[0, 1, 2, 3, 4].map((s) => (
           <div key={s} className="location-skeleton-section">

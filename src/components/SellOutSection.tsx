@@ -21,7 +21,7 @@ export default function SellOutSection({ preloaded, isLoading, title, location }
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
-  const { data: liveData } = useLikelySellOut(12)
+  const { data: liveData } = useLikelySellOut(12, !preloaded)
   const items = (preloaded ?? liveData)?.length
     ? (preloaded ?? liveData)!.map((t) => ({ ...mapToTourCard(t), likelyToSellOut: true }))
     : null

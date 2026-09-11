@@ -51,6 +51,13 @@
   width: 100%;
 }
 
+.history-rail-empty {
+  margin: 0;
+  padding: 8px 2px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
 @media (max-width: 768px) {
   .history-rail {
     padding: 30px 0;

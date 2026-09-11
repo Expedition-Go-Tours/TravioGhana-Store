@@ -12,15 +12,18 @@ interface OptimizedImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElem
   fit?: 'crop' | 'fill' | 'scale'
   /** Mark as above-the-fold / LCP image: loading="eager" + fetchpriority="high". */
   priority?: boolean
+  /** Show a tiny blurred LQIP while the full image loads. Off by default — the
+   *  extra request isn't worth it for the many below-fold carousel images. */
+  lqip?: boolean
 }
 
 /**
  * Responsive srcSet widths for a given base width.
- * Multipliers chosen to cover 1x, 1.5x, 2x, and 3x DPR screens while
- * staying within Cloudinary's on-the-fly transform budget.
+ * Two widths (1x/2x) cover the common DPRs without multiplying Cloudinary
+ * transform variants (each unique width is an on-the-fly transform).
  */
 function buildBreakpoints(width: number): number[] {
-  return [width, Math.round(width * 1.5), width * 2, Math.round(width * 3)]
+  return [width, width * 2]
 }
 
 /**
@@ -44,6 +47,7 @@ export default function OptimizedImage({
   style,
   fit,
   priority = false,
+  lqip = false,
   onLoad,
   onError,
   ...imgProps
@@ -137,13 +141,13 @@ export default function OptimizedImage({
   const srcSet = srcSetWidths ? getSrcSet(src, srcSetWidths, transformOpts) : undefined
   const sizes = width ? widthToSizes(width) : undefined
 
-  // LQIP: tiny blurred placeholder shown while full image loads
-  const lqipUrl = transformImage(src, { width: 20, quality: 'auto:low', format: 'auto' })
-  const placeholderStyle: React.CSSProperties = loaded
+  // LQIP: tiny blurred placeholder shown while full image loads (opt-in).
+  const lqipUrl = lqip ? transformImage(src, { width: 20, quality: 'auto:low', format: 'auto' }) : null
+  const placeholderStyle: React.CSSProperties = loaded || !lqipUrl
     ? { ...style }
     : {
         ...style,
-        backgroundImage: lqipUrl ? `url(${lqipUrl})` : undefined,
+        backgroundImage: `url(${lqipUrl})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         filter: 'blur(20px)',

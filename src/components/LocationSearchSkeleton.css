@@ -1,26 +1,44 @@
-/* LocationSearchSkeleton — shimmer placeholders while personalized data loads */
+/* LocationSearchSkeleton — "Finding the best experiences in {loc}…" loader.
+   The hero renders above this; only the status line + shimmer rows live here. */
 @keyframes skeletonShimmer {
   0% { background-position: -400px 0; }
   100% { background-position: 400px 0; }
 }
 
-.location-skeleton {
-  min-height: 80vh;
+.location-loader {
   padding: 0 0 60px;
 }
 
-.location-skeleton-hero {
-  width: 100%;
-  height: 420px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 800px 100%;
-  animation: skeletonShimmer 1.6s ease-in-out infinite;
+.location-loader-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #687386;
+  font-weight: 700;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 24px 0;
+}
+
+.location-loader-spinner {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ddd;
+  border-top-color: #159c45;
+  border-radius: 50%;
+  animation: locationLoaderSpin 0.8s linear infinite;
+}
+
+@keyframes locationLoaderSpin {
+  to { transform: rotate(360deg); }
 }
 
 .location-skeleton-sections {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 32px 24px 0;
+  padding: 28px 24px 0;
   display: flex;
   flex-direction: column;
   gap: 40px;
@@ -83,7 +101,6 @@
 .location-skeleton-line--medium { width: 60%; }
 
 @media (max-width: 768px) {
-  .location-skeleton-hero { height: 280px; }
   .location-skeleton-card { flex: 0 0 240px; }
   .location-skeleton-card-img { height: 130px; }
 }

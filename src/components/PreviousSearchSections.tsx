@@ -16,13 +16,14 @@ import './PreviousSearchSections.css'
  */
 export default function PreviousSearchSections() {
   const { t } = useTranslation()
-  const { hasActiveSearch, currentLocation, previousLocations } = useLocationSearch()
+  const { hasActiveSearch, previousLocations } = useLocationSearch()
 
+  // Matches the prototype exactly: show the two most recent previous searches.
+  // (History never contains the current location, so no filtering is needed —
+  // filtering here could silently drop a valid rail.)
   if (!hasActiveSearch || previousLocations.length === 0) return null
 
-  const rails = previousLocations
-    .filter((loc) => loc.toLowerCase() !== currentLocation?.toLowerCase())
-    .slice(0, 2)
+  const rails = previousLocations.slice(0, 2)
 
   if (rails.length === 0) return null
 

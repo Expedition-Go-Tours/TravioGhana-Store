@@ -1,4 +1,5 @@
-﻿import { useTranslation } from 'react-i18next'
+﻿import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import SectionHeading from './SectionHeading'
 import './CustomReviewsSection.css'
 
@@ -8,9 +9,18 @@ interface Props {
 
 export default function CustomReviewsSection({ location }: Props) {
   const { t } = useTranslation()
-  const heading = location
-    ? `${t('sections.whatTravellersAreSaying')} — ${location}`
-    : t('sections.whatTravellersAreSaying')
+  const heading = `${t('sections.whatTravellersAreSaying')} about ${location || 'Ghana'}`
+
+  // Load the Elfsight platform script only once this section mounts (it is
+  // wrapped in MountOnView, so it's deferred until scrolled into view).
+  useEffect(() => {
+    if (document.querySelector('script[src*="elfsightcdn.com/platform.js"]')) return
+    const script = document.createElement('script')
+    script.src = 'https://elfsightcdn.com/platform.js'
+    script.async = true
+    document.body.appendChild(script)
+  }, [])
+
   return (
     <section className="reviews-section">
       <div className="reviews-container">
@@ -22,10 +32,6 @@ export default function CustomReviewsSection({ location }: Props) {
 
           <div className="reviews-elfsight">
             <div className="elfsight-app-81f18ebc-8702-4317-b46f-6de7cfe86fa7" data-elfsight-app-lazy></div>
-          </div>
-
-          <div className="tripadvisor-bar">
-            <span className="tripadvisor-text">{t('sections.poweredByTripadvisor')}</span>
           </div>
         </div>
       </div>

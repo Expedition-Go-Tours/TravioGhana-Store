@@ -13,6 +13,7 @@ import PartnersSection from './components/PartnersSection'
 import WhyBookSection from './components/WhyBookSection'
 import NewsletterSection from './components/NewsletterSection'
 import LocationSearchSkeleton from './components/LocationSearchSkeleton'
+import HomeSectionSkeleton from './components/HomeSectionSkeleton'
 import HistorySections from './components/HistorySections'
 import PreviousSearchSections from './components/PreviousSearchSections'
 import Footer from './components/Footer'
@@ -53,8 +54,6 @@ const TravelStoriesSection = lazy(() => import('./components/TravelStoriesSectio
 
 type PageView = 'home' | 'signin' | 'signup'
 
-const sectionFallback = <div style={{ minHeight: 400 }} />
-
 function HomePage() {
   const { currentLocation, previousLocations, hasActiveSearch } = useLocationSearch()
   const { data: homepage, isLoading } = useHomepage({ enabled: !hasActiveSearch })
@@ -91,12 +90,14 @@ function HomePage() {
   }, [hasActiveSearch, currentLocation])
   const locationFilter = hasActiveSearch ? currentLocation ?? undefined : undefined
 
-  // Show skeleton ONLY on the very first city search (no cached data yet).
-  // On subsequent city switches, placeholderData keeps the previous city visible.
-  if (hasActiveSearch && isCityLoading && !cityHomepage && !homepage) {
+  // While a location search is loading, keep the real hero visible (instant
+  // paint) and show the prototype's "Finding the best experiences in {loc}…"
+  // loader with shimmer rows underneath.
+  if (hasActiveSearch && isCityLoading) {
     return (
       <SellOutProvider tours={[]}>
-        <LocationSearchSkeleton />
+        <Hero />
+        <LocationSearchSkeleton location={currentLocation} />
         <Footer />
       </SellOutProvider>
     )
@@ -108,27 +109,33 @@ function HomePage() {
       <ContinuePlanningSection />
       {/* Show history when no active search and user has previous locations */}
       {!hasActiveSearch && previousLocations.length > 0 && <HistorySections />}
-      {/* MoodSection: hidden when personalized per spec */}
-      {!hasActiveSearch && <MoodSection preloaded={data?.mood} isLoading={loading} />}
+      {/* Categories: "What do you want to do?" on the generic homepage,
+          "Based on your search in {city}" when personalized. */}
+      <MoodSection
+        preloaded={data?.mood}
+        isLoading={loading}
+        title={locationTitle?.('Based on your search')}
+      />
       <RecommendSection
         preloaded={data?.recommended}
         isLoading={loading}
-        title={locationTitle?.('Recommended for you')}
+        title={locationTitle?.('Recommended')}
         location={locationFilter}
       />
       {/* PopularLocations: hidden when personalized per spec */}
       {!hasActiveSearch && <PopularLocations preloaded={data?.destinations} />}
-      <MountOnView><Suspense fallback={sectionFallback}><TopRatedSection preloaded={data?.topRated} isLoading={loading} title={locationTitle?.('Top-rated experiences')} location={locationFilter} /></Suspense></MountOnView>
-      <MountOnView><Suspense fallback={sectionFallback}><SellOutSection preloaded={data?.sellOut} isLoading={loading} title={locationTitle?.('Likely to sell out')} location={locationFilter} /></Suspense></MountOnView>
-      <MountOnView><Suspense fallback={sectionFallback}><LastMinuteDealsSection preloaded={data?.offers} isLoading={loading} title={locationTitle?.('Special offers')} location={locationFilter} /></Suspense></MountOnView>
-      <MountOnView><Suspense fallback={sectionFallback}><NewExperiencesSection isLoading={loading} title={locationTitle?.('New experiences')} location={locationFilter} /></Suspense></MountOnView>
-      <MountOnView><Suspense fallback={sectionFallback}><TopAttractionsNearbySection preloaded={data?.attractions} title={locationTitle?.('Top attractions nearby')} location={locationFilter} /></Suspense></MountOnView>
+      <Suspense fallback={<HomeSectionSkeleton />}><TopRatedSection preloaded={data?.topRated} isLoading={loading} title={locationTitle?.('Top Rated')} location={locationFilter} /></Suspense>
+      <Suspense fallback={<HomeSectionSkeleton />}><SellOutSection preloaded={data?.sellOut} isLoading={loading} title={locationTitle?.('Likely To Sell Out')} location={locationFilter} /></Suspense>
+      <Suspense fallback={<HomeSectionSkeleton />}><LastMinuteDealsSection preloaded={data?.offers} isLoading={loading} title={locationTitle?.('Special Offers')} location={locationFilter} /></Suspense>
+      <Suspense fallback={<HomeSectionSkeleton />}><NewExperiencesSection isLoading={loading} title={locationTitle?.('New Experiences')} location={locationFilter} /></Suspense>
+      <Suspense fallback={<HomeSectionSkeleton />}><TopAttractionsNearbySection preloaded={data?.attractions} title={locationTitle?.('Top Attractions Nearby')} location={locationFilter} /></Suspense>
       <MountOnView><CustomReviewsSection location={locationFilter} /></MountOnView>
       <MountOnView><PreviousSearchSections /></MountOnView>
       <MountOnView><Suspense fallback={sectionFallback}><TravelStoriesSection /></Suspense></MountOnView>
       <MountOnView><NewsletterSection /></MountOnView>
-      <MountOnView><PartnersSection /></MountOnView>
-      <MountOnView><WhyBookSection /></MountOnView>
+      {/* Trust block only on the generic homepage (matches the prototype) */}
+      {!hasActiveSearch && <MountOnView><PartnersSection /></MountOnView>}
+      {!hasActiveSearch && <MountOnView><WhyBookSection /></MountOnView>}
       <Footer />
     </SellOutProvider>
   )

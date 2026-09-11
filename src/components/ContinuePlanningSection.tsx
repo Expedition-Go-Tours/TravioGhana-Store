@@ -306,7 +306,7 @@ export default function ContinuePlanningSection() {
       <div className="continue-planning-container">
         <div className="continue-planning-viewport">
           <SectionHeading
-            title={t('sections.continuePlanning')}
+            title={`${t('sections.continuePlanning')} (${continuePlanning.length})`}
             onScrollLeft={() => scroll('left')}
             onScrollRight={() => scroll('right')}
             disableLeft={!canScrollLeft}

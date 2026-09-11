@@ -30,7 +30,7 @@ export default function PopularLocations({ preloaded }: Props) {
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const { data: liveDestinations, isLoading } = usePopularDestinations(10)
+  const { data: liveDestinations, isLoading } = usePopularDestinations(10, !preloaded)
   const items = (preloaded ?? liveDestinations)?.length
     ? (preloaded ?? liveDestinations)!.map(mapToDestination)
     : null

@@ -14,10 +14,11 @@
 .section-title {
   font-family: 'GT Esti Pro Display', sans-serif;
   font-weight: 700;
-  font-size: clamp(24px, 2.2vw, 32px);
+  font-size: clamp(19px, 2.2vw, 32px);
   color: #1a1a1a;
   margin: 0;
   line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .section-subtitle {
@@ -84,6 +85,20 @@
   .section-heading {
     flex-direction: row;
     align-items: center;
+  }
+
+  /* Long personalized titles ("Top Attractions Nearby in Accra") get a smaller
+     type size and are capped at two lines so they never crowd the View-all. */
+  .section-title {
+    line-height: 1.15;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .section-view-all {
+    font-size: 13px;
   }
 
   .section-arrows {

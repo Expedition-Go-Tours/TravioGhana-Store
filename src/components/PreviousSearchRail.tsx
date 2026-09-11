@@ -56,8 +56,6 @@ export default function PreviousSearchRail({ location, title, note }: Props) {
     return () => el.removeEventListener('scroll', onScroll)
   }, [updateArrows, items])
 
-  if (!isLoading && !items) return null
-
   return (
     <section className="history-rail">
       <div className="history-rail-container">
@@ -79,11 +77,15 @@ export default function PreviousSearchRail({ location, title, note }: Props) {
                       <TourCardSkeleton />
                     </div>
                   ))
-                : items?.map((tour, i) => (
-                    <div key={`${tour.title}-${i}`} className="history-rail-card-wrap">
-                      <TourCard {...tour} imageClean hideFeatures />
-                    </div>
-                  ))
+                : items
+                  ? items.map((tour, i) => (
+                      <div key={`${tour.title}-${i}`} className="history-rail-card-wrap">
+                        <TourCard {...tour} imageClean hideFeatures />
+                      </div>
+                    ))
+                  : (
+                    <p className="history-rail-empty">No experiences in {location} yet.</p>
+                  )
               }
             </div>
           </div>

@@ -21,7 +21,7 @@ export default function TopRatedSection({ preloaded, isLoading, title, location 
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
-  const { data: liveData } = useTopRated(12)
+  const { data: liveData } = useTopRated(12, !preloaded)
   const items = (preloaded ?? liveData)?.length
     ? (preloaded ?? liveData)!.map(mapToTourCard)
     : null

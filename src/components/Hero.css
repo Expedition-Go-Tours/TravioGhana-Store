@@ -38,6 +38,18 @@
   max-width: 500px;
 }
 
+.hero-active-chip {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 15px;
+  border-radius: 999px;
+  background: #ecf8f0;
+  color: #12843e;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
 @media (max-width: 768px) {
   .hero-headline {
     font-size: 24px;

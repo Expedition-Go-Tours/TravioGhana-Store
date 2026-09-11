@@ -65,7 +65,7 @@ export default function LastMinuteDealsSection({ preloaded, isLoading, title, lo
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
-  const { data: offerTours } = useHomepageOffers(12)
+  const { data: offerTours } = useHomepageOffers(12, !preloaded)
   const items = (preloaded ?? offerTours) && (preloaded ?? offerTours)!.length > 0
     ? (preloaded ?? offerTours)!.map(mapOfferToCardProps)
     : null

@@ -225,7 +225,7 @@ export async function mergeOffersIntoTours<T extends { id: string }>(tours: T[])
 /**
  * Likely to Sell Out â€” tours with booking momentum in last 14 days.
  */
-export function useLikelySellOut(limit = 12) {
+export function useLikelySellOut(limit = 12, enabled = true) {
   return useQuery({
     queryKey: ['homepage', 'sell-out', limit],
     queryFn: async () => {
@@ -234,13 +234,14 @@ export function useLikelySellOut(limit = 12) {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     select: (data) => data.tours,
+    enabled,
   })
 }
 
 /**
  * Top Rated â€” Bayesian-smoothed quality scores.
  */
-export function useTopRated(limit = 12) {
+export function useTopRated(limit = 12, enabled = true) {
   return useQuery({
     queryKey: ['homepage', 'top-rated', limit],
     queryFn: async () => {
@@ -249,13 +250,14 @@ export function useTopRated(limit = 12) {
     },
     staleTime: 5 * 60 * 1000,
     select: (data) => data.tours,
+    enabled,
   })
 }
 
 /**
  * Trending Now â€” view/booking/wishlist velocity (7d vs prior 7d).
  */
-export function useTrending(limit = 12) {
+export function useTrending(limit = 12, enabled = true) {
   return useQuery({
     queryKey: ['homepage', 'trending', limit],
     queryFn: async () => {
@@ -264,13 +266,14 @@ export function useTrending(limit = 12) {
     },
     staleTime: 5 * 60 * 1000,
     select: (data) => data.tours,
+    enabled,
   })
 }
 
 /**
  * Recommended for You â€” personalized by behavior + location + quality.
  */
-export function useRecommended(limit = 12) {
+export function useRecommended(limit = 12, enabled = true) {
   const location = getStoredLocation()
   const params = new URLSearchParams({ limit: String(limit) })
   if (location) {
@@ -286,13 +289,14 @@ export function useRecommended(limit = 12) {
     },
     staleTime: 5 * 60 * 1000,
     select: (data) => data.tours,
+    enabled,
   })
 }
 
 /**
  * New Experiences â€” tours created in last 30 days.
  */
-export function useNewExperiences(limit = 10) {
+export function useNewExperiences(limit = 10, enabled = true) {
   return useQuery({
     queryKey: ['homepage', 'new', limit],
     queryFn: async () => {
@@ -301,6 +305,7 @@ export function useNewExperiences(limit = 10) {
     },
     staleTime: 10 * 60 * 1000, // 10 minutes
     select: (data) => data.tours,
+    enabled,
   })
 }
 
@@ -308,7 +313,7 @@ export function useNewExperiences(limit = 10) {
  * Attractions â€” grouped by attraction name from tour data.
  * Uses location for proximity sorting when available.
  */
-export function useAttractions(limit = 12) {
+export function useAttractions(limit = 12, enabled = true) {
   const location = getStoredLocation()
   const params = new URLSearchParams({ limit: String(limit) })
   if (location) {
@@ -321,6 +326,7 @@ export function useAttractions(limit = 12) {
     queryFn: () => fetchHomepageSection<{ attractions: HomepageAttraction[] }>(`/attractions?${params}`),
     staleTime: 5 * 60 * 1000,
     select: (data) => data.attractions,
+    enabled,
   })
 }
 
@@ -346,11 +352,12 @@ export function useAttractionTours(attractionName: string | null, limit = 12) {
 /**
  * Mood Keywords â€” dynamic keywords for "What do you want to do?"
  */
-export function useMoodKeywords(limit = 8) {
+export function useMoodKeywords(limit = 8, enabled = true) {
   return useQuery({
     queryKey: ['homepage', 'mood', limit],
     queryFn: () => fetchHomepageSection<{ keywords: MoodKeyword[] }>(`/mood?limit=${limit}`),
     staleTime: 5 * 60 * 1000,
+    enabled,
     select: (data) => data.keywords
       .filter(k => k.keyword && typeof k.keyword === 'string' && k.keyword.trim().length > 0)
       .map(k => ({
@@ -365,12 +372,13 @@ export function useMoodKeywords(limit = 8) {
 /**
  * Popular Destinations â€” cities with most tours/bookings.
  */
-export function usePopularDestinations(limit = 10) {
+export function usePopularDestinations(limit = 10, enabled = true) {
   return useQuery({
     queryKey: ['homepage', 'destinations', limit],
     queryFn: () => fetchHomepageSection<{ destinations: PopularDestination[] }>(`/destinations?limit=${limit}`),
     staleTime: 60 * 60 * 1000, // 1 hour
     select: (data) => data.destinations,
+    enabled,
   })
 }
 
@@ -407,7 +415,7 @@ export interface HomepageOfferTour extends HomepageTour {
  * Tours with active special offers â€” single efficient query (no N+1).
  * Powers the "Special Offers" / "Last Minute Deals" homepage section.
  */
-export function useHomepageOffers(limit = 12) {
+export function useHomepageOffers(limit = 12, enabled = true) {
   return useQuery({
     queryKey: ['homepage', 'offers', limit],
     queryFn: async () => {
@@ -416,6 +424,7 @@ export function useHomepageOffers(limit = 12) {
     },
     staleTime: 5 * 60 * 1000,
     select: (data) => data.tours,
+    enabled,
   })
 }
 
@@ -496,8 +505,6 @@ export function useHomepageByCity(city: string | null) {
     },
     enabled: !!city,
     staleTime: 5 * 60 * 1000,
-    // Keep previous city data visible while new city loads — no skeleton flash
-    placeholderData: (prev) => prev,
   })
 }
 
