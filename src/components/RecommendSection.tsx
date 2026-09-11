@@ -13,9 +13,11 @@ const GAP = 16
 interface Props {
   preloaded?: HomepageTour[]
   isLoading?: boolean
+  title?: string
+  location?: string
 }
 
-export default function RecommendSection({ preloaded, isLoading }: Props) {
+export default function RecommendSection({ preloaded, isLoading, title, location }: Props) {
   const { t } = useTranslation()
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -94,8 +96,8 @@ export default function RecommendSection({ preloaded, isLoading }: Props) {
       <div className="recommend-container">
         <div className="carousel-viewport">
           <SectionHeading
-            title={t('sections.recommendedTitle')}
-            viewAllLink="/tours?section=Recommended"
+            title={title || t('sections.recommendedTitle')}
+            viewAllLink={location ? `/tours?location=${encodeURIComponent(location)}&section=Recommended` : "/tours?section=Recommended"}
             onScrollLeft={() => scroll('left')}
             onScrollRight={() => scroll('right')}
             disableLeft={!canScrollLeft}

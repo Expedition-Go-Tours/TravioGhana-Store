@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Toaster } from 'sonner'
@@ -12,16 +12,19 @@ import CustomReviewsSection from './components/CustomReviewsSection'
 import PartnersSection from './components/PartnersSection'
 import WhyBookSection from './components/WhyBookSection'
 import NewsletterSection from './components/NewsletterSection'
+import LocationSearchSkeleton from './components/LocationSearchSkeleton'
+import HistorySections from './components/HistorySections'
 import Footer from './components/Footer'
 import MountOnView from './components/MountOnView'
 import { WishlistProvider } from './context/WishlistContext'
 import { ContinuePlanningProvider } from './context/ContinuePlanningContext'
 import { SellOutProvider } from './context/SellOutContext'
+import { LocationSearchProvider, useLocationSearch } from './context/LocationSearchContext'
 import { ChatProvider } from './chat/ChatContext'
 import SupportChatWidget from './components/SupportChatWidget'
 import { subscribeToAuthState, handleGoogleCallback, getAuthReturnTo, clearAuthReturnTo } from './lib/auth'
 import { trackPageView, requestLocation } from './lib/analytics'
-import { useHomepage } from './hooks/useHomepageSections'
+import { useHomepage, useHomepageByCity } from './hooks/useHomepageSections'
 
 // Route-level code splitting
 const AuthForm = lazy(() => import('./pages/AuthForm'))
@@ -52,7 +55,13 @@ type PageView = 'home' | 'signin' | 'signup'
 const sectionFallback = <div style={{ minHeight: 400 }} />
 
 function HomePage() {
-  const { data: homepage, isLoading } = useHomepage()
+  const { currentLocation, previousLocations, hasActiveSearch } = useLocationSearch()
+  const { data: homepage, isLoading } = useHomepage({ enabled: !hasActiveSearch })
+  const { data: cityHomepage, isLoading: isCityLoading, isError: isCityError } = useHomepageByCity(currentLocation)
+
+  // Use city-scoped data when a location search is active, fall back to global on error
+  const data = hasActiveSearch && !isCityError ? (cityHomepage ?? homepage) : homepage
+  const loading = hasActiveSearch ? isCityLoading : isLoading
 
   // Prefetch below-fold section chunks during browser idle time.
   // This ensures chunks are cached before the user scrolls, without
@@ -73,19 +82,47 @@ function HomePage() {
     }
   }, [])
 
+  // Memoize the title formatter to avoid re-renders in section components
+  // (must be above any conditional returns — Rules of Hooks)
+  const locationTitle = useMemo(() => {
+    if (!hasActiveSearch || !currentLocation) return undefined
+    return (section: string) => `${section} in ${currentLocation}`
+  }, [hasActiveSearch, currentLocation])
+  const locationFilter = hasActiveSearch ? currentLocation ?? undefined : undefined
+
+  // Show skeleton ONLY on the very first city search (no cached data yet).
+  // On subsequent city switches, placeholderData keeps the previous city visible.
+  if (hasActiveSearch && isCityLoading && !cityHomepage && !homepage) {
+    return (
+      <SellOutProvider tours={[]}>
+        <LocationSearchSkeleton />
+        <Footer />
+      </SellOutProvider>
+    )
+  }
+
   return (
-    <SellOutProvider tours={homepage?.sellOut ?? []}>
+    <SellOutProvider tours={data?.sellOut ?? []}>
       <Hero />
       <ContinuePlanningSection />
-      <MoodSection preloaded={homepage?.mood} isLoading={isLoading} />
-      <RecommendSection preloaded={homepage?.recommended} isLoading={isLoading} />
-      <PopularLocations preloaded={homepage?.destinations} />
-      <MountOnView><Suspense fallback={sectionFallback}><TopRatedSection preloaded={homepage?.topRated} isLoading={isLoading} /></Suspense></MountOnView>
-      <MountOnView><Suspense fallback={sectionFallback}><SellOutSection preloaded={homepage?.sellOut} isLoading={isLoading} /></Suspense></MountOnView>
-      <MountOnView><Suspense fallback={sectionFallback}><LastMinuteDealsSection preloaded={homepage?.offers} isLoading={isLoading} /></Suspense></MountOnView>
-      <MountOnView><Suspense fallback={sectionFallback}><NewExperiencesSection isLoading={isLoading} /></Suspense></MountOnView>
-      <MountOnView><Suspense fallback={sectionFallback}><TopAttractionsNearbySection preloaded={homepage?.attractions} /></Suspense></MountOnView>
-      <MountOnView><CustomReviewsSection /></MountOnView>
+      {/* Show history when no active search and user has previous locations */}
+      {!hasActiveSearch && previousLocations.length > 0 && <HistorySections />}
+      {/* MoodSection: hidden when personalized per spec */}
+      {!hasActiveSearch && <MoodSection preloaded={data?.mood} isLoading={loading} />}
+      <RecommendSection
+        preloaded={data?.recommended}
+        isLoading={loading}
+        title={locationTitle?.('Recommended for you')}
+        location={locationFilter}
+      />
+      {/* PopularLocations: hidden when personalized per spec */}
+      {!hasActiveSearch && <PopularLocations preloaded={data?.destinations} />}
+      <MountOnView><Suspense fallback={sectionFallback}><TopRatedSection preloaded={data?.topRated} isLoading={loading} title={locationTitle?.('Top-rated experiences')} location={locationFilter} /></Suspense></MountOnView>
+      <MountOnView><Suspense fallback={sectionFallback}><SellOutSection preloaded={data?.sellOut} isLoading={loading} title={locationTitle?.('Likely to sell out')} location={locationFilter} /></Suspense></MountOnView>
+      <MountOnView><Suspense fallback={sectionFallback}><LastMinuteDealsSection preloaded={data?.offers} isLoading={loading} title={locationTitle?.('Special offers')} location={locationFilter} /></Suspense></MountOnView>
+      <MountOnView><Suspense fallback={sectionFallback}><NewExperiencesSection isLoading={loading} title={locationTitle?.('New experiences')} location={locationFilter} /></Suspense></MountOnView>
+      <MountOnView><Suspense fallback={sectionFallback}><TopAttractionsNearbySection preloaded={data?.attractions} title={locationTitle?.('Top attractions nearby')} location={locationFilter} /></Suspense></MountOnView>
+      <MountOnView><CustomReviewsSection location={locationFilter} /></MountOnView>
       <MountOnView><Suspense fallback={sectionFallback}><TravelStoriesSection /></Suspense></MountOnView>
       <MountOnView><NewsletterSection /></MountOnView>
       <MountOnView><PartnersSection /></MountOnView>
@@ -283,7 +320,9 @@ function App() {
       <WishlistProvider>
         <ContinuePlanningProvider>
           <ChatProvider>
-            <AppContent />
+            <LocationSearchProvider>
+              <AppContent />
+            </LocationSearchProvider>
           </ChatProvider>
         </ContinuePlanningProvider>
       </WishlistProvider>

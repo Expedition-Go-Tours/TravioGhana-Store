@@ -78,9 +78,11 @@ function AttractionCard({
 
 interface Props {
   preloaded?: HomepageAttraction[]
+  title?: string
+  location?: string
 }
 
-export default function TopAttractionsNearbySection({ preloaded }: Props) {
+export default function TopAttractionsNearbySection({ preloaded, title, location }: Props) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -141,8 +143,8 @@ export default function TopAttractionsNearbySection({ preloaded }: Props) {
       <div className="attractions-container">
         <div className="attractions-viewport">
           <SectionHeading
-            title={t('sections.topAttractionsNearby')}
-            viewAllLink="/tours?section=Top Attractions Nearby"
+            title={title || t('sections.topAttractionsNearby')}
+            viewAllLink={location ? `/tours?location=${encodeURIComponent(location)}&section=Top Attractions Nearby` : "/tours?section=Top Attractions Nearby"}
             onScrollLeft={() => scroll('left')}
             onScrollRight={() => scroll('right')}
             disableLeft={!canScrollLeft}

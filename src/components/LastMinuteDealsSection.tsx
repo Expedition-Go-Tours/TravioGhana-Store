@@ -56,9 +56,11 @@ function mapOfferToCardProps(t: HomepageOfferTour): TourCardData {
 interface Props {
   preloaded?: HomepageOfferTour[]
   isLoading?: boolean
+  title?: string
+  location?: string
 }
 
-export default function LastMinuteDealsSection({ preloaded, isLoading }: Props) {
+export default function LastMinuteDealsSection({ preloaded, isLoading, title, location }: Props) {
   const { t } = useTranslation()
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -104,8 +106,8 @@ export default function LastMinuteDealsSection({ preloaded, isLoading }: Props) 
       <div className="lastminute-container">
         <div className="lastminute-viewport">
           <SectionHeading
-            title={t('sections.lastMinuteDeals')}
-            viewAllLink="/tours?section=Last Minute Deals"
+            title={title || t('sections.lastMinuteDeals')}
+            viewAllLink={location ? `/tours?location=${encodeURIComponent(location)}&section=Last Minute Deals` : "/tours?section=Last Minute Deals"}
             onScrollLeft={() => scroll('left')}
             onScrollRight={() => scroll('right')}
             disableLeft={!canScrollLeft}

@@ -77,6 +77,7 @@ export function useSearchAutocomplete(inputValue: string) {
         type: 'destination' as const,
         title: d.city,
         subtitle: d.country ?? '',
+        image: d.heroImage || undefined,
       }))
   }, [trimmed, isQueryLongEnough, destinationList])
 

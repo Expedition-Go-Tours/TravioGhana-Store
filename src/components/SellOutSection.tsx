@@ -12,9 +12,11 @@ const GAP = 16
 interface Props {
   preloaded?: HomepageTour[]
   isLoading?: boolean
+  title?: string
+  location?: string
 }
 
-export default function SellOutSection({ preloaded, isLoading }: Props) {
+export default function SellOutSection({ preloaded, isLoading, title, location }: Props) {
   const { t } = useTranslation()
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -60,8 +62,8 @@ export default function SellOutSection({ preloaded, isLoading }: Props) {
       <div className="sellout-container">
         <div className="sellout-viewport">
           <SectionHeading
-            title={t('sections.likelyToSellOut')}
-            viewAllLink="/tours?section=Sell Out"
+            title={title || t('sections.likelyToSellOut')}
+            viewAllLink={location ? `/tours?location=${encodeURIComponent(location)}&section=Sell Out` : "/tours?section=Sell Out"}
             onScrollLeft={() => scroll('left')}
             onScrollRight={() => scroll('right')}
             disableLeft={!canScrollLeft}

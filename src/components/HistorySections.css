@@ -1,0 +1,74 @@
+/* HistorySections — previous-location quick-picks */
+.history-sections {
+  padding: 0 0 8px;
+}
+
+.history-sections-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.history-sections-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 12px;
+}
+
+.history-sections-cards {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.history-sections-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 9999px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  white-space: nowrap;
+}
+
+.history-sections-card:hover {
+  border-color: #2563eb;
+  background: #f0f7ff;
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.12);
+}
+
+.history-sections-card:active {
+  background: #e0edff;
+}
+
+.history-sections-card-icon {
+  flex-shrink: 0;
+  color: #6b7280;
+}
+
+.history-sections-card:hover .history-sections-card-icon {
+  color: #2563eb;
+}
+
+.history-sections-card-label {
+  line-height: 1;
+}
+
+@media (max-width: 640px) {
+  .history-sections-container {
+    padding: 0 16px;
+  }
+  .history-sections-card {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+}

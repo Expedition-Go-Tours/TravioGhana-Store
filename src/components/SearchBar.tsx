@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, MotionConfig, motion, type Variants } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Clock, X } from 'lucide-react'
+import { MapPin, X } from 'lucide-react'
 import { useSearchAutocomplete, type SearchSuggestion } from '../hooks/useSearchAutocomplete'
 import { useRecentSearches } from '../hooks/useRecentSearches'
+import { useLocationSearch } from '../context/LocationSearchContext'
 import { trackSearch } from '../lib/analytics'
 import './SearchBar.css'
 import OptimizedImage from '@/components/shared/OptimizedImage'
@@ -29,39 +30,59 @@ const dropdownVariants: Variants = {
 export default function SearchBar() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { setLocation, hasActiveSearch } = useLocationSearch()
+  const isHomepage = location.pathname === '/'
   const [inputValue, setInputValue] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
   const [isFocused, setIsFocused] = useState(false)
+  const [isPersonalizing, setIsPersonalizing] = useState(false)
   const { suggestions, isSearching } = useSearchAutocomplete(inputValue)
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches()
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const barRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  // Tracks whether a mousedown just happened on a suggestion/recent item,
+  // so the blur handler knows not to close the dropdown prematurely.
+  const suppressBlurRef = useRef(false)
 
   const navigateToSuggestion = useCallback((suggestion: SearchSuggestion) => {
     if (suggestion.type === 'tour' && suggestion.slug) {
-      addSearch({ slug: suggestion.slug, title: suggestion.title, type: 'tour' })
+      addSearch({ slug: suggestion.slug, title: suggestion.title, type: 'tour', image: suggestion.image })
     }
     setShowDropdown(false)
     setInputValue('')
     setHighlightedIndex(-1)
-    if (suggestion.type === 'tour' && suggestion.slug) {
+    if (suggestion.type === 'destination') {
+      addSearch({ slug: suggestion.title, title: suggestion.title, type: 'destination' })
+      setIsPersonalizing(true)
+      setLocation(suggestion.title)
+      if (!isHomepage) {
+        navigate(`/tours?location=${encodeURIComponent(suggestion.title)}`)
+      }
+    } else if (suggestion.type === 'tour' && suggestion.slug) {
       navigate(`/tour/${suggestion.slug}`)
     }
-  }, [navigate, addSearch])
+  }, [navigate, addSearch, setLocation, isHomepage])
 
-  const navigateToRecent = useCallback((item: { slug: string; title: string; type: 'destination' | 'tour' }) => {
+  const navigateToRecent = useCallback((item: { slug: string; title: string; type: 'destination' | 'tour'; image?: string }) => {
     setShowDropdown(false)
     setInputValue('')
     setHighlightedIndex(-1)
     setIsFocused(false)
     inputRef.current?.blur()
-    if (item.type === 'tour' && item.slug) {
+    if (item.type === 'destination') {
+      setIsPersonalizing(true)
+      setLocation(item.title)
+      if (!isHomepage) {
+        navigate(`/tours?location=${encodeURIComponent(item.title)}`)
+      }
+    } else if (item.type === 'tour' && item.slug) {
       navigate(`/tour/${item.slug}`)
     }
-  }, [navigate])
+  }, [navigate, setLocation, isHomepage])
 
   const navigateToSearchPage = useCallback(() => {
     setShowDropdown(false)
@@ -95,6 +116,13 @@ export default function SearchBar() {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  // Clear personalizing indicator once city data arrives
+  useEffect(() => {
+    if (isPersonalizing && !isSearching) {
+      setIsPersonalizing(false)
+    }
+  }, [isPersonalizing, isSearching])
 
   const dropdownOpen =
     (isFocused && recentSearches.length > 0) ||
@@ -134,6 +162,14 @@ export default function SearchBar() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value)
   }
+
+  /** Shared mousedown handler for dropdown items (suggestions + recent).
+   *  Calls e.preventDefault() to stop the input from losing focus, which
+   *  prevents the blur handler from racing with the click. */
+  const handleItemMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    suppressBlurRef.current = true
+  }, [])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!showDropdown) {
@@ -197,7 +233,7 @@ export default function SearchBar() {
       <form className="hero-search-form" onSubmit={handleSubmit}>
         <div id="hero-search-bar" className={`hero-search-bar${isFocused ? ' focused' : ''}`} ref={barRef}>
           <div className="hero-search-input-wrap">
-            {isSearching ? (
+            {isSearching || isPersonalizing ? (
               <span className="search-loading-spinner" aria-hidden="true" />
             ) : (
               <svg className="hero-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -210,7 +246,7 @@ export default function SearchBar() {
                 ref={inputRef}
                 type="text"
                 className="hero-search-input"
-                placeholder={t('hero.destinationPlaceholder')}
+                placeholder={isPersonalizing ? `${t('hero.search')}...` : t('hero.destinationPlaceholder')}
                 autoComplete="off"
                 value={inputValue}
                 onChange={handleInputChange}
@@ -222,7 +258,13 @@ export default function SearchBar() {
                   }
                 }}
                 onBlur={() => {
-                  setTimeout(() => setIsFocused(false), 200)
+                  // If a mousedown just happened on a dropdown item, suppress
+                  // the blur — the item's onClick/onMouseDown will handle it.
+                  if (suppressBlurRef.current) {
+                    suppressBlurRef.current = false
+                    return
+                  }
+                  setTimeout(() => setIsFocused(false), 150)
                 }}
               />
             </div>
@@ -274,13 +316,19 @@ export default function SearchBar() {
                     key={item.slug}
                     className="search-recent-item"
                     onMouseDown={(e) => {
-                      e.preventDefault()
+                      handleItemMouseDown(e)
                       navigateToRecent(item)
                     }}
                   >
-                    <div className="search-suggestion-icon">
-                      <Clock size={16} />
-                    </div>
+                    {item.type === 'tour' && item.image ? (
+                      <div className="search-suggestion-img">
+                        <OptimizedImage src={item.image} alt="" width={100} />
+                      </div>
+                    ) : (
+                      <div className="search-suggestion-icon">
+                        <MapPin size={16} />
+                      </div>
+                    )}
                     <div className="search-suggestion-text">
                       <span className="search-suggestion-title">{item.title}</span>
                       <span className="search-suggestion-sub">{item.type === 'destination' ? t('search.destination') : t('search.tour')}</span>
@@ -328,19 +376,25 @@ export default function SearchBar() {
                       <div
                         className={`search-suggestion${isHighlighted ? ' highlighted' : ''}`}
                         onMouseDown={(e) => {
-                          e.preventDefault()
+                          handleItemMouseDown(e)
                           navigateToSuggestion(suggestion)
                         }}
                         onMouseEnter={() => setHighlightedIndex(idx)}
                       >
                         {suggestion.type === 'destination' ? (
                           <>
-                            <div className="search-suggestion-icon">
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                                <circle cx="12" cy="10" r="3" />
-                              </svg>
-                            </div>
+                            {suggestion.image ? (
+                              <div className="search-suggestion-img">
+                                <OptimizedImage src={suggestion.image} alt="" width={100} />
+                              </div>
+                            ) : (
+                              <div className="search-suggestion-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                  <circle cx="12" cy="10" r="3" />
+                                </svg>
+                              </div>
+                            )}
                             <div className="search-suggestion-text">
                               <span className="search-suggestion-title">{suggestion.title}</span>
                               <span className="search-suggestion-sub">{suggestion.subtitle}</span>

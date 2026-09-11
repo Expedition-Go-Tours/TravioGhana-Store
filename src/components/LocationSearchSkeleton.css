@@ -1,0 +1,89 @@
+/* LocationSearchSkeleton — shimmer placeholders while personalized data loads */
+@keyframes skeletonShimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.location-skeleton {
+  min-height: 80vh;
+  padding: 0 0 60px;
+}
+
+.location-skeleton-hero {
+  width: 100%;
+  height: 420px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 800px 100%;
+  animation: skeletonShimmer 1.6s ease-in-out infinite;
+}
+
+.location-skeleton-sections {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.location-skeleton-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.location-skeleton-heading {
+  width: 260px;
+  height: 24px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 800px 100%;
+  animation: skeletonShimmer 1.6s ease-in-out infinite;
+}
+
+.location-skeleton-cards {
+  display: flex;
+  gap: 16px;
+  overflow: hidden;
+}
+
+.location-skeleton-card {
+  flex: 0 0 280px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.location-skeleton-card-img {
+  width: 100%;
+  height: 160px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 800px 100%;
+  animation: skeletonShimmer 1.6s ease-in-out infinite;
+}
+
+.location-skeleton-card-lines {
+  padding: 12px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.location-skeleton-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 800px 100%;
+  animation: skeletonShimmer 1.6s ease-in-out infinite;
+}
+
+.location-skeleton-line--long { width: 85%; }
+.location-skeleton-line--short { width: 40%; }
+.location-skeleton-line--medium { width: 60%; }
+
+@media (max-width: 768px) {
+  .location-skeleton-hero { height: 280px; }
+  .location-skeleton-card { flex: 0 0 240px; }
+  .location-skeleton-card-img { height: 130px; }
+}

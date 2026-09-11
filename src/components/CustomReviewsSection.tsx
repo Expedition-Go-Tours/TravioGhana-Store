@@ -2,14 +2,21 @@
 import SectionHeading from './SectionHeading'
 import './CustomReviewsSection.css'
 
-export default function CustomReviewsSection() {
+interface Props {
+  location?: string
+}
+
+export default function CustomReviewsSection({ location }: Props) {
   const { t } = useTranslation()
+  const heading = location
+    ? `${t('sections.whatTravellersAreSaying')} — ${location}`
+    : t('sections.whatTravellersAreSaying')
   return (
     <section className="reviews-section">
       <div className="reviews-container">
         <div className="reviews-viewport">
           <SectionHeading
-            title={t('sections.whatTravellersAreSaying')}
+            title={heading}
             viewAllLink="https://www.tripadvisor.co.uk/Attraction_Review-g293797-d24155300-Reviews-travio_ghana_Tours_Ltd-Accra_Greater_Accra.html"
           />
 

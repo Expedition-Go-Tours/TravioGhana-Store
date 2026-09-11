@@ -4,6 +4,7 @@ export interface RecentSearch {
   slug: string
   title: string
   type: 'destination' | 'tour'
+  image?: string
 }
 
 const STORAGE_KEY = 'recent-searches'

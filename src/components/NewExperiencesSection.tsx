@@ -11,9 +11,11 @@ const GAP = 16
 
 interface Props {
   isLoading?: boolean
+  title?: string
+  location?: string
 }
 
-export default function NewExperiencesSection({ isLoading }: Props) {
+export default function NewExperiencesSection({ isLoading, title, location }: Props) {
   const { t } = useTranslation()
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -74,8 +76,8 @@ export default function NewExperiencesSection({ isLoading }: Props) {
       <div className="newexp-container">
         <div className="newexp-viewport">
           <SectionHeading
-            title={t('sections.newExperiences')}
-            viewAllLink="/tours?section=New Experiences"
+            title={title || t('sections.newExperiences')}
+            viewAllLink={location ? `/tours?location=${encodeURIComponent(location)}&section=New Experiences` : "/tours?section=New Experiences"}
             onScrollLeft={() => scroll('left')}
             onScrollRight={() => scroll('right')}
             disableLeft={!canScrollLeft}
