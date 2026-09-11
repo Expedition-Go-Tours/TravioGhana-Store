@@ -247,7 +247,11 @@
     "viewAll": "View All",
     "toursIn": "Tours in {{location}}",
     "whatTravellersAreSaying": "What Travellers are Saying",
-    "recentlySearched": "Recently Searched"
+    "recentlySearched": "Recently Searched",
+    "continueSearchIn": "Continue your search in {{location}}",
+    "previouslySearchedIn": "Previously searched in {{location}}",
+    "pickUpWhereYouLeftOff": "Pick up where you left off.",
+    "earlierDestinationSearch": "Your earlier destination search."
   },
   "splash": {
     "alt": "Travio Ghana Tours Limited",

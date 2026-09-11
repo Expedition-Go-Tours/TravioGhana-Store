@@ -1,0 +1,79 @@
+/* PreviousSearchRail — a "search history" city rail at the bottom of the
+   personalized homepage. Mirrors the RecommendSection carousel metrics so the
+   two look identical, but is self-contained (no cross-component CSS deps). */
+.history-rail {
+  padding: 45px 0;
+  background: #fff;
+}
+
+.history-rail-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 32px;
+  position: relative;
+}
+
+.history-rail-viewport {
+  max-width: calc(295px * 5 + 16px * 4);
+  margin: 0 auto;
+}
+
+.history-rail-clip {
+  overflow: hidden;
+}
+
+.history-rail-carousel {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  align-items: stretch;
+  padding: 4px 0 8px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.history-rail-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.history-rail-card-wrap {
+  width: 295px;
+  min-width: 295px;
+  flex-shrink: 0;
+  display: flex;
+  align-self: stretch;
+  scroll-snap-align: start;
+}
+
+.history-rail-card-wrap > * {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .history-rail {
+    padding: 30px 0;
+  }
+
+  .history-rail-container {
+    padding: 0 16px;
+  }
+
+  .history-rail-viewport {
+    max-width: 100%;
+  }
+
+  .history-rail-clip {
+    max-width: 100%;
+  }
+
+  .history-rail-carousel {
+    gap: 12px;
+  }
+
+  .history-rail-card-wrap {
+    width: 280px;
+    min-width: 280px;
+  }
+}

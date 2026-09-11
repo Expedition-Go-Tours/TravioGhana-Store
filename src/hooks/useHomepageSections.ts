@@ -500,3 +500,23 @@ export function useHomepageByCity(city: string | null) {
     placeholderData: (prev) => prev,
   })
 }
+
+/**
+ * City-scoped "recommended" slice — a lightweight single-section fetch used by
+ * the homepage search-history rails ("Continue your search in X" / "Previously
+ * searched in Y"). Only fetches when a city is provided. The backend cache key
+ * is anonymous + per-city, so the result is shared across users.
+ */
+export function useCityRecommended(city: string | null, limit = 12) {
+  return useQuery({
+    queryKey: ['homepage', 'city-recommended', city, limit],
+    queryFn: async () => {
+      const params = new URLSearchParams({ limit: String(limit) })
+      if (city) params.set('city', city)
+      const data = await fetchHomepageSection<{ tours: HomepageTour[] }>(`/recommended?${params}`)
+      return enrichTourBadgeFields(data.tours)
+    },
+    enabled: !!city,
+    staleTime: 5 * 60 * 1000,
+  })
+}

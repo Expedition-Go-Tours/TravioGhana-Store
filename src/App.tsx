@@ -14,6 +14,7 @@ import WhyBookSection from './components/WhyBookSection'
 import NewsletterSection from './components/NewsletterSection'
 import LocationSearchSkeleton from './components/LocationSearchSkeleton'
 import HistorySections from './components/HistorySections'
+import PreviousSearchSections from './components/PreviousSearchSections'
 import Footer from './components/Footer'
 import MountOnView from './components/MountOnView'
 import { WishlistProvider } from './context/WishlistContext'
@@ -123,6 +124,7 @@ function HomePage() {
       <MountOnView><Suspense fallback={sectionFallback}><NewExperiencesSection isLoading={loading} title={locationTitle?.('New experiences')} location={locationFilter} /></Suspense></MountOnView>
       <MountOnView><Suspense fallback={sectionFallback}><TopAttractionsNearbySection preloaded={data?.attractions} title={locationTitle?.('Top attractions nearby')} location={locationFilter} /></Suspense></MountOnView>
       <MountOnView><CustomReviewsSection location={locationFilter} /></MountOnView>
+      <MountOnView><PreviousSearchSections /></MountOnView>
       <MountOnView><Suspense fallback={sectionFallback}><TravelStoriesSection /></Suspense></MountOnView>
       <MountOnView><NewsletterSection /></MountOnView>
       <MountOnView><PartnersSection /></MountOnView>

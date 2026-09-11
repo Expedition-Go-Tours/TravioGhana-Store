@@ -1,0 +1,13 @@
+/* PreviousSearchSections — wraps the search-history rails and separates them
+   from the reviews block above (mirrors the prototype's .history-divider). */
+.previous-search {
+  border-top: 1px solid #eceef0;
+  margin-top: 60px;
+  padding-top: 5px;
+}
+
+@media (max-width: 768px) {
+  .previous-search {
+    margin-top: 40px;
+  }
+}
