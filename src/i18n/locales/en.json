@@ -225,7 +225,10 @@
     "recentSearches": "Recent Searches",
     "removeRecent": "Remove from recent searches",
     "tour": "Tour",
-    "toursAndExperiences": "Tours & Experiences"
+    "toursAndExperiences": "Tours & Experiences",
+    "placesToSee": "Places to see",
+    "thingsToDo": "Things to do",
+    "resultsIn": "Experiences in {{location}}"
   },
   "empty": {
     "title": "We're not quite there yet",

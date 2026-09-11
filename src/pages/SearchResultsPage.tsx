@@ -6,12 +6,29 @@ import { useTranslation } from 'react-i18next'
 import { fetchWithAuth } from '../lib/api'
 import { mapRawTourToListing, type TourCardData } from '../hooks/useExpeditionTours'
 import { mergeOffersIntoTours } from '../hooks/useHomepageSections'
+import { usePlaceResolve } from '../hooks/usePlaceResolve'
 import TourCard from '../components/TourCard'
 import NoToursEmptyState from '../components/NoToursEmptyState'
+import Footer from '../components/Footer'
 import './SearchResultsPage.css'
 
 async function fetchSearchResults(query: string): Promise<TourCardData[]> {
   const params = new URLSearchParams({ search: query, limit: '50' })
+  const res = await fetchWithAuth(`/tours?${params.toString()}`)
+  if (!res.ok) return []
+  const payload = await res.json().catch(() => ({}))
+  const tours: any[] = payload.data?.tours ?? payload.tours ?? []
+  return mergeOffersIntoTours(tours.map(mapRawTourToListing))
+}
+
+/**
+ * Place-scoped listing — the GYG behaviour. When the query resolves to a city
+ * or attraction, the backend orders every tour around it (in the place ->
+ * near it -> the rest, popularity within each band) and never filters, so a
+ * location search can't dead-end.
+ */
+async function fetchPlaceResults(place: string): Promise<TourCardData[]> {
+  const params = new URLSearchParams({ place, limit: '50' })
   const res = await fetchWithAuth(`/tours?${params.toString()}`)
   if (!res.ok) return []
   const payload = await res.json().catch(() => ({}))
@@ -25,12 +42,20 @@ export default function SearchResultsPage() {
   const navigate = useNavigate()
   const query = searchParams.get('q')?.trim() ?? ''
 
+  // Resolve the query to a place first: if it is one (city / attraction), scope
+  // the listing to it; otherwise keep the plain text-relevance search.
+  const { data: place, isFetching: isResolvingPlace } = usePlaceResolve(query)
+  const isPlace = !!place
+
   const { data: tours = [], isLoading } = useQuery({
-    queryKey: ['search-results', query],
-    queryFn: () => fetchSearchResults(query),
-    enabled: query.length >= 2,
+    queryKey: ['search-results', query, isPlace ? place?.name ?? '' : 'text'],
+    queryFn: () => (isPlace ? fetchPlaceResults(place!.name) : fetchSearchResults(query)),
+    enabled: query.length >= 2 && !isResolvingPlace,
     staleTime: 30_000,
   })
+
+  const placeLabel = place?.name || query
+  const showLoading = isLoading || (isResolvingPlace && query.length >= 2)
 
   return (
     <div className="search-results-page">
@@ -40,23 +65,27 @@ export default function SearchResultsPage() {
         </button>
         <h1 className="search-results-title">
           {query ? (
-            <>
-              {t('search.resultsFor', { defaultValue: 'Results for' })}{' '}
-              <span className="search-results-query">"{query}"</span>
-            </>
+            isPlace ? (
+              t('search.resultsIn', { location: placeLabel, defaultValue: 'Experiences in {{location}}' })
+            ) : (
+              <>
+                {t('search.resultsFor', { defaultValue: 'Results for' })}{' '}
+                <span className="search-results-query">"{query}"</span>
+              </>
+            )
           ) : (
             t('search.title', { defaultValue: 'Search Tours' })
           )}
         </h1>
         {tours.length > 0 && (
           <span className="search-results-count">
-            {tours.length} {t('search.toursFound', { defaultValue: 'tours found' })}
+            {tours.length} {tours.length === 1 ? 'tour' : 'tours'} {t('search.toursFound', { defaultValue: 'found' })}
           </span>
         )}
       </div>
 
       <div className="search-results-body">
-        {isLoading ? (
+        {showLoading ? (
           <div className="search-results-grid">
             {[0, 1, 2, 3, 4, 5].map((i) => (
               <div className="search-results-skeleton" key={i}>
@@ -85,6 +114,7 @@ export default function SearchResultsPage() {
           <NoToursEmptyState location={query} onBrowseAll={() => navigate('/tours')} />
         )}
       </div>
+      <Footer />
     </div>
   )
 }

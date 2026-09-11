@@ -1,12 +1,11 @@
 import { useMemo, useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchWithAuth } from '../lib/api'
-import { usePopularDestinations } from './useHomepageSections'
 import { extractStartingPriceFromRaw, formatDuration } from './useExpeditionTours'
 
 export interface SearchSuggestion {
   id: string
-  type: 'destination' | 'tour'
+  type: 'destination' | 'attraction' | 'tour'
   title: string
   subtitle: string
   image?: string
@@ -15,6 +14,8 @@ export interface SearchSuggestion {
   /** Canonical city of a tour suggestion — used to personalize the homepage
    *  when the suggestion is selected from the search bar. */
   city?: string
+  /** Number of tours a place suggestion has (shown as "N experiences"). */
+  tourCount?: number
 }
 
 interface BackendTourResult {
@@ -32,9 +33,7 @@ interface BackendTourResult {
 
 async function fetchBackendTourSuggestions(query: string): Promise<SearchSuggestion[]> {
   const params = new URLSearchParams({ search: query, limit: '8' })
-
   const res = await fetchWithAuth(`/tours?${params.toString()}`)
-
   if (!res.ok) return []
 
   const payload = await res.json().catch(() => ({}))
@@ -58,6 +57,30 @@ async function fetchBackendTourSuggestions(query: string): Promise<SearchSuggest
   })
 }
 
+/** "Places to see" — destinations + attractions, grouped the GYG way. */
+async function fetchPlaceSuggestions(query: string): Promise<SearchSuggestion[]> {
+  const res = await fetchWithAuth(`/places/suggest?q=${encodeURIComponent(query)}&limit=5`)
+  if (!res.ok) return []
+  const payload = await res.json().catch(() => ({}))
+  const places: any[] = payload.data?.placesToSee ?? []
+
+  return places.map((p) => {
+    const isAttraction = p.type === 'attraction'
+    const count = Number(p.tourCount) || 0
+    return {
+      id: p.id,
+      type: (isAttraction ? 'attraction' : 'destination') as 'attraction' | 'destination',
+      title: p.name,
+      subtitle: isAttraction
+        ? (count ? `${count} experience${count === 1 ? '' : 's'}` : 'Attraction')
+        : (p.country || 'Destination'),
+      image: p.image || undefined,
+      city: p.city || undefined,
+      tourCount: count,
+    }
+  })
+}
+
 export function useSearchAutocomplete(inputValue: string) {
   const [debounced, setDebounced] = useState('')
 
@@ -69,21 +92,13 @@ export function useSearchAutocomplete(inputValue: string) {
   const trimmed = debounced.trim()
   const isQueryLongEnough = trimmed.length >= 2
 
-  const { data: destinationList } = usePopularDestinations(20)
-
-  const destinationSuggestions = useMemo<SearchSuggestion[]>(() => {
-    if (!isQueryLongEnough) return []
-    const lq = trimmed.toLowerCase()
-    return (destinationList ?? [])
-      .filter((d) => d.city.toLowerCase().includes(lq))
-      .map((d) => ({
-        id: `dest-${d.city}`,
-        type: 'destination' as const,
-        title: d.city,
-        subtitle: d.country ?? '',
-        image: d.heroImage || undefined,
-      }))
-  }, [trimmed, isQueryLongEnough, destinationList])
+  const placesQuery = useQuery({
+    queryKey: ['place-suggest', trimmed],
+    queryFn: () => fetchPlaceSuggestions(trimmed),
+    enabled: isQueryLongEnough,
+    staleTime: 60_000,
+    placeholderData: (previousData) => previousData,
+  })
 
   const tourQuery = useQuery({
     queryKey: ['search-autocomplete', 'tours', trimmed],
@@ -96,20 +111,25 @@ export function useSearchAutocomplete(inputValue: string) {
   const suggestions = useMemo<SearchSuggestion[]>(() => {
     if (!isQueryLongEnough) return []
 
-    const tourSuggestions = tourQuery.data ?? []
+    const places = placesQuery.data ?? []
+    const tours = tourQuery.data ?? []
     const lq = trimmed.toLowerCase()
-    const seenTitles = new Set(destinationSuggestions.map((d) => d.title))
-    const dedupedTours = tourSuggestions.filter((t) => {
-      if (seenTitles.has(t.title)) return false
-      seenTitles.add(t.title)
+
+    const seenTitles = new Set(places.map((p) => p.title.toLowerCase()))
+    const dedupedTours = tours.filter((t) => {
+      const key = t.title.toLowerCase()
+      if (seenTitles.has(key)) return false
+      seenTitles.add(key)
       return true
     })
 
-    const results = [...destinationSuggestions, ...dedupedTours]
+    const results = [...places, ...dedupedTours]
 
     results.sort((a, b) => {
-      // Destinations first, then tours, matching prior UX ordering
-      if (a.type !== b.type) return a.type === 'destination' ? -1 : 1
+      // Places first, then tours — matching GYG's "Places to see" / "Things to do".
+      const aPlace = a.type !== 'tour' ? 0 : 1
+      const bPlace = b.type !== 'tour' ? 0 : 1
+      if (aPlace !== bPlace) return aPlace - bPlace
       const aStarts = a.title.toLowerCase().startsWith(lq) ? 0 : 1
       const bStarts = b.title.toLowerCase().startsWith(lq) ? 0 : 1
       if (aStarts !== bStarts) return aStarts - bStarts
@@ -117,12 +137,14 @@ export function useSearchAutocomplete(inputValue: string) {
     })
 
     return results.slice(0, 8)
-  }, [destinationSuggestions, tourQuery.data, trimmed, isQueryLongEnough])
+  }, [placesQuery.data, tourQuery.data, trimmed, isQueryLongEnough])
 
   // True while the user is actively searching but results aren't ready yet —
-  // covers both the 250ms debounce window and the in-flight backend request.
+  // covers both the 250ms debounce window and the in-flight backend requests.
   const inputTrim = inputValue.trim()
-  const isSearching = inputTrim.length >= 2 && (inputTrim !== debounced || tourQuery.isFetching)
+  const isSearching = inputTrim.length >= 2 && (
+    inputTrim !== debounced || placesQuery.isFetching || tourQuery.isFetching
+  )
 
   return { suggestions, isSearching }
 }

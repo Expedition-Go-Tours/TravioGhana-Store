@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, MotionConfig, motion, type Variants } from 'framer-motion'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { MapPin, X } from 'lucide-react'
 import { useSearchAutocomplete, type SearchSuggestion } from '../hooks/useSearchAutocomplete'
@@ -30,9 +30,7 @@ const dropdownVariants: Variants = {
 export default function SearchBar() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const location = useLocation()
-  const { setLocation, hasActiveSearch } = useLocationSearch()
-  const isHomepage = location.pathname === '/'
+  const { setLocation } = useLocationSearch()
   const [inputValue, setInputValue] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
@@ -59,20 +57,18 @@ export default function SearchBar() {
     // recent search keeps it open (isFocused stays true), forcing a 2nd click.
     setIsFocused(false)
     inputRef.current?.blur()
-    if (suggestion.type === 'destination') {
+    if (suggestion.type === 'destination' || suggestion.type === 'attraction') {
       addSearch({ slug: suggestion.title, title: suggestion.title, type: 'destination' })
       setIsPersonalizing(true)
       setLocation(suggestion.title)
-      if (!isHomepage) {
-        navigate(`/tours?location=${encodeURIComponent(suggestion.title)}`)
-      }
+      navigate(`/tours?place=${encodeURIComponent(suggestion.title)}`)
     } else if (suggestion.type === 'tour' && suggestion.slug) {
       // Selecting a tour from the search bar personalizes the homepage to its
       // city, so returning to the homepage filters to that city.
       if (suggestion.city) setLocation(suggestion.city)
       navigate(`/tour/${suggestion.slug}`)
     }
-  }, [navigate, addSearch, setLocation, isHomepage])
+  }, [navigate, addSearch, setLocation])
 
   const navigateToRecent = useCallback((item: { slug: string; title: string; type: 'destination' | 'tour'; image?: string; city?: string }) => {
     setShowDropdown(false)
@@ -83,14 +79,12 @@ export default function SearchBar() {
     if (item.type === 'destination') {
       setIsPersonalizing(true)
       setLocation(item.title)
-      if (!isHomepage) {
-        navigate(`/tours?location=${encodeURIComponent(item.title)}`)
-      }
+      navigate(`/tours?place=${encodeURIComponent(item.title)}`)
     } else if (item.type === 'tour' && item.slug) {
       if (item.city) setLocation(item.city)
       navigate(`/tour/${item.slug}`)
     }
-  }, [navigate, setLocation, isHomepage])
+  }, [navigate, setLocation])
 
   const navigateToSearchPage = useCallback(() => {
     setShowDropdown(false)
@@ -365,7 +359,8 @@ export default function SearchBar() {
               <>
                 {suggestions.map((suggestion, idx) => {
                   const isHighlighted = idx === highlightedIndex
-                  const showDestHeader = suggestion.type === 'destination' && (idx === 0 || suggestions[idx - 1]?.type !== 'destination')
+                  const isPlace = suggestion.type !== 'tour'
+                  const showPlaceHeader = isPlace && (idx === 0 || suggestions[idx - 1]?.type === 'tour')
                   const showTourHeader = suggestion.type === 'tour' && (idx === 0 || suggestions[idx - 1]?.type !== 'tour')
 
                   return (
@@ -375,8 +370,8 @@ export default function SearchBar() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.18, ease: 'easeOut', delay: Math.min(idx * 0.03, 0.45) }}
                     >
-                      {showDestHeader && (
-                        <div className="search-dropdown-section">{t('common.destinations')}</div>
+                      {showPlaceHeader && (
+                        <div className="search-dropdown-section">{t('search.placesToSee')}</div>
                       )}
                       {showTourHeader && (
                           <div className="search-dropdown-section">{t('search.toursAndExperiences')}</div>
@@ -389,26 +384,7 @@ export default function SearchBar() {
                         }}
                         onMouseEnter={() => setHighlightedIndex(idx)}
                       >
-                        {suggestion.type === 'destination' ? (
-                          <>
-                            {suggestion.image ? (
-                              <div className="search-suggestion-img">
-                                <OptimizedImage src={suggestion.image} alt="" width={100} />
-                              </div>
-                            ) : (
-                              <div className="search-suggestion-icon">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                                  <circle cx="12" cy="10" r="3" />
-                                </svg>
-                              </div>
-                            )}
-                            <div className="search-suggestion-text">
-                              <span className="search-suggestion-title">{suggestion.title}</span>
-                              <span className="search-suggestion-sub">{suggestion.subtitle}</span>
-                            </div>
-                          </>
-                        ) : (
+                        {suggestion.type === 'tour' ? (
                           <>
                             <div className="search-suggestion-img">
                               <OptimizedImage src={suggestion.image} alt="" width={100} />
@@ -418,6 +394,22 @@ export default function SearchBar() {
                               <span className="search-suggestion-sub">{suggestion.subtitle}</span>
                             </div>
                             <span className="search-suggestion-price">{suggestion.price}</span>
+                          </>
+                        ) : (
+                          <>
+                            {suggestion.image ? (
+                              <div className="search-suggestion-img">
+                                <OptimizedImage src={suggestion.image} alt="" width={100} />
+                              </div>
+                            ) : (
+                              <div className="search-suggestion-icon">
+                                <MapPin size={16} />
+                              </div>
+                            )}
+                            <div className="search-suggestion-text">
+                              <span className="search-suggestion-title">{suggestion.title}</span>
+                              <span className="search-suggestion-sub">{suggestion.subtitle}</span>
+                            </div>
                           </>
                         )}
                       </div>

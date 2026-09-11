@@ -152,6 +152,8 @@ interface ExpeditionTourRecord {
     latitude?: number | null
     longitude?: number | null
     distanceKm?: number | null
+    /** True when the tour belongs to the searched place (based there / visits it). */
+    placeMatch?: boolean
     categorization?: any
     productContent?: any
     bookingAndTickets?: any
@@ -208,8 +210,10 @@ export interface TourCardData {
    *  used by the All Tours page to order results "closest first". */
   latitude?: number | null
   longitude?: number | null
-  distanceKm?: number | null
-}
+    distanceKm?: number | null
+    /** True when the tour belongs to the searched place (based there / visits it). */
+    placeMatch?: boolean
+  }
 function extractDurationFromTour(tour: any): number | null {
   try {
     const cat = typeof tour.categorization === 'string' ? JSON.parse(tour.categorization) : tour.categorization
@@ -1171,6 +1175,7 @@ function mapToListing(tour: ExpeditionTourRecord['tour']): TourCardData {
     latitude: tour.latitude ?? null,
     longitude: tour.longitude ?? null,
     distanceKm: tour.distanceKm ?? null,
+    placeMatch: tour.placeMatch === true,
   }
 }
 
@@ -1425,17 +1430,19 @@ export function useExpeditionTours(filters: ExpeditionToursFilters = {}) {
 const MAX_CATALOG_PAGES = 10
 const CATALOG_PAGE_SIZE = 50
 
-export function useAllExpeditionTours(opts?: { mood?: string; near?: string }) {
+export function useAllExpeditionTours(opts?: { mood?: string; near?: string; place?: string }) {
   const mood = opts?.mood || ''
   const near = opts?.near || ''
+  const place = opts?.place || ''
   return useQuery({
-    queryKey: ['expedition', 'tours', 'all', mood, near],
+    queryKey: ['expedition', 'tours', 'all', mood, near, place],
     staleTime: 5 * 60_000,
     queryFn: async (): Promise<TourCardData[]> => {
       const records: ExpeditionTourRecord[] = []
       const moodParam = mood ? `&mood=${encodeURIComponent(mood)}` : ''
       const nearParam = near ? `&near=${encodeURIComponent(near)}` : ''
-      const extra = `${moodParam}${nearParam}`
+      const placeParam = place ? `&place=${encodeURIComponent(place)}` : ''
+      const extra = `${moodParam}${nearParam}${placeParam}`
 
       // Fetch first page to get totalPages
       const first = await expeditionFetchRaw(`/travioghana/tours?page=1&limit=${CATALOG_PAGE_SIZE}${extra}`)
@@ -2109,6 +2116,7 @@ export function mapRawTourToListing(t: any): TourCardData {
     pickupIncluded,
     meetingMode: extractMeetingInfo(t).meetingMode,
     accommodationIncluded: extractAccommodationIncluded(t),
+    placeMatch: t.placeMatch === true,
   }
 }
 

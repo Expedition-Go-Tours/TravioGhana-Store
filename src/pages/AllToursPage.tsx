@@ -94,7 +94,24 @@ function sectionSortKey(sectionParam: string): 'rating' | 'popular' | 'recommend
   return 'recommended'
 }
 
-type SortKey = 'recommended' | 'rating' | 'popular' | 'price-low' | 'price-high' | 'near'
+type SortKey = 'recommended' | 'rating' | 'popular' | 'price-low' | 'price-high' | 'near' | 'place'
+
+/** GYG-style popularity: rating weighted by review volume. */
+function popularityValue(tour: TourCardData): number {
+  return (tour.ratingValue ?? 0) * Math.log10((tour.reviews ?? 0) + 1)
+}
+
+/**
+ * GYG-style place band: 0 = belongs to the searched place (based there / visits
+ * it — flagged by the backend as `placeMatch`), 1 = near it (<= 50 km),
+ * 2 = everywhere else. Popularity decides the order inside a band, so a
+ * far-away popular tour never overtakes one that belongs to the place.
+ */
+function placeTier(tour: TourCardData): number {
+  if (tour.placeMatch) return 0
+  if (tour.distanceKm != null && tour.distanceKm <= 50) return 1
+  return 2
+}
 
 /**
  * Proximity tier for the "Closest" sort: 0 = in the searched city, 1 = nearby
@@ -132,6 +149,16 @@ function applySort(tours: TourCardData[], sortKey: SortKey, nearCity = ''): Tour
         if (ta !== tb) return ta - tb
         return (b.ratingValue ?? 0) - (a.ratingValue ?? 0)
       })
+    case 'place':
+      return arr.sort((a, b) => {
+        const ta = placeTier(a)
+        const tb = placeTier(b)
+        if (ta !== tb) return ta - tb
+        const pa = popularityValue(a)
+        const pb = popularityValue(b)
+        if (pb !== pa) return pb - pa
+        return (b.ratingValue ?? 0) - (a.ratingValue ?? 0)
+      })
     default:
       // recommended — keep the backend's curated catalog order
       return arr
@@ -152,6 +179,7 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
   const categoryParam = searchParams.get('category') || ''
   const moodParam = searchParams.get('mood') || ''
   const nearParam = searchParams.get('near') || ''
+  const placeParam = searchParams.get('place') || ''
   const attractionParam = searchParams.get('attraction') || ''
 
   const [tourTypes, setTourTypes] = useState<string[]>([])
@@ -168,13 +196,15 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
   const effectiveSortKey: SortKey =
     sortByVal === 'near'
       ? 'near'
-      : sortByVal === 'recommended' && nearParam
-        ? 'near'
-        : sortByVal === 'recommended' && sectionParam
-          ? sectionSortKey(sectionParam)
-          : sortByVal
+      : sortByVal === 'recommended' && placeParam
+        ? 'place'
+        : sortByVal === 'recommended' && nearParam
+          ? 'near'
+          : sortByVal === 'recommended' && sectionParam
+            ? sectionSortKey(sectionParam)
+            : sortByVal
 
-  const { data: allTours, isLoading, isError, error } = useAllExpeditionTours({ mood: moodParam, near: nearParam })
+  const { data: allTours, isLoading, isError, error } = useAllExpeditionTours({ mood: moodParam, near: nearParam, place: placeParam })
   const { data: filterOptionData } = useTourFilterOptions()
 
   // Single lightweight call to get section tour IDs (reads pre-computed Redis cache)
@@ -324,6 +354,8 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
 
   const baseTitle = attractionParam
     ? attractionParam
+    : placeParam
+    ? t('sections.toursIn', { location: placeParam })
     : moodParam
     ? moodParam
     : locationParam
@@ -568,7 +600,7 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
 
         {!isLoading && !isError && displayTours.length === 0 && (
           <NoToursEmptyState
-            location={nearParam || locationParam || currentLocation || ''}
+            location={placeParam || nearParam || locationParam || currentLocation || ''}
             onBrowseAll={() => navigate('/tours')}
             onSecondary={clearAll}
             secondaryLabel={t('allTours.clearAll', { defaultValue: 'Clear All Filters' })}
