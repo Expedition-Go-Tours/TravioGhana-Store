@@ -12,6 +12,9 @@ export interface SearchSuggestion {
   image?: string
   price?: string
   slug?: string
+  /** Canonical city of a tour suggestion — used to personalize the homepage
+   *  when the suggestion is selected from the search bar. */
+  city?: string
 }
 
 interface BackendTourResult {
@@ -50,6 +53,7 @@ async function fetchBackendTourSuggestions(query: string): Promise<SearchSuggest
       image: t.coverPhoto || t.photos?.[0] || '',
       price: price != null ? `$${price}` : undefined,
       slug: t.slug,
+      city: t.city || undefined,
     }
   })
 }

@@ -5,6 +5,9 @@ export interface RecentSearch {
   title: string
   type: 'destination' | 'tour'
   image?: string
+  /** Canonical city (tour searches) so re-selecting a recent tour personalizes
+   *  the homepage the same way the live suggestion does. */
+  city?: string
 }
 
 const STORAGE_KEY = 'recent-searches'

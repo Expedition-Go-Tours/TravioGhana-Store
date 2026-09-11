@@ -50,11 +50,15 @@ export default function SearchBar() {
 
   const navigateToSuggestion = useCallback((suggestion: SearchSuggestion) => {
     if (suggestion.type === 'tour' && suggestion.slug) {
-      addSearch({ slug: suggestion.slug, title: suggestion.title, type: 'tour', image: suggestion.image })
+      addSearch({ slug: suggestion.slug, title: suggestion.title, type: 'tour', image: suggestion.image, city: suggestion.city })
     }
     setShowDropdown(false)
     setInputValue('')
     setHighlightedIndex(-1)
+    // Blur the input so the dropdown fully closes. Without this the just-added
+    // recent search keeps it open (isFocused stays true), forcing a 2nd click.
+    setIsFocused(false)
+    inputRef.current?.blur()
     if (suggestion.type === 'destination') {
       addSearch({ slug: suggestion.title, title: suggestion.title, type: 'destination' })
       setIsPersonalizing(true)
@@ -63,11 +67,14 @@ export default function SearchBar() {
         navigate(`/tours?location=${encodeURIComponent(suggestion.title)}`)
       }
     } else if (suggestion.type === 'tour' && suggestion.slug) {
+      // Selecting a tour from the search bar personalizes the homepage to its
+      // city, so returning to the homepage filters to that city.
+      if (suggestion.city) setLocation(suggestion.city)
       navigate(`/tour/${suggestion.slug}`)
     }
   }, [navigate, addSearch, setLocation, isHomepage])
 
-  const navigateToRecent = useCallback((item: { slug: string; title: string; type: 'destination' | 'tour'; image?: string }) => {
+  const navigateToRecent = useCallback((item: { slug: string; title: string; type: 'destination' | 'tour'; image?: string; city?: string }) => {
     setShowDropdown(false)
     setInputValue('')
     setHighlightedIndex(-1)
@@ -80,6 +87,7 @@ export default function SearchBar() {
         navigate(`/tours?location=${encodeURIComponent(item.title)}`)
       }
     } else if (item.type === 'tour' && item.slug) {
+      if (item.city) setLocation(item.city)
       navigate(`/tour/${item.slug}`)
     }
   }, [navigate, setLocation, isHomepage])
