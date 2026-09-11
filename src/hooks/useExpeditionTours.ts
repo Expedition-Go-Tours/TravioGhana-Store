@@ -1430,14 +1430,16 @@ export function useExpeditionTours(filters: ExpeditionToursFilters = {}) {
 const MAX_CATALOG_PAGES = 10
 const CATALOG_PAGE_SIZE = 50
 
-export function useAllExpeditionTours(opts?: { mood?: string; near?: string; place?: string; search?: string }) {
+export function useAllExpeditionTours(opts?: { mood?: string; near?: string; place?: string; search?: string; enabled?: boolean }) {
   const mood = opts?.mood || ''
   const near = opts?.near || ''
   const place = opts?.place || ''
   const search = opts?.search || ''
+  const enabled = opts?.enabled !== false
   return useQuery({
     queryKey: ['expedition', 'tours', 'all', mood, near, place, search],
     staleTime: 5 * 60_000,
+    enabled,
     queryFn: async (): Promise<TourCardData[]> => {
       const records: ExpeditionTourRecord[] = []
       const moodParam = mood ? `&mood=${encodeURIComponent(mood)}` : ''

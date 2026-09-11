@@ -61,7 +61,6 @@ export default function SearchBar() {
       addSearch({ slug: suggestion.title, title: suggestion.title, type: 'destination' })
       setIsPersonalizing(true)
       setLocation(suggestion.title)
-      navigate(`/tours?place=${encodeURIComponent(suggestion.title)}`)
     } else if (suggestion.type === 'tour' && suggestion.slug) {
       // Selecting a tour from the search bar personalizes the homepage to its
       // city, so returning to the homepage filters to that city.
@@ -79,7 +78,6 @@ export default function SearchBar() {
     if (item.type === 'destination') {
       setIsPersonalizing(true)
       setLocation(item.title)
-      navigate(`/tours?place=${encodeURIComponent(item.title)}`)
     } else if (item.type === 'tour' && item.slug) {
       if (item.city) setLocation(item.city)
       navigate(`/tour/${item.slug}`)
@@ -94,11 +92,12 @@ export default function SearchBar() {
     if (!q) return
 
     trackSearch(q)
+    setLocation(q)
     // Always land on the listing page scoped to the query. If it resolves to a
     // place (city / attraction) it shows "Tours in {place}"; otherwise the
     // AllToursPage falls back to a plain text search.
     navigate(`/tours?place=${encodeURIComponent(q)}`)
-  }, [inputValue, navigate])
+  }, [inputValue, navigate, setLocation])
 
   useEffect(() => {
     if (suggestions.length > 0 && inputValue.trim().length >= 2) {

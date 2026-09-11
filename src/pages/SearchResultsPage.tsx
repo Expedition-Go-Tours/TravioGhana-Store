@@ -44,7 +44,7 @@ export default function SearchResultsPage() {
 
   // Resolve the query to a place first: if it is one (city / attraction), scope
   // the listing to it; otherwise keep the plain text-relevance search.
-  const { data: place, isFetching: isResolvingPlace } = usePlaceResolve(query)
+  const { data: place, isFetching: isResolvingPlace } = usePlaceResolve(query, 'expedition')
   const isPlace = !!place
 
   const { data: tours = [], isLoading } = useQuery({
@@ -54,7 +54,7 @@ export default function SearchResultsPage() {
     staleTime: 30_000,
   })
 
-  const placeLabel = place?.name || query
+  const placeLabel = place?.displayName || place?.name || query
   const showLoading = isLoading || (isResolvingPlace && query.length >= 2)
 
   return (
