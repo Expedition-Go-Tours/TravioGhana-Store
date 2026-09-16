@@ -23,6 +23,8 @@ interface Review {
   companions?: string[]
   supplierResponse?: string | null
   supplierResponseAt?: string | null
+  source?: string
+  platform?: string | null
 }
 
 interface ReviewsSectionProps {
@@ -248,6 +250,16 @@ export default function ReviewsSection({
                             )}
                           </p>
                         </div>
+                        {review.source && (
+                          <span className="review-card-source">
+                            <span className="ext-source-badge">
+                              <span className="ext-source-badge__icon">
+                                {review.source === 'GOOGLE' ? '🟢' : review.source === 'VIATOR' ? '🔵' : review.source === 'GETYOURGUIDE' ? '🟡' : '🌐'}
+                              </span>
+                              {review.source}
+                            </span>
+                          </span>
+                        )}
                       </div>
 
                       {review.title && <p className="review-card-title">{review.title}</p>}

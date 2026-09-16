@@ -13,12 +13,16 @@ async function expeditionFetchRaw(path: string) {
 
 interface ExpeditionReview {
   id: string
+  source?: 'internal' | 'external'
+  platform?: string | null
   bookingId?: string
   customerId?: string
   customer?: { id: string; name: string; photoURL?: string | null }
+  author?: { name: string; photoURL?: string | null }
   rating: number
   title?: string | null
-  comment: string
+  comment?: string
+  text?: string
   createdAt: string
   photos?: string[]
   supplierResponse?: string | null
@@ -32,6 +36,8 @@ interface ExpeditionReview {
 
 export interface ReviewCardData {
   id: string
+  source: 'internal' | 'external'
+  platform?: string | null
   author: string
   authorId?: string
   avatar?: string
@@ -58,7 +64,7 @@ export interface ReviewCardData {
  */
 async function fetchRawTourReviews(tourId: string, page: number, limit: number) {
   const res = await fetchWithAuth(
-    `/reviews/tours/${encodeURIComponent(tourId)}?page=${page}&limit=${limit}&sortBy=newest&sortOrder=desc`
+    `/reviews/tours/${encodeURIComponent(tourId)}?page=${page}&limit=${limit}&sortBy=newest&sortOrder=desc&includeExternal=true`
   )
   if (!res.ok) return null
   const payload = await res.json().catch(() => ({}))
@@ -68,14 +74,16 @@ async function fetchRawTourReviews(tourId: string, page: number, limit: number) 
 function mapReviewRecords(reviews: ExpeditionReview[]): ReviewCardData[] {
   return reviews.map((r): ReviewCardData => ({
     id: r.id,
-    author: r.customer?.name || 'Anonymous',
+    source: r.source || 'internal',
+    platform: r.platform || null,
+    author: r.customer?.name || r.author?.name || 'Anonymous',
     authorId: r.customerId,
-    avatar: r.customer?.photoURL || undefined,
+    avatar: r.customer?.photoURL || r.author?.photoURL || undefined,
     bookingId: r.bookingId || undefined,
     rating: r.rating,
     date: r.createdAt,
     title: r.title || '',
-    content: r.comment,
+    content: r.comment || r.text || '',
     photos: Array.isArray(r.photos) && r.photos.length > 0 ? r.photos : undefined,
     supplierResponse: r.supplierResponse || null,
     supplierResponseAt: r.supplierResponseAt || null,
@@ -184,6 +192,8 @@ export interface MyReviewData {
   comment: string
   createdAt: string
   status: string
+  supplierResponse?: string | null
+  supplierResponseAt?: string | null
 }
 
 /**
@@ -220,6 +230,8 @@ export function useMyReviews() {
               comment: review.comment || '',
               createdAt: review.createdAt,
               status: review.status,
+              supplierResponse: review.supplierResponse || null,
+              supplierResponseAt: review.supplierResponseAt || null,
             } as MyReviewData
           } catch {
             return null

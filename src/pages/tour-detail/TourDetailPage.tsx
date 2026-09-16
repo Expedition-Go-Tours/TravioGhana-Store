@@ -373,6 +373,8 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
       meetingRating: r.meetingRating,
       travelMonth: r.travelMonth,
       companions: r.companions,
+      source: r.source === 'external' ? (r.platform || 'external').toUpperCase() : undefined,
+      platform: r.platform,
     }))
   }, [reviews, t])
 
