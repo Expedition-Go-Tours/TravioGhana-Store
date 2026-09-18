@@ -131,7 +131,7 @@ function HomePage() {
       <Suspense fallback={<HomeSectionSkeleton />}><TopAttractionsNearbySection preloaded={data?.attractions} title={locationTitle?.('Top Attractions Nearby')} location={locationFilter} /></Suspense>
       <MountOnView><CustomReviewsSection location={locationFilter} /></MountOnView>
       <MountOnView><PreviousSearchSections /></MountOnView>
-      <MountOnView><Suspense fallback={sectionFallback}><TravelStoriesSection /></Suspense></MountOnView>
+      <MountOnView><Suspense fallback={<HomeSectionSkeleton />}><TravelStoriesSection /></Suspense></MountOnView>
       <MountOnView><NewsletterSection /></MountOnView>
       {/* Trust block only on the generic homepage (matches the prototype) */}
       {!hasActiveSearch && <MountOnView><PartnersSection /></MountOnView>}
