@@ -14,6 +14,7 @@ import { extractMeetingInfo, extractAvailabilitySchedule } from '../hooks/useExp
 import { formatTime12h, weeklyHoursRange, openingHoursForDay, formatTimeSlotList } from '../lib/tourAvailability'
 import './BookingHistory.css'
 import OptimizedImage from '@/components/shared/OptimizedImage'
+import CancellationChoiceBanner from '../components/CancellationChoiceBanner'
 
 type TabStatus = 'ALL' | 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'
 
@@ -380,6 +381,17 @@ export default function BookingHistory() {
                           <span>{booking.tourLocation || '—'}</span>
                         </div>
                       </div>
+
+                      {/* Supplier cancelled this booking → decision banner,
+                          or the muted "You chose …" line once answered. */}
+                      <CancellationChoiceBanner
+                        token={booking.cancellationChoiceToken}
+                        customerChoice={booking.customerChoice}
+                        deadline={booking.cancellationChoiceDeadline}
+                        refundAmount={booking.refundAmount}
+                        currency={booking.currency}
+                        total={booking.total}
+                      />
 
                       <div className="booking-item-details">
                         <div className="booking-detail">

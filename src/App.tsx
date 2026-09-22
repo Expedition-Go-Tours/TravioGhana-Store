@@ -42,6 +42,7 @@ const SupplierRegisterPage = lazy(() => import('./pages/supplier/SupplierRegiste
 const SupplierLandingPage = lazy(() => import('./pages/supplier/SupplierLandingPage'))
 const BookingPage = lazy(() => import('./pages/BookingPage'))
 const BookingConfirmationPage = lazy(() => import('./pages/BookingConfirmationPage'))
+const CancellationChoicePage = lazy(() => import('./pages/CancellationChoicePage'))
 
 // Below-fold homepage sections (lazy loaded, mounted on scroll)
 const TopRatedSection = lazy(() => import('./components/TopRatedSection'))
@@ -275,6 +276,9 @@ function AppContent() {
             <BookingConfirmationPage />
           </motion.div>
         } />
+        {/* Supplier-cancelled booking: choose a new date or a full refund.
+            Public, token-driven (?token=…) — no auth gate beyond the token. */}
+        <Route path="/cancellation-choice" element={<CancellationChoicePage />} />
         <Route path="/login" element={
           <AuthForm
             initialMode="signin"

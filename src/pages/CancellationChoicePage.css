@@ -1,0 +1,380 @@
+/* /cancellation-choice — supplier-cancelled booking: reschedule or refund. */
+
+.cc-page {
+  min-height: 100vh;
+  padding: calc(64px + 32px) 20px 64px;
+  background:
+    radial-gradient(1200px 320px at 50% -120px, rgba(6, 95, 70, 0.08), transparent 70%),
+    var(--background, #fff);
+  font-family: var(--font-body, inherit);
+}
+
+.cc-card {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 28px;
+  background: #fff;
+  border: 1px solid var(--border, #e5e4e7);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px -24px rgba(16, 24, 40, 0.35);
+}
+
+.cc-card-message,
+.cc-card-outcome {
+  max-width: 560px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 44px 28px;
+}
+
+.cc-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dash-accent, #065f46);
+  text-decoration: none;
+}
+
+.cc-back:hover {
+  text-decoration: underline;
+}
+
+.cc-head {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.cc-cover {
+  width: 132px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--border, #e5e4e7);
+  flex-shrink: 0;
+}
+
+.cc-head-text {
+  min-width: 0;
+}
+
+.cc-kicker {
+  margin: 0 0 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #b45309;
+}
+
+.cc-title {
+  margin: 0;
+  font-family: var(--font-heading, inherit);
+  font-size: clamp(20px, 1.4rem + 0.8vw, 27px);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--foreground, #101828);
+}
+
+.cc-text {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #475467;
+}
+
+.cc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  font-size: 13.5px;
+  color: #667085;
+}
+
+.cc-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cc-summary-ref {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  color: var(--dash-accent, #065f46);
+  background: #f0fdf4;
+  border: 1px solid #dcfce7;
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+
+.cc-summary-line {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  color: #667085;
+}
+
+.cc-deadline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #b45309;
+}
+
+.cc-deadline.is-passed {
+  color: #b42318;
+}
+
+.cc-deadline-chip {
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.cc-intro {
+  margin: 22px 0 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #475467;
+}
+
+.cc-error {
+  margin: 16px 0 0;
+  padding: 10px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  background: #fef2f2;
+  color: #b42318;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.cc-error-text {
+  color: #b42318;
+}
+
+/* ---------- option cards ---------- */
+.cc-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.cc-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid var(--border, #e5e4e7);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.cc-option-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #f0fdf4;
+  color: var(--dash-accent, #065f46);
+}
+
+.cc-option-title {
+  margin: 4px 0 0;
+  font-family: var(--font-heading, inherit);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--foreground, #101828);
+}
+
+.cc-option-amount {
+  margin: 0;
+  font-family: var(--font-heading, inherit);
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--dash-accent, #065f46);
+}
+
+.cc-option-text {
+  margin: 0 0 6px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #667085;
+}
+
+.cc-date-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.cc-date-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #344054;
+}
+
+.cc-date-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--border, #e5e4e7);
+  border-radius: 8px;
+  background: #fff;
+  font-family: var(--font-body, inherit);
+  font-size: 14px;
+  color: #101828;
+}
+
+.cc-date-input:focus-visible {
+  outline: 2px solid var(--dash-accent, #065f46);
+  outline-offset: 1px;
+}
+
+.cc-primary-btn,
+.cc-secondary-btn {
+  margin-top: auto;
+}
+
+.cc-message-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.cc-message-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+}
+
+.cc-message-icon-warn {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.cc-message-icon-ok {
+  background: #f0fdf4;
+  color: var(--dash-accent, #065f46);
+}
+
+/* ---------- refund confirmation dialog ---------- */
+.cc-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(16, 24, 40, 0.55);
+}
+
+.cc-dialog {
+  width: min(440px, 100%);
+  padding: 24px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 24px 60px -20px rgba(16, 24, 40, 0.4);
+}
+
+.cc-dialog-title {
+  margin: 0 0 8px;
+  font-family: var(--font-heading, inherit);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--foreground, #101828);
+}
+
+.cc-dialog-text {
+  margin: 0 0 18px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #475467;
+}
+
+.cc-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cc-dialog-actions > * {
+  margin-top: 0;
+}
+
+/* ---------- loading ---------- */
+.cc-spinner {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid rgba(6, 95, 70, 0.15);
+  border-top-color: var(--dash-accent, #065f46);
+  animation: cc-spin 0.8s linear infinite;
+}
+
+@keyframes cc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cc-btn-spin {
+  animation: cc-spin 0.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-spinner,
+  .cc-btn-spin {
+    animation-duration: 1.8s;
+  }
+}
+
+@media (max-width: 720px) {
+  .cc-page {
+    padding: calc(64px + 20px) 14px 48px;
+  }
+
+  .cc-card {
+    padding: 20px 16px;
+  }
+
+  .cc-head {
+    flex-direction: column;
+  }
+
+  .cc-cover {
+    width: 100%;
+    height: 170px;
+  }
+
+  .cc-options {
+    grid-template-columns: 1fr;
+  }
+}

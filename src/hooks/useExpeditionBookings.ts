@@ -1,6 +1,7 @@
 ﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchWithAuth } from '../lib/api'
 import type { DayAvailability, DayAvailabilityInfo, DayTimeSlot } from '../lib/tourAvailability'
+import type { CancellationChoice, RefundStatus } from '../lib/cancellationChoice'
 
 /**
  * `bypassCache` skips the browser's HTTP cache for this request. Availability
@@ -298,6 +299,14 @@ export interface ExpeditionBookingSummary {
   total: number
   currency: string
   createdAt: string
+  /** Supplier-cancelled choice flow — one-time token, present only while a
+   *  decision is still owed for this booking. */
+  cancellationChoiceToken?: string | null
+  cancellationChoiceDeadline?: string | null
+  customerChoice?: CancellationChoice | null
+  refundStatus?: RefundStatus | string | null
+  cancellationReason?: string | null
+  refundAmount?: number | null
 }
 
 interface RawBookingListRecord {
@@ -310,6 +319,12 @@ interface RawBookingListRecord {
   currency: string
   createdAt: string
   travelDate: string
+  cancellationChoiceToken?: string | null
+  cancellationChoiceDeadline?: string | null
+  customerChoice?: string | null
+  refundStatus?: string | null
+  cancellationReason?: string | null
+  refundAmount?: number | string | null
   tour: {
     id: string
     title: string
@@ -339,6 +354,12 @@ function mapBookingSummary(b: RawBookingListRecord): ExpeditionBookingSummary {
     total: Number(b.total),
     currency: b.currency,
     createdAt: b.createdAt,
+    cancellationChoiceToken: b.cancellationChoiceToken ?? null,
+    cancellationChoiceDeadline: b.cancellationChoiceDeadline ?? null,
+    customerChoice: (b.customerChoice ?? null) as CancellationChoice | null,
+    refundStatus: b.refundStatus ?? null,
+    cancellationReason: b.cancellationReason ?? null,
+    refundAmount: b.refundAmount == null ? null : Number(b.refundAmount),
   }
 }
 
