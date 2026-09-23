@@ -36,7 +36,7 @@ export default function NoToursEmptyState({ location = '', onBrowseAll, onSecond
           {t('empty.body', {
             location: place,
             defaultValue:
-              'Our team is working hard to bring {{location}} to Expedition-Go. In the meantime, explore handpicked experiences and nearby destinations we think you’ll love.',
+              'Our team is working hard to bring {{location}} to Travio Ghana. In the meantime, explore handpicked experiences and nearby destinations we think you’ll love.',
           })}
         </p>
         <div className="no-tours-actions">

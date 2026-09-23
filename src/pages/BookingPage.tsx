@@ -9,7 +9,7 @@ import {
   Phone, MessageSquare, ShieldCheck, Star, Clock, Globe, Loader2,
   Car, CreditCard, Ticket, ExternalLink,
 } from 'lucide-react'
-import logoSrc from '../assets/expo_trans.png'
+import logoSrc from '../assets/TravioG.png'
 import Footer from '../components/Footer'
 import StepBadge from '../components/booking/StepBadge'
 import { FieldLabel, TextInput, SelectInput } from '../components/booking/FormFields'

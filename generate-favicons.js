@@ -2,8 +2,8 @@ import sharp from 'sharp';
 import { readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
 
-// Read the logo image
-const logoPath = resolve('public/lite-logo.png');
+// Read the logo image (TravioGhana "TG" emblem — NOT the Expedition-Go badge)
+const logoPath = resolve('src/assets/TVG_favicon.png');
 
 // Define all the sizes we need for comprehensive favicon support
 const sizes = [
