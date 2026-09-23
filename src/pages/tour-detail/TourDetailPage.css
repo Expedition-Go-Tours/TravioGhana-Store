@@ -4,6 +4,13 @@
   width: 100%;
   background: #fff;
   min-height: 100vh;
+  /* Clear the fixed navbar (64px — same value as `--navbar-offset`). Both first
+     children depend on it: <Breadcrumb> is inside this wrapper, so without the
+     offset it renders at y=0 and the fixed navbar paints straight over it (it
+     was visible in the skeleton, which has its own 64px, then vanished on load).
+     And below 1025px the breadcrumb is `display: none`, so it contributes no
+     height — the title itself landed at y=16 under the 64px navbar. Do not
+     reduce this without re-measuring both. */
   padding-top: 64px;
   /* Defensive: clip any residual horizontal overflow so a stray wide child
      can never introduce a page-level horizontal scrollbar. `clip` does not
@@ -15,18 +22,18 @@
   width: 100%;
   max-width: 1520px;
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: 16px 16px 0;
 }
 
 @media (min-width: 640px) {
   .tour-detail-container {
-    padding: 32px 24px 0;
+    padding: 20px 24px 0;
   }
 }
 
 @media (min-width: 1024px) {
   .tour-detail-container {
-    padding: 32px 32px 0;
+    padding: 20px 32px 0;
   }
 }
 
@@ -79,37 +86,94 @@
 }
 
 .tour-detail-gallery-skeleton {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.tour-detail-gallery-skeleton .skeleton-main-image {
-  height: 300px;
-  border-radius: 8px;
-}
-
-.tour-detail-gallery-skeleton .skeleton-filmstrip {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-}
-
-.tour-detail-gallery-skeleton .skeleton-filmstrip-tile {
   width: 100%;
-  aspect-ratio: 4 / 3;
-  border-radius: 8px;
+}
+
+/* Breadcrumb placeholder: full-bleed bar matching the loaded page (desktop only). */
+.skeleton-breadcrumb {
+  display: none;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+}
+
+@media (min-width: 1025px) {
+  .skeleton-breadcrumb {
+    display: block;
+  }
+}
+
+.skeleton-breadcrumb-line {
+  width: 260px;
+  max-width: 70%;
+  height: 20px;
+  margin: 0 auto;
+  border-radius: 6px;
 }
 
 @media (min-width: 768px) {
-  .tour-detail-gallery-skeleton .skeleton-main-image {
-    height: 430px;
+  .skeleton-breadcrumb {
+    padding: 10px 24px;
   }
 }
 
 @media (min-width: 1024px) {
-  .tour-detail-gallery-skeleton .skeleton-main-image {
-    height: 520px;
+  .skeleton-breadcrumb {
+    padding: 12px 40px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .skeleton-breadcrumb {
+    padding: 12px 60px;
+  }
+}
+
+/* Mobile: one square gallery, exactly like the loaded page. */
+.skeleton-gallery-square {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 0;
+}
+
+.skeleton-gallery-mosaic {
+  display: none;
+}
+
+/* ≥768px: the GetYourGuide 20% / 54% / 26% mosaic. */
+@media (min-width: 768px) {
+  .skeleton-gallery-square {
+    display: none;
+  }
+
+  .skeleton-gallery-mosaic {
+    display: flex;
+    gap: 4px;
+    border-radius: 12px;
+    overflow: hidden;
+    height: 50vw;
+    min-height: 380px;
+    max-height: 400px;
+  }
+
+  .skeleton-gallery-mosaic > .skeleton-block:nth-child(1) {
+    flex: 0 0 20%;
+  }
+
+  .skeleton-gallery-mosaic > .skeleton-block:nth-child(2) {
+    flex: 0 0 54%;
+  }
+
+  .skeleton-gallery-mosaic-col {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .skeleton-gallery-mosaic-col > .skeleton-block {
+    flex: 1 1 0;
   }
 }
 

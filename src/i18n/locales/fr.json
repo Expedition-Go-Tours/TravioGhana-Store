@@ -130,7 +130,14 @@
     "tours": "Circuits"
   },
   "gallery": {
-    "tourImage": "Image du tour {{number}}"
+    "tourImage": "Image du tour {{number}}",
+    "showImage": "Afficher l'image {{number}}",
+    "viewPhoto": "Voir la photo {{number}}",
+    "goToImage": "Aller à l'image {{number}}",
+    "viewAllPhotos": "Voir les {{count}} photos",
+    "closeGallery": "Fermer la galerie",
+    "previousImage": "Image précédente",
+    "nextImage": "Image suivante"
   },
   "hero": {
     "destination": "Destination",

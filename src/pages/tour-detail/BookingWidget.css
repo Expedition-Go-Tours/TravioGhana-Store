@@ -37,27 +37,27 @@
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 20px;
+  padding: 18px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 @media (min-width: 1024px) {
   .booking-widget-card {
-    padding: 28px;
+    padding: 22px;
   }
 }
 
 @media (min-width: 1400px) {
   .booking-widget-card {
-    padding: 32px;
+    padding: 24px;
   }
 }
 
 /* Price Section */
 .booking-price-section {
-  padding-bottom: 20px;
+  padding-bottom: 14px;
   border-bottom: 1px solid #e2e8f0;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .booking-price-main {
@@ -74,14 +74,14 @@
 
 @media (min-width: 1024px) {
   .booking-price-from {
-    font-size: 15px;
+    font-size: 14px;
   }
 }
 
 .booking-price-amount {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 26px;
+  font-size: 24px;
   color: #0f172a;
   line-height: 1;
 }
@@ -89,7 +89,7 @@
 /* Offer pricing: the original unit price is struck through (smaller, gray)
    and the discounted promo price is shown in red next to it. */
 .booking-price-amount--strike {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: #94a3b8;
   text-decoration: line-through;
@@ -101,13 +101,13 @@
 
 @media (min-width: 1024px) {
   .booking-price-amount {
-    font-size: 32px;
+    font-size: 28px;
   }
 }
 
 @media (min-width: 1400px) {
   .booking-price-amount {
-    font-size: 36px;
+    font-size: 30px;
   }
 }
 
@@ -952,12 +952,12 @@
 /* ===== DESKTOP TWEAKS (1024px+) ===== */
 @media (min-width: 1024px) {
   .booking-form {
-    gap: 20px;
+    gap: 14px;
   }
 
   .booking-price-section {
-    padding-bottom: 24px;
-    margin-bottom: 24px;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
   }
 
   .booking-total {
@@ -965,16 +965,18 @@
   }
 
   .booking-footer {
-    padding-top: 20px;
-    margin-top: 20px;
+    padding-top: 14px;
+    margin-top: 14px;
   }
 }
 
 /* ===== LARGE DESKTOP (1400px+) ===== */
 @media (min-width: 1400px) {
   .booking-submit-btn {
-    padding: 16px 24px;
-    font-size: 17px;
+    /* Horizontal padding follows the Lite port (24px -> 20px). Vertical stays at
+       this storefront's already-tighter 14px rather than Lite's 15px. */
+    padding: 14px 20px;
+    font-size: 16px;
   }
 }
 

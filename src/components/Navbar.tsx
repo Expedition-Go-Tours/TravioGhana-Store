@@ -47,6 +47,9 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   const isTourDetailPage = location.pathname.startsWith('/tour')
   const [user, setUser] = useState<AuthUser | null>(getStoredAuthUser)
   const [searchBarSticky, setSearchBarSticky] = useState(false)
+  // Drop-shadow only while the page is actually scrolling (see the effect below).
+  const [elevated, setElevated] = useState(false)
+  const elevatedRef = useRef(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [subDrawerTab, setSubDrawerTab] = useState<SubDrawerTab | null>(null)
@@ -118,6 +121,21 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
       window.removeEventListener('scroll', handleScroll)
       document.body.classList.remove('hero--search-sticky')
     }
+  }, [])
+
+  // Drop-shadow only once the page is actually scrolling, on every route — the
+  // navbar rests flat against the page like it does over the homepage hero.
+  // State only flips on the threshold crossing, so scrolling never re-renders.
+  useEffect(() => {
+    const handleElevatedScroll = () => {
+      const next = window.scrollY > 4
+      if (next === elevatedRef.current) return
+      elevatedRef.current = next
+      setElevated(next)
+    }
+    window.addEventListener('scroll', handleElevatedScroll, { passive: true })
+    handleElevatedScroll()
+    return () => window.removeEventListener('scroll', handleElevatedScroll)
   }, [])
 
   const navigateToSuggestion = useCallback((suggestion: SearchSuggestion) => {
@@ -305,7 +323,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
 
   return (
     <>
-    <nav className={`navbar${searchBarSticky ? ' scrolled' : ''}${isTourDetailPage ? ' navbar--tour-detail' : ''}`}>
+    <nav className={`navbar${searchBarSticky ? ' scrolled' : ''}${elevated ? ' navbar--elevated' : ''}${isTourDetailPage ? ' navbar--tour-detail' : ''}`}>
       <div className="nav-left">
         <div className="nav-logo">
           <a href="/" onClick={(e) => { e.preventDefault(); navigate('/') }}>

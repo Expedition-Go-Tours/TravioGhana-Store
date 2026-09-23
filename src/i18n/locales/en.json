@@ -165,7 +165,14 @@
     "tours": "Tours"
   },
   "gallery": {
-    "tourImage": "Tour image {{number}}"
+    "tourImage": "Tour image {{number}}",
+    "showImage": "Show image {{number}}",
+    "viewPhoto": "View photo {{number}}",
+    "goToImage": "Go to image {{number}}",
+    "viewAllPhotos": "View all {{count}} photos",
+    "closeGallery": "Close gallery",
+    "previousImage": "Previous image",
+    "nextImage": "Next image"
   },
   "hero": {
     "destination": "Destination",

@@ -16,16 +16,9 @@
   transition: background-color 0.3s, box-shadow 0.3s;
 }
 
-/* Tour detail, all tours, supplier, review, stories, and story-detail pages: show shadow */
-.navbar--tour-detail,
-.tour-detail-page ~ .navbar,
-body:has(.tour-detail-page) .navbar,
-body:has(.all-tours-page) .navbar,
-body:has(.supplier-page) .navbar,
-body:has(.supplier-landing-page) .navbar,
-body:has(.review-page) .navbar,
-body:has(.all-stories-page) .navbar,
-body:has(.story-detail) .navbar {
+/* Shadow only while scrolling — same resting look as the homepage. Applied on
+   every route by Navbar (`.navbar--elevated` is toggled past a few pixels). */
+.navbar--elevated {
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
 }
 

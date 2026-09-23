@@ -130,7 +130,14 @@
     "tours": "Tours"
   },
   "gallery": {
-    "tourImage": "Imagen del tour {{number}}"
+    "tourImage": "Imagen del tour {{number}}",
+    "showImage": "Mostrar imagen {{number}}",
+    "viewPhoto": "Ver foto {{number}}",
+    "goToImage": "Ir a imagen {{number}}",
+    "viewAllPhotos": "Ver todas las {{count}} fotos",
+    "closeGallery": "Cerrar galería",
+    "previousImage": "Imagen anterior",
+    "nextImage": "Siguiente imagen"
   },
   "hero": {
     "destination": "Destino",

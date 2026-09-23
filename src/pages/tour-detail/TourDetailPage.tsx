@@ -1,4 +1,5 @@
 import { Component, useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import type { CSSProperties } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
@@ -12,6 +13,7 @@ import { useWishlist } from '../../context/WishlistContext'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import { useExpeditionTour, useSimilarTours } from '../../hooks/useExpeditionTours'
+import { useSupplierTourCount } from '../../hooks/useSupplierTourCount'
 import { useExpeditionTourReviews, useCreateReview } from '../../hooks/useExpeditionReviews'
 import { useTourAvailability, useReviewableBookingForTour } from '../../hooks/useExpeditionBookings'
 import { freeCancellationDateLabel } from '../../lib/cancellationLabel'
@@ -48,6 +50,10 @@ import './TourDetailPage.css'
 function TourDetailSkeleton() {
   return (
     <div className="tour-detail-skeleton" role="status" aria-label="Loading tour">
+      {/* Breadcrumb bar — full-bleed strip under the navbar, like the loaded page */}
+      <div className="skeleton-breadcrumb">
+        <div className="skeleton-block skeleton-breadcrumb-line" />
+      </div>
       <div className="tour-detail-container">
         {/* Header skeleton */}
         <div className="tour-detail-header-row">
@@ -59,14 +65,17 @@ function TourDetailSkeleton() {
         </div>
 
         <div className="tour-detail-content">
-          {/* Image gallery skeleton */}
+          {/* Image gallery skeleton — mirrors the GYG mosaic (square on mobile) */}
           <div className="tour-detail-main">
             <div className="tour-detail-gallery-skeleton">
-              <div className="skeleton-block skeleton-main-image" />
-              <div className="skeleton-filmstrip">
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <div key={i} className="skeleton-block skeleton-filmstrip-tile" />
-                ))}
+              <div className="skeleton-block skeleton-gallery-square" />
+              <div className="skeleton-gallery-mosaic">
+                <div className="skeleton-block" />
+                <div className="skeleton-block" />
+                <div className="skeleton-gallery-mosaic-col">
+                  <div className="skeleton-block" />
+                  <div className="skeleton-block" />
+                </div>
               </div>
             </div>
           </div>
@@ -230,6 +239,21 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
 
   const pricingRef = useRef<HTMLDivElement>(null)
   const reviewsRef = useRef<HTMLDivElement>(null)
+
+  // Height of the booking card, published as `--tour-hero-height` so the photo
+  // mosaic beside it can match it and the two columns finish on the same line.
+  const [heroHeight, setHeroHeight] = useState<number | null>(null)
+  useEffect(() => {
+    const el = pricingRef.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(() => {
+      const measured = Math.round(el.getBoundingClientRect().height)
+      const next = Math.min(560, Math.max(380, measured))
+      setHeroHeight((prev) => (prev === next ? prev : next))
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [isLoading, tour])
   const [activeTab, setActiveTab] = useState('overview')
   const [reviewDetail, setReviewDetail] = useState<{ name: string; date: string; rating: number; text: string } | null>(null)
   const [isWriteReviewOpen, setIsWriteReviewOpen] = useState(false)
@@ -821,15 +845,14 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
         logo: tour?.supplierPhoto || '',
         description: tour?.supplierName ? `${tour.supplierName} offers authentic guided experiences.` : null,
         rating: tour?.rating,
-        toursCount: relatedTours.length,
       },
     })
     return {
+      supplierId: mapped.supplierId,
       name: mapped.name || tour?.supplierName || 'Travio Ghana Tours Ltd',
       logo: mapped.logo || tour?.supplierPhoto || '',
       description: mapped.description || (tour?.supplierName ? `${tour.supplierName} offers authentic guided experiences.` : ''),
       rating: mapped.rating ?? (tour?.rating ?? null),
-      totalTours: relatedTours.length,
       phone: mapped.phone || '',
       email: mapped.email || '',
       website: mapped.website || '',
@@ -837,7 +860,11 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
       verified: mapped.verified,
       supplierType: mapped.supplierType,
     }
-  }, [tour, relatedTours])
+  }, [tour])
+
+  // Authoritative supplier tour total for the "N tours" label. Falls back to
+  // the similar-row length only until the count request resolves.
+  const { data: supplierTourCount } = useSupplierTourCount(supplierData?.supplierId)
 
   // Same full TourCardData as the "similar experiences" row — the Supplier
   // tab cards must carry the identical props (photos carousel, priceValue for
@@ -919,7 +946,10 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
             </div>
           </div>
 
-          <div className="tour-detail-content">
+          <div
+            className="tour-detail-content"
+            style={heroHeight ? ({ '--tour-hero-height': `${heroHeight}px` } as CSSProperties) : undefined}
+          >
             <div className="tour-detail-main">
               <TourImageGallery
                 images={mergedImages}
@@ -1061,7 +1091,7 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
                       logo={supplierData.logo}
                       description={supplierData.description}
                       rating={supplierData.rating}
-                      totalTours={supplierData.totalTours}
+                      totalTours={supplierTourCount ?? relatedTours.length}
                       phone={supplierData.phone}
                       email={supplierData.email}
                       website={supplierData.website}

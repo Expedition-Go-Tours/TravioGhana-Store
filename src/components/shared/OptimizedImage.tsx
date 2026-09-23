@@ -10,6 +10,12 @@ interface OptimizedImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElem
   className?: string
   style?: React.CSSProperties
   fit?: 'crop' | 'fill' | 'scale'
+  /** Raw Cloudinary crop mode escape hatch, e.g. `limit` to never upscale. */
+  crop?: string
+  /** Crop gravity, used with `fit="fill"` to crop around the subject/face. */
+  gravity?: 'auto' | 'face' | 'center' | 'north' | 'south' | 'east' | 'west'
+  /** Override the responsive `sizes` descriptor (e.g. an exact tile width). */
+  sizes?: string
   /** Mark as above-the-fold / LCP image: loading="eager" + fetchpriority="high". */
   priority?: boolean
   /** Show a tiny blurred LQIP while the full image loads. Off by default — the
@@ -46,6 +52,9 @@ export default function OptimizedImage({
   className = '',
   style,
   fit,
+  crop,
+  gravity,
+  sizes: sizesProp,
   priority = false,
   lqip = false,
   onLoad,
@@ -133,13 +142,15 @@ export default function OptimizedImage({
     height: height ? height * 2 : undefined,
     quality: 'auto:good' as const,
     format: 'auto' as const,
+    ...(crop ? { crop } : {}),
     ...(width && fit ? { fit } : {}),
+    ...(gravity ? { gravity } : {}),
   }
 
   const srcSetWidths = width ? buildBreakpoints(width) : undefined
   const transformed = transformImage(src, transformOpts)
   const srcSet = srcSetWidths ? getSrcSet(src, srcSetWidths, transformOpts) : undefined
-  const sizes = width ? widthToSizes(width) : undefined
+  const sizes = sizesProp ?? (width ? widthToSizes(width) : undefined)
 
   // LQIP: tiny blurred placeholder shown while full image loads (opt-in).
   const lqipUrl = lqip ? transformImage(src, { width: 20, quality: 'auto:low', format: 'auto' }) : null

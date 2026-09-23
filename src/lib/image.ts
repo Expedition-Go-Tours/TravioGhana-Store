@@ -65,11 +65,47 @@ export function transformImage(
   return url
 }
 
+/**
+ * Params the full-screen viewer requests. Exported so the gallery can warm the
+ * exact same URLs (`prefetchLightboxImages`) and the first "next" click paints
+ * straight from the HTTP cache.
+ */
+export const LIGHTBOX_IMAGE = {
+  width: 1200,
+  crop: 'limit',
+  sizes: '100vw',
+} as const
+
+/** The `src`/`srcSet` the viewer will use for one photo — no crop, no upscale. */
+export function lightboxImageUrls(
+  src: string | null | undefined,
+): { src: string; srcSet: string } | null {
+  if (!src || typeof src !== 'string') return null
+  const opts: TransformOpts = {
+    width: LIGHTBOX_IMAGE.width * 2,
+    crop: LIGHTBOX_IMAGE.crop,
+    quality: 'auto:good',
+    format: 'auto',
+  }
+  const primary = transformImage(src, opts)
+  if (!primary) return null
+  return {
+    src: primary,
+    srcSet: getSrcSet(src, [LIGHTBOX_IMAGE.width, LIGHTBOX_IMAGE.width * 2], opts),
+  }
+}
+
 export function getSrcSet(url: string, widths: number[], opts: TransformOpts = {}): string {
   if (!url || !widths || widths.length === 0) return ''
+  // Keep the requested aspect ratio at EVERY breakpoint. Callers pass the 1x
+  // box (width + height); spreading opts verbatim would reuse the 1x height on
+  // the 2x candidate (e.g. w_1200,h_1500 next to w_2400,h_1500), so the browser
+  // would choose between two differently-cropped images.
+  const ratio = opts.width && opts.height ? opts.height / opts.width : null
   return widths
     .map((w) => {
-      const img = transformImage(url, { ...opts, width: w })
+      const height = ratio ? Math.round(w * ratio) : opts.height
+      const img = transformImage(url, { ...opts, width: w, ...(height ? { height } : {}) })
       return `${img} ${w}w`
     })
     .join(', ')
