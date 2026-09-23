@@ -58,7 +58,8 @@ function TourDetailSkeleton() {
         {/* Header skeleton */}
         <div className="tour-detail-header-row">
           <div className="min-w-0 flex-1">
-            <div className="skeleton-block h-7 w-2/3 max-w-md rounded-lg" />
+            {/* Matches the 36px title's line box (h-9 = 2.25rem; :root is 18px on desktop) */}
+            <div className="skeleton-block h-9 w-2/3 max-w-md rounded-lg" />
             <div className="skeleton-block mt-3 h-4 w-1/3 max-w-xs rounded-md" />
             <div className="skeleton-block mt-2 h-4 w-1/4 max-w-[140px] rounded-md" />
           </div>

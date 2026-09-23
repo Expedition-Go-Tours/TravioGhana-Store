@@ -5,8 +5,12 @@
 .tour-header-title {
   position: relative;
   padding-left: 16px;
-  font-size: clamp(1.35rem, 2vw + 0.9rem, 2.5rem);
-  font-weight: 900;
+  /* px, not rem: :root is 18px on desktop, so a rem-based ramp overshot by 12.5%
+     (2.5rem = 45px, not 40px) and jumped ~1.8px at the 1024px root-size change.
+     36px keeps the H1 above the booking card's 30px price and matches GYG's
+     heading-lg, and fits typical titles on one line from 1440px up. */
+  font-size: clamp(22px, 1.4vw + 16px, 36px);
+  font-weight: 800;
   line-height: 1.2;
   letter-spacing: -0.02em;
   color: #000;
