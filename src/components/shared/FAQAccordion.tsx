@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 
 interface FAQItem {
   question: string
@@ -14,10 +14,41 @@ interface FAQAccordionProps {
 /**
  * Accessible FAQ accordion matching the HTML template's `.faq-item` /
  * `.faq-q` / `.faq-a` pattern.  Pure React — no animation library needed.
+ *
+ * Answer heights come from a ResizeObserver rather than being read during
+ * render: `answerRefs.current[i]` is only populated on commit, so a render-phase
+ * read saw `null` on the first pass and never recovered — leaving answers longer
+ * than the CSS `max-height: 200px` cap permanently clipped. Measuring in the
+ * observer also keeps the expanded height correct when the copy reflows
+ * (viewport resize, font swap, locale change).
  */
 export default function FAQAccordion({ items, defaultOpen = true }: FAQAccordionProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(defaultOpen ? 0 : null)
+  const [heights, setHeights] = useState<Record<number, number>>({})
   const answerRefs = useRef<(HTMLDivElement | null)[]>([])
+
+  useEffect(() => {
+    if (typeof ResizeObserver === 'undefined') return
+
+    const measure = () => {
+      setHeights((prev) => {
+        let changed = false
+        const next: Record<number, number> = {}
+        answerRefs.current.forEach((el, i) => {
+          if (!el) return
+          const height = el.scrollHeight
+          next[i] = height
+          if (prev[i] !== height) changed = true
+        })
+        return changed ? next : prev
+      })
+    }
+
+    const observer = new ResizeObserver(measure)
+    answerRefs.current.forEach((el) => el && observer.observe(el))
+    measure()
+    return () => observer.disconnect()
+  }, [items])
 
   const toggle = useCallback((index: number) => {
     setOpenIndex((prev) => (prev === index ? null : index))
@@ -27,6 +58,7 @@ export default function FAQAccordion({ items, defaultOpen = true }: FAQAccordion
     <div className="eg-faq">
       {items.map((item, i) => {
         const isOpen = openIndex === i
+        const height = heights[i]
         return (
           <div key={i} className={`eg-faq-item${isOpen ? ' eg-open' : ''}`}>
             <button
@@ -41,7 +73,7 @@ export default function FAQAccordion({ items, defaultOpen = true }: FAQAccordion
             <div
               className="eg-faq-answer"
               ref={(el) => { answerRefs.current[i] = el }}
-              style={isOpen && answerRefs.current[i] ? { maxHeight: answerRefs.current[i]!.scrollHeight + 'px' } : undefined}
+              style={isOpen && height ? { maxHeight: `${height}px` } : undefined}
             >
               <p>{item.answer}</p>
             </div>
