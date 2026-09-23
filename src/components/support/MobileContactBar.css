@@ -1,0 +1,54 @@
+.sh-mobile-contact-bar {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .sh-mobile-contact-bar {
+    position: fixed;
+    z-index: 40;
+    left: 12px;
+    right: 12px;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 7px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 17px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 12px 40px rgba(6, 45, 28, 0.22);
+    backdrop-filter: blur(14px);
+  }
+
+  .sh-mobile-contact-bar a {
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 11px;
+    font-size: 0.84rem;
+    font-weight: 850;
+  }
+
+  .sh-mobile-contact-bar a:first-child {
+    color: #fff;
+    background: var(--green-700, #087a4a);
+  }
+
+  .sh-mobile-contact-bar a:last-child {
+    color: var(--green-800, #076b40);
+    background: var(--green-50, #f0fbf5);
+  }
+
+  .sh-mobile-contact-bar svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Reserve space at the end of the page so the fixed bar never covers the
+     footer's last links/copyright. 62px bar + 10px offset + safe-area + gap. */
+  body:has(.sh-mobile-contact-bar) .footer {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+  }
+}

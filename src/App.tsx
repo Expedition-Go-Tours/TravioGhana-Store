@@ -18,6 +18,7 @@ import HistorySections from './components/HistorySections'
 import PreviousSearchSections from './components/PreviousSearchSections'
 import Footer from './components/Footer'
 import MountOnView from './components/MountOnView'
+import SupportPageSkeleton from './components/support/SupportPageSkeleton'
 import { WishlistProvider } from './context/WishlistContext'
 import { ContinuePlanningProvider } from './context/ContinuePlanningContext'
 import { SellOutProvider } from './context/SellOutContext'
@@ -43,6 +44,10 @@ const SupplierLandingPage = lazy(() => import('./pages/supplier/SupplierLandingP
 const BookingPage = lazy(() => import('./pages/BookingPage'))
 const BookingConfirmationPage = lazy(() => import('./pages/BookingConfirmationPage'))
 const CancellationChoicePage = lazy(() => import('./pages/CancellationChoicePage'))
+const AboutUsPage = lazy(() => import('./pages/AboutUsPage'))
+const HelpCentrePage = lazy(() => import('./pages/HelpCentrePage'))
+const ContactUsPage = lazy(() => import('./pages/ContactUsPage'))
+const FAQPage = lazy(() => import('./pages/FAQPage'))
 
 // Below-fold homepage sections (lazy loaded, mounted on scroll)
 const TopRatedSection = lazy(() => import('./components/TopRatedSection'))
@@ -279,6 +284,11 @@ function AppContent() {
         {/* Supplier-cancelled booking: choose a new date or a full refund.
             Public, token-driven (?token=…) — no auth gate beyond the token. */}
         <Route path="/cancellation-choice" element={<CancellationChoicePage />} />
+        {/* Support centre: About, Help Centre, Contact and FAQ. */}
+        <Route path="/about-us" element={<Suspense fallback={<SupportPageSkeleton />}><AboutUsPage /></Suspense>} />
+        <Route path="/help-centre" element={<Suspense fallback={<SupportPageSkeleton />}><HelpCentrePage /></Suspense>} />
+        <Route path="/contact-us" element={<Suspense fallback={<SupportPageSkeleton />}><ContactUsPage /></Suspense>} />
+        <Route path="/faq" element={<Suspense fallback={<SupportPageSkeleton />}><FAQPage /></Suspense>} />
         <Route path="/login" element={
           <AuthForm
             initialMode="signin"
