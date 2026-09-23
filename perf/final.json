@@ -1,0 +1,281 @@
+{
+  "label": "final",
+  "profile": "midrange-4g",
+  "generatedAt": "2026-09-18T11:38:09.588Z",
+  "base": "http://localhost:4173",
+  "results": [
+    {
+      "route": "/",
+      "url": "http://localhost:4173/",
+      "wallClockMs": 14708,
+      "navigationError": null,
+      "metrics": {
+        "fcp": 3188,
+        "lcp": 3652,
+        "cls": 0,
+        "ttfb": 13,
+        "domContentLoaded": 1766,
+        "load": 1818,
+        "tbt": 1843,
+        "longTasks": 9,
+        "longTaskDetail": [
+          {
+            "start": 1823,
+            "dur": 700
+          },
+          {
+            "start": 2529,
+            "dur": 650
+          },
+          {
+            "start": 1362,
+            "dur": 413
+          },
+          {
+            "start": 3196,
+            "dur": 171
+          },
+          {
+            "start": 5211,
+            "dur": 117
+          },
+          {
+            "start": 3373,
+            "dur": 76
+          },
+          {
+            "start": 5436,
+            "dur": 65
+          },
+          {
+            "start": 4233,
+            "dur": 51
+          },
+          {
+            "start": 3514,
+            "dur": 50
+          }
+        ],
+        "domNodes": 1028,
+        "layoutCount": 37,
+        "recalcStyleCount": 369,
+        "scriptDurationMs": 2612,
+        "scrollLongTasks": 16,
+        "scrollMaxTask": 1007,
+        "scrollTaskDetail": [
+          {
+            "start": 9180,
+            "dur": 1007
+          },
+          {
+            "start": 8548,
+            "dur": 297
+          },
+          {
+            "start": 7426,
+            "dur": 225
+          },
+          {
+            "start": 8321,
+            "dur": 189
+          },
+          {
+            "start": 6742,
+            "dur": 145
+          },
+          {
+            "start": 10213,
+            "dur": 120
+          },
+          {
+            "start": 7895,
+            "dur": 112
+          },
+          {
+            "start": 6637,
+            "dur": 99
+          }
+        ],
+        "scrollBlockingMs": 1934,
+        "scrollHeight": 3367
+      },
+      "network": {
+        "totalKB": 1114.2,
+        "totalRequests": 69,
+        "byType": {
+          "Document": {
+            "kb": 1.7,
+            "requests": 1
+          },
+          "Script": {
+            "kb": 442.6,
+            "requests": 32
+          },
+          "Stylesheet": {
+            "kb": 51.2,
+            "requests": 13
+          },
+          "Font": {
+            "kb": 295.1,
+            "requests": 4
+          },
+          "Image": {
+            "kb": 313.3,
+            "requests": 15
+          },
+          "Other": {
+            "kb": 3.2,
+            "requests": 1
+          },
+          "Fetch": {
+            "kb": 6.5,
+            "requests": 2
+          },
+          "XHR": {
+            "kb": 0.5,
+            "requests": 1
+          }
+        }
+      }
+    },
+    {
+      "route": "/tours",
+      "url": "http://localhost:4173/tours",
+      "wallClockMs": 11904,
+      "navigationError": null,
+      "metrics": {
+        "fcp": 1744,
+        "lcp": 2032,
+        "cls": 0,
+        "ttfb": 7,
+        "domContentLoaded": 985,
+        "load": 1008,
+        "tbt": 796,
+        "longTasks": 4,
+        "longTaskDetail": [
+          {
+            "start": 1085,
+            "dur": 463
+          },
+          {
+            "start": 616,
+            "dur": 382
+          },
+          {
+            "start": 1757,
+            "dur": 77
+          },
+          {
+            "start": 1011,
+            "dur": 74
+          }
+        ],
+        "domNodes": 322,
+        "layoutCount": 8,
+        "recalcStyleCount": 172,
+        "scriptDurationMs": 1195,
+        "scrollLongTasks": 1,
+        "scrollMaxTask": 100,
+        "scrollTaskDetail": [
+          {
+            "start": 5936,
+            "dur": 100
+          }
+        ],
+        "scrollBlockingMs": 50,
+        "scrollHeight": 1329
+      },
+      "network": {
+        "totalKB": 26.3,
+        "totalRequests": 40,
+        "byType": {
+          "Document": {
+            "kb": 1.7,
+            "requests": 1
+          },
+          "Script": {
+            "kb": 18.2,
+            "requests": 26
+          },
+          "Font": {
+            "kb": 0.3,
+            "requests": 2
+          },
+          "Stylesheet": {
+            "kb": 5.9,
+            "requests": 9
+          },
+          "Image": {
+            "kb": 0.2,
+            "requests": 2
+          }
+        }
+      }
+    },
+    {
+      "route": "/search?q=accra",
+      "url": "http://localhost:4173/search?q=accra",
+      "wallClockMs": 10687,
+      "navigationError": null,
+      "metrics": {
+        "fcp": 1680,
+        "lcp": 1964,
+        "cls": 0,
+        "ttfb": 8,
+        "domContentLoaded": 983,
+        "load": 1005,
+        "tbt": 764,
+        "longTasks": 3,
+        "longTaskDetail": [
+          {
+            "start": 1009,
+            "dur": 480
+          },
+          {
+            "start": 622,
+            "dur": 371
+          },
+          {
+            "start": 1688,
+            "dur": 63
+          }
+        ],
+        "domNodes": 269,
+        "layoutCount": 8,
+        "recalcStyleCount": 487,
+        "scriptDurationMs": 1320,
+        "scrollLongTasks": 0,
+        "scrollMaxTask": 0,
+        "scrollTaskDetail": [],
+        "scrollBlockingMs": 0,
+        "scrollHeight": 1658
+      },
+      "network": {
+        "totalKB": 31.3,
+        "totalRequests": 47,
+        "byType": {
+          "Document": {
+            "kb": 1.7,
+            "requests": 1
+          },
+          "Font": {
+            "kb": 0.3,
+            "requests": 2
+          },
+          "Script": {
+            "kb": 22,
+            "requests": 27
+          },
+          "Stylesheet": {
+            "kb": 2.9,
+            "requests": 9
+          },
+          "Image": {
+            "kb": 4.3,
+            "requests": 8
+          }
+        }
+      }
+    }
+  ]
+}

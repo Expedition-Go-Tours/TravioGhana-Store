@@ -1,0 +1,178 @@
+{
+  "label": "phase1",
+  "profile": "midrange-4g",
+  "generatedAt": "2026-09-18T10:30:11.798Z",
+  "base": "http://localhost:4173",
+  "results": [
+    {
+      "route": "/",
+      "url": "http://localhost:4173/",
+      "wallClockMs": 16299,
+      "navigationError": null,
+      "metrics": {
+        "fcp": 3684,
+        "lcp": 4164,
+        "cls": 0,
+        "ttfb": 10,
+        "domContentLoaded": 2108,
+        "load": 2128,
+        "tbt": 2071,
+        "longTasks": 9,
+        "domNodes": 870,
+        "layoutCount": 31,
+        "recalcStyleCount": 336,
+        "scriptDurationMs": 3119,
+        "scrollLongTasks": 21,
+        "scrollMaxTask": 1752,
+        "scrollBlockingMs": 3166,
+        "scrollHeight": 6566
+      },
+      "network": {
+        "totalKB": 2029.7,
+        "totalRequests": 96,
+        "byType": {
+          "Document": {
+            "kb": 1.7,
+            "requests": 1
+          },
+          "Script": {
+            "kb": 516.7,
+            "requests": 30
+          },
+          "Font": {
+            "kb": 295.1,
+            "requests": 4
+          },
+          "Stylesheet": {
+            "kb": 134.6,
+            "requests": 13
+          },
+          "Image": {
+            "kb": 606.4,
+            "requests": 42
+          },
+          "Fetch": {
+            "kb": 225.3,
+            "requests": 4
+          },
+          "Other": {
+            "kb": 249.3,
+            "requests": 1
+          },
+          "XHR": {
+            "kb": 0.5,
+            "requests": 1
+          }
+        }
+      }
+    },
+    {
+      "route": "/tours",
+      "url": "http://localhost:4173/tours",
+      "wallClockMs": 20892,
+      "navigationError": null,
+      "metrics": {
+        "fcp": 1772,
+        "lcp": 2076,
+        "cls": 0,
+        "ttfb": 8,
+        "domContentLoaded": 1015,
+        "load": 1034,
+        "tbt": 798,
+        "longTasks": 5,
+        "domNodes": 323,
+        "layoutCount": 8,
+        "recalcStyleCount": 172,
+        "scriptDurationMs": 1219,
+        "scrollLongTasks": 0,
+        "scrollMaxTask": 0,
+        "scrollBlockingMs": 0,
+        "scrollHeight": 1329
+      },
+      "network": {
+        "totalKB": 26.4,
+        "totalRequests": 42,
+        "byType": {
+          "Document": {
+            "kb": 1.7,
+            "requests": 1
+          },
+          "Script": {
+            "kb": 18.2,
+            "requests": 26
+          },
+          "Font": {
+            "kb": 0.3,
+            "requests": 2
+          },
+          "Stylesheet": {
+            "kb": 5.9,
+            "requests": 9
+          },
+          "Image": {
+            "kb": 0.2,
+            "requests": 2
+          },
+          "Fetch": {
+            "kb": 0,
+            "requests": 2
+          }
+        }
+      }
+    },
+    {
+      "route": "/search?q=accra",
+      "url": "http://localhost:4173/search?q=accra",
+      "wallClockMs": 10794,
+      "navigationError": null,
+      "metrics": {
+        "fcp": 1704,
+        "lcp": 1988,
+        "cls": 0,
+        "ttfb": 7,
+        "domContentLoaded": 1049,
+        "load": 1069,
+        "tbt": 811,
+        "longTasks": 4,
+        "domNodes": 270,
+        "layoutCount": 8,
+        "recalcStyleCount": 487,
+        "scriptDurationMs": 1374,
+        "scrollLongTasks": 0,
+        "scrollMaxTask": 0,
+        "scrollBlockingMs": 0,
+        "scrollHeight": 1658
+      },
+      "network": {
+        "totalKB": 31.3,
+        "totalRequests": 49,
+        "byType": {
+          "Document": {
+            "kb": 1.7,
+            "requests": 1
+          },
+          "Script": {
+            "kb": 22,
+            "requests": 27
+          },
+          "Font": {
+            "kb": 0.3,
+            "requests": 2
+          },
+          "Stylesheet": {
+            "kb": 2.9,
+            "requests": 9
+          },
+          "Image": {
+            "kb": 4.3,
+            "requests": 8
+          },
+          "Fetch": {
+            "kb": 0,
+            "requests": 2
+          }
+        }
+      }
+    }
+  ]
+}

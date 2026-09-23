@@ -1,0 +1,109 @@
+{
+  "label": "about-move2",
+  "profile": "midrange-4g",
+  "generatedAt": "2026-09-18T14:18:04.918Z",
+  "base": "http://localhost:4173",
+  "results": [
+    {
+      "route": "/about-us",
+      "url": "http://localhost:4173/about-us",
+      "wallClockMs": 11498,
+      "navigationError": null,
+      "metrics": {
+        "fcp": 2796,
+        "lcp": 5332,
+        "cls": 0,
+        "ttfb": 16,
+        "domContentLoaded": 1814,
+        "load": 1841,
+        "tbt": 2140,
+        "longTasks": 10,
+        "longTaskDetail": [
+          {
+            "start": 3993,
+            "dur": 843
+          },
+          {
+            "start": 1850,
+            "dur": 706
+          },
+          {
+            "start": 1370,
+            "dur": 456
+          },
+          {
+            "start": 5515,
+            "dur": 156
+          },
+          {
+            "start": 4890,
+            "dur": 103
+          },
+          {
+            "start": 2842,
+            "dur": 99
+          },
+          {
+            "start": 5100,
+            "dur": 84
+          },
+          {
+            "start": 5240,
+            "dur": 81
+          },
+          {
+            "start": 5031,
+            "dur": 57
+          },
+          {
+            "start": 3059,
+            "dur": 55
+          }
+        ],
+        "domNodes": 609,
+        "layoutCount": 20,
+        "recalcStyleCount": 387,
+        "scriptDurationMs": 2167,
+        "scrollLongTasks": 0,
+        "scrollMaxTask": 0,
+        "scrollTaskDetail": [],
+        "scrollBlockingMs": 0,
+        "scrollHeight": 3674
+      },
+      "network": {
+        "totalKB": 1674.6,
+        "totalRequests": 65,
+        "byType": {
+          "Document": {
+            "kb": 1.7,
+            "requests": 1
+          },
+          "Script": {
+            "kb": 342.7,
+            "requests": 26
+          },
+          "Stylesheet": {
+            "kb": 50.6,
+            "requests": 9
+          },
+          "Font": {
+            "kb": 183.5,
+            "requests": 2
+          },
+          "Image": {
+            "kb": 1090.8,
+            "requests": 25
+          },
+          "Other": {
+            "kb": 3.2,
+            "requests": 1
+          },
+          "Fetch": {
+            "kb": 2.1,
+            "requests": 1
+          }
+        }
+      }
+    }
+  ]
+}

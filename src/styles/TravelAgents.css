@@ -1,0 +1,253 @@
+/* ============================================================
+   Travel Agents — extracted from the HTML template.
+   ============================================================ */
+
+/* ── Hero ─────────────────────────────────────────────────── */
+.ta-hero {
+  position: relative;
+  min-height: 720px;
+  background: linear-gradient(180deg, #fff, #f5f8f6);
+  overflow: hidden;
+}
+.ta-hero:before {
+  content: '';
+  position: absolute;
+  width: 540px;
+  height: 540px;
+  left: -320px;
+  top: 70px;
+  border: 95px solid #edf2ee;
+  border-radius: 50%;
+}
+.ta-hero:after {
+  content: '';
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  right: -290px;
+  bottom: -200px;
+  border: 1px solid #c8dad0;
+  border-radius: 50%;
+}
+.ta-hero-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.02fr .98fr;
+  gap: 78px;
+  align-items: center;
+  min-height: 720px;
+  padding: 68px 0;
+}
+.ta-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 24px;
+  padding: 8px 13px;
+  border: 1px solid #d1dfd6;
+  border-radius: 999px;
+  background: #edf4ef;
+  color: #123f31;
+  font-size: .78rem;
+  font-weight: 800;
+}
+.ta-kicker span { width: 8px; height: 8px; border-radius: 50%; background: var(--eg-orange); }
+.ta-hero h1 {
+  max-width: 670px;
+  margin: 0;
+  font-size: clamp(3.45rem, 6.65vw, 6.75rem);
+  line-height: .91;
+  letter-spacing: -.075em;
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+.ta-hero h1 em { display: block; color: var(--eg-green); font-style: normal; }
+.ta-hero-copy { max-width: 600px; margin: 27px 0 30px; color: #5e6b64; font-size: 1.1rem; }
+.ta-hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.ta-btn {
+  min-height: 55px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 23px;
+  border: 0;
+  border-radius: 14px;
+  font-weight: 800;
+  transition: transform .2s, box-shadow .2s;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 15px;
+}
+.ta-btn:hover { transform: translateY(-2px); }
+.ta-btn-primary { background: var(--eg-green); color: #fff; box-shadow: 0 12px 30px rgba(28,101,73,.2); }
+.ta-btn-secondary { border: 1px solid #cfdad2; background: #fff; color: #10221a; }
+.ta-btn-secondary:hover { box-shadow: 0 10px 25px rgba(8,50,31,.08); }
+.ta-micro { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 27px; color: #586b61; font-size: .8rem; font-weight: 700; }
+.ta-micro span { display: flex; align-items: center; gap: 8px; }
+.ta-micro i { width: 6px; height: 6px; border-radius: 50%; background: var(--eg-orange); display: block; }
+
+/* ── Portrait ─────────────────────────────────────────────── */
+.ta-portrait-stage { position: relative; height: 610px; }
+.ta-portrait-frame {
+  position: absolute;
+  inset: 20px 40px 5px 40px;
+  border-radius: 220px 220px 34px 34px;
+  background: #dce8e0;
+  box-shadow: 0 24px 70px rgba(10,53,34,.14);
+  overflow: hidden;
+}
+.ta-portrait-frame img { width: 100%; height: 100%; object-fit: cover; }
+.ta-portrait-frame:after {
+  content: '';
+  position: absolute;
+  inset: 55% 0 0;
+  background: linear-gradient(transparent, rgba(6,43,32,.55));
+}
+.ta-agent-badge {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  top: 110px;
+  width: 166px;
+  padding: 17px;
+  border: 1px solid #d8e4dc;
+  border-radius: 18px;
+  background: rgba(255,255,255,.94);
+  box-shadow: 0 17px 44px rgba(8,50,31,.18);
+}
+.ta-agent-badge span { display: block; color: #5e6b64; font-size: .71rem; font-weight: 700; }
+.ta-agent-badge strong { display: block; margin-top: 2px; color: var(--eg-green); font-family: var(--font-display); font-size: 1.08rem; }
+.ta-booking-card {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  bottom: 38px;
+  width: 250px;
+  padding: 19px;
+  border-radius: 19px;
+  background: #092b22;
+  color: #fff;
+  box-shadow: 0 20px 50px rgba(5,38,28,.28);
+}
+.ta-booking-top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 18px; color: #acc9b9; font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.ta-booking-status { color: #d5e5a8; }
+.ta-booking-card h3 { margin: 0 0 4px; font-size: 1rem; font-family: var(--font-display); }
+.ta-booking-card p { margin: 0 0 17px; color: #bed3c6; font-size: .75rem; line-height: 1.45; }
+.ta-booking-meta { display: flex; justify-content: space-between; padding-top: 13px; border-top: 1px solid rgba(255,255,255,.12); font-size: .7rem; }
+.ta-booking-meta strong { color: #d5e5a8; }
+
+/* ── Stats strip ──────────────────────────────────────────── */
+.ta-stats { background: #092b22; color: #fff; }
+.ta-stats-inner {
+  min-height: 210px;
+  display: grid;
+  grid-template-columns: 1.25fr repeat(3, .75fr);
+  align-items: center;
+  gap: 25px;
+}
+.ta-stats-intro h2 {
+  max-width: 380px;
+  margin: 0;
+  font-size: clamp(1.75rem, 3.2vw, 2.8rem);
+  line-height: 1.12;
+  letter-spacing: -.045em;
+  font-family: var(--font-display);
+}
+.ta-stat { padding: 23px; border-left: 1px solid rgba(255,255,255,.14); }
+.ta-stat strong { display: block; color: #d5e5a8; font-family: var(--font-display); font-size: 2.2rem; letter-spacing: -.05em; }
+.ta-stat span { display: block; color: #bcd1c4; font-size: .8rem; font-weight: 700; }
+
+/* ── Benefits ─────────────────────────────────────────────── */
+.ta-benefits { padding: 125px 0; }
+.ta-benefit-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 30px;
+  margin-bottom: 54px;
+}
+.ta-benefit-head p { max-width: 420px; color: #5e6b64; line-height: 1.6; }
+.ta-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.ta-card {
+  border: 1px solid #dfe7e1;
+  border-radius: 22px;
+  padding: 28px;
+  min-height: 330px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #fff;
+  transition: transform .3s, box-shadow .3s;
+}
+.ta-card:hover { transform: translateY(-8px); box-shadow: 0 20px 45px rgba(20,35,30,.08); }
+.ta-card:first-child { background: #3463e8; color: #fff; border-color: #3463e8; }
+.ta-card-icon { font-size: 28px; }
+.ta-card h3 { font: 700 26px/1.08 var(--font-display); letter-spacing: -.03em; margin: 0 0 12px; }
+.ta-card p { line-height: 1.6; color: #5e6b64; margin: 0; }
+.ta-card:first-child p { color: rgba(255,255,255,.75); }
+.ta-mini-tag {
+  align-self: flex-start;
+  padding: 7px 10px;
+  border: 1px solid currentColor;
+  border-radius: 99px;
+  font-size: 12px;
+  opacity: .7;
+}
+
+/* ── Features sidebar ─────────────────────────────────────── */
+.ta-features { display: grid; grid-template-columns: .9fr 1.1fr; gap: 80px; align-items: start; }
+.ta-sticky { position: sticky; top: 30px; height: max-content; }
+.ta-sticky p { line-height: 1.65; color: #5e6b64; max-width: 420px; }
+.ta-feature-list { display: grid; gap: 12px; }
+.ta-feature {
+  background: #fff;
+  border: 1px solid #dfe7e1;
+  border-radius: 18px;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 18px;
+  transition: transform .25s;
+}
+.ta-feature:hover { transform: translateX(8px); }
+.ta-feature-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #d77842;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  font-weight: 800;
+}
+.ta-feature h3 { margin: 2px 0 8px; font: 700 21px var(--font-display); }
+.ta-feature p { margin: 0; color: #5e6b64; line-height: 1.55; font-size: 15px; }
+
+/* ── Section spacing ──────────────────────────────────────── */
+.ta-section { padding: 120px 0; }
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .ta-hero-grid, .ta-features { grid-template-columns: 1fr; }
+  .ta-portrait-stage { height: 480px; margin-top: 20px; }
+  .ta-stats-inner { grid-template-columns: 1fr 1fr; }
+  .ta-cards { grid-template-columns: 1fr 1fr; }
+  .ta-sticky { position: static; }
+}
+@media (max-width: 600px) {
+  .ta-hero { min-height: auto; padding: 48px 0 74px; }
+  .ta-hero h1 { font-size: 52px; }
+  .ta-hero-copy { font-size: 16px; }
+  .ta-portrait-stage { height: 390px; }
+  .ta-section { padding: 80px 0; }
+  .ta-cards { grid-template-columns: 1fr; }
+  .ta-card { min-height: 260px; }
+  .ta-stats-inner { grid-template-columns: 1fr 1fr; }
+  .ta-agent-badge, .ta-booking-card { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ta-feature { transition: none; }
+  .ta-card { transition: none; }
+}

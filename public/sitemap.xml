@@ -39,14 +39,14 @@
   <priority>0.4</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/accra-shai-hills-safari-akosombo-boat-cruise-day-tour</loc>
-  <lastmod>2026-09-22</lastmod>
+  <loc>https://www.travioghana.com/tour/the-shia-hills-safari-quad-bike-tour</loc>
+  <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/the-shia-hills-safari-quad-bike-tour</loc>
-  <lastmod>2026-08-29</lastmod>
+  <loc>https://www.travioghana.com/tour/accra-shai-hills-safari-akosombo-boat-cruise-day-tour</loc>
+  <lastmod>2026-09-22</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
@@ -117,12 +117,6 @@
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/accra-sankofa-art-gallery-tour-candle-making-workshop</loc>
-  <lastmod>2026-08-29</lastmod>
-  <changefreq>weekly</changefreq>
-  <priority>0.8</priority>
-</url>
-<url>
   <loc>https://www.travioghana.com/tour/accra-2-day-trip-to-aqua-safari-resort-and-treasure-island</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
@@ -171,13 +165,13 @@
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/from-accra-the-nature-escape-adventure</loc>
+  <loc>https://www.travioghana.com/tour/the-cape-coast-day-tour-with-assin-manso-slave-river-bath</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/the-cape-coast-day-tour-with-assin-manso-slave-river-bath</loc>
+  <loc>https://www.travioghana.com/tour/accra-sankofa-art-gallery-tour-candle-making-workshop</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
@@ -213,6 +207,12 @@
   <priority>0.8</priority>
 </url>
 <url>
+  <loc>https://www.travioghana.com/tour/from-accra-the-nature-escape-adventure</loc>
+  <lastmod>2026-08-29</lastmod>
+  <changefreq>weekly</changefreq>
+  <priority>0.8</priority>
+</url>
+<url>
   <loc>https://www.travioghana.com/tour/accra-food-tasting-tour</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
@@ -231,12 +231,12 @@
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tours?place=Akosombo</loc>
+  <loc>https://www.travioghana.com/tours?place=Dedenya</loc>
   <changefreq>weekly</changefreq>
   <priority>0.7</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tours?place=Dedenya</loc>
+  <loc>https://www.travioghana.com/tours?place=Akosombo</loc>
   <changefreq>weekly</changefreq>
   <priority>0.7</priority>
 </url>

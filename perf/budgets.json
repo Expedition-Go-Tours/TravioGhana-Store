@@ -1,0 +1,11 @@
+{
+  "lcp": 4200,
+  "fcp": 3800,
+  "cls": 0.1,
+  "tbt": 2400,
+  "scrollMaxTask": 1100,
+  "transferKB": 1200,
+  "scriptKB": 520,
+  "imageKB": 350,
+  "requests": 75
+}

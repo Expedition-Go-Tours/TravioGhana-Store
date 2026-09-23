@@ -1,0 +1,93 @@
+{
+  "label": "about-move",
+  "profile": "midrange-4g",
+  "generatedAt": "2026-09-18T14:14:14.606Z",
+  "base": "http://localhost:4173",
+  "results": [
+    {
+      "route": "/about-us",
+      "url": "http://localhost:4173/about-us",
+      "wallClockMs": 11335,
+      "navigationError": null,
+      "metrics": {
+        "fcp": 2516,
+        "lcp": 5048,
+        "cls": 0,
+        "ttfb": 14,
+        "domContentLoaded": 1764,
+        "load": 1786,
+        "tbt": 1568,
+        "longTasks": 6,
+        "longTaskDetail": [
+          {
+            "start": 3214,
+            "dur": 776
+          },
+          {
+            "start": 1793,
+            "dur": 503
+          },
+          {
+            "start": 1379,
+            "dur": 394
+          },
+          {
+            "start": 4026,
+            "dur": 71
+          },
+          {
+            "start": 2529,
+            "dur": 70
+          },
+          {
+            "start": 4198,
+            "dur": 54
+          }
+        ],
+        "domNodes": 609,
+        "layoutCount": 20,
+        "recalcStyleCount": 441,
+        "scriptDurationMs": 1712,
+        "scrollLongTasks": 0,
+        "scrollMaxTask": 0,
+        "scrollTaskDetail": [],
+        "scrollBlockingMs": 0,
+        "scrollHeight": 3674
+      },
+      "network": {
+        "totalKB": 1816,
+        "totalRequests": 64,
+        "byType": {
+          "Document": {
+            "kb": 1.7,
+            "requests": 1
+          },
+          "Script": {
+            "kb": 340.5,
+            "requests": 26
+          },
+          "Stylesheet": {
+            "kb": 50.6,
+            "requests": 9
+          },
+          "Font": {
+            "kb": 183.5,
+            "requests": 2
+          },
+          "Image": {
+            "kb": 1234.5,
+            "requests": 24
+          },
+          "Other": {
+            "kb": 3.2,
+            "requests": 1
+          },
+          "Fetch": {
+            "kb": 2.1,
+            "requests": 1
+          }
+        }
+      }
+    }
+  ]
+}

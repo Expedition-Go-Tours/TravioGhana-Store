@@ -1,0 +1,170 @@
+/* ============================================================
+   Design tokens + shared primitives for the "Work with Us"
+   partner pages.  Loaded once by each page component.
+   ============================================================ */
+
+:root {
+  /* Forest / green scale (Transport, List Experience, Travel Agents) */
+  --eg-ink:        #15201d;
+  --eg-paper:      #f3f1eb;
+  --eg-cream:      #faf9f5;
+  --eg-green:      #1b674c;
+  --eg-green-dark: #103e30;
+  --eg-green-deep: #092b22;
+  --eg-blue:       #3463e8;
+  --eg-orange:     #e16e3f;
+  --eg-muted:      #626c68;
+  --eg-line:       rgba(21, 32, 29, .14);
+  --eg-radius:     26px;
+
+  /* Hotels palette (warm) */
+  --eg-forest:      #193f33;
+  --eg-forest2:     #102e26;
+  --eg-sand:        #efe6d7;
+  --eg-terracotta:  #c75c3d;
+  --eg-amber:       #e4a74d;
+
+  /* Legal palette */
+  --eg-accent:  #d9ee87;
+
+  /* Content Creators palette */
+  --eg-accent2: #d8f676;
+  --eg-mint:    #edf4ef;
+  --eg-acid:    #d5e5a8;
+
+  /* Display font (self-hosted). Body text inherits the global --font-body. */
+  --font-display: 'Manrope', sans-serif;
+}
+
+/* ── Shared layout primitives ─────────────────────────────── */
+.wrap {
+  width: min(1200px, calc(100% - 40px));
+  margin-left: auto;
+  margin-right: auto;
+}
+.eg-section-title {
+  font-family: var(--font-display);
+  letter-spacing: -0.055em;
+  line-height: 0.94;
+  margin: 0;
+  font-size: clamp(46px, 5.6vw, 78px);
+}
+
+/* ── Scroll-reveal ───────────────────────────────────────── */
+.eg-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .7s ease, transform .7s ease;
+}
+.eg-reveal.eg-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── FAQ accordion ───────────────────────────────────────── */
+.eg-faq { max-width: 900px; margin: 0 auto; }
+.eg-faq-item { border-top: 1px solid var(--eg-line); }
+.eg-faq-item:last-child { border-bottom: 1px solid var(--eg-line); }
+.eg-faq-btn {
+  width: 100%;
+  padding: 25px 0;
+  border: 0;
+  background: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+  cursor: pointer;
+  font: 700 19px/1.3 var(--font-display);
+  color: var(--eg-ink);
+}
+.eg-faq-btn span:last-child { font-size: 22px; line-height: 1; transition: transform .25s; }
+.eg-faq-item.eg-open .eg-faq-btn span:last-child { transform: rotate(45deg); }
+.eg-faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .35s ease;
+}
+.eg-faq-answer p {
+  margin: 0;
+  padding: 0 50px 26px 0;
+  color: var(--eg-muted);
+  line-height: 1.65;
+  font-size: 16px;
+}
+.eg-faq-item.eg-open .eg-faq-answer { max-height: 200px; }
+
+/* ── CTA closing block ──────────────────────────────────── */
+.eg-cta {
+  padding: 80px;
+  background: var(--eg-green);
+  color: #fff;
+  border-radius: 36px;
+  position: relative;
+  overflow: hidden;
+  margin: 0 auto 80px;
+  max-width: 1200px;
+  width: calc(100% - 40px);
+}
+.eg-cta:after {
+  content: '';
+  position: absolute;
+  right: -100px;
+  top: -100px;
+  width: 460px;
+  height: 460px;
+  border: 80px solid rgba(255,255,255,.08);
+  border-radius: 50%;
+}
+.eg-cta h2 {
+  font: 800 clamp(52px, 7vw, 96px)/.94 var(--font-display);
+  letter-spacing: -.055em;
+  max-width: 850px;
+  position: relative;
+  z-index: 2;
+  margin: 0;
+}
+.eg-cta p {
+  max-width: 520px;
+  font-size: 18px;
+  color: rgba(255,255,255,.75);
+  line-height: 1.6;
+  position: relative;
+  z-index: 2;
+  margin: 0;
+}
+.eg-cta .eg-cta-eyebrow {
+  color: rgba(255,255,255,.5);
+  font: 800 12px/1 var(--font-display);
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 2;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 980px) {
+  .wrap { width: min(100% - 40px, 1200px); }
+}
+@media (max-width: 700px) {
+  .wrap { width: calc(100% - 26px); }
+  .eg-section-title { font-size: 38px; }
+}
+@media (max-width: 900px) {
+  .eg-cta { padding: 55px 35px; }
+}
+@media (max-width: 600px) {
+  .eg-cta { padding: 45px 26px; border-radius: 25px; margin-bottom: 50px; }
+  .eg-cta h2 { font-size: 48px; }
+}
+@media (max-width: 380px) {
+  .eg-cta { padding: 36px 18px; border-radius: 20px; }
+  .eg-cta h2 { font-size: 38px; }
+  .wrap { width: calc(100% - 28px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .eg-reveal { opacity: 1; transform: none; transition: none; }
+  .eg-faq-answer { transition: none; }
+  .eg-faq-btn span:last-child { transition: none; }
+}

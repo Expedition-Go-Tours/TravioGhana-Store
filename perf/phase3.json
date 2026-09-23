@@ -1,0 +1,170 @@
+{
+  "label": "phase3",
+  "profile": "midrange-4g",
+  "generatedAt": "2026-09-18T10:51:48.928Z",
+  "base": "http://localhost:4173",
+  "results": [
+    {
+      "route": "/",
+      "url": "http://localhost:4173/",
+      "wallClockMs": 14026,
+      "navigationError": null,
+      "metrics": {
+        "fcp": 3236,
+        "lcp": 3676,
+        "cls": 0,
+        "ttfb": 11,
+        "domContentLoaded": 1761,
+        "load": 1809,
+        "tbt": 2078,
+        "longTasks": 11,
+        "domNodes": 1028,
+        "layoutCount": 28,
+        "recalcStyleCount": 347,
+        "scriptDurationMs": 2248,
+        "scrollLongTasks": 13,
+        "scrollMaxTask": 470,
+        "scrollBlockingMs": 1036,
+        "scrollHeight": 3367
+      },
+      "network": {
+        "totalKB": 1014.3,
+        "totalRequests": 66,
+        "byType": {
+          "Document": {
+            "kb": 1.7,
+            "requests": 1
+          },
+          "Script": {
+            "kb": 442.7,
+            "requests": 32
+          },
+          "Stylesheet": {
+            "kb": 51.2,
+            "requests": 13
+          },
+          "Font": {
+            "kb": 295.1,
+            "requests": 4
+          },
+          "Image": {
+            "kb": 215.8,
+            "requests": 12
+          },
+          "Other": {
+            "kb": 3.2,
+            "requests": 1
+          },
+          "Fetch": {
+            "kb": 4,
+            "requests": 2
+          },
+          "XHR": {
+            "kb": 0.5,
+            "requests": 1
+          }
+        }
+      }
+    },
+    {
+      "route": "/tours",
+      "url": "http://localhost:4173/tours",
+      "wallClockMs": 21730,
+      "navigationError": null,
+      "metrics": {
+        "fcp": 1808,
+        "lcp": 2128,
+        "cls": 0,
+        "ttfb": 7,
+        "domContentLoaded": 1025,
+        "load": 1044,
+        "tbt": 888,
+        "longTasks": 4,
+        "domNodes": 322,
+        "layoutCount": 8,
+        "recalcStyleCount": 158,
+        "scriptDurationMs": 1309,
+        "scrollLongTasks": 1,
+        "scrollMaxTask": 64,
+        "scrollBlockingMs": 14,
+        "scrollHeight": 1329
+      },
+      "network": {
+        "totalKB": 26.3,
+        "totalRequests": 40,
+        "byType": {
+          "Document": {
+            "kb": 1.7,
+            "requests": 1
+          },
+          "Script": {
+            "kb": 18.2,
+            "requests": 26
+          },
+          "Font": {
+            "kb": 0.3,
+            "requests": 2
+          },
+          "Stylesheet": {
+            "kb": 5.9,
+            "requests": 9
+          },
+          "Image": {
+            "kb": 0.2,
+            "requests": 2
+          }
+        }
+      }
+    },
+    {
+      "route": "/search?q=accra",
+      "url": "http://localhost:4173/search?q=accra",
+      "wallClockMs": 10701,
+      "navigationError": null,
+      "metrics": {
+        "fcp": 1720,
+        "lcp": 2004,
+        "cls": 0,
+        "ttfb": 7,
+        "domContentLoaded": 1023,
+        "load": 1048,
+        "tbt": 807,
+        "longTasks": 3,
+        "domNodes": 269,
+        "layoutCount": 8,
+        "recalcStyleCount": 483,
+        "scriptDurationMs": 1379,
+        "scrollLongTasks": 0,
+        "scrollMaxTask": 0,
+        "scrollBlockingMs": 0,
+        "scrollHeight": 1658
+      },
+      "network": {
+        "totalKB": 31.3,
+        "totalRequests": 47,
+        "byType": {
+          "Document": {
+            "kb": 1.7,
+            "requests": 1
+          },
+          "Script": {
+            "kb": 22,
+            "requests": 27
+          },
+          "Font": {
+            "kb": 0.3,
+            "requests": 2
+          },
+          "Stylesheet": {
+            "kb": 2.9,
+            "requests": 9
+          },
+          "Image": {
+            "kb": 4.3,
+            "requests": 8
+          }
+        }
+      }
+    }
+  ]
+}

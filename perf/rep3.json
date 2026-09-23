@@ -1,0 +1,146 @@
+{
+  "label": "rep3",
+  "profile": "midrange-4g",
+  "generatedAt": "2026-09-18T14:41:57.217Z",
+  "base": "http://localhost:4173",
+  "results": [
+    {
+      "route": "/",
+      "url": "http://localhost:4173/",
+      "wallClockMs": 24626,
+      "navigationError": null,
+      "metrics": {
+        "fcp": 3548,
+        "lcp": 3992,
+        "cls": 0,
+        "ttfb": 13,
+        "domContentLoaded": 1794,
+        "load": 3882,
+        "tbt": 2446,
+        "longTasks": 12,
+        "longTaskDetail": [
+          {
+            "start": 1821,
+            "dur": 1023
+          },
+          {
+            "start": 2866,
+            "dur": 674
+          },
+          {
+            "start": 1334,
+            "dur": 473
+          },
+          {
+            "start": 3555,
+            "dur": 179
+          },
+          {
+            "start": 7167,
+            "dur": 134
+          },
+          {
+            "start": 5975,
+            "dur": 106
+          },
+          {
+            "start": 5450,
+            "dur": 93
+          },
+          {
+            "start": 5673,
+            "dur": 92
+          },
+          {
+            "start": 3739,
+            "dur": 87
+          },
+          {
+            "start": 3894,
+            "dur": 78
+          },
+          {
+            "start": 7651,
+            "dur": 55
+          },
+          {
+            "start": 4870,
+            "dur": 52
+          }
+        ],
+        "domNodes": 885,
+        "layoutCount": 26,
+        "recalcStyleCount": 108,
+        "scriptDurationMs": 2923,
+        "scrollLongTasks": 6,
+        "scrollMaxTask": 870,
+        "scrollTaskDetail": [
+          {
+            "start": 9369,
+            "dur": 870
+          },
+          {
+            "start": 8546,
+            "dur": 174
+          },
+          {
+            "start": 8724,
+            "dur": 143
+          },
+          {
+            "start": 8263,
+            "dur": 135
+          },
+          {
+            "start": 10240,
+            "dur": 120
+          },
+          {
+            "start": 9040,
+            "dur": 70
+          }
+        ],
+        "scrollBlockingMs": 1212,
+        "scrollHeight": 3367
+      },
+      "network": {
+        "totalKB": 807.2,
+        "totalRequests": 61,
+        "byType": {
+          "Document": {
+            "kb": 1.7,
+            "requests": 1
+          },
+          "Script": {
+            "kb": 440.5,
+            "requests": 30
+          },
+          "Stylesheet": {
+            "kb": 50.4,
+            "requests": 13
+          },
+          "Font": {
+            "kb": 240.3,
+            "requests": 3
+          },
+          "Image": {
+            "kb": 64,
+            "requests": 10
+          },
+          "Other": {
+            "kb": 3.2,
+            "requests": 1
+          },
+          "Fetch": {
+            "kb": 6.5,
+            "requests": 2
+          },
+          "XHR": {
+            "kb": 0.5,
+            "requests": 1
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+name: Mobile performance
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  mobile-budget:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - name: Start preview server
+        run: |
+          nohup npx vite preview --port 4173 --strictPort > preview-perf.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+
+      - name: Audit mobile budgets (mid-range 4G, 4x CPU)
+        run: npm run perf:mobile -- --label ci --check
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-perf-report
+          path: |
+            perf/ci.json
+            perf/budgets.json

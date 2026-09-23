@@ -1,0 +1,130 @@
+{
+  "label": "rep1",
+  "profile": "midrange-4g",
+  "generatedAt": "2026-09-18T14:41:03.305Z",
+  "base": "http://localhost:4173",
+  "results": [
+    {
+      "route": "/",
+      "url": "http://localhost:4173/",
+      "wallClockMs": 24024,
+      "navigationError": null,
+      "metrics": {
+        "fcp": 3352,
+        "lcp": 3812,
+        "cls": 0,
+        "ttfb": 9,
+        "domContentLoaded": 1811,
+        "load": 3710,
+        "tbt": 2073,
+        "longTasks": 8,
+        "longTaskDetail": [
+          {
+            "start": 1833,
+            "dur": 779
+          },
+          {
+            "start": 2638,
+            "dur": 707
+          },
+          {
+            "start": 1367,
+            "dur": 451
+          },
+          {
+            "start": 3366,
+            "dur": 200
+          },
+          {
+            "start": 6366,
+            "dur": 117
+          },
+          {
+            "start": 3576,
+            "dur": 83
+          },
+          {
+            "start": 5108,
+            "dur": 71
+          },
+          {
+            "start": 3732,
+            "dur": 65
+          }
+        ],
+        "domNodes": 885,
+        "layoutCount": 24,
+        "recalcStyleCount": 110,
+        "scriptDurationMs": 2681,
+        "scrollLongTasks": 6,
+        "scrollMaxTask": 1066,
+        "scrollTaskDetail": [
+          {
+            "start": 8844,
+            "dur": 1066
+          },
+          {
+            "start": 8090,
+            "dur": 149
+          },
+          {
+            "start": 9911,
+            "dur": 115
+          },
+          {
+            "start": 8498,
+            "dur": 89
+          },
+          {
+            "start": 8345,
+            "dur": 65
+          },
+          {
+            "start": 8243,
+            "dur": 55
+          }
+        ],
+        "scrollBlockingMs": 1239,
+        "scrollHeight": 3522
+      },
+      "network": {
+        "totalKB": 807.2,
+        "totalRequests": 61,
+        "byType": {
+          "Document": {
+            "kb": 1.7,
+            "requests": 1
+          },
+          "Script": {
+            "kb": 440.5,
+            "requests": 30
+          },
+          "Stylesheet": {
+            "kb": 50.4,
+            "requests": 13
+          },
+          "Font": {
+            "kb": 240.3,
+            "requests": 3
+          },
+          "Image": {
+            "kb": 64,
+            "requests": 10
+          },
+          "Other": {
+            "kb": 3.2,
+            "requests": 1
+          },
+          "Fetch": {
+            "kb": 6.5,
+            "requests": 2
+          },
+          "XHR": {
+            "kb": 0.5,
+            "requests": 1
+          }
+        }
+      }
+    }
+  ]
+}

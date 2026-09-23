@@ -2,7 +2,7 @@ import sharp from 'sharp';
 import { readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
 
-// Read the logo image (TravioGhana "TG" emblem — NOT the Expedition-Go badge)
+// Read the logo image
 const logoPath = resolve('src/assets/TVG_favicon.png');
 
 // Define all the sizes we need for comprehensive favicon support
@@ -10,6 +10,7 @@ const sizes = [
   { name: 'favicon-16x16.png', size: 16 },     // Standard browser tab
   { name: 'favicon-32x32.png', size: 32 },     // Standard browser tab (high DPI)
   { name: 'favicon-48x48.png', size: 48 },     // Windows site icons
+  { name: 'favicon-64.png', size: 64 },        // index.html tab icon
   { name: 'apple-touch-icon.png', size: 180 }, // iOS home screen
   { name: 'android-chrome-192x192.png', size: 192 }, // Android home screen
   { name: 'android-chrome-512x512.png', size: 512 }, // Android splash screen
@@ -47,8 +48,8 @@ async function generateFavicons() {
 
   // Generate web app manifest for PWA support
   const manifest = {
-    name: "Travio Ghana Tours",
-    short_name: "Travio Ghana",
+    name: "Expedition-Go Tours",
+    short_name: "Expedition-Go",
     description: "Explore Tourism in Ghana",
     icons: [
       {

@@ -1,0 +1,178 @@
+{
+  "label": "baseline",
+  "profile": "midrange-4g",
+  "generatedAt": "2026-09-18T10:21:24.480Z",
+  "base": "http://localhost:4173",
+  "results": [
+    {
+      "route": "/",
+      "url": "http://localhost:4173/",
+      "wallClockMs": 16670,
+      "navigationError": null,
+      "metrics": {
+        "fcp": 3756,
+        "lcp": 4216,
+        "cls": 0,
+        "ttfb": 21,
+        "domContentLoaded": 2120,
+        "load": 2139,
+        "tbt": 2083,
+        "longTasks": 11,
+        "domNodes": 870,
+        "layoutCount": 30,
+        "recalcStyleCount": 302,
+        "scriptDurationMs": 3139,
+        "scrollLongTasks": 20,
+        "scrollMaxTask": 1708,
+        "scrollBlockingMs": 2992,
+        "scrollHeight": 3522
+      },
+      "network": {
+        "totalKB": 2014.7,
+        "totalRequests": 92,
+        "byType": {
+          "Document": {
+            "kb": 1.8,
+            "requests": 1
+          },
+          "Script": {
+            "kb": 516.1,
+            "requests": 30
+          },
+          "Font": {
+            "kb": 295.1,
+            "requests": 4
+          },
+          "Stylesheet": {
+            "kb": 135.4,
+            "requests": 14
+          },
+          "Image": {
+            "kb": 591.3,
+            "requests": 37
+          },
+          "Other": {
+            "kb": 249.3,
+            "requests": 1
+          },
+          "Fetch": {
+            "kb": 225.3,
+            "requests": 4
+          },
+          "XHR": {
+            "kb": 0.5,
+            "requests": 1
+          }
+        }
+      }
+    },
+    {
+      "route": "/tours",
+      "url": "http://localhost:4173/tours",
+      "wallClockMs": 19803,
+      "navigationError": null,
+      "metrics": {
+        "fcp": 1812,
+        "lcp": 2088,
+        "cls": 0,
+        "ttfb": 10,
+        "domContentLoaded": 1003,
+        "load": 1023,
+        "tbt": 854,
+        "longTasks": 5,
+        "domNodes": 326,
+        "layoutCount": 8,
+        "recalcStyleCount": 194,
+        "scriptDurationMs": 1248,
+        "scrollLongTasks": 0,
+        "scrollMaxTask": 0,
+        "scrollBlockingMs": 0,
+        "scrollHeight": 1329
+      },
+      "network": {
+        "totalKB": 26.4,
+        "totalRequests": 43,
+        "byType": {
+          "Stylesheet": {
+            "kb": 5.9,
+            "requests": 10
+          },
+          "Document": {
+            "kb": 1.8,
+            "requests": 1
+          },
+          "Script": {
+            "kb": 18.2,
+            "requests": 26
+          },
+          "Font": {
+            "kb": 0.3,
+            "requests": 2
+          },
+          "Image": {
+            "kb": 0.2,
+            "requests": 2
+          },
+          "Fetch": {
+            "kb": 0,
+            "requests": 2
+          }
+        }
+      }
+    },
+    {
+      "route": "/search?q=accra",
+      "url": "http://localhost:4173/search?q=accra",
+      "wallClockMs": 10697,
+      "navigationError": null,
+      "metrics": {
+        "fcp": 1604,
+        "lcp": 1892,
+        "cls": 0,
+        "ttfb": 11,
+        "domContentLoaded": 1016,
+        "load": 1040,
+        "tbt": 767,
+        "longTasks": 4,
+        "domNodes": 273,
+        "layoutCount": 8,
+        "recalcStyleCount": 496,
+        "scriptDurationMs": 1285,
+        "scrollLongTasks": 2,
+        "scrollMaxTask": 103,
+        "scrollBlockingMs": 54,
+        "scrollHeight": 1658
+      },
+      "network": {
+        "totalKB": 31.3,
+        "totalRequests": 50,
+        "byType": {
+          "Stylesheet": {
+            "kb": 2.9,
+            "requests": 10
+          },
+          "Document": {
+            "kb": 1.8,
+            "requests": 1
+          },
+          "Script": {
+            "kb": 22,
+            "requests": 27
+          },
+          "Font": {
+            "kb": 0.3,
+            "requests": 2
+          },
+          "Image": {
+            "kb": 4.3,
+            "requests": 8
+          },
+          "Fetch": {
+            "kb": 0,
+            "requests": 2
+          }
+        }
+      }
+    }
+  ]
+}
