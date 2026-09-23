@@ -122,7 +122,12 @@ export function mapSupplierProfile({ tour, supplier, fallback }: SupplierProfile
     address: formatBusinessAddress(businessInfo.address) || fallback?.address || tour?.city || null,
     description: sup?.supplierProfile ? buildSupplierDescription(businessInfo, operatingInfo) || null : (fallback?.description || null),
     rating,
-    toursCount: profile?.totalBookings ?? fallback?.toursCount ?? 0,
+    // `totalBookings` is NOT a tour count — mapping it here made this field
+    // report a supplier's bookings as their tour total (e.g. 7 for a supplier
+    // with 31 tours). The tour payload carries no tour count; callers that
+    // need the real figure use useSupplierTourCount() (/tours?supplierId=… →
+    // pagination.totalCount).
+    toursCount: fallback?.toursCount ?? 0,
     verified: (sup?.verified ?? profile?.verified) ?? (profile?.status === 'ACTIVE' || profile?.status === 'APPROVED'),
     supplierType: sup?.supplierType ?? profile?.supplierType ?? fallback?.supplierType ?? null,
   }

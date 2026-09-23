@@ -374,6 +374,12 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 24px;
+  /* Uniform card heights at every column count. Cards vary in content — 1-vs-2
+     line titles and 2-vs-3 badge rows — and .tour-card has no intrinsic height,
+     so each row otherwise sizes to its own card and the grid reads ragged.
+     `1fr` gives every row the tallest card's height; .tour-card's height:100%
+     then resolves against the now-definite row. Badges are NOT clipped. */
+  grid-auto-rows: 1fr;
 }
 
 /* The short description line under the title is not shown on this page —

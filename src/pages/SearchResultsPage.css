@@ -64,6 +64,10 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 24px;
+  /* Uniform card heights: cards vary in content (1-vs-2 line titles, differing
+     badge rows) so each row would otherwise size to its own card. `1fr` gives
+     every row the tallest card's height; .tour-card's height:100% fills it. */
+  grid-auto-rows: 1fr;
 }
 
 @media (max-width: 1200px) {

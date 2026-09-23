@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import './NewsletterSection.css'
-import heroSrc from '../assets/newsletter-hero.jpg'
+import heroSrc from '../assets/newsletter-square.jpg'
 
 export default function NewsletterSection() {
   const { t } = useTranslation()
@@ -11,7 +11,7 @@ export default function NewsletterSection() {
         <div className="newsletter-viewport">
           <div className="newsletter-card">
         <div className="newsletter-image">
-          <img src={heroSrc} alt={t('newsletter.imageAlt')} loading="lazy" decoding="async" width={600} height={400} />
+          <img src={heroSrc} alt={t('newsletter.imageAlt')} loading="lazy" decoding="async" width={800} height={1200} />
         </div>
         <div className="newsletter-content">
           <h2 className="newsletter-heading">Don't just dream it, Book it</h2>

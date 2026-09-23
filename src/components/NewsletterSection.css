@@ -24,12 +24,17 @@
 
 .newsletter-image {
   overflow: hidden;
+  /* Taller card (Lite: 200px -> 320px) so the portrait Accra shot reads as a
+     full frame instead of a letterboxed strip. */
+  min-height: 320px;
 }
 
 .newsletter-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Crop toward the top so Black Star Square / Independence Arch stay in frame. */
+  object-position: center 15%;
   display: block;
 }
 
@@ -132,7 +137,7 @@
   }
 
   .newsletter-image {
-    height: 240px;
+    min-height: 240px;
   }
 
   .newsletter-content {

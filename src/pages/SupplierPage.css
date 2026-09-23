@@ -562,6 +562,17 @@ a.supplier-contact-value:hover {
   scroll-snap-align: start;
 }
 
+/* `.tour-card` sets `height: 100%`, and a definite height opts a flex/grid item
+   out of `align-items: stretch`. These cards are DIRECT children of this
+   container, so that 100% has nothing to resolve against and every card falls
+   back to its content height — unlike the homepage carousels, which wrap each
+   card in a motion div the percentage can resolve against. Cards whose title
+   fits on one line therefore came out a line shorter than the rest.
+   `height: auto` restores stretching, so every card in the row matches. */
+.supplier-tours-grid .tour-card {
+  height: auto;
+}
+
 @media (min-width: 600px) {
   .supplier-tours-grid {
     display: grid;
@@ -571,6 +582,10 @@ a.supplier-contact-value:hover {
     scroll-snap-type: none;
     -webkit-overflow-scrolling: auto;
     padding-bottom: 0;
+    /* Grid stretch only equalises cards within a row, so rows with a one-line
+       title would still be shorter than their neighbours. `1fr` gives every row
+       the tallest card's height; the `height: auto` above lets cards fill it. */
+    grid-auto-rows: 1fr;
   }
 
   .supplier-tours-grid > * {
