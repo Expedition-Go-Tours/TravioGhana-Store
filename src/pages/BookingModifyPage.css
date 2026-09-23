@@ -1,0 +1,567 @@
+/* Self-service "Edit your trip" (modify booking) — focused, content-first
+   layout: trip context hero, two-step editor, and a live change/price rail. */
+
+.bkmod-page {
+  min-height: 100vh;
+  background: #f6f8f6;
+  padding: 28px clamp(16px, 4vw, 44px) 80px;
+}
+
+.bkmod-center { max-width: 560px; margin: 0 auto; }
+.bkmod-center .bkmod-card { margin-top: 24px; }
+
+.bkmod-head {
+  max-width: 1120px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.bkmod-back {
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border-radius: 999px;
+  border: 1px solid #e3e8e5;
+  background: #fff;
+  color: #16211b;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 2px rgba(16, 32, 24, 0.05);
+  transition: background 0.15s ease, transform 0.05s ease;
+}
+
+.bkmod-back:hover { background: #f0f6f1; }
+.bkmod-back:active { transform: translateY(1px); }
+
+.bkmod-kicker {
+  margin: 0 0 3px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #168a35;
+}
+
+.bkmod-head h1 {
+  margin: 0;
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 800;
+  color: #10180f;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Trip context hero ---------- */
+
+.bkmod-tour {
+  max-width: 1120px;
+  margin: 0 auto 18px;
+  display: flex;
+  gap: 18px;
+  background: #fff;
+  border: 1px solid #e3e8e5;
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(16, 32, 24, 0.04);
+}
+
+.bkmod-tour-img {
+  width: 150px;
+  height: 108px;
+  flex: none;
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+.bkmod-tour-img-ph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #eaf6ec, #d8eddd);
+  font-size: 34px;
+}
+
+.bkmod-tour-info { min-width: 0; align-self: center; }
+
+.bkmod-tour-meta {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6d7a72;
+  letter-spacing: 0.02em;
+}
+
+.bkmod-tour-info h2 {
+  margin: 0 0 10px;
+  font-size: clamp(18px, 2.4vw, 23px);
+  font-weight: 800;
+  color: #10180f;
+  line-height: 1.25;
+}
+
+.bkmod-tour-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+
+.bkmod-chip-static {
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: #eef4ef;
+  color: #2a3a2f;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.bkmod-tour-hint {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: #64706a;
+  line-height: 1.55;
+}
+
+/* ---------- Editor grid ---------- */
+
+.bkmod-layout {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 372px;
+  gap: 20px;
+  align-items: start;
+}
+
+.bkmod-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+.bkmod-card {
+  background: #fff;
+  border: 1px solid #e3e8e5;
+  border-radius: 18px;
+  box-shadow: 0 1px 2px rgba(16, 32, 24, 0.04);
+}
+
+.bkmod-card h1 { margin: 0 0 8px; font-size: 22px; font-weight: 800; color: #10180f; }
+.bkmod-card h2 { margin: 0 0 6px; font-size: 21px; font-weight: 800; color: #10180f; }
+.bkmod-card p { margin: 0 0 6px; color: #3c4a41; font-size: 14px; line-height: 1.55; }
+
+/* ---------- Steps ---------- */
+
+.bkmod-step { padding: 20px; }
+
+.bkmod-step-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border-bottom: 1px dashed #e4eae5;
+  padding-bottom: 14px;
+}
+
+.bkmod-step-num {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 999px;
+  background: #168a35;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bkmod-step-head h3 { margin: 1px 0 3px; font-size: 15.5px; font-weight: 800; color: #10180f; }
+.bkmod-step-head p { margin: 0; font-size: 12.5px; color: #64706a; line-height: 1.5; }
+
+.bkmod-step-badge {
+  margin-left: auto;
+  flex: none;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: #e7f5ea;
+  color: #168a35;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.bkmod-step-body { padding-top: 16px; }
+
+.bkmod-label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #5b6a60;
+  margin: 0 0 8px;
+}
+
+.bkmod-label-gap { margin-top: 16px; }
+
+.bkmod-input {
+  width: 100%;
+  max-width: 300px;
+  border: 1px solid #d8e0db;
+  border-radius: 12px;
+  padding: 11px 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #10180f;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bkmod-input:focus {
+  border-color: #168a35;
+  box-shadow: 0 0 0 3px rgba(22, 138, 53, 0.12);
+}
+
+.bkmod-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.bkmod-chip {
+  padding: 8px 15px;
+  border-radius: 999px;
+  border: 1px solid #d8e0db;
+  background: #fff;
+  color: #24322a;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bkmod-chip:hover { border-color: #168a35; }
+.bkmod-chip.active { background: #168a35; border-color: #168a35; color: #fff; }
+
+.bkmod-date-change {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #168a35;
+}
+
+/* ---------- Traveller steppers ---------- */
+
+.bkmod-travellers { display: flex; flex-direction: column; }
+
+.bkmod-traveller-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 2px;
+  border-bottom: 1px solid #eef2ef;
+}
+
+.bkmod-traveller-row:last-child { border-bottom: none; padding-bottom: 6px; }
+
+.bkmod-traveller-label {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.bkmod-group-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.bkmod-traveller-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15.5px;
+  font-weight: 800;
+  color: #10180f;
+}
+
+.bkmod-tier-note {
+  margin: 0;
+  font-size: 12.5px;
+  color: #64706a;
+  line-height: 1.45;
+}
+
+.bkmod-delta {
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.bkmod-delta.up { background: #e7f5ea; color: #168a35; }
+.bkmod-delta.down { background: #fdeeee; color: #b3261e; }
+.bkmod-delta.neutral { background: #eef4ef; color: #2a3a2f; }
+
+.bkmod-stepper { display: inline-flex; align-items: center; gap: 14px; flex: none; }
+
+.bkmod-stepper button {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid #d8e0db;
+  background: #fff;
+  color: #10180f;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bkmod-stepper button:hover:not(:disabled) { border-color: #168a35; background: #eef6f0; color: #168a35; }
+.bkmod-stepper button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.bkmod-count { min-width: 26px; text-align: center; font-weight: 800; font-size: 16px; color: #10180f; }
+
+.bkmod-traveller-skeleton { display: flex; flex-direction: column; gap: 12px; padding: 6px 0; }
+
+.bkmod-skel-row {
+  height: 46px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #eef2ef 25%, #f7faf7 50%, #eef2ef 75%);
+  background-size: 200% 100%;
+  animation: bkmod-shimmer 1.4s ease infinite;
+}
+
+@keyframes bkmod-shimmer { to { background-position: -200% 0; } }
+
+.bkmod-hint { margin: 10px 0 0; font-size: 12.5px; color: #64706a; line-height: 1.5; }
+.bkmod-warn { margin: 10px 0 0; font-size: 12.5px; font-weight: 700; color: #b45309; }
+
+/* ---------- Summary rail ---------- */
+
+.bkmod-summary { position: sticky; top: 20px; display: flex; flex-direction: column; gap: 12px; }
+
+.bkmod-summary-card { padding: 20px; }
+.bkmod-summary-card h3 { margin: 0 0 14px; font-size: 16px; font-weight: 800; color: #10180f; }
+
+.bkmod-summary-empty {
+  padding: 22px 12px;
+  text-align: center;
+  background: #fafcfa;
+  border: 1px dashed #d8e2db;
+  border-radius: 14px;
+}
+
+.bkmod-summary-empty-icon {
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 8px;
+  border-radius: 999px;
+  background: #e7f5ea;
+  color: #168a35;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bkmod-summary-empty p { margin: 0; font-size: 13px; color: #64706a; line-height: 1.5; }
+
+.bkmod-changelist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-bottom: 1px solid #eef2ef;
+  padding-bottom: 12px;
+}
+
+.bkmod-changelist li {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 7px 0;
+  font-size: 13.5px;
+}
+
+.bkmod-changelist li span { color: #64706a; font-weight: 600; flex: none; }
+.bkmod-changelist li em { font-style: normal; font-weight: 800; color: #10180f; text-align: right; }
+
+.bkmod-price { padding-top: 12px; }
+
+.bkmod-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 14px;
+  color: #3c4a41;
+  padding: 6px 0;
+}
+
+.bkmod-price-row-new { border-top: 1px dashed #dfe7e1; margin-top: 6px; padding-top: 10px; }
+.bkmod-price-row-new span { font-weight: 700; color: #10180f; }
+.bkmod-price-row-new strong { font-size: 19px; color: #10180f; }
+
+.bkmod-price-delta {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.bkmod-price-delta strong { font-size: 14.5px; }
+
+.bkmod-price-delta.up { background: #fdf3e7; color: #9a5b00; }
+.bkmod-price-delta.down { background: #e9f6ec; color: #117a2c; }
+.bkmod-price-delta.flat { background: #f2f5f3; color: #3c4a41; }
+
+.bkmod-price-note { margin: 10px 0 0; font-size: 12px; color: #64706a; line-height: 1.5; }
+
+.bkmod-price-loading {
+  padding: 14px 0 4px;
+  font-size: 12.5px;
+  color: #64706a;
+  animation: bkmod-blink 1.1s ease-in-out infinite;
+}
+
+@keyframes bkmod-blink { 50% { opacity: 0.45; } }
+
+/* ---------- Buttons / actions ---------- */
+
+.bkmod-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-size: 14.5px;
+  font-weight: 800;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+  text-decoration: none;
+}
+
+.bkmod-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.bkmod-btn-primary { background: #168a35; color: #fff; }
+.bkmod-btn-primary:hover:not(:disabled) { background: #0f722b; }
+
+.bkmod-btn-ghost { background: #fff; border-color: #d8e0db; color: #24322a; }
+.bkmod-btn-ghost:hover:not(:disabled) { border-color: #168a35; color: #168a35; }
+
+.bkmod-submit { width: 100%; }
+.bkmod-back-link { width: 100%; }
+
+.bkmod-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.bkmod-actions-center { justify-content: center; }
+.bkmod-actions-stack { flex-direction: column; }
+
+.bkmod-form-error { margin: 10px 0 0; font-size: 13px; font-weight: 700; color: #b3261e; line-height: 1.5; }
+
+.bkmod-tiny { font-size: 12px; color: #64706a; line-height: 1.5; margin: 12px 0 0; }
+.bkmod-tiny-center { text-align: center; }
+
+/* ---------- Pending banner ---------- */
+
+.bkmod-banner {
+  max-width: 1120px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: #fff8ec;
+  border: 1px solid #f1dfb8;
+  border-radius: 14px;
+  padding: 12px 16px;
+}
+
+.bkmod-banner-text { display: flex; flex-direction: column; gap: 2px; min-width: 220px; }
+.bkmod-banner-text strong { font-size: 13.5px; color: #7a5313; }
+.bkmod-banner-text span { font-size: 12.5px; color: #96702a; line-height: 1.45; }
+.bkmod-banner-btn { flex: none; }
+
+/* ---------- Result / payment ---------- */
+
+.bkmod-result { padding: 34px 28px; text-align: center; }
+
+.bkmod-result-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  border-radius: 999px;
+  background: #e9f6ec;
+  color: #168a35;
+  font-size: 26px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bkmod-result-icon-bad { background: #fdeeee; color: #b3261e; }
+.bkmod-result-sub { color: #64706a; font-size: 14px; line-height: 1.6; }
+
+.bkmod-error-card { padding: 28px; text-align: center; }
+.bkmod-error-card p { margin-top: 6px; }
+
+.bkmod-paycard { max-width: 520px; margin: 24px auto 0; padding: 28px; }
+
+.bkmod-payamount {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  background: #f6fbf7;
+  border: 1px solid #dceae2;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin: 8px 0 14px;
+}
+
+.bkmod-payamount span { font-size: 13px; font-weight: 700; color: #5b6a60; }
+.bkmod-payamount strong { font-size: 26px; font-weight: 800; color: #10180f; }
+
+.bkmod-paynote { font-size: 13px; color: #64706a; }
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 960px) {
+  .bkmod-layout { grid-template-columns: 1fr; }
+  /* Keep the editor's natural order (date → travellers → summary) on mobile —
+     the summary card must come AFTER the steps, not before them. */
+  .bkmod-summary { position: static; order: 0; }
+}
+
+@media (max-width: 560px) {
+  .bkmod-page { padding: 18px 12px 56px; }
+  .bkmod-tour { flex-direction: column; }
+  .bkmod-tour-img { width: 100%; height: 150px; }
+  .bkmod-card.bkmod-step, .bkmod-summary-card, .bkmod-result, .bkmod-error-card, .bkmod-paycard { padding: 16px; border-radius: 16px; }
+  .bkmod-traveller-row { gap: 10px; }
+  .bkmod-stepper { gap: 10px; }
+  .bkmod-stepper button { width: 30px; height: 30px; }
+}
+
+/* ---------- Embedded under the dashboard navbar ---------- */
+
+.dash-modify-wrap .bkmod-page {
+  background: transparent;
+  padding: 0 0 8px;
+  min-height: 0;
+}
+
+.dash-modify-wrap .bkmod-head {
+  margin-top: 2px;
+  margin-bottom: 16px;
+}
+
+.dash-modify-wrap .bkmod-banner,
+.dash-modify-wrap .bkmod-tour {
+  margin-top: 0;
+}
+
+.dash-modify-wrap .bkmod-head h1 {
+  font-size: clamp(20px, 2.6vw, 26px);
+}

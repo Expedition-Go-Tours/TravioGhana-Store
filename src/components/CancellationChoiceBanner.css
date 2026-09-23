@@ -2,11 +2,11 @@
    (both the amber decision banner and the muted "already answered" line). */
 
 .cc-banner {
-  margin: 10px 0 4px;
-  padding: 12px 14px;
-  border: 1px solid #fde68a;
-  border-radius: 10px;
-  background: #fffbeb;
+  margin: 0 0 8px;
+  padding: 11px 13px;
+  border: 1px solid var(--bv-warn-bg, #fde68a);
+  border-radius: 12px;
+  background: var(--bv-warn-bg, #fffbeb);
 }
 
 .cc-banner-head {
@@ -15,7 +15,7 @@
   font-size: 13.5px;
   font-weight: 700;
   line-height: 1.35;
-  color: #92400e;
+  color: var(--bv-warn-text, #92400e);
 }
 
 .cc-banner-body {
@@ -23,7 +23,7 @@
   font-family: var(--font-body, inherit);
   font-size: 12.5px;
   line-height: 1.5;
-  color: #78350f;
+  color: var(--bv-text, #78350f);
 }
 
 .cc-banner-actions {
@@ -39,8 +39,8 @@
   align-items: center;
   justify-content: center;
   padding: 8px 14px;
-  border-radius: 8px;
-  background: var(--dash-accent, #065f46);
+  border-radius: 999px;
+  background: var(--bv-accent, #065f46);
   color: #fff;
   font-family: var(--font-body, inherit);
   font-size: 12.5px;
@@ -50,11 +50,11 @@
 }
 
 .cc-banner-cta:hover {
-  filter: brightness(1.15);
+  filter: brightness(1.08);
 }
 
 .cc-banner-cta:focus-visible {
-  outline: 2px solid var(--dash-accent, #065f46);
+  outline: 2px solid var(--bv-focus, rgba(22, 163, 74, 0.35));
   outline-offset: 2px;
 }
 

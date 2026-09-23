@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom'
 import {
   formatChoiceAmount,
-  formatChoiceDeadline,
   hoursLeftLabel,
 } from '../lib/cancellationChoice'
 import type { CancellationChoice } from '../lib/cancellationChoice'
+import { formatDeadlineLabel } from '../lib/bookingUi'
 import './CancellationChoiceBanner.css'
 
 interface CancellationChoiceBannerProps {
@@ -26,6 +26,8 @@ interface CancellationChoiceBannerProps {
  *    /cancellation-choice?token=…, the refund amount, the deadline and a
  *    compact "X hours left" chip;
  *  - already answered → muted "You chose …" status line, no CTA.
+ *
+ * The whole booking card is clickable, so the CTA stops propagation.
  */
 export default function CancellationChoiceBanner({
   token,
@@ -46,7 +48,7 @@ export default function CancellationChoiceBanner({
   if (!token) return null
 
   const amount = formatChoiceAmount(refundAmount ?? total, currency)
-  const deadlineLabel = formatChoiceDeadline(deadline)
+  const deadlineLabel = deadline ? formatDeadlineLabel(deadline) : ''
   const hoursLeft = hoursLeftLabel(deadline)
 
   return (

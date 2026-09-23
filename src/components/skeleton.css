@@ -32,17 +32,16 @@
 .tour-card-skeleton {
   display: flex;
   flex-direction: column;
-  border-radius: 16px;
+  border-radius: 8px;
   overflow: hidden;
   background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   height: 100%;
   min-width: 280px;
 }
 
 .tour-card-skeleton-image {
-  height: 190px;
+  height: 205px;
   background: #e8e8e8;
   position: relative;
   overflow: hidden;
@@ -144,7 +143,7 @@
 
 @media (max-width: 768px) {
   .tour-card-skeleton-image {
-    height: 175px;
+    height: 180px;
   }
 }
 

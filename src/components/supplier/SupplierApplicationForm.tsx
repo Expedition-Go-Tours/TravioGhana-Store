@@ -42,7 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { applyAsSupplier, SUPPLIER_TYPES, supplierTypeLabel, documentRequirementsFor, VEHICLE_DOC_TYPES, GUIDE_DOC_TYPES, documentTypeLabel } from "@/lib/supplier"
+import { applyAsSupplier, getSupplierApplicationStatus, SUPPLIER_TYPES, supplierTypeLabel, documentRequirementsFor, VEHICLE_DOC_TYPES, GUIDE_DOC_TYPES, documentTypeLabel, MAX_SUPPLIER_APPLICATION_FILES } from "@/lib/supplier"
 import { getAuthUserId } from "@/lib/auth"
 import { useAuthUser } from "@/hooks/useAuthUser"
 import GhanaDestinationSelect from "@/components/supplier/GhanaDestinationSelect"
@@ -623,7 +623,12 @@ function MultiSelect({
   )
 }
 
-export function SupplierApplicationForm() {
+interface SupplierApplicationFormProps {
+  /** Called after a successful submit so the parent can refresh status. */
+  onSubmitted?: () => void
+}
+
+export function SupplierApplicationForm({ onSubmitted }: SupplierApplicationFormProps = {}) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const user = useAuthUser()
@@ -972,6 +977,20 @@ export function SupplierApplicationForm() {
       setSuccess("")
 
       try {
+        // Pre-flight the upload size. The backend caps one request at
+        // MAX_SUPPLIER_DOCUMENT_FILES (config/supplierUploadFields.js) and
+        // answers with a generic 400 "Too many files uploaded"; catch it here
+        // so the user gets something actionable instead.
+        const uploadCount =
+          form.verificationDocuments.filter((d) => d.file).length +
+          form.vehicles.reduce((total, v) => total + v.photos.length, 0)
+        if (uploadCount > MAX_SUPPLIER_APPLICATION_FILES) {
+          const excess = uploadCount - MAX_SUPPLIER_APPLICATION_FILES
+          throw new Error(
+            `Your application includes ${uploadCount} files, but a single submission can include at most ${MAX_SUPPLIER_APPLICATION_FILES}. Please remove ${excess} file${excess === 1 ? "" : "s"} and submit again.`
+          )
+        }
+
         const rep = form.representativeInfo
 
         // Build multipart/form-data payload (matches backend route/multer design)
@@ -1077,7 +1096,20 @@ export function SupplierApplicationForm() {
         }
 
         await applyAsSupplier(payload)
+
+        // Verify the application actually persisted server-side before telling
+        // the user it worked. A silent failure (e.g. a transaction rolled back
+        // or the profile wasn't created) would otherwise leave them stuck
+        // polling a "no application found" 404 with no feedback.
+        const confirmation = await getSupplierApplicationStatus()
+        if (!confirmation) {
+          throw new Error(
+            "Your application was received but couldn't be verified. Please try again or contact support — your draft was not lost."
+          )
+        }
+
         clearSupplierApplicationDraft(draftUserId)
+        onSubmitted?.()
         setSuccess(
           "Your supplier application has been submitted successfully! Our team will review it and get back to you within 3-5 business days."
         )
@@ -1087,7 +1119,7 @@ export function SupplierApplicationForm() {
         setLoading(false)
       }
     },
-    [form, validateAllSteps, draftUserId]
+    [form, validateAllSteps, draftUserId, onSubmitted]
   )
 
   const renderType = () => (

@@ -11,9 +11,9 @@ export const WHATSAPP_URL = `https://wa.me/${SUPPORT_PHONE_DIGITS}`
 
 /** Google Maps embed + directions for the Accra office. */
 export const OFFICE_MAP_EMBED =
-  'https://www.google.com/maps?q=Expedition-Go+Tours+Ltd,+Accra,+Ghana&output=embed'
+  'https://www.google.com/maps?q=Travio Ghana+Tours+Ltd,+Accra,+Ghana&output=embed'
 export const OFFICE_DIRECTIONS_URL =
-  'https://www.google.com/maps/dir/?api=1&destination=Expedition-Go+Tours+Ltd,+Accra,+Ghana&travelmode=driving'
+  'https://www.google.com/maps/dir/?api=1&destination=Travio Ghana+Tours+Ltd,+Accra,+Ghana&travelmode=driving'
 
 export interface SupportHoursEntry {
   labelKey: string

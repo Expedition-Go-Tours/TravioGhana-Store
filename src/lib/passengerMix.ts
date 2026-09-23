@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Client-side passenger-mix validation — mirrors Travio Ghana-Backend/utils/
  * passengerMix.js so the booking widget can pre-empt invalid parties (Viator
  * best practice: invalid mixes are unselectable, not error messages).

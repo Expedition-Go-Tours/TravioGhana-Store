@@ -1,54 +1,231 @@
-import { useState, useEffect } from "react";
-import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Settings, CalendarDays, Heart, Star, Bell, MessageCircle,
-  LogOut, ChevronLeft, ChevronRight, Menu, Home, ArrowLeft
+  Settings,
+  CalendarDays,
+  Heart,
+  Star,
+  Bell,
+  MessageCircle,
+  LogOut,
+  Home,
+  ArrowLeft,
+  ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useSidebarStore } from "@/stores/sidebarStore";
-import { getStoredAuthUser, signOutUser } from "@/lib/auth";
+import { signOutUser, setAuthReturnTo } from "@/lib/auth";
+import { useAuthUser } from "@/hooks/useAuthUser";
 import { useChat } from "@/chat/ChatContext";
-import BookingHistory from "@/pages/BookingHistory";
-import Wishlist from "@/pages/Wishlist";
-import SettingsPage from "./SettingsPage";
-import ReviewsPage from "./ReviewsPage";
-import NotificationsPage from "./NotificationsPage";
-import ChatPage from "./ChatPage";
+import logoSrc from "../../assets/TravioG.png";
+import "../../components/booking/bookingTheme.css";
+import "./DashboardLayout.css";
 
-const navItems = [
-  { label: "Booking History", path: "/dashboard/bookings", icon: CalendarDays },
+// Dashboard sub-pages are code-split so visiting one tab (e.g. Wishlist) only
+// downloads that page's chunk instead of every dashboard page up front.
+const SettingsPage = lazy(() => import("./AccountSettingsPage"));
+const BookingHistory = lazy(() => import("../BookingHistory"));
+const Wishlist = lazy(() => import("../Wishlist"));
+const ReviewsPage = lazy(() => import("./ReviewsPage"));
+const NotificationsPage = lazy(() => import("./NotificationsPage"));
+const ChatPage = lazy(() => import("./ChatPage"));
+const BookingModifyPage = lazy(() => import("../BookingModifyPage"));
+
+// Shared leading tabs (identical on desktop and mobile)
+type DashTab = {
+  label: string;
+  path: string;
+  icon: typeof CalendarDays;
+  /** Marks the tab that renders the chat unread badge. */
+  badge?: string;
+};
+
+const baseTabs: DashTab[] = [
+  { label: "Bookings", path: "/dashboard/bookings", icon: CalendarDays },
   { label: "Wishlist", path: "/dashboard/wishlist", icon: Heart },
   { label: "Reviews", path: "/dashboard/reviews", icon: Star },
+];
+
+// Desktop top bar: Bookings · Wishlist · Reviews · Chat · Notifications
+// `badge` marks the item that shows the chat unread count.
+const topBarItems: DashTab[] = [
+  ...baseTabs,
+  { label: "Chat", path: "/dashboard/chat", icon: MessageCircle, badge: "chat" },
+  { label: "Notifications", path: "/dashboard/notifications", icon: Bell },
+];
+
+// Mobile bottom bar (unchanged): Bookings · Wishlist · Reviews · Updates · Chat · Settings
+const allNavItems: DashTab[] = [
+  ...baseTabs,
   { label: "Updates", path: "/dashboard/notifications", icon: Bell },
   { label: "Chat", path: "/dashboard/chat", icon: MessageCircle },
   { label: "Settings", path: "/dashboard/settings", icon: Settings },
 ];
 
-const pageTitles: Record<string, string> = {
-  "/dashboard/settings": "Account Settings",
-  "/dashboard/bookings": "Booking History",
-  "/dashboard/wishlist": "My Wishlist",
-  "/dashboard/reviews": "My Reviews",
-  "/dashboard/notifications": "Updates",
-  "/dashboard/chat": "Chat",
-};
+const ROUTES = [
+  { path: "/dashboard/settings", title: "Account Settings", Page: SettingsPage },
+  { path: "/dashboard/bookings", title: "Booking History", Page: BookingHistory },
+  { path: "/dashboard/wishlist", title: "My Wishlist", Page: Wishlist },
+  { path: "/dashboard/reviews", title: "My Reviews", Page: ReviewsPage },
+  { path: "/dashboard/notifications", title: "Updates", Page: NotificationsPage },
+  { path: "/dashboard/chat", title: "Chat", Page: ChatPage },
+] as const;
 
-function Sidebar() {
-  const { isCollapsed, toggle, isMobileOpen, closeMobile, toggleMobile } = useSidebarStore();
+function isBookingsAreaPath(pathname: string): boolean {
+  return pathname === "/dashboard/bookings";
+}
+
+/* ================================================================
+   PROFILE DROPDOWN
+   ================================================================ */
+function ProfileDropdown({
+  open,
+  onClose,
+  onSignOut,
+  signingOut,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSignOut: () => void;
+  signingOut: boolean;
+}) {
+  const navigate = useNavigate();
+  const user = useAuthUser();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Close on click outside
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open, onClose]);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [open, onClose]);
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          ref={ref}
+          className="dash-profile-dropdown"
+          role="menu"
+          aria-label="User menu"
+          initial={{ opacity: 0, scale: 0.96, y: -4 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.96, y: -4 }}
+          transition={{ duration: 0.15, ease: "easeOut" }}
+        >
+          {/* User info header */}
+          <div className="dash-profile-user">
+            <div className="dash-profile-user-avatar">
+              {user?.photoURL ? (
+                <img
+                  src={user.photoURL}
+                  alt=""
+                  className="dash-profile-user-img"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              ) : (
+                <span className="dash-profile-user-initial">
+                  {(user?.name || "U").charAt(0).toUpperCase()}
+                </span>
+              )}
+            </div>
+            <div className="dash-profile-user-info">
+              <p className="dash-profile-user-name">{user?.name || "User"}</p>
+              <p className="dash-profile-user-email">{user?.email || ""}</p>
+            </div>
+          </div>
+
+          <div className="dash-profile-divider" />
+
+          {/* Back to homepage */}
+          <button
+            role="menuitem"
+            className="dash-profile-item"
+            onClick={() => {
+              onClose();
+              navigate("/");
+            }}
+          >
+            <Home size={16} strokeWidth={1.7} />
+            <span>Back to Homepage</span>
+          </button>
+
+          {/* Account Settings */}
+          <button
+            role="menuitem"
+            className="dash-profile-item"
+            onClick={() => {
+              onClose();
+              navigate("/dashboard/settings");
+            }}
+          >
+            <Settings size={16} strokeWidth={1.7} />
+            <span>Account Settings</span>
+          </button>
+
+          {/* Sign out */}
+          {!showLogoutConfirm ? (
+            <button
+              role="menuitem"
+              className="dash-profile-item dash-profile-signout"
+              onClick={() => setShowLogoutConfirm(true)}
+            >
+              <LogOut size={16} strokeWidth={1.7} />
+              <span>{signingOut ? "Signing out..." : "Sign out"}</span>
+            </button>
+          ) : (
+            <div className="dash-profile-signout-confirm">
+              <p className="dash-profile-signout-text">Sign out of dashboard?</p>
+              <div className="dash-profile-signout-actions">
+                <button
+                  className="dash-profile-signout-cancel"
+                  onClick={() => setShowLogoutConfirm(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="dash-profile-signout-btn"
+                  onClick={onSignOut}
+                  disabled={signingOut}
+                >
+                  {signingOut ? "Signing out..." : "Sign out"}
+                </button>
+              </div>
+            </div>
+          )}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/* ================================================================
+   TOP BAR (replaces Sidebar on desktop)
+   ================================================================ */
+function TopBar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const user = getStoredAuthUser();
+  const user = useAuthUser();
   const { unreadCount } = useChat();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    requestAnimationFrame(() => setMounted(true));
-  }, []);
-
-  const sinceDate = "Jul 2026";
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleSignOut = async () => {
     setSigningOut(true);
@@ -58,267 +235,280 @@ function Sidebar() {
     toast.success("Successfully signed out");
   };
 
+  const isActive = (path: string) =>
+    location.pathname === path || location.pathname.startsWith(path + "/");
+
   return (
     <>
-      {/* Mobile hamburger */}
-      <button
-        onClick={toggleMobile}
-        className={`fixed top-0 left-0 z-[70] p-3 rounded-br-xl bg-[#065f46] text-white shadow-lg hover:bg-[#047857] transition-colors ${isMobileOpen ? "hidden" : "lg:hidden"}`}
-        aria-label="Toggle menu"
-      >
-        <Menu size={20} />
-      </button>
-
-      {/* Sidebar */}
-      <aside
-        className={`fixed left-0 top-0 h-screen bg-[#065f46] z-50 flex flex-col
-          ${mounted ? "transition-transform duration-[500ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)]" : ""}
-          ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
-          ${isCollapsed ? "lg:w-[64px] lg:translate-x-0" : "lg:w-[300px] lg:translate-x-0"}
-          w-[280px]`}
-      >
-        {/* Profile */}
-        <div className={`shrink-0 ${isCollapsed ? "flex flex-col items-center pt-8 pb-4" : "flex flex-col items-center px-6 pt-8 pb-6"}`}>
-          <div className={`${isCollapsed ? "flex flex-col items-center gap-2" : "flex flex-col items-center gap-1.5"}`}>
-            <div className={`rounded-full overflow-hidden bg-white/15 ring-2 ring-white/20 shrink-0 flex items-center justify-center ${isCollapsed ? "w-10 h-10" : "w-[52px] h-[52px]"}`}>
-              {user?.photoURL ? (
-                <img src={user.photoURL} alt="" className="w-full h-full object-cover object-center" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
-              ) : (
-                <span className="text-lg font-bold text-white">
-                  {(user?.name || "U").charAt(0).toUpperCase()}
-                </span>
-              )}
-            </div>
-            {!isCollapsed && (
-              <div className="text-center min-w-0 mt-1">
-                <p className="text-sm font-semibold text-white truncate leading-tight">
-                  {user?.name || "User"}
-                </p>
-                <p className="text-[11px] text-white/50 truncate leading-relaxed">{user?.email || ""}</p>
-                <p className="text-[10px] text-white/30 mt-0.5">Member since {sinceDate}</p>
-              </div>
-            )}
+      {/* Top bar */}
+      <header className="dash-topbar">
+        <div className="dash-topbar-inner">
+          {/* Left: Logo */}
+          <div className="dash-topbar-left">
+            {/* Logo */}
+            <a
+              href="/"
+              className="dash-topbar-logo"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/");
+              }}
+            >
+              <img
+                src={logoSrc}
+                alt="Travio Ghana"
+                className="dash-topbar-logo-img"
+              />
+            </a>
           </div>
-        </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 scrollbar-none">
-          <div className={`space-y-[2px] ${isCollapsed ? "px-2 mt-3" : "px-4 mt-4"}`}>
-            {navItems.map((item) => {
-              const isActive =
-                location.pathname === item.path ||
-                location.pathname.startsWith(item.path + "/");
-
+          {/* Center: Nav tabs (desktop only) */}
+          <nav className="dash-topbar-nav hidden lg:flex" aria-label="Dashboard navigation">
+            {topBarItems.map((item) => {
+              const active = isActive(item.path);
+              const badge = item.badge === "chat" ? unreadCount : 0;
               return (
                 <button
                   key={item.path}
-                  onClick={() => {
-                    navigate(item.path);
-                    closeMobile();
-                  }}
-                  className={`relative flex items-center w-full rounded-lg text-sm font-medium transition-all duration-200 group
-                    ${isActive
-                      ? "bg-white/15 text-white font-semibold"
-                      : "text-white/70 hover:bg-white/10 hover:text-white"
-                    }
-                    ${isCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"}`}
-                  title={isCollapsed ? item.label : undefined}
+                  className={`dash-topbar-tab${active ? " active" : ""}`}
+                  onClick={() => navigate(item.path)}
+                  aria-current={active ? "page" : undefined}
                 >
-                  {isActive && (
-                    <motion.span
-                      layoutId="active-indicator"
-                      transition={{ type: "spring", stiffness: 400, damping: 35 }}
-                      className="absolute left-0 inset-y-2.5 w-[3px] bg-white rounded-r-full"
-                    />
-                  )}
-                  <motion.span
-                    layout
-                    transition={{ type: "spring", stiffness: 400, damping: 35 }}
-                    className="shrink-0"
-                  >
-                    <item.icon size={20} />
-                  </motion.span>
-                  {!isCollapsed && (
-                    <span className="truncate text-[15px]">{item.label}</span>
-                  )}
-                  {item.path === "/dashboard/chat" && unreadCount > 0 && (
-                    <span className={`ml-auto min-w-[18px] h-[18px] px-1 rounded-full bg-[#ef4444] text-white text-[11px] font-bold flex items-center justify-center ${isCollapsed ? "absolute top-1 right-1" : ""}`}>
-                      {unreadCount > 99 ? "99+" : unreadCount}
+                  {badge > 0 ? (
+                    <span className="dash-topbar-icon-wrap">
+                      <item.icon size={16} strokeWidth={active ? 2.2 : 1.7} />
+                      <span className="dash-topbar-badge">
+                        {badge > 99 ? "99+" : badge}
+                      </span>
                     </span>
+                  ) : (
+                    <item.icon size={16} strokeWidth={active ? 2.2 : 1.7} />
                   )}
-                  {isCollapsed && (
-                    <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2.5 py-1.5 bg-white text-[#333] text-xs font-medium rounded-lg shadow-lg border border-[#eaeaea] whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none z-[70]">
-                      {item.label}
-                    </div>
+                  <span>{item.label}</span>
+                  {active && (
+                    <motion.span
+                      layoutId="topbar-active"
+                      className="dash-topbar-underline"
+                      transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                    />
                   )}
                 </button>
               );
             })}
-          </div>
-        </nav>
+          </nav>
 
-        {/* Bottom actions */}
-        <div className={`shrink-0 ${isCollapsed ? "space-y-[2px] px-2" : "space-y-[2px] px-4"}`}>
-          <button
-            onClick={() => { navigate("/"); closeMobile(); }}
-            className={`flex items-center w-full rounded-lg text-sm font-medium transition-all duration-200 text-white/50 hover:text-white hover:bg-white/10
-              ${isCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"}`}
-            title={isCollapsed ? "Back to Homepage" : undefined}
-          >
-            <Home size={20} />
-            {!isCollapsed && <span className="text-[15px]">Back to Homepage</span>}
-          </button>
+          {/* Spacer */}
+          <div className="flex-1" />
 
-          <div className="relative">
-            <button
-              onClick={() => setShowLogoutConfirm(!showLogoutConfirm)}
-              onBlur={() => setTimeout(() => setShowLogoutConfirm(false), 200)}
-              className={`flex items-center w-full rounded-lg text-sm font-medium transition-all duration-200 text-white/50 hover:text-red-300 hover:bg-white/5
-                ${isCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"}`}
-              title={isCollapsed ? "Sign out" : undefined}
-            >
-              <LogOut size={20} />
-              {!isCollapsed && <span className="text-[15px]">{signingOut ? "Signing out..." : "Sign out"}</span>}
-            </button>
-            {showLogoutConfirm && (
-              <div className={`absolute bottom-full mb-2 bg-white rounded-xl shadow-xl shadow-black/10 p-3 min-w-[200px] z-[70] border border-[#eaeaea] ${isCollapsed ? "left-0" : "left-1/2 -translate-x-1/2"}`}>
-                <p className="text-xs font-medium text-[#464255] mb-2.5 text-center whitespace-nowrap">Sign out of dashboard?</p>
-                <div className="flex gap-1.5">
-                  <button
-                    onClick={() => setShowLogoutConfirm(false)}
-                    className="flex-1 px-3 py-1.5 text-xs font-medium text-[#64748b] bg-[#f5f5f5] hover:bg-[#eaeaea] rounded-lg transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSignOut}
-                    className="flex-1 px-3 py-1.5 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
-                  >
-                    Sign out
-                  </button>
+          {/* Right: Utilities */}
+          <div className="dash-topbar-utilities">
+            {/* Profile trigger */}
+            <div ref={dropdownRef} className="relative">
+              <button
+                className="dash-profile-trigger"
+                onClick={() => setDropdownOpen((v) => !v)}
+                aria-expanded={dropdownOpen}
+                aria-haspopup="menu"
+              >
+                <div className="dash-topbar-avatar">
+                  {user?.photoURL ? (
+                    <img
+                      src={user.photoURL}
+                      alt=""
+                      className="dash-topbar-avatar-img"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <span className="dash-topbar-avatar-initial">
+                      {(user?.name || "U").charAt(0).toUpperCase()}
+                    </span>
+                  )}
                 </div>
-              </div>
-            )}
+                <span className="dash-topbar-name hidden sm:block">
+                  {user?.name || "User"}
+                </span>
+                <ChevronDown
+                  size={14}
+                  className={`dash-topbar-chevron${dropdownOpen ? " open" : ""}`}
+                />
+              </button>
+
+              <ProfileDropdown
+                open={dropdownOpen}
+                onClose={() => setDropdownOpen(false)}
+                onSignOut={handleSignOut}
+                signingOut={signingOut}
+              />
+            </div>
           </div>
         </div>
-
-        {/* Collapse button */}
-        <div className={`shrink-0 hidden lg:block ${isCollapsed ? "px-2 pt-4 pb-4" : "px-4 pt-3 pb-4"}`}>
-          <button
-            onClick={toggle}
-            className={`flex items-center w-full rounded-lg text-sm font-medium transition-all duration-200 text-white/40 hover:text-white hover:bg-white/10
-              ${isCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"}`}
-            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {isCollapsed ? <ChevronRight size={17} /> : (
-              <>
-                <ChevronLeft size={17} />
-                <span className="text-[13px]">Collapse</span>
-              </>
-            )}
-          </button>
-        </div>
-      </aside>
-
-      {/* Mobile overlay */}
-      <AnimatePresence>
-        {isMobileOpen && (
-          <motion.div
-            className="fixed inset-0 bg-black/30 z-[45] lg:hidden"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={closeMobile}
-          />
-        )}
-      </AnimatePresence>
+      </header>
     </>
   );
 }
 
-const pageVariants = {
-  initial: { opacity: 0, y: 14 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -14 },
-};
-
-function AnimatedPage({ children }: { children: React.ReactNode }) {
-  return (
-    <motion.div
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      variants={pageVariants}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
+/* ================================================================
+   DASHBOARD LAYOUT
+   ================================================================ */
 export default function DashboardLayout() {
-  const { isCollapsed } = useSidebarStore();
   const location = useLocation();
   const navigate = useNavigate();
-  const title = pageTitles[location.pathname] || "Dashboard";
+  const { unreadCount } = useChat();
+  const user = useAuthUser();
 
-  // Redirect the base /dashboard path (or any unknown dashboard subpath) to a
-  // concrete page BEFORE entering the animated <Routes>. Rendering <Navigate>
-  // as a keyed child inside an AnimatePresence with mode="wait" leaves the view
-  // blank, because the redirect outputs null and never signals exit-completion.
-  const isKnownRoute = Object.keys(pageTitles).includes(location.pathname);
-  if (!isKnownRoute) {
-    return <Navigate to="/dashboard/settings" replace />;
+  // Keep every visited dashboard page mounted (hidden, not unmounted) so
+  // navigating away and back never remounts the page / refetches data.
+  const [visited, setVisited] = useState<Set<string>>(
+    () => new Set([location.pathname])
+  );
+  if (!visited.has(location.pathname)) {
+    setVisited((prev) => new Set(prev).add(location.pathname));
   }
 
+  const activeRoute = ROUTES.find((r) => r.path === location.pathname);
+  // Self-service "Edit your trip" for one booking — a booking-scoped page that
+  // keeps the dashboard chrome (top bar + mobile tabs) so the customer can jump
+  // back to Bookings/Wishlist/etc. instead of being stranded on a bare page.
+  const modifyMatch = location.pathname.match(/^\/dashboard\/bookings\/([^/]+)\/modify$/);
+  const modifyBookingId = modifyMatch ? decodeURIComponent(modifyMatch[1]) : null;
+
+  // Account settings requires an authenticated user — signed-out visitors are
+  // sent to login and returned here after signing in.
+  useEffect(() => {
+    if (location.pathname === "/dashboard/settings" && !user) {
+      setAuthReturnTo(location.pathname);
+    }
+  }, [location.pathname, user]);
+
+  if (location.pathname === "/dashboard/settings" && !user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!activeRoute && !modifyBookingId) {
+    return <Navigate to="/dashboard/bookings" replace />;
+  }
+  const bookingsArea = isBookingsAreaPath(location.pathname) || !!modifyBookingId;
+
   return (
-    <div className="min-h-screen bg-[#f8f9fb]">
-      <Sidebar />
+    <div className={`min-h-screen ${bookingsArea ? "bg-white" : "bg-[var(--dash-content-bg)]"}`}>
+      <TopBar />
 
-      <main
-        className={`min-h-screen transition-all duration-300 pt-6 lg:pt-10 ${
-          isCollapsed ? "lg:ml-[64px]" : "lg:ml-[300px]"
-        }`}
-      >
-        <div className="px-4 sm:px-6 lg:px-10 pb-10">
-          <div className="flex items-center justify-center lg:justify-start mb-8 relative">
-            <button
-              type="button"
-              onClick={() => navigate("/")}
-              className="absolute right-0 lg:static lg:mr-3 flex h-9 w-9 items-center justify-center rounded-full border border-[#e5e4e7] bg-white text-[#1a1a1a] shadow-sm transition-colors hover:bg-[#f8f9fb]"
-              aria-label="Back to home"
-              title="Back to home"
-            >
-              <ArrowLeft size={16} strokeWidth={2.2} />
-            </button>
-
-            <AnimatePresence mode="wait">
-              <motion.h1
-                key={location.pathname}
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 8 }}
-                transition={{ duration: 0.25, ease: "easeInOut" }}
-                className="text-[clamp(24px,2.4vw,32px)] font-heading font-bold text-[#1a1a1a] text-center lg:text-left"
+      <main className="min-h-screen dash-main-content">
+        <div className="mx-auto w-full max-w-[1200px] px-6 pb-10">
+          {modifyBookingId ? (
+            /* "Edit your trip" — booking-scoped page inside the dashboard chrome. */
+            <div className="dash-modify-wrap">
+              <Suspense
+                fallback={
+                  <div className="dash-page-skeleton">
+                    <div className="dash-page-skeleton-bar w-1/3" />
+                    <div className="dash-page-skeleton-bar w-2/3" />
+                    <div className="dash-page-skeleton-bar w-1/2" />
+                  </div>
+                }
               >
-                {title}
-              </motion.h1>
-            </AnimatePresence>
-          </div>
+                <BookingModifyPage key={`modify-${modifyBookingId}`} bookingId={modifyBookingId} />
+              </Suspense>
+            </div>
+          ) : activeRoute ? (
+            <>
+              <div className="flex items-center justify-center lg:justify-start mb-4 relative">
+                {location.pathname !== "/dashboard/notifications" && (
+                  <h1 className="text-[clamp(24px,2.4vw,32px)] font-heading font-bold text-[var(--bv-ink)] text-center lg:text-left">
+                    {activeRoute.title}
+                  </h1>
+                )}
 
-          <AnimatePresence mode="wait">
-            <Routes location={location} key={location.pathname}>
-              <Route path="settings" element={<AnimatedPage><SettingsPage /></AnimatedPage>} />
-              <Route path="bookings" element={<AnimatedPage><BookingHistory /></AnimatedPage>} />
-              <Route path="wishlist" element={<AnimatedPage><Wishlist /></AnimatedPage>} />
-            <Route path="reviews" element={<AnimatedPage><ReviewsPage /></AnimatedPage>} />
-            <Route path="notifications" element={<AnimatedPage><NotificationsPage /></AnimatedPage>} />
-            <Route path="chat" element={<AnimatedPage><ChatPage /></AnimatedPage>} />
-          </Routes>
-          </AnimatePresence>
+                {location.pathname === "/dashboard/settings" && (
+                  <button
+                    type="button"
+                    onClick={() => navigate("/")}
+                    className="lg:hidden absolute right-0 flex h-9 w-9 items-center justify-center rounded-full border border-[var(--bv-border)] bg-white text-[var(--bv-text)] shadow-sm transition-colors hover:bg-[var(--bv-surface-2)]"
+                    aria-label="Back to home"
+                  >
+                    <ArrowLeft size={16} strokeWidth={2.2} />
+                  </button>
+                )}
+              </div>
+
+              <div className="dash-pages">
+                {ROUTES.map((r) => {
+                  if (!visited.has(r.path)) return null;
+                  const active = r.path === location.pathname;
+                  return (
+                    <section
+                      key={r.path}
+                      className={`dash-pane${active ? " active" : ""}`}
+                      hidden={!active}
+                    >
+                      <Suspense
+                        fallback={
+                          <div className="dash-page-skeleton">
+                            <div className="dash-page-skeleton-bar w-1/3" />
+                            <div className="dash-page-skeleton-bar w-2/3" />
+                            <div className="dash-page-skeleton-bar w-1/2" />
+                          </div>
+                        }
+                      >
+                        <r.Page />
+                      </Suspense>
+                    </section>
+                  );
+                })}
+              </div>
+            </>
+          ) : null}
         </div>
       </main>
+
+      {/* Mobile bottom tab bar */}
+      <nav className="dash-bottom-bar lg:hidden" aria-label="Dashboard navigation">
+        <div className="dash-bottom-bar-inner">
+          {allNavItems.map((item) => {
+            const isActive =
+              location.pathname === item.path ||
+              location.pathname.startsWith(item.path + "/");
+            const badge =
+              item.path === "/dashboard/chat" ? unreadCount : 0;
+            return (
+              <motion.button
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                className={`dash-bottom-tab${isActive ? " active" : ""}`}
+                aria-current={isActive ? "page" : undefined}
+                whileTap={{ scale: 0.88 }}
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              >
+                <span className="dash-bottom-icon-wrap">
+                  <motion.span
+                    className="dash-bottom-icon"
+                    animate={{ scale: isActive ? 1.08 : 1 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 500,
+                      damping: 25,
+                    }}
+                  >
+                    <item.icon
+                      size={22}
+                      strokeWidth={isActive ? 2.2 : 1.7}
+                    />
+                  </motion.span>
+                  {badge > 0 && (
+                    <span className="dash-bottom-badge">
+                      {badge > 99 ? "99+" : badge}
+                    </span>
+                  )}
+                </span>
+                <span className="dash-bottom-label">{item.label}</span>
+                {isActive && <span className="dash-bottom-active-dot" />}
+              </motion.button>
+            );
+          })}
+        </div>
+      </nav>
     </div>
   );
 }

@@ -14,11 +14,11 @@ import {
   cameraFromGeoData,
   createMapLibreMap,
   pinMatchesSelection,
-  pinSvg,
   pulsingPinElement,
   ringsToFeatureCollection,
   routeOriginMarkerElement,
   routeToFeatureCollection,
+  selectedPinElement,
   selectedPinSvg,
   toNumber,
   warmMapResources,
@@ -143,6 +143,9 @@ export default function PickupZoneMap({
   const lastFocusKeyRef = useRef('')
   const mapReadyRef = useRef(false)
   const paintedRef = useRef(false)
+  /** True once the camera has been fitted to real coordinates, so the fit
+      fires only once (initial build or first late-arriving point). */
+  const hasFittedRef = useRef(false)
   const mapFailTimerRef = useRef<number | null>(null)
   const loadWatchdogRef = useRef<number | null>(null)
   const paintedWatchdogRef = useRef<number | null>(null)
@@ -159,6 +162,8 @@ export default function PickupZoneMap({
   const onUserAddressChangeRef = useRef(onUserAddressChange)
   const onFatalFailureRef = useRef(onFatalFailure)
   const onPinClickRef = useRef(onPinClick)
+  /** The traveller's chosen location name (drives the user pin's tooltip). */
+  const userMarkerLabelRef = useRef<string | null>(null)
   /** Last name shown in the user pin's tooltip — re-uses it so a freshly
       dragged pin never re-opens the tooltip with the stale address while the
       reverse geocode for the new position is still in flight. */
@@ -178,8 +183,9 @@ export default function PickupZoneMap({
     selectedPinLabelRef.current = selectedPinLabel ?? null
     suppressDraggablePinRef.current = suppressDraggablePin
     focusPointRef.current = focusPoint ?? null
+    userMarkerLabelRef.current = userMarker?.label ?? null
     routeRef.current = route ?? null
-  }, [onUserPointChange, onUserAddressChange, onFatalFailure, onPinClick, selectedPin, selectedPinLabel, suppressDraggablePin, focusPoint, route])
+  }, [onUserPointChange, onUserAddressChange, onFatalFailure, onPinClick, selectedPin, selectedPinLabel, suppressDraggablePin, focusPoint, userMarker, route])
 
   const failMap = (): void => {
     setMapFailed(true)
@@ -349,32 +355,17 @@ export default function PickupZoneMap({
         })
       }
 
-      // Supplier pins — the overlay that was missing and left location-only
-      // tours as "bare land". Pulsating glow marks pickup/meeting points.
-      tourPinElsRef.current = []
-      for (const p of tourPoints) {
-        const marker = new maplibregl.Marker({ element: pulsingPinElement(TOUR_PIN_COLOR), anchor: 'bottom' })
-        marker.setLngLat([p.lng, p.lat])
-        if (p.label) {
-          tourPinElsRef.current.push({ label: p.label, lat: p.lat, lng: p.lng, el: marker.getElement(), marker })
-          // Stop the click from bubbling to the map's click-to-pick handler —
-          // otherwise the reverse-geocoded address overwrites the selected pin
-          // name in the location search bar.
-          marker.getElement().addEventListener('click', (e: MouseEvent) => {
-            e.stopPropagation()
-            onPinClickRef.current?.(p.label || '')
-          })
-          marker.setPopup(new maplibregl.Popup({ offset: 18 }).setText(p.label))
-        }
-        tourPinsRef.current.push(marker.addTo(map))
-      }
-
+      // Supplier pins are owned by the overlay effect below (they can arrive
+      // after 'load' — the geocode pipeline resolves the tour async), so only
+      // the initial camera fit happens here.
       const camera = cameraFromGeoData({ zones, rings: exclusions, points: tourPoints, userPoint })
       if (camera.bounds) {
         map.fitBounds(camera.bounds, { padding: camera.padding, maxZoom: camera.maxZoom, duration: 0 })
       } else if (camera.center != null && camera.zoom != null) {
         map.jumpTo({ center: camera.center, zoom: camera.zoom })
-      }      mapReadyRef.current = true
+      }
+      hasFittedRef.current = tourPoints.length > 0
+      mapReadyRef.current = true
       setMapReady(true)
 
       // Tiles-painted watchdog: 'load' can fire with only the style's
@@ -462,6 +453,7 @@ export default function PickupZoneMap({
       mapRef.current = null
       mapReadyRef.current = false
       paintedRef.current = false
+      hasFittedRef.current = false
       setMapReady(false)
     }
     // Overlays are live-updated by the effect below; the map itself is built
@@ -469,11 +461,7 @@ export default function PickupZoneMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapFailed, mapDisabled, hasMapData])
 
-  // Live-update overlays as the traveller picks/drags a location. The user
-  // marker's LABEL is a dependency too: after a drag, the reverse geocode
-  // resolves asynchronously and only the label changes (same coordinates) —
-  // without it the effect wouldn't re-run and the pin tooltip would keep
-  // showing the pre-drag address while the booking form shows the new one.
+  // Live-update overlays as the traveller picks/drags a location.
   useEffect(() => {
     const map = mapRef.current
     if (!map || !mapReady || !hasMapData) return
@@ -490,36 +478,56 @@ export default function PickupZoneMap({
     if (zones.length > 0) setSource('pz-zones', zones)
     if (exclusions.length > 0) setSource('pz-excl', exclusions)
 
-    // Restyle the tour pins in place for the selected pickup point: the
-    // matching pin swaps to the bright green check-mark artwork (with its
-    // glow tinted to match); every other pin stays the plain green. The
-    // marker elements keep their position — only the inner SVG is replaced.
-    const selected = selectedPinRef.current
-    for (const { label, lat, lng, el, marker } of tourPinElsRef.current) {
-      const isSelected = pinMatchesSelection({ lat, lng, label }, selected)
-        || (!!selectedPinLabelRef.current && label === selectedPinLabelRef.current)
-      el.querySelector<HTMLElement>('.pin-glow')?.style.setProperty(
-        '--pin-color',
-        isSelected ? SELECTED_PIN_COLOR : TOUR_PIN_COLOR,
-      )
-      const body = el.querySelector<HTMLElement>('.map-pin-body')
-      if (body) body.innerHTML = isSelected ? selectedPinSvg() : pinSvg(TOUR_PIN_COLOR)
-      // The green-tick pin labels itself: open the tooltip on the selected
-      // location (so the zoomed-to spot shows its name) and keep every other
-      // pin's tooltip closed.
-      const popup = marker.getPopup()
-      if (popup) {
-        if (isSelected) {
-          if (!popup.isOpen()) {
-            // The popup is positioned from the MARKER (setLngLat ran before
-            // setPopup), so copy the marker's coordinates onto the popup
-            // before opening it — otherwise it renders at a null position.
-            popup.setLngLat(marker.getLngLat())
-            popup.addTo(map)
-          }
-        } else {
-          popup.remove()
+    // Supplier pins — re-created on every data change so late-resolved points
+    // (the geocode pipeline resolves the tour async) are always drawn. The
+    // matching pin renders in the bright green check-mark artwork (with its
+    // glow tinted to match); every other pin stays the plain green.
+    tourPinsRef.current.forEach((m) => m.remove())
+    tourPinsRef.current = []
+    tourPinElsRef.current = []
+    for (const p of tourPoints) {
+      const isSelected = pinMatchesSelection({ lat: p.lat, lng: p.lng, label: p.label }, selectedPinRef.current)
+        || (!!selectedPinLabelRef.current && p.label === selectedPinLabelRef.current)
+      const marker = new maplibregl.Marker({
+        element: isSelected ? selectedPinElement() : pulsingPinElement(TOUR_PIN_COLOR),
+        anchor: 'bottom',
+      })
+      marker.setLngLat([p.lng, p.lat])
+      if (p.label) {
+        tourPinElsRef.current.push({ label: p.label, lat: p.lat, lng: p.lng, el: marker.getElement(), marker })
+        // Stop the click from bubbling to the map's click-to-pick handler —
+        // otherwise the reverse-geocoded address overwrites the selected pin
+        // name in the location search bar.
+        marker.getElement().addEventListener('click', (e: MouseEvent) => {
+          e.stopPropagation()
+          onPinClickRef.current?.(p.label || '')
+        })
+        marker.setPopup(new maplibregl.Popup({ offset: 18 }).setText(p.label))
+      }
+      tourPinsRef.current.push(marker.addTo(map))
+      // The green-tick pin labels itself — open the tooltip on the selected
+      // location so the zoomed-to spot shows its name. The popup is positioned
+      // from the MARKER (setLngLat ran before setPopup), so copy the marker's
+      // coordinates onto the popup before opening it — otherwise it renders at
+      // a null position.
+      if (isSelected && p.label) {
+        const popup = marker.getPopup()
+        if (popup && !popup.isOpen()) {
+          popup.setLngLat(marker.getLngLat())
+          popup.addTo(map)
         }
+      }
+    }
+
+    // Fit the camera once real coordinates arrive (the build-time fit may have
+    // run before the points resolved); never refit on later interactions.
+    if (tourPoints.length > 0 && !hasFittedRef.current) {
+      hasFittedRef.current = true
+      const camera = cameraFromGeoData({ zones, rings: exclusions, points: tourPoints, userPoint })
+      if (camera.bounds) {
+        map.fitBounds(camera.bounds, { padding: camera.padding, maxZoom: camera.maxZoom, duration: 0 })
+      } else if (camera.center != null && camera.zoom != null) {
+        map.jumpTo({ center: camera.center, zoom: camera.zoom })
       }
     }
 
@@ -553,7 +561,7 @@ export default function PickupZoneMap({
     // otherwise the last shown text is re-used so a pin dropped at a new spot
     // never flashes the stale address while its reverse geocode is in flight.
     const applyUserPinTooltip = (marker: maplibregl.Marker, force = false): void => {
-      const label = userMarker?.label?.trim() || ''
+      const label = userMarkerLabelRef.current?.trim() || ''
       if (!label) return
       if (!force && label === lastUserPopupTextRef.current) return
       lastUserPopupTextRef.current = label
@@ -637,7 +645,7 @@ export default function PickupZoneMap({
         // Source/layer absent — nothing to clear.
       }
     }
-  }, [zones, exclusions, userPoint, mapReady, hasMapData, extraPoints, userOutOfRange, selectedPin, selectedPinLabel, suppressDraggablePin, route, userMarker?.label])
+  }, [zones, exclusions, userPoint, mapReady, hasMapData, extraPoints, tourPoints, userOutOfRange, selectedPin, selectedPinLabel, suppressDraggablePin, route])
 
   // Out-of-range location: move the camera to the point immediately so the
   // red × pin is front and centre — no need to hit Re-center first.

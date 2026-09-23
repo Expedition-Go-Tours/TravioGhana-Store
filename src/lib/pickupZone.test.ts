@@ -319,8 +319,14 @@ describe('isPickupLocationSatisfied', () => {
     expect(satisfied({ status: 'in_area' })).toBe(true)
   })
 
-  it('blocks a typed address outside the area when location-only areas exist', () => {
-    expect(satisfied({ typed: 'Ejisu', status: 'outside', hasLocationOnlyAreas: true })).toBe(false)
+  it('allows a resolved address outside the zone (caution, not a block)', () => {
+    expect(satisfied({ typed: 'Ejisu', status: 'outside', zonesDrawn: true })).toBe(true)
+    expect(satisfied({ typed: 'Ejisu', status: 'outside', hasLocationOnlyAreas: true })).toBe(true)
+  })
+
+  it('still blocks an address inside an exclusion (no-pickup) zone', () => {
+    expect(satisfied({ typed: 'Osu', status: 'excluded', zonesDrawn: true })).toBe(false)
+    expect(satisfied({ typed: 'Osu', status: 'excluded', hasLocationOnlyAreas: true })).toBe(false)
   })
 
   it('accepts a typed address in a location-only area by proximity or exact name', () => {
@@ -328,12 +334,12 @@ describe('isPickupLocationSatisfied', () => {
   })
 
   it('keeps the legacy 3-character rule when the tour has no geographic data', () => {
-    expect(satisfied({ typed: 'xyz', status: 'outside' })).toBe(true)
-    expect(satisfied({ typed: 'xy', status: 'outside' })).toBe(false)
+    expect(satisfied({ typed: 'xyz', status: 'no_zones' })).toBe(true)
+    expect(satisfied({ typed: 'xy', status: 'no_zones' })).toBe(false)
   })
 
-  it('never accepts short typed text when geofenced', () => {
-    expect(satisfied({ typed: 'xy', status: 'outside', zonesDrawn: true })).toBe(false)
-    expect(satisfied({ typed: 'xy', status: 'outside', hasLocationOnlyAreas: true })).toBe(false)
+  it('never accepts short typed text with no resolved coordinates when geofenced', () => {
+    expect(satisfied({ typed: 'xy', status: 'no_coords', zonesDrawn: true })).toBe(false)
+    expect(satisfied({ typed: 'xy', status: 'no_coords', hasLocationOnlyAreas: true })).toBe(false)
   })
 })

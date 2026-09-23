@@ -71,6 +71,34 @@ describe('LocationPicker', () => {
     expect(onChange).toHaveBeenCalledWith('Accra, Ghana')
   })
 
+  it('selects a suggestion on the first click — mousedown must not blur the input (no mid-click dropdown shift)', () => {
+    const { onChange } = renderPicker()
+    const input = screen.getByPlaceholderText('e.g. Accra, Ghana')
+
+    fireEvent.change(input, { target: { value: 'Acc' } })
+
+    const option = screen.getByText('Accra, Ghana')
+    const capturedEvents: MouseEvent[] = []
+    const capture = (e: MouseEvent) => {
+      capturedEvents.push(e)
+    }
+    window.addEventListener('mousedown', capture)
+    fireEvent.mouseDown(option)
+    window.removeEventListener('mousedown', capture)
+
+    // The browser would normally move focus off the input on this mousedown
+    // (firing blur → onBlur → error row insertion that shifts the dropdown and
+    // swallows the following click). The option prevents that default so a
+    // single click commits the selection.
+    expect(capturedEvents.at(-1)?.defaultPrevented).toBe(true)
+
+    expect(onChange).toHaveBeenCalledTimes(1) // only the typed keystroke so far
+    fireEvent.click(option)
+    // Exactly one more call — the suggestion commit (not a lost first click).
+    expect(onChange).toHaveBeenCalledTimes(2)
+    expect(onChange).toHaveBeenLastCalledWith('Accra, Ghana')
+  })
+
   it('forwards every keystroke to onChange', () => {
     const { onChange } = renderPicker()
     const input = screen.getByPlaceholderText('e.g. Accra, Ghana')

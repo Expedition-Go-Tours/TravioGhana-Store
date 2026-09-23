@@ -42,6 +42,14 @@ export default function TourQuickFacts({ items }: TourQuickFactsProps) {
   const perView = 2
   const pages = Math.max(1, Math.ceil(items.length / perView))
 
+  // New fact set -> reset the indicator to the first tile (render-phase
+  // adjustment — the linter-approved way to sync state to a derived change).
+  const [prevItemCount, setPrevItemCount] = useState(items.length)
+  if (items.length !== prevItemCount) {
+    setPrevItemCount(items.length)
+    setActiveDot(0)
+  }
+
   const handleFactsScroll = useCallback(() => {
     const el = trackRef.current
     if (!el) return
@@ -87,9 +95,9 @@ export default function TourQuickFacts({ items }: TourQuickFactsProps) {
     }
   }, [handleFactsScroll])
 
-  // New fact set -> reset the indicator to the first tile.
+  // New fact set -> reset the indicator to the first tile. (The activeDot
+  // reset happens during render above; this just re-measures the scroll.)
   useEffect(() => {
-    setActiveDot(0)
     const timer = window.setTimeout(() => handleFactsScroll(), 0)
     return () => window.clearTimeout(timer)
   }, [items.length, handleFactsScroll])

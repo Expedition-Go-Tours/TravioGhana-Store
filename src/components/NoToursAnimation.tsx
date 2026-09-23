@@ -31,12 +31,12 @@ function StaticFallback() {
   )
 }
 
-export default function NoToursAnimation({ maxWidth = 260 }: { maxWidth?: number }) {
+export default function NoToursAnimation() {
   const reduce = useReducedMotion()
 
   if (reduce) {
     return (
-      <div className="no-tours-anim" style={{ maxWidth }}>
+      <div className="no-tours-anim">
         <StaticFallback />
       </div>
     )
@@ -48,7 +48,6 @@ export default function NoToursAnimation({ maxWidth = 260 }: { maxWidth?: number
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-      style={{ maxWidth }}
     >
       <Suspense fallback={<div style={{ width: '100%', aspectRatio: '4/3' }} />}>
         <DotLottieReact

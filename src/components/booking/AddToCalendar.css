@@ -1,0 +1,31 @@
+.add-to-calendar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 20px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #179237;
+  background: #ffffff;
+  border: 1px solid #d8e6dd;
+  border-radius: 23px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+  white-space: nowrap;
+}
+
+.add-to-calendar-btn:hover {
+  background: #f2faf4;
+  border-color: #179237;
+  color: #0f7d2e;
+}
+
+@media (max-width: 640px) {
+  .add-to-calendar-btn {
+    font-size: 14px;
+    padding: 0 16px;
+  }
+}

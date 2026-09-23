@@ -1,6 +1,7 @@
-﻿import type { TourDetailData } from '../hooks/useExpeditionTours'
+import type { TourDetailData } from '../hooks/useExpeditionTours'
 import type { PickupAreaShape } from './pickupZone'
 import type { TourScheduleInfo } from './tourAvailability'
+import type { TourOption } from './tourTypes'
 
 /**
  * The booking page's tour object — the supplier's meeting/pickup/drop-off
@@ -59,8 +60,6 @@ export interface BookingTour {
   timeSlots?: TourScheduleInfo['timeSlots']
   daysOfWeek?: TourScheduleInfo['daysOfWeek']
   weeklySchedule?: TourScheduleInfo['weeklySchedule']
-  startDate?: TourScheduleInfo['startDate']
-  endDate?: TourScheduleInfo['endDate']
   operatingHoursStart?: string
   operatingHoursEnd?: string
   pricingModel?: 'perPerson' | 'perGroup'
@@ -69,6 +68,10 @@ export interface BookingTour {
   ticketValidity?: string
   promoCode?: string | null
   appliedPromo?: { name: string; discountAmount: number } | null
+  /** Sellable options (private included — the booking page filters them). */
+  options?: TourOption[]
+  /** The supplier's default option; falls back to the first sellable one. */
+  defaultOptionId?: string | null
 }
 
 /** Neutral placeholder used while no tour context is available yet. */
@@ -79,7 +82,7 @@ export const DEFAULT_BOOKING_TOUR: BookingTour = {
   location: '',
   pickupIncluded: false,
   image: '',
-  provider: 'Travio Ghana Tours',
+  provider: 'Expedition-Go Tours Ltd',
   rating: 0,
   reviews: 0,
   date: '',
@@ -171,7 +174,7 @@ export function buildBookingTour(tour: TourDetailData, opts: BuildBookingTourOpt
     location: tour.location,
     pickupIncluded: !!tour.pickupIncluded,
     image: tour.images?.[0] || '',
-    provider: 'Travio Ghana Tours',
+    provider: 'Expedition-Go Tours Ltd',
     rating: tour.rating,
     reviews: tour.reviewCount,
     date: dateLabel,
@@ -213,8 +216,6 @@ export function buildBookingTour(tour: TourDetailData, opts: BuildBookingTourOpt
     timeSlots: tour.timeSlots,
     daysOfWeek: tour.daysOfWeek,
     weeklySchedule: tour.weeklySchedule,
-    startDate: tour.startDate,
-    endDate: tour.endDate,
     operatingHoursStart: tour.operatingHoursStart,
     operatingHoursEnd: tour.operatingHoursEnd,
     pricingModel: tour.pricingModel,
@@ -222,5 +223,7 @@ export function buildBookingTour(tour: TourDetailData, opts: BuildBookingTourOpt
     groupSizePricing: tour.groupSizePricing,
     promoCode: opts.promoCode ?? null,
     appliedPromo: opts.appliedPromo ?? null,
+    options: tour.options,
+    defaultOptionId: tour.defaultOptionId ?? null,
   }
 }

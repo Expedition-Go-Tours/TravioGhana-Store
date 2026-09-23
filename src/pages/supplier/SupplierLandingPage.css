@@ -3,80 +3,10 @@
 .supplier-landing-page {
   min-height: 100vh;
   background: #fff;
-  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-family: var(--font-body, 'DM Sans', sans-serif);
 }
 
-/* ---------- Hero ---------- */
-.supplier-landing-hero {
-  position: relative;
-  overflow: hidden;
-  padding: 116px 20px 48px;
-  background:
-    radial-gradient(circle at 15% 20%, rgba(23, 146, 55, 0.14), transparent 55%),
-    radial-gradient(circle at 85% 0%, rgba(23, 146, 55, 0.08), transparent 45%),
-    #0f2418;
-  color: #fff;
-  text-align: center;
-}
-
-.supplier-landing-hero-inner {
-  position: relative;
-  z-index: 1;
-  max-width: 1120px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 40px;
-}
-
-.supplier-landing-hero-copy {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.supplier-landing-hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: #d1fae5;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
-  margin-bottom: 20px;
-}
-
-.supplier-landing-hero-title {
-  font-family: var(--font-heading, 'GT Esti Pro Display', sans-serif);
-  font-weight: 700;
-  font-size: clamp(26px, 6vw, 44px);
-  line-height: 1.2;
-  margin: 0 0 16px;
-  color: #fff;
-}
-
-.supplier-landing-hero-subtitle {
-  font-size: 15px;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.8);
-  margin: 0 0 28px;
-  max-width: 560px;
-}
-
-.supplier-landing-hero-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  max-width: 320px;
-  margin-bottom: 28px;
-}
-
+/* ---------- CTA primary / secondary (shared by multiple sections) ---------- */
 .supplier-landing-cta-primary {
   display: inline-flex;
   align-items: center;
@@ -123,84 +53,6 @@
   border-color: rgba(255, 255, 255, 0.5);
 }
 
-.supplier-landing-hero-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-}
-
-.supplier-landing-hero-stat {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.supplier-landing-hero-stat svg {
-  color: #4ade80;
-  flex-shrink: 0;
-}
-
-/* ---------- Hero image carousel ---------- */
-.supplier-landing-carousel {
-  position: relative;
-  width: 100%;
-  max-width: 560px;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px -8px rgba(15, 36, 24, 0.45);
-  touch-action: pan-y;
-}
-
-.supplier-landing-carousel-track {
-  display: flex;
-  transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  will-change: transform;
-}
-
-.supplier-landing-carousel-slide {
-  flex: 0 0 100%;
-  min-width: 100%;
-}
-
-.supplier-landing-carousel-slide img {
-  display: block;
-  width: 100%;
-  height: 240px;
-  object-fit: cover;
-}
-
-.supplier-landing-carousel-dots {
-  position: absolute;
-  bottom: 12px;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  z-index: 2;
-}
-
-.supplier-landing-carousel-dot {
-  width: 8px;
-  height: 8px;
-  padding: 0;
-  border: none;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.55);
-  cursor: pointer;
-  transition: width 0.25s ease, background 0.25s ease;
-}
-
-.supplier-landing-carousel-dot.active {
-  width: 22px;
-  background: #fff;
-}
-
 /* ---------- Generic section shell ---------- */
 .supplier-landing-section {
   padding: 48px 0;
@@ -219,191 +71,283 @@
 
 .supplier-landing-section-head {
   text-align: center;
-  max-width: 620px;
-  margin: 0 auto 32px;
+  max-width: 700px;
+  margin: 0 auto 36px;
 }
 
 .supplier-landing-eyebrow {
   display: inline-block;
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
   color: #179237;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .supplier-landing-section-title {
-  font-family: var(--font-heading, 'GT Esti Pro Display', sans-serif);
+  font-family: var(--font-heading, 'Manrope', sans-serif);
   font-weight: 700;
-  font-size: clamp(22px, 4vw, 30px);
-  line-height: 1.3;
+  font-size: clamp(24px, 4vw, 32px);
+  line-height: 1.25;
   color: #0f172a;
   margin: 0;
 }
 
 .supplier-landing-section-desc {
-  margin: 10px 0 0;
-  font-size: 14px;
+  margin: 12px 0 0;
+  font-size: 15px;
   line-height: 1.6;
   color: #64748b;
 }
 
 /* ---------- How it works ---------- */
 .supplier-landing-steps {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 16px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  padding: 4px 4px 12px;
-  scrollbar-width: none;
-}
-
-.supplier-landing-steps::-webkit-scrollbar {
-  display: none;
+  padding: 4px 0;
 }
 
 .supplier-landing-step-card {
   position: relative;
-  flex: 0 0 100%;
-  max-width: none;
-  scroll-snap-align: start;
   background: #fff;
   border: 1px solid #e6e6e6;
   border-radius: 16px;
-  padding: 24px 20px;
+  padding: 28px 24px 24px;
   text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.supplier-landing-step-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 32px rgba(23, 146, 55, 0.12);
+  border-color: rgba(23, 146, 55, 0.3);
 }
 
 .supplier-landing-step-number {
   position: absolute;
-  top: 14px;
-  right: 16px;
-  font-family: var(--font-heading, 'GT Esti Pro Display', sans-serif);
-  font-size: 26px;
+  top: 16px;
+  right: 18px;
+  font-family: var(--font-heading, 'Manrope', sans-serif);
+  font-size: 28px;
   font-weight: 700;
   color: #eef4ef;
 }
 
 .supplier-landing-step-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
   background: #f0fdf4;
   color: #179237;
   display: grid;
   place-items: center;
-  margin: 0 auto 14px;
+  margin: 0 auto 16px;
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.supplier-landing-step-card:hover .supplier-landing-step-icon {
+  transform: scale(1.1) rotate(5deg);
+  background: #dcfce7;
 }
 
 .supplier-landing-step-title {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   color: #0f172a;
-  margin: 0 0 6px;
+  margin: 0 0 8px;
+  line-height: 1.3;
 }
 
 .supplier-landing-step-desc {
-  font-size: 13.5px;
-  line-height: 1.55;
+  font-size: 14px;
+  line-height: 1.6;
   color: #64748b;
   margin: 0;
+  flex: 1;
 }
 
 /* ---------- Why sell with us ---------- */
 .supplier-landing-why-grid {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 16px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  padding: 4px 4px 12px;
-  scrollbar-width: none;
-}
-
-.supplier-landing-why-grid::-webkit-scrollbar {
-  display: none;
+  padding: 4px 0;
 }
 
 .supplier-landing-why-card {
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  flex: 0 0 100%;
-  max-width: none;
-  scroll-snap-align: start;
+  align-items: center;
+  gap: 16px;
   background: #fff;
   border: 1px solid #e6e6e6;
   border-radius: 16px;
   padding: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.supplier-landing-why-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(23, 146, 55, 0.1);
+  border-color: rgba(23, 146, 55, 0.25);
 }
 
 .supplier-landing-why-icon {
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   border-radius: 12px;
   background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
   border: 1px solid rgba(23, 146, 55, 0.15);
   color: #179237;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   box-shadow: 0 1px 2px rgba(23, 146, 55, 0.06);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.supplier-landing-why-card:hover .supplier-landing-why-icon {
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(23, 146, 55, 0.15);
+}
+
+.supplier-landing-why-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .supplier-landing-why-title {
   font-size: 15px;
   font-weight: 700;
   color: #0f172a;
-  margin: 0 0 6px;
+  margin: 0 0 4px;
   letter-spacing: -0.01em;
+  line-height: 1.3;
 }
 
 .supplier-landing-why-desc {
-  font-size: 13.5px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.5;
   color: #64748b;
   margin: 0;
 }
 
+/* ---------- Scroll dots ---------- */
+.supplier-landing-scroll-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.supplier-landing-scroll-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: #d1d5db;
+  cursor: pointer;
+  transition: width 0.25s ease, background 0.25s ease;
+}
+
+.supplier-landing-scroll-dot.active {
+  width: 22px;
+  background: #179237;
+}
+
+@media (min-width: 640px) {
+  .supplier-landing-scroll-dots {
+    display: none;
+  }
+}
+
 /* ---------- FAQ ---------- */
 .supplier-landing-faq-container {
-  max-width: 780px;
+  max-width: 800px;
+}
+
+.supplier-landing-faq-container .supplier-landing-section-head {
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 48px;
 }
 
 .supplier-faq-groups {
+  max-width: 700px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 36px;
+}
+
+/* Mobile layout */
+@media (max-width: 1280px) {
+  .supplier-faq-groups {
+    max-width: 100%;
+  }
+
+  .supplier-faq-group {
+    margin-bottom: 0;
+  }
 }
 
 .supplier-faq-group-heading {
   font-size: 14px;
   font-weight: 700;
   color: #179237;
-  margin: 0 0 12px;
+  margin: 0 0 14px;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.5px;
+  position: relative;
+  padding-left: 16px;
+}
+
+.supplier-faq-group-heading::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 3px;
+  background: linear-gradient(180deg, #179237, #22c55e);
+  border-radius: 2px;
 }
 
 .supplier-faq-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .supplier-faq-item {
   border: 1px solid #e6e6e6;
-  border-radius: 12px;
+  border-radius: 14px;
   background: #fff;
   overflow: hidden;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center bottom;
+}
+
+.supplier-faq-item:hover {
+  border-color: rgba(23, 146, 55, 0.2);
+  box-shadow: 0 4px 12px rgba(23, 146, 55, 0.06);
+}
+
+.supplier-faq-item:active {
+  transform: scale(0.98);
 }
 
 .supplier-faq-item-open {
-  border-color: rgba(23, 146, 55, 0.35);
-  box-shadow: 0 2px 10px rgba(23, 146, 55, 0.08);
+  border-color: rgba(23, 146, 55, 0.4);
+  box-shadow: 0 4px 20px rgba(23, 146, 55, 0.1);
+  background: linear-gradient(180deg, #f0fdf4 0%, #fff 100%);
+  transform: scale(1);
 }
 
 .supplier-faq-question {
@@ -412,16 +356,21 @@
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  padding: 16px 18px;
+  padding: 18px 20px;
   background: none;
   border: none;
-  text-align: left;
+  text-align: justify;
   cursor: pointer;
   font-family: inherit;
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 600;
   color: #0f172a;
   line-height: 1.4;
+  transition: color 0.2s ease;
+}
+
+.supplier-faq-question:hover {
+  color: #14532d;
 }
 
 .supplier-faq-item-open .supplier-faq-question {
@@ -430,13 +379,21 @@
 
 .supplier-faq-chevron {
   flex-shrink: 0;
-  color: #94a3b8;
-  transition: transform 0.25s ease, color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #64748b;
+  transition: background 0.3s ease, color 0.3s ease, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .supplier-faq-item-open .supplier-faq-chevron {
+  background: #dcfce7;
   color: #179237;
-  transform: rotate(180deg);
+  transform: scale(1.1);
 }
 
 .supplier-faq-answer-wrap {
@@ -445,10 +402,19 @@
 
 .supplier-faq-answer {
   margin: 0;
-  padding: 0 18px 16px;
+  padding: 0 20px 18px;
   font-size: 15px;
   line-height: 1.65;
   color: #64748b;
+  text-align: justify;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.supplier-faq-item-open .supplier-faq-answer {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ---------- Bottom CTA band ---------- */
@@ -467,7 +433,7 @@
 }
 
 .supplier-landing-cta-band-inner h2 {
-  font-family: var(--font-heading, 'GT Esti Pro Display', sans-serif);
+  font-family: var(--font-heading, 'Manrope', sans-serif);
   font-size: clamp(20px, 4vw, 26px);
   font-weight: 700;
   color: #fff;
@@ -487,25 +453,9 @@
 
 /* ===== TABLET (640px+) ===== */
 @media (min-width: 640px) {
-  .supplier-landing-hero {
-    padding: 132px 32px 64px;
-  }
-
-  .supplier-landing-hero-actions {
-    flex-direction: row;
-    max-width: none;
-    justify-content: center;
-  }
-
   .supplier-landing-cta-primary,
   .supplier-landing-cta-secondary {
     min-width: 190px;
-  }
-
-  .supplier-landing-hero-stats {
-    flex-direction: row;
-    justify-content: center;
-    gap: 28px;
   }
 
   .supplier-landing-container {
@@ -541,83 +491,280 @@
     flex: none;
     max-width: none;
   }
-
-  .supplier-landing-carousel {
-    border-radius: 24px;
-  }
-
-  .supplier-landing-carousel-slide img {
-    height: 380px;
-  }
 }
 
 /* ===== DESKTOP (1024px+) ===== */
 @media (min-width: 1024px) {
-  .supplier-landing-hero {
-    padding: 148px 32px 80px;
-  }
-
-  .supplier-landing-hero-inner {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
-    gap: 56px;
-    text-align: left;
-  }
-
-  .supplier-landing-hero-copy {
-    align-items: flex-start;
-  }
-
-  .supplier-landing-hero-actions {
-    justify-content: flex-start;
-  }
-
-  .supplier-landing-hero-title {
-    font-size: clamp(38px, 4.4vw, 52px);
-  }
-
-  .supplier-landing-hero-subtitle {
-    font-size: 17px;
-  }
-
-  .supplier-landing-carousel {
-    max-width: 560px;
-    margin-left: auto;
-  }
-
-  .supplier-landing-carousel-slide img {
-    height: 460px;
-  }
-
   .supplier-landing-section {
     padding: 80px 0;
   }
 
+  .supplier-landing-section-head {
+    margin-bottom: 48px;
+  }
+
   .supplier-landing-steps {
     grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
   }
 
   .supplier-landing-step-card {
-    padding: 28px 22px;
+    padding: 32px 24px;
+    text-align: center;
+  }
+
+  .supplier-landing-step-card:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -14px;
+    width: 28px;
+    height: 2px;
+    background: linear-gradient(90deg, #179237, transparent);
+  }
+
+  .supplier-landing-step-icon {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 20px;
+  }
+
+  .supplier-landing-step-title {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .supplier-landing-step-desc {
+    font-size: 14.5px;
   }
 
   .supplier-landing-why-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 24px;
+  }
+
+  .supplier-landing-why-card {
+    padding: 28px;
+  }
+
+  .supplier-landing-why-icon {
+    width: 54px;
+    height: 54px;
+  }
+
+  .supplier-landing-why-title {
+    font-size: 17px;
+  }
+
+  .supplier-landing-why-desc {
+    font-size: 14.5px;
   }
 
   .supplier-faq-question {
-    padding: 18px 22px;
+    padding: 18px 24px;
     font-size: 15.5px;
   }
 
   .supplier-faq-answer {
-    padding: 0 22px 18px;
+    padding: 0 24px 20px;
     font-size: 16px;
   }
 
   .supplier-landing-cta-band {
     padding: 64px 32px;
+  }
+}
+
+/* ---------- Gallery carousel (before the FAQ) ---------- */
+.supplier-landing-gallery-section {
+  background: transparent;
+}
+
+.supplier-landing-gallery-wrapper {
+  position: relative;
+}
+
+.supplier-landing-gallery-track {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 0 16px;
+  scrollbar-width: none;
+  background: transparent;
+}
+
+.supplier-landing-gallery-track::-webkit-scrollbar {
+  display: none;
+}
+
+.supplier-landing-gallery-card {
+  flex: 0 0 auto;
+  width: 80%;
+  max-width: 380px;
+  aspect-ratio: 3 / 4;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  scroll-snap-align: start;
+  box-shadow: 0 12px 32px rgba(15, 36, 24, 0.14);
+  background: #000;
+}
+
+.supplier-landing-gallery-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.supplier-landing-gallery-card:hover img {
+  transform: scale(1.05);
+}
+
+.supplier-landing-gallery-logo {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 40px;
+  height: 40px;
+  z-index: 2;
+}
+
+.supplier-landing-gallery-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+}
+
+/* Gallery navigation arrows */
+.supplier-landing-gallery-arrow {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .supplier-landing-gallery-card {
+    width: 40%;
+    aspect-ratio: 4 / 5;
+    max-width: none;
+  }
+
+  .supplier-landing-gallery-logo {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .supplier-landing-gallery-track {
+    overflow-x: auto;
+  }
+
+  .supplier-landing-gallery-card {
+    width: 24%;
+    aspect-ratio: 3 / 4;
+  }
+
+  .supplier-landing-gallery-logo {
+    width: 52px;
+    height: 52px;
+  }
+
+  .supplier-landing-gallery-arrow {
+    display: flex;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #0f172a;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transition: all 0.25s ease;
+  }
+
+  .supplier-landing-gallery-arrow:hover {
+    background: #fff;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+    transform: translateY(-50%) scale(1.08);
+  }
+
+  .supplier-landing-gallery-arrow:active {
+    transform: translateY(-50%) scale(0.95);
+  }
+
+  .supplier-landing-gallery-arrow--left {
+    left: -24px;
+  }
+
+  .supplier-landing-gallery-arrow--right {
+    right: -24px;
+  }
+}
+
+/* Keep the dots visible on desktop for this carousel */
+.supplier-landing-gallery-dots {
+  display: flex;
+}
+
+/* Mobile only: "How it works" and "Why Travio Ghana" cards become a
+   horizontal swipeable carousel (snap + hidden scrollbar, dots already render) */
+@media (max-width: 639px) {
+  .supplier-landing-steps,
+  .supplier-landing-why-grid {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px 4px 16px;
+    scrollbar-width: none;
+  }
+
+  .supplier-landing-steps::-webkit-scrollbar,
+  .supplier-landing-why-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .supplier-landing-step-card,
+  .supplier-landing-why-card {
+    flex: 0 0 auto;
+    width: 80%;
+    max-width: 340px;
+    scroll-snap-align: start;
+  }
+
+  /* Enhanced FAQ animations for mobile */
+  .supplier-faq-item {
+    transform-origin: center center;
+  }
+
+  .supplier-faq-item:active {
+    transform: scale(0.97);
+    transition: transform 0.1s ease;
+  }
+
+  .supplier-faq-item-open {
+    transform: scale(1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .supplier-faq-chevron {
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease, color 0.3s ease;
+  }
+
+  .supplier-faq-item-open .supplier-faq-chevron {
+    transform: rotate(180deg) scale(1.1);
   }
 }

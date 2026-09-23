@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Supplier onboarding API client.
  *
  * Endpoints (all Bearer-auth protected, provided by Travio Ghana-Backend):
@@ -8,9 +8,9 @@
 import { apiFetch } from './api'
 import { getStoredAuthTokens } from './auth'
 
-/** Travio Ghana-Supplier platform origin (approved suppliers SSO here). */
+/** TravioAfrica-Supplier platform origin (approved suppliers SSO here). */
 export const SUPPLIER_PLATFORM_URL =
-  (import.meta.env.VITE_SUPPLIER_PLATFORM_URL as string | undefined) || 'https://supplier.travioghana.com'
+  (import.meta.env.VITE_SUPPLIER_PLATFORM_URL as string | undefined) || 'https://supplier.travioafrica.com'
 
 export interface SupplierAddress {
   line1: string
@@ -43,6 +43,18 @@ export type SupplierApplicationStatus =
   | 'ACTIVE'
   | 'SUSPENDED'
   | 'EXPIRED'
+
+/**
+ * Total files a single application may upload in one request.
+ *
+ * Mirrors MAX_SUPPLIER_DOCUMENT_FILES in the backend
+ * (config/supplierUploadFields.js) — the sum of that upload's per-field
+ * `maxCount`s (legacy named fields + `documents` + `vehiclePhotos`). The form
+ * pre-flights against this so a supplier with several vehicles gets an
+ * actionable message instead of the backend's generic 400 "Too many files
+ * uploaded".
+ */
+export const MAX_SUPPLIER_APPLICATION_FILES = 1 + 1 + 1 + 1 + 5 + 30 + 30
 
 export const SUPPLIER_TYPES: { value: string; label: string; description: string }[] = [
   { value: 'TOUR_GUIDE', label: 'Tour Guide', description: 'An individual who leads tours, with their own licence and ID.' },
@@ -139,7 +151,7 @@ export function isApprovedSupplier(status?: string): boolean {
 }
 
 /**
- * Build the Travio Ghana-Supplier SSO login URL for an approved supplier.
+ * Build the TravioAfrica-Supplier SSO login URL for an approved supplier.
  * Pass an already-fetched profile to avoid a redundant status request.
  * Returns null when the user isn't signed in, isn't approved, or the status
  * check fails (so callers can fall back to the regular register flow).

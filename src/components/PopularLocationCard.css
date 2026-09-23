@@ -85,8 +85,8 @@
 }
 
 .popular-location-title {
-  font-family: 'GT Esti Pro Display', sans-serif;
-  font-weight: 700;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
   font-size: 20px;
   color: #fff;
   margin: 0;
@@ -95,7 +95,7 @@
 }
 
 .popular-location-tours {
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   color: rgba(255, 255, 255, 0.8);
   font-weight: 500;

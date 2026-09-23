@@ -16,6 +16,9 @@ interface OutOfRangeDistanceProps {
   points: DesignatedPoint[]
   /** Warning line shown above the list. */
   message: string
+  /** `warning` renders an amber caution (choice allowed); `error` (default)
+      renders the red blocking style. */
+  tone?: 'error' | 'warning'
 }
 
 interface EtaEntry {
@@ -37,11 +40,20 @@ function etaKey(from: LatLng, to: { lat: number; lng: number }): string {
  * from the Mapbox Directions API, with an estimated fallback (~35 km/h) when
  * routing is unavailable.
  */
-export default function OutOfRangeDistance({ from, points, message }: OutOfRangeDistanceProps) {
+export default function OutOfRangeDistance({ from, points, message, tone = 'error' }: OutOfRangeDistanceProps) {
+  const warning = tone === 'warning'
   return (
-    <div className="rounded-xl border border-rose-200/70 bg-rose-50/60 px-3.5 py-2.5">
-      <p className="flex items-start gap-2.5 text-sm font-medium leading-relaxed text-rose-700">
-        <AlertTriangle className="mt-0.5 size-4 shrink-0 text-rose-500" />
+    <div
+      className={`rounded-xl border px-3.5 py-2.5 ${
+        warning ? 'border-amber-200/70 bg-amber-50/60' : 'border-rose-200/70 bg-rose-50/60'
+      }`}
+    >
+      <p
+        className={`flex items-start gap-2.5 text-sm font-medium leading-relaxed ${
+          warning ? 'text-amber-800' : 'text-rose-700'
+        }`}
+      >
+        <AlertTriangle className={`mt-0.5 size-4 shrink-0 ${warning ? 'text-amber-500' : 'text-rose-500'}`} />
         {message}
       </p>
       {points.length > 0 && (

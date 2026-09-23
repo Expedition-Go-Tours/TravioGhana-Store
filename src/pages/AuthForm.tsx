@@ -23,6 +23,7 @@ import {
 } from '../lib/auth'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useComingSoon } from '../hooks/useComingSoon'
 
 interface AuthFormProps {
   initialMode?: "signin" | "signup";
@@ -168,6 +169,7 @@ function GoogleButton({ onClick, loading }: { onClick?: () => void; loading?: bo
 
 function SignInForm({ onSwitchToSignUp, onAuthSuccess }: { onSwitchToSignUp: () => void; onAuthSuccess?: () => void }) {
   const { t } = useTranslation()
+  const comingSoon = useComingSoon()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -224,7 +226,14 @@ function SignInForm({ onSwitchToSignUp, onAuthSuccess }: { onSwitchToSignUp: () 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="signin-password" className="text-foreground">{t('auth.password')}</Label>
-            <a href="#" className="text-sm font-medium text-primary hover:underline">Forgot password?</a>
+            <a
+              href="#"
+              className="text-sm font-medium text-primary hover:underline is-coming-soon"
+              onClick={(e) => e.preventDefault()}
+              {...comingSoon}
+            >
+              Forgot password?
+            </a>
           </div>
           <Input id="signin-password" type="password" required className="bg-white" value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>

@@ -25,14 +25,18 @@ export async function fetchWithAuth(path: string, options: RequestInit = {}): Pr
   const token = await getAuthToken()
 
   const isFormData = options.body instanceof FormData
+  // Only declare a JSON content type when there is a body. Bodyless GETs with
+  // Content-Type: application/json are not CORS-simple, so every API call paid
+  // an extra OPTIONS preflight round trip; without it (and without a Bearer
+  // token) reads are simple requests. Multipart bodies stay unset so the
+  // browser can set the boundary itself.
+  const hasBody = options.body != null
 
   const doFetch = (t: string | null) =>
     fetch(`${base}${path}`, {
       ...options,
       headers: {
-        // Skip the JSON content type for multipart bodies — the browser sets
-        // the boundary automatically when Content-Type is left unset.
-        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+        ...(hasBody && !isFormData ? { 'Content-Type': 'application/json' } : {}),
         Accept: 'application/json',
         ...(t ? { Authorization: `Bearer ${t}` } : {}),
         ...(options.headers as Record<string, string>),

@@ -1,0 +1,81 @@
+/* 404 catch-all page. */
+.notfound-page {
+  min-height: 72vh;
+  /* Clears the fixed 64px navbar (see Navbar.css). */
+  padding: 140px 24px 96px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: var(--canvas, #f7f9f7);
+  font-family: var(--font-body);
+  color: var(--ink, #1b1b1b);
+}
+
+.notfound-inner {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.notfound-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--primary, #179237) 12%, transparent);
+  color: var(--primary, #179237);
+}
+
+.notfound-code {
+  margin: 20px 0 0;
+  font-family: var(--font-heading, inherit);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--primary, #179237);
+}
+
+.notfound-title {
+  margin: 8px 0 0;
+  font-family: var(--font-heading, inherit);
+  font-size: clamp(26px, 1.4vw + 20px, 38px);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.notfound-subtitle {
+  margin: 12px 0 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--bv-muted, #5c6660);
+  max-width: 44ch;
+}
+
+.notfound-cta {
+  margin-top: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 13px 28px;
+  border-radius: 999px;
+  background: var(--primary, #179237);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: filter 0.15s ease;
+}
+
+.notfound-cta:hover {
+  filter: brightness(0.94);
+}
+
+.notfound-cta:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary, #179237) 35%, transparent);
+  outline-offset: 2px;
+}

@@ -95,10 +95,109 @@
   }
 }
 
+/* Shimmer placeholder shown in place of the title while the search scope is
+   still resolving, so neither the searched place nor its fallback region is
+   flashed before we know which one applies. Reuses the global search-shimmer. */
+.all-tours-title-skeleton {
+  width: 280px;
+  max-width: 70%;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: search-shimmer 1.4s ease-in-out infinite;
+}
+
+@media (max-width: 1024px) {
+  .all-tours-title-skeleton {
+    height: 28px;
+  }
+}
+
+@media (max-width: 768px) {
+  .all-tours-title-skeleton {
+    height: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .all-tours-title-skeleton {
+    height: 22px;
+  }
+}
+
 .all-tours-count {
   font-size: 15px;
   color: #6b7280;
   margin: 4px 0 0;
+}
+
+/* Inline "Back" button shown under the result count. */
+.all-tours-back-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 7px 14px 7px 11px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #334155;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
+}
+
+.all-tours-back-inline:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.all-tours-back-inline:active {
+  background: #f1f5f9;
+}
+
+.all-tours-back-inline:focus-visible {
+  outline: none;
+  border-color: #179237;
+  box-shadow: 0 0 0 3px rgba(23, 146, 55, 0.25);
+}
+
+/* Region-fallback notice: shown when the searched place has no tours and the
+   listing widens to the place's region. `inline-flex` hugs its content so it
+   is never full-width on large screens; `max-width: 100%` lets it wrap on
+   narrow ones. */
+.all-tours-region-fallback {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 100%;
+  margin: 12px 0 4px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid #d1fae5;
+  background: #f0fdf4;
+  color: #166534;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.all-tours-region-fallback-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #179237;
+}
+
+@media (max-width: 640px) {
+  .all-tours-region-fallback {
+    gap: 7px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
 }
 
 .all-tours-clear {
@@ -293,14 +392,6 @@
     font-size: 12px;
   }
 
-  /* Mobile: badge pills size to their text instead of stretching to fill the
-     grid cell — short labels ("Easy", "Special offer") stay narrow, long ones
-     ("Free cancellation") keep wrapping within the cell. */
-  .all-tours-grid .tour-card-badge {
-    justify-self: start;
-    max-width: 100%;
-  }
-
   /* Mobile: offer / likely-to-sell-out badges live in the card body after
      the facts list — less rounded, tighter padding, sized like the fact
      badges so they wrap in the same row. */
@@ -332,39 +423,29 @@
     white-space: nowrap;
   }
 
-  /* Features/amenities line → 2-column stacked facts grid ("A · B · C"
-     becomes two per row), so the card reads as a tidy list instead of one
-     long truncated line. */
-  .all-tours-grid .tour-card-facts {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 3px 10px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+  /* Compact inline pagination: Previous | Page X of Y | Next on one row */
+  .all-tours-load-more {
+    padding-top: 24px;
   }
 
-  .all-tours-grid .tour-card-facts li {
-    display: flex;
-    align-items: flex-start;
-    gap: 5px;
-    min-width: 0;
-    font-family: 'Raleway', sans-serif;
-    font-size: 11px;
-    font-weight: 500;
-    line-height: 1.35;
-    color: #374151;
-    overflow: hidden;
+  .pagination-controls {
+    flex-wrap: nowrap;
+    gap: 6px;
   }
 
-  .all-tours-grid .tour-card-facts li::before {
-    content: '';
-    flex-shrink: 0;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: #179237;
-    margin-top: 5px;
+  .pagination-controls .all-tours-load-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .pagination-indicator {
+    font-size: 12px;
+    padding: 0 4px;
   }
 }
 
@@ -372,78 +453,51 @@
 
 .all-tours-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 24px;
-  /* Uniform card heights at every column count. Cards vary in content — 1-vs-2
-     line titles and 2-vs-3 badge rows — and .tour-card has no intrinsic height,
-     so each row otherwise sizes to its own card and the grid reads ragged.
-     `1fr` gives every row the tallest card's height; .tour-card's height:100%
-     then resolves against the now-definite row. Badges are NOT clipped. */
-  grid-auto-rows: 1fr;
 }
 
-/* The short description line under the title is not shown on this page —
-   the cards keep title, badges, rating and price only. (Mobile already
-   omits it via factsGridOnMobile.) */
-.all-tours-grid .tour-card-features {
-  display: none;
-}
-
-/* The long nowrap features line must ellipsize instead of stretching the grid
-   tracks (which blew the page up to ~4750px of horizontal scroll). */
-.all-tours-grid > *,
-.all-tours-grid .tour-card,
-.all-tours-grid .tour-card-body {
+.all-tours-grid > * {
   min-width: 0;
-}
-
-/* Cards on this page use the homepage's clean variant (8px radius, 205px
-   image, lighter border/shadow) — the loading skeleton mirrors it so the
-   placeholder fills the same space as the real card. */
-.all-tours-grid .tour-card-skeleton {
-  border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.125);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  min-width: 0;
-}
-
-.all-tours-grid .tour-card-skeleton-image {
-  height: 205px;
-}
-
-.all-tours-grid .tour-card-skeleton-body {
-  padding: 14px;
 }
 
 @media (max-width: 1200px) {
   .all-tours-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 1024px) {
   .all-tours-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
   }
 }
 
 @media (max-width: 768px) {
   .all-tours-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
+    /* Uniform card heights for every multi-row layout (2 columns here, 1 column
+       below 640px). Cards vary in content — 1-vs-2-line titles and 2-vs-3 badge
+       rows — so without this each row sizes to its own card and the grid reads
+       ragged (measured 40px spread at 1 col, 25px at 2 col). `1fr` gives every
+       row the tallest card's height; .tour-card's height:100% fills it. Badges
+       are NOT clipped (verified 0 of 52) — unlike the fixed 180px height this
+       replaced, which cut them off. */
+    grid-auto-rows: 1fr;
   }
 }
 
 @media (max-width: 640px) {
   .all-tours-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 12px;
   }
 
   /* ===== HORIZONTAL CARD LAYOUT (mobile, All Tours page only) =====
      On small screens the card switches to a side-by-side layout: image on
-     the left (~33% width) with title, badges, rating and price on the
+     the left (~35% width) with title, badges, rating and price on the
      right — matching the reference design from the View All pages. Other
      surfaces (homepage carousels, related tours, ...) keep the classic
      vertical card. */
@@ -455,7 +509,7 @@
   }
 
   .all-tours-grid .tour-card-image {
-    width: 33%;
+    width: 35%;
     height: auto;
     flex-shrink: 0;
   }
@@ -463,24 +517,23 @@
   .all-tours-grid .tour-card-body {
     flex: 1;
     min-width: 0;
-    padding: 8px 10px;
-    gap: 4px;
+    padding: 10px 12px;
     justify-content: center;
   }
 
   .all-tours-grid .tour-card-title {
     font-size: 13px;
-    line-height: 1.3;
+    line-height: 1.35;
     -webkit-line-clamp: 2;
   }
 
   .all-tours-grid .tour-card-meta {
-    gap: 3px;
+    gap: 4px;
   }
 
   .all-tours-grid .tour-card-badge {
     font-size: 10px;
-    padding: 2px 5px;
+    padding: 3px 6px;
     gap: 3px;
   }
 
@@ -490,40 +543,27 @@
   }
 
   .all-tours-grid .tour-card-rating-value {
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .all-tours-grid .tour-card-rating-reviews {
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .all-tours-grid .tour-card-price-value,
   .all-tours-grid .tour-card-price-promo {
-    font-size: 16px;
-  }
-
-  .all-tours-grid .tour-card-features {
-    font-size: 11px;
+    font-size: 18px;
   }
 
   .all-tours-grid .tour-card-bottom {
     gap: 6px;
-    padding-top: 2px;
-  }
-
-  /* Duration badge wins the top-left corner on mobile; the Travio Ghana
-     logo circle would sit underneath it, so it's hidden on this page. */
-  .all-tours-grid .source-badge {
-    display: none;
   }
 
   .all-tours-grid .tour-card-duration {
-    top: 6px;
-    left: 6px;
-    bottom: auto;
-    right: auto;
+    bottom: 6px;
+    right: 6px;
     font-size: 10px;
-    padding: 3px 7px;
+    padding: 4px 8px;
   }
 
   .all-tours-grid .tour-card-wishlist {
@@ -544,7 +584,7 @@
   }
 
   .all-tours-grid .tour-card-skeleton-image {
-    width: 33%;
+    width: 35%;
     height: auto;
     flex-shrink: 0;
   }
@@ -552,12 +592,11 @@
   .all-tours-grid .tour-card-skeleton-body {
     flex: 1;
     min-width: 0;
-    padding: 8px 10px;
     justify-content: center;
   }
 }
 
-/* ===== PAGINATION ===== */
+/* ===== LOAD MORE ===== */
 
 .all-tours-load-more {
   display: flex;
@@ -565,83 +604,56 @@
   padding: 40px 0 0;
 }
 
-.all-tours-pagination {
+.pagination-controls {
   display: flex;
-  align-items: center;
+  gap: 6px;
   justify-content: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  row-gap: 10px;
+  align-items: center;
+  flex-wrap: nowrap;
 }
 
-.pagination-btn {
+.pagination-indicator {
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 0 4px;
+}
+
+.pagination-controls .all-tours-load-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border: 1px solid #e2e8f0;
-  border-radius: 50%;
-  background: #fff;
-  color: #334155;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: var(--font-body);
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s, background 0.15s, box-shadow 0.15s, transform 0.15s;
+  gap: 4px;
 }
 
-.pagination-btn:hover:not(:disabled) {
-  border-color: #179237;
+.all-tours-load-btn {
+  background: transparent;
+  border: 2px solid #179237;
   color: #179237;
-  box-shadow: 0 2px 8px rgba(23, 146, 55, 0.12);
-}
-
-.pagination-btn:active:not(:disabled) {
-  transform: scale(0.94);
-}
-
-.pagination-btn.active {
-  background: #179237;
-  border-color: #179237;
-  color: #fff;
-  box-shadow: 0 3px 10px rgba(23, 146, 55, 0.3);
-  cursor: default;
-}
-
-.pagination-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-.pagination-ellipsis {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  color: #94a3b8;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  user-select: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  font-family: var(--font-body);
+}
+
+.all-tours-load-btn:hover {
+  background: #179237;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(23, 146, 55, 0.2);
+}
+
+.all-tours-load-btn:active {
+  transform: scale(0.97);
 }
 
 @media (max-width: 768px) {
-  .all-tours-load-more {
-    padding-top: 28px;
-  }
-
-  .all-tours-pagination {
-    gap: 6px;
-    row-gap: 8px;
-  }
-
-  .pagination-btn,
-  .pagination-ellipsis {
-    width: 36px;
-    height: 36px;
-    font-size: 13px;
+  .all-tours-load-btn {
+    padding: 12px 24px;
   }
 }
 

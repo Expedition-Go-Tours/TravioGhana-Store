@@ -1,13 +1,19 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Check, CalendarDays, Clock, Users, MapPin, CreditCard, ShieldCheck, Phone, Mail, Printer, Star, Ticket, Globe, AlertTriangle } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
+import confetti from 'canvas-confetti'
+import { Check, CalendarDays, Clock, Users, MapPin, CreditCard, ShieldCheck, Phone, Mail, Printer, Star, Ticket, Globe, AlertTriangle, Loader2 } from 'lucide-react'
 import { useExpeditionBookingDetail, useBookingBySession } from '../hooks/useExpeditionBookings'
-import { extractMeetingInfo, extractAvailabilitySchedule, formatDuration } from '../hooks/useExpeditionTours'
+import { extractMeetingInfo, extractAvailabilitySchedule, formatCancellationPolicy, formatDuration } from '../hooks/useExpeditionTours'
 import { buildE164Phone, isValidPhoneInput } from '../lib/phone'
 import { formatTime12h, weeklyHoursRange, openingHoursForDay, formatTimeSlotList } from '../lib/tourAvailability'
 import { useAuthUser } from '../hooks/useAuthUser'
+import { evaluateCancellationPolicy } from '../lib/bookingUi'
+import { currencySymbol } from '../lib/currencySymbol'
 import OptimizedImage from '@/components/shared/OptimizedImage'
+import ConfirmationSections from '../components/booking/ConfirmationSections'
+import AddToCalendar from '../components/booking/AddToCalendar'
 import './BookingConfirmationPage.css'
 
 interface TravelerRecord {
@@ -16,7 +22,7 @@ interface TravelerRecord {
   infants?: number
   phoneNumber?: string
   location?: string
-  details?: { name?: string; age?: number | null; ageGroup?: string; specialRequests?: string }[]
+  details?: { name?: string; ageGroup?: string; specialRequests?: string }[]
   [key: string]: unknown
 }
 
@@ -24,6 +30,7 @@ interface ConfirmationTour {
   id?: string
   slug?: string
   title?: string
+  description?: string | null
   coverPhoto?: string | null
   photos?: string[]
   durationMinutes?: number | null
@@ -32,7 +39,7 @@ interface ConfirmationTour {
   productContent?: unknown
   bookingAndTickets?: unknown
   schedulesAndPricing?: unknown
-  cancellationPolicy?: string | null
+  cancellationPolicy?: unknown
   supplier?: { id?: string; name?: string | null; photoURL?: string | null; phone?: string | null; email?: string | null }
 }
 
@@ -49,7 +56,7 @@ interface ConfirmationBooking {
   taxes?: number | string
   fees?: number | string
   discounts?: number | string
-  total?: number | string
+  grossAmount?: number | string
   currency?: string
   specialRequests?: string | null
   paidAt?: string | null
@@ -57,12 +64,18 @@ interface ConfirmationBooking {
   tour?: ConfirmationTour
   /** Resolved pickup selection snapshotted at booking time (server-validated). */
   pickup?: {
+    status?: 'deferred' | 'selected' | 'confirmed'
     mode?: string
+    pickupLater?: boolean
+    skipValidation?: boolean
     areaName?: string
     locationName?: string
+    place?: string
     address?: { name?: string; address?: string } | null
     time?: string
     instructions?: string
+    lat?: number | null
+    lng?: number | null
   } | null
 }
 
@@ -72,8 +85,6 @@ function formatDate(value?: string): string {
   if (Number.isNaN(d.getTime())) return value
   return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
 }
-
-import { currencySymbol } from '../lib/currencySymbol'
 
 const num = (v?: number | string | null): number => {
   const n = Number(v)
@@ -92,6 +103,7 @@ export default function BookingConfirmationPage() {
   // Pay-later / legacy: poll by booking id (Booking exists immediately).
   const sessionQuery = useBookingBySession(sessionId)
   const bookingQuery = useExpeditionBookingDetail(bookingId)
+  const queryClient = useQueryClient()
 
   // Decide which data source to use.
   const isSessionMode = !!sessionId
@@ -105,23 +117,27 @@ export default function BookingConfirmationPage() {
   const refetch = isSessionMode ? sessionQuery.refetch : bookingQuery.refetch
 
   // ── Session mode: redirect to confirmation once materialized ────────
-  const [navigatedToBooking, setNavigatedToBooking] = useState(false)
+  // Move to the canonical /booking/confirmation/:bookingId URL (replace keeps
+  // history clean). Seed the booking-detail cache with the session payload so
+  // the receipt renders instantly with no loading flash — the query then
+  // refetches in the background and reconciles the full record.
+  const navigatedToBookingRef = useRef(false)
   useEffect(() => {
-    if (isSessionMode && sessionBooking?.id && !navigatedToBooking) {
-      // Update the URL to the canonical booking confirmation path so
-      // deep-links and refreshes work (replaceState avoids history pollution).
-      window.history.replaceState({}, '', `/booking/confirmation/${sessionBooking.id}`)
-      setNavigatedToBooking(true)
+    const materializedId = sessionBooking?.id
+    if (isSessionMode && materializedId && !navigatedToBookingRef.current) {
+      navigatedToBookingRef.current = true
+      queryClient.setQueryData(['expedition', 'bookings', materializedId, 'detail'], sessionBooking)
+      navigate(`/booking/confirmation/${materializedId}`, { replace: true })
     }
-  }, [isSessionMode, sessionBooking?.id, navigatedToBooking])
+  }, [isSessionMode, sessionBooking?.id, queryClient, navigate])
 
   // ── Session mode: stop polling once terminal ────────────────────────
-  const [sessionPollStopped, setSessionPollStopped] = useState(false)
+  const sessionPollStoppedRef = useRef(false)
   useEffect(() => {
-    if (isSessionMode && (sessionStatus === 'EXPIRED' || sessionStatus === 'REFUNDED') && !sessionPollStopped) {
-      setSessionPollStopped(true)
+    if (isSessionMode && (sessionStatus === 'EXPIRED' || sessionStatus === 'REFUNDED') && !sessionPollStoppedRef.current) {
+      sessionPollStoppedRef.current = true
     }
-  }, [isSessionMode, sessionStatus, sessionPollStopped])
+  }, [isSessionMode, sessionStatus])
 
   // ── Legacy mode: poll PENDING pay-now bookings (shouldn't happen with
   //    the new hold-based flow, but kept for backwards compat). ──────────
@@ -152,6 +168,39 @@ export default function BookingConfirmationPage() {
   const meeting = useMemo(() => extractMeetingInfo(booking?.tour ?? {}), [booking])
   const schedule = useMemo(() => extractAvailabilitySchedule(booking?.tour ?? {}), [booking])
 
+  const cancellationDeadline = useMemo(() => {
+    const bt = booking?.tour?.bookingAndTickets
+    const travelDate = booking?.travelDate
+    if (!bt || !travelDate) return null
+    const verdict = evaluateCancellationPolicy(bt, travelDate)
+    return verdict.deadline
+  }, [booking?.tour?.bookingAndTickets, booking?.travelDate])
+
+  // Fire confetti when a confirmed booking loads
+  const confettiFiredRef = useRef(false)
+  useEffect(() => {
+    if (confettiFiredRef.current) return
+    if (!booking) return
+    const b = booking as ConfirmationBooking
+    const isPaid = b.paymentStatus === 'SUCCEEDED'
+    if (!isPaid) return
+    confettiFiredRef.current = true
+
+    const defaults = { startVelocity: 30, spread: 360, ticks: 80, zIndex: 99999 }
+    const end = Date.now() + 3000
+
+    const frame = () => {
+      confetti({
+        ...defaults,
+        particleCount: 3,
+        origin: { x: Math.random(), y: 0 },
+        colors: ['#166534', '#22c55e', '#facc15', '#60a5fa', '#f472b6'],
+      })
+      if (Date.now() < end) requestAnimationFrame(frame)
+    }
+    frame()
+  }, [booking])
+
   if (!user) {
     return (
       <div className="confirmation-page">
@@ -177,9 +226,10 @@ export default function BookingConfirmationPage() {
     )
   }
 
-  // ── Session mode: terminal states (no booking exists yet) ──────────
-  if (isSessionMode && sessionStatus && sessionStatus !== 'PAID') {
-    const isRefunded = sessionStatus === 'REFUNDED'
+  // ── Session mode: terminal failure states (no booking will ever appear) ──
+  const sessionTerminal = isSessionMode && (sessionStatus === 'EXPIRED' || sessionStatus === 'REFUNDED')
+  const isRefunded = sessionStatus === 'REFUNDED'
+  if (sessionTerminal) {
     return (
       <div className="confirmation-page">
         <div className="confirmation-card">
@@ -187,12 +237,10 @@ export default function BookingConfirmationPage() {
             {isRefunded ? <AlertTriangle className="size-10" /> : <span className="text-3xl">⏰</span>}
           </div>
           <h2 className="confirmation-title">
-            {isRefunded ? 'Payment received but spots sold out' : 'Checkout not completed'}
+            {isRefunded ? t('confirmation.refundedTitle') : t('confirmation.expiredTitle')}
           </h2>
           <p className="confirmation-message">
-            {isRefunded
-              ? 'Your payment was processed but the last spots were claimed by another customer while your checkout was in progress. You have been fully refunded.'
-              : 'Your session expired before payment was completed. No spots were held and no money was charged.'}
+            {isRefunded ? t('confirmation.refundedBody') : t('confirmation.expiredBody')}
           </p>
           <div className="confirmation-actions">
             <button className="confirmation-btn-primary" onClick={() => navigate('/')}>
@@ -204,22 +252,22 @@ export default function BookingConfirmationPage() {
     )
   }
 
-  // ── Session mode: polling timed out (webhook hasn't landed) ────────
-  if (isSessionMode && sessionStatus === 'HOLDING' && !sessionQuery.isFetching) {
+  // ── Session mode: payment not yet materialized (HOLDING / PAID w/o booking).
+  //    Rendered regardless of poll in-flight state so the customer never sees a
+  //    misleading "expired / no money charged" message while the webhook lands.
+  const sessionProcessing = isSessionMode && !sessionBooking && sessionStatus !== undefined
+  if (sessionProcessing) {
     return (
       <div className="confirmation-page">
-        <div className="confirmation-card">
-          <div className="confirmation-icon warning">
-            <AlertTriangle className="size-10" />
+        <div className="confirmation-card confirmation-card-processing">
+          <div className="confirmation-icon processing">
+            <Loader2 className="size-10 confirmation-spinner" />
           </div>
-          <h2 className="confirmation-title">Still processing</h2>
-          <p className="confirmation-message">
-            Your payment is being confirmed. This usually takes a few seconds but can take longer during busy periods.
-            We'll email you once your booking is confirmed — you can also check your bookings page.
-          </p>
+          <h2 className="confirmation-title">{t('confirmation.processingTitle')}</h2>
+          <p className="confirmation-message">{t('confirmation.processingBody')}</p>
           <div className="confirmation-actions">
-            <button className="confirmation-btn-primary" onClick={() => navigate('/bookings')}>
-              View My Bookings
+            <button className="confirmation-btn-primary" onClick={() => navigate('/dashboard/bookings')}>
+              {t('confirmation.viewBookings')}
             </button>
             <button className="confirmation-btn-secondary" onClick={() => navigate('/')}>
               {t('confirmation.backToHome')}
@@ -304,14 +352,10 @@ export default function BookingConfirmationPage() {
     ? travelers.phoneNumber
     : (buildE164Phone('+', travelers.phoneNumber || '') ?? travelers.phoneNumber)
 
-  const bt = (tour.bookingAndTickets ?? {}) as { cancellationPolicy?: string | null; meetingPoint?: unknown }
+  const bt = (tour.bookingAndTickets ?? {}) as { cancellationPolicy?: unknown; meetingPoint?: unknown }
   const cancellation = (() => {
-    const raw = bt.cancellationPolicy || tour.cancellationPolicy || ''
-    const lower = String(raw).toLowerCase()
-    if (lower === 'all_sales_final' || lower === 'non-refundable' || lower === 'non_refundable') {
-      return t('confirmation.nonRefundable')
-    }
-    return raw || t('confirmation.cancellationDefault')
+    const rawPolicy = bt.cancellationPolicy ?? tour.cancellationPolicy ?? null
+    return formatCancellationPolicy(rawPolicy) || t('confirmation.cancellationDefault')
   })()
 
   const hasMeeting = meeting.meetingMode === 'meeting_point' && (meeting.meetingPoint || meeting.meetingPointAddress || arrivalLabel)
@@ -319,30 +363,45 @@ export default function BookingConfirmationPage() {
   const pickupLocations = (meeting.pickupLocations || []).filter((l: { name?: string; address?: string }) => l && (l.name || l.address))
   const hasPickup = meeting.meetingMode === 'pickup' && (pickupAreas.length > 0 || pickupLocations.length > 0 || meeting.pickupDescription)
 
+  // Review routing prefers the tour's canonical slug (matches the rest of the
+  // app); fall back to a title-derived slug for legacy records without one.
   const reviewSlug = tour.title
     ? tour.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
     : ''
+  const effectiveReviewSlug = tour.slug || reviewSlug
 
   return (
     <div className="confirmation-page">
       <div className="confirmation-print-area">
-        {/* Header */}
+        {/* Header — typographic confirmation (GYG-style) */}
         <div className="confirmation-card confirmation-card-hero">
           <div className="confirmation-hero">
-            <span className="confirmation-hero-icon">
-              <Check size={28} strokeWidth={2.6} />
-            </span>
-            <h1 className="confirmation-title">{t('confirmation.title')}</h1>
-            <p className="confirmation-subtitle">{t('confirmation.subtitle')}</p>
-            <div className="confirmation-badges">
-              <span className="confirmation-badge confirmation-badge-code">
-                <Ticket size={14} />
-                {b.bookingNumber}
-              </span>
-              <span className={`confirmation-badge ${isPaid ? 'confirmation-badge-paid' : 'confirmation-badge-pending'}`}>
+            <div className="confirmation-hero-kicker">
+              <span className={`confirmation-status-pill${isPaid ? ' is-confirmed' : ' is-reserved'}`}>
+                <Check size={13} strokeWidth={3} />
                 {statusLabel}
               </span>
             </div>
+            <h1 className="confirmation-title">{t('confirmation.title')}</h1>
+            <p className="confirmation-subtitle">{t('confirmation.subtitle')}</p>
+
+            <ul className="confirmation-hero-facts">
+              {user?.email && (
+                <li>
+                  <Mail size={14} />
+                  <span>
+                    {t('confirmation.emailSentTo')} <strong>{user.email}</strong>
+                  </span>
+                </li>
+              )}
+              <li>
+                <Ticket size={14} />
+                <span>
+                  {t('confirmation.bookingReference')}: <span className="confirmation-ref">{b.bookingNumber}</span>
+                </span>
+              </li>
+            </ul>
+
             {awaitingConfirmation && (
               <p className="confirmation-note confirmation-awaiting-note">
                 {t('confirmation.awaitingConfirmation')}
@@ -353,38 +412,59 @@ export default function BookingConfirmationPage() {
                 {t('confirmation.confirmingPayment')}
               </p>
             )}
+
+            <div className="confirmation-hero-actions">
+              <AddToCalendar
+                title={tour.title || ''}
+                date={booking?.travelDate}
+                time={booking?.selectedTime}
+                location={location}
+              />
+            </div>
           </div>
         </div>
 
+        <div className="confirmation-body">
+          <div className="confirmation-main">
         {/* Tour card */}
-        <div className="confirmation-card">
-          <div className="confirmation-section-title">{t('confirmation.tourDetails')}</div>
+        <div className="confirmation-card confirmation-tour-card">
           <div className="confirmation-tour">
             {image && (
               <div className="confirmation-tour-image">
-                <OptimizedImage src={image} alt={tour.title || ''} width={400} />
+                <OptimizedImage src={image} alt={tour.title || ''} width={900} />
               </div>
             )}
             <div className="confirmation-tour-info">
               <h2 className="confirmation-tour-title">{tour.title}</h2>
-              {location && (
-                <p className="confirmation-tour-row">
-                  <MapPin size={14} />
-                  {location}
+              {tour.description ? (
+                <p className="confirmation-tour-desc">
+                  {tour.description.length > 170
+                    ? `${tour.description.slice(0, 170).trimEnd()}…`
+                    : tour.description}
                 </p>
-              )}
-              {tour.durationMinutes != null && (
-                <p className="confirmation-tour-row">
-                  <Clock size={14} />
-                  {formatDuration(Number(tour.durationMinutes))}
-                </p>
-              )}
-              {tour.supplier?.name && (
-                <p className="confirmation-tour-row">
-                  <Globe size={14} />
-                  {t('confirmation.operator')}: {tour.supplier.name}
-                </p>
-              )}
+              ) : null}
+              <div className="confirmation-tour-rows">
+                {location && (
+                  <p className="confirmation-tour-row">
+                    <MapPin size={15} />
+                    <span>{location}</span>
+                  </p>
+                )}
+                {tour.durationMinutes != null && (
+                  <p className="confirmation-tour-row">
+                    <Clock size={15} />
+                    <span>{formatDuration(Number(tour.durationMinutes))}</span>
+                  </p>
+                )}
+                {tour.supplier?.name && (
+                  <p className="confirmation-tour-row">
+                    <Globe size={15} />
+                    <span>
+                      {t('confirmation.operator')}: {tour.supplier.name}
+                    </span>
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -451,7 +531,6 @@ export default function BookingConfirmationPage() {
               {travelers.details.map((d, i) => (
                 <li key={i}>
                   {d.name || `${t('confirmation.traveler')} ${i + 1}`}
-                  {d.age != null ? ` (${d.age})` : ''}
                   {d.ageGroup ? ` — ${d.ageGroup}` : ''}
                 </li>
               ))}
@@ -473,17 +552,53 @@ export default function BookingConfirmationPage() {
                 <div className="confirmation-grid-item confirmation-grid-item-wide">
                   <MapPin size={16} />
                   <div>
-                    <span className="confirmation-grid-label">{b.pickup.areaName ? t('tourDetail.pickupAreas') : t('confirmation.meetingPointLabel')}</span>
-                    <span className="confirmation-grid-value">
-                      {b.pickup.areaName || b.pickup.locationName || b.pickup.address?.name || b.pickup.address?.address || 'Pickup arranged after booking'}
-                    </span>
-                    {b.pickup.time && <span className="confirmation-grid-sub">Pickup {b.pickup.time}</span>}
-                    {b.pickup.instructions && <span className="confirmation-grid-sub">{b.pickup.instructions}</span>}
-                    {!b.pickup.areaName && !b.pickup.locationName && !b.pickup.address?.name && (
-                      <span className="confirmation-grid-sub">
-                        The tour operator will confirm your exact pickup point and time directly.
-                      </span>
-                    )}
+                    {(() => {
+                      const deferred =
+                        b.pickup?.pickupLater ||
+                        (b.pickup as { skipValidation?: boolean })?.skipValidation ||
+                        b.pickup?.status === 'deferred'
+                      const hasPlace = !!(b.pickup?.areaName || b.pickup?.locationName || b.pickup?.address?.name || b.pickup?.address?.address)
+                      if (!hasPlace) {
+                        return (
+                          <>
+                            <span className="confirmation-grid-label">{t('confirmation.meetingPointLabel')}</span>
+                            <span className="confirmation-grid-value">
+                              {t('confirmation.pickupPending')}
+                            </span>
+                            <span className="confirmation-grid-sub">
+                              {t('confirmation.pickupPendingHint')}
+                            </span>
+                            <button
+                              onClick={() => navigate(`/booking/${b.id}/pickup`)}
+                              className="mt-2 inline-flex items-center gap-1 rounded-full bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white transition hover:brightness-110"
+                            >
+                              {t('confirmation.pickupAdd')}
+                            </button>
+                          </>
+                        )
+                      }
+                      return (
+                        <>
+                          <span className="confirmation-grid-label">{b.pickup?.areaName ? t('tourDetail.pickupAreas') : t('confirmation.meetingPointLabel')}</span>
+                          <span className="confirmation-grid-value">
+                            {b.pickup?.areaName || b.pickup?.locationName || b.pickup?.address?.name || b.pickup?.address?.address}
+                          </span>
+                          {b.pickup?.time && <span className="confirmation-grid-sub">{t('confirmation.pickupTime', { time: b.pickup.time })}</span>}
+                          {b.pickup?.instructions && <span className="confirmation-grid-sub">{b.pickup.instructions}</span>}
+                          {deferred && (
+                            <span className="confirmation-grid-sub text-amber-700">
+                              This pickup location is outside the pickup zone — please confirm a location within the zone before your tour date.
+                            </span>
+                          )}
+                          <button
+                            onClick={() => navigate(`/booking/${b.id}/pickup`)}
+                            className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 underline underline-offset-2"
+                          >
+                            {t('confirmation.pickupUpdate')}
+                          </button>
+                        </>
+                      )
+                    })()}
                   </div>
                 </div>
               </div>
@@ -505,7 +620,7 @@ export default function BookingConfirmationPage() {
                 </div>
               </div>
             )}
-            {hasPickup && (
+            {!b.pickup && hasPickup && (
               <div className="confirmation-grid">
                 {pickupAreas.length > 0 && (
                   <div className="confirmation-grid-item confirmation-grid-item-wide">
@@ -534,8 +649,11 @@ export default function BookingConfirmationPage() {
           </div>
         )}
 
+          </div>
+
+          <aside className="confirmation-aside">
         {/* Price breakdown */}
-        <div className="confirmation-card">
+        <div className="confirmation-card confirmation-price-card">
           <div className="confirmation-section-title">{t('confirmation.priceBreakdown')}</div>
           <div className="confirmation-price">
             <div className="confirmation-price-row">
@@ -562,7 +680,7 @@ export default function BookingConfirmationPage() {
             )}
             <div className="confirmation-price-total">
               <span>{t('confirmation.total')}</span>
-              <span>{currencySymbol(b.currency)}{num(b.total).toFixed(2)}</span>
+              <span>{currencySymbol(b.currency)}{num(b.grossAmount).toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -597,36 +715,49 @@ export default function BookingConfirmationPage() {
             )}
           </div>
           <p className="confirmation-note">{t('confirmation.emailSent')}</p>
-        </div>
+          </div>
+          </aside>
+          </div>
       </div>
 
-      {/* Actions (hidden when printing) */}
-      <div className="confirmation-actions confirmation-no-print">
-        <button className="confirmation-btn-primary" onClick={() => window.print()}>
-          <Printer size={16} />
+      <div className="confirmation-sections confirmation-no-print">
+        <ConfirmationSections
+          tourSlug={tour.slug}
+          supplierId={tour.supplier?.id}
+          supplierName={tour.supplier?.name || undefined}
+          excludeTourId={tour.id}
+          cancellationDeadline={cancellationDeadline}
+        />
+      </div>
+
+      {/* Quiet text actions */}
+      <div className="confirmation-footer-links confirmation-no-print">
+        <button type="button" className="confirmation-text-link" onClick={() => window.print()}>
+          <Printer size={15} />
           {t('confirmation.printTicket')}
         </button>
-        {reviewSlug && (
+        {effectiveReviewSlug && b.status === 'COMPLETED' && (
           <button
-            className="confirmation-btn-secondary"
+            type="button"
+            className="confirmation-text-link"
             onClick={() =>
-              navigate(`/review/${reviewSlug}`, {
+              navigate(`/review/${encodeURIComponent(effectiveReviewSlug)}`, {
                 state: {
-                  tour: { title: tour.title, slug: reviewSlug, tourId: tour.id },
+                  tour: { title: tour.title, slug: effectiveReviewSlug, tourId: tour.id },
                   bookingId: b.id,
                 },
               })
             }
           >
-            <Star size={16} />
+            <Star size={15} />
             {t('confirmation.writeReview')}
           </button>
         )}
-        <button className="confirmation-btn-secondary" onClick={() => navigate('/dashboard/bookings')}>
-          <CreditCard size={16} />
+        <button type="button" className="confirmation-text-link" onClick={() => navigate('/dashboard/bookings')}>
+          <CreditCard size={15} />
           {t('confirmation.viewBookings')}
         </button>
-        <button className="confirmation-btn-ghost" onClick={() => navigate('/')}>
+        <button type="button" className="confirmation-text-link" onClick={() => navigate('/')}>
           {t('confirmation.backToHome')}
         </button>
       </div>

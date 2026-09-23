@@ -1,0 +1,72 @@
+/* ============================================================
+   Shared swipe carousel — used by the About and Foundation
+   pages on touch layouts. Theme via --swipe-* custom properties.
+   ============================================================ */
+.swipe-carousel {
+  --swipe-dot-color: #16a34a;
+  --swipe-dot-track: rgba(19, 122, 46, 0.28);
+  position: relative;
+  overflow: hidden;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.swipe-track {
+  display: flex;
+  gap: 14px;
+  align-items: stretch;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.swipe-slide {
+  flex-shrink: 0;
+  display: flex;
+}
+
+.swipe-dots {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  margin-top: 10px;
+}
+
+/* 24px hit area (WCAG 2.2 target size) with a small visual mark. */
+.swipe-dot {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  border-radius: 999px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.swipe-dot:focus-visible {
+  outline: 2px solid var(--swipe-dot-color);
+  outline-offset: 1px;
+}
+
+.swipe-dot-mark {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--swipe-dot-track);
+  transition: width 0.22s ease, background 0.22s ease;
+}
+
+.swipe-dot.active .swipe-dot-mark {
+  width: 20px;
+  background: var(--swipe-dot-color);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swipe-track {
+    transition: none !important;
+  }
+}

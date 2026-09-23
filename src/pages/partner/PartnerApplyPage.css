@@ -1,0 +1,181 @@
+/* ===== Partner Apply Page ===== */
+
+.partner-apply-page {
+  width: 100%;
+  min-height: 100vh;
+  background: #f8f9fb;
+  padding-top: 64px;
+  font-family: var(--font-heading);
+  scrollbar-gutter: stable;
+}
+
+.partner-apply-page h1,
+.partner-apply-page h2,
+.partner-apply-page h3,
+.partner-apply-page h4 {
+  font-family: var(--font-heading);
+}
+
+.partner-apply-page input,
+.partner-apply-page select,
+.partner-apply-page textarea,
+.partner-apply-page button {
+  font-family: var(--font-heading);
+}
+
+/* Neutral focus styling on form fields — no green ring/glow */
+.partner-apply-page input:focus-visible,
+.partner-apply-page textarea:focus-visible {
+  border-color: #cbd5e1;
+  box-shadow: none;
+}
+
+.partner-apply-page label {
+  font-family: var(--font-heading);
+}
+
+/* Hide the default number-input spinners (up/down arrows) and forbid
+   negative values in whole-number fields across the partner forms */
+.partner-apply-page input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.partner-apply-page input[type="number"]::-webkit-outer-spin-button,
+.partner-apply-page input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+.partner-apply-page p {
+  font-family: 'DM Sans', sans-serif;
+}
+
+.partner-apply-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px 72px;
+  overflow-x: hidden;
+}
+
+.partner-apply-wrapper {
+  position: relative;
+  overflow-x: hidden;
+}
+
+.partner-apply-back {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #64748b;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: background 0.2s, color 0.2s;
+  margin-bottom: 18px;
+}
+
+.partner-apply-back:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+/* Back button inside the form's top row (desktop) — sits on the same line as
+   the step progress bar, so no bottom margin is needed. */
+.partner-apply-back--row {
+  margin-bottom: 0;
+}
+
+/* On desktop the form renders its own back button next to the progress bar,
+   so the page-level back button (shown above the form on small screens and
+   above the sign-up prompt) is hidden. */
+@media (min-width: 1024px) {
+  .partner-apply-page .partner-apply-back--page {
+    display: none;
+  }
+}
+
+/* Invalid type / auth prompt */
+.partner-apply-card,
+.partner-apply-auth-prompt {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1.25rem;
+  padding: 48px 32px;
+  text-align: center;
+}
+
+.partner-apply-card h2,
+.partner-apply-auth-prompt h2 {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px;
+}
+
+.partner-apply-card p,
+.partner-apply-auth-prompt p {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.partner-apply-back-btn,
+.partner-apply-auth-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 24px;
+  padding: 10px 28px;
+  border-radius: 999px;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, #16a34a, #1a9e3a, #22c55e);
+  color: #fff;
+  transition: box-shadow 0.25s, transform 0.15s;
+}
+
+.partner-apply-back-btn:hover,
+.partner-apply-auth-btn:hover {
+  box-shadow: 0 6px 20px rgba(19, 122, 46, 0.3);
+  transform: translateY(-1px);
+}
+
+.partner-apply-auth-alt {
+  margin-top: 16px !important;
+  font-size: 0.8125rem !important;
+  color: #9ca3af !important;
+}
+
+.partner-apply-auth-alt button {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #16a34a;
+  cursor: pointer;
+}
+
+.partner-apply-auth-alt button:hover {
+  text-decoration: underline;
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 768px) {
+  .partner-apply-container {
+    padding: 16px 12px 56px;
+  }
+}

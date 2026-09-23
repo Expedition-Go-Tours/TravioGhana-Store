@@ -7,8 +7,8 @@ import {
   Phone, Mail, Globe, MapPin, ChevronDown,
 } from 'lucide-react'
 import TourCard from '../components/TourCard'
-import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import SEO, { buildBreadcrumbSchema } from '../components/SEO'
 import { mapRawTourToListing, type TourCardData } from '../hooks/useExpeditionTours'
 import { mapSupplierProfile, normalizeWebsiteUrl, type SupplierProfileData } from '../lib/supplierProfile'
 import { apiFetch, fetchWithAuth } from '../lib/api'
@@ -47,32 +47,6 @@ async function fetchRawTourByIdOrSlug(idOrSlug: string): Promise<any | null> {
 }
 
 /**
- * Fetch the whole curated Ghana catalog by paging — the /travioghana/tours
- * endpoint caps limit at 50 and a single limit=500 request is rejected (400).
- */
-interface CuratedToursPayload {
-  tours?: any[]
-  pagination?: { totalPages?: number }
-}
-
-async function fetchPagedGhanaTours(): Promise<any[]> {
-  const PAGE = 50
-  const MAX_PAGES = 20
-  const first = await apiFetch<CuratedToursPayload>(`/travioghana/tours?page=1&limit=${PAGE}`)
-  const tours: any[] = Array.isArray(first.tours) ? first.tours : []
-  const totalPages = Math.min(first.pagination?.totalPages ?? 1, MAX_PAGES)
-  if (totalPages > 1 && tours.length > 0) {
-    const rest = await Promise.all(
-      Array.from({ length: totalPages - 1 }, (_, i) =>
-        apiFetch<CuratedToursPayload>(`/travioghana/tours?page=${i + 2}&limit=${PAGE}`)
-      )
-    )
-    for (const payload of rest) tours.push(...(Array.isArray(payload.tours) ? payload.tours : []))
-  }
-  return tours
-}
-
-/**
  * Resolves the raw tour that carries the supplier block. Prefers the linking
  * tour's id (passed in router state from the tour-detail supplier section);
  * on a direct URL visit it scans the active catalog for a supplier-name match.
@@ -88,9 +62,10 @@ function useSupplierProfile(tourId: string | undefined, name: string) {
       }
       if (!name) return null
       try {
-        const tours = await fetchPagedGhanaTours()
+        const payload: any = await apiFetch('/tours?limit=500')
+        const tours: any[] = Array.isArray(payload.tours) ? payload.tours : []
         const needle = name.toLowerCase().trim()
-        return tours.find((t) => (t.supplierName || '').toLowerCase().trim() === needle) || null
+        return tours.find((t) => (t.supplier?.name || '').toLowerCase().trim() === needle) || null
       } catch {
         return null
       }
@@ -99,17 +74,15 @@ function useSupplierProfile(tourId: string | undefined, name: string) {
   })
 }
 
-/** All active tours belonging to a supplier, fetched from the curated catalog. */
-function useSupplierTours(supplierName: string | null) {
+/** All active tours belonging to a supplier, fetched by supplier id. */
+function useSupplierTours(supplierId: string | null) {
   return useQuery({
-    queryKey: ['supplier', 'tours', supplierName],
-    enabled: !!supplierName,
+    queryKey: ['supplier', 'tours', supplierId],
+    enabled: !!supplierId,
     queryFn: async (): Promise<TourCardData[]> => {
-      const tours = await fetchPagedGhanaTours()
-      const needle = (supplierName || '').toLowerCase().trim()
-      return tours
-        .filter((t) => (t.supplierName || '').toLowerCase().trim() === needle)
-        .map(mapRawTourToListing)
+      const payload: any = await apiFetch(`/tours?supplierId=${encodeURIComponent(supplierId!)}&limit=100`)
+      const tours: any[] = Array.isArray(payload.tours) ? payload.tours : []
+      return tours.map(mapRawTourToListing)
     },
     staleTime: 30_000,
   })
@@ -127,10 +100,11 @@ export default function SupplierPage() {
     () => (rawTour ? mapSupplierProfile({ tour: rawTour }) : null),
     [rawTour],
   )
-  const { data: supplierTours = [], isLoading: toursLoading } = useSupplierTours(supplierData?.name || decodedName)
+  const supplierId = supplierData?.supplierId || null
+  const { data: supplierTours = [], isLoading: toursLoading } = useSupplierTours(supplierId)
 
   const totalTours = supplierTours.length
-  const profileName = supplierData?.name || decodedName || 'Travio Ghana Tours Ltd'
+  const profileName = supplierData?.name || decodedName || 'Expedition-Go Tours Ltd'
   const ratingDisplay = supplierData?.rating != null && !Number.isNaN(Number(supplierData.rating))
     ? Number(supplierData.rating).toFixed(1)
     : null
@@ -152,7 +126,6 @@ export default function SupplierPage() {
   if (profileLoading) {
     return (
       <motion.div className="min-h-screen bg-white" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-        <Navbar />
         <div className="supplier-page-nav-offset" aria-hidden />
         <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4 px-4">
           <p className="text-sm text-slate-500">Loading supplier...</p>
@@ -164,7 +137,6 @@ export default function SupplierPage() {
   if (!supplierData) {
     return (
       <motion.div className="min-h-screen bg-white" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-        <Navbar />
         <div className="supplier-page-nav-offset" aria-hidden />
         <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4 px-4">
           <p className="text-sm text-slate-500">Supplier not found</p>
@@ -184,7 +156,15 @@ export default function SupplierPage() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.4, ease: 'easeInOut' }}
     >
-      <Navbar />
+      <SEO
+        title={`${profileName} - Ghana Tour Operator`}
+        description={`Book tours with ${profileName} on Travio Ghana. ${totalTours > 0 ? `${totalTours} experiences available.` : ''} ${ratingDisplay ? `Rated ${ratingDisplay}/5.` : ''} Authentic Ghana tours and experiences.`}
+        keywords={`${profileName}, Ghana tour operator, Ghana tours, ${profileName} tours, Ghana experiences`}
+        jsonLd={buildBreadcrumbSchema([
+          { name: 'Home', url: 'https://www.travioghana.com/' },
+          { name: profileName, url: `https://www.travioghana.com/supplier/${encodeURIComponent(decodedName || '')}` },
+        ])}
+      />
       <div className="supplier-page-nav-offset" aria-hidden />
 
       <motion.main

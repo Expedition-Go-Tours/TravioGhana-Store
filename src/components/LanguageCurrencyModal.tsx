@@ -7,6 +7,9 @@ import { useCurrency, availableCurrencies } from '../contexts/CurrencyContext'
 
 interface LanguageCurrencyModalProps {
   onClose: () => void
+  /** Tab to open on (used by the footer, which has separate Language and
+      Currency buttons). Defaults to the language tab. */
+  initialTab?: 'language' | 'currency'
 }
 
 export const LANGUAGES = [
@@ -24,9 +27,9 @@ const TABS = [
 
 type TabKey = (typeof TABS)[number]['key']
 
-export default function LanguageCurrencyModal({ onClose }: LanguageCurrencyModalProps) {
+export default function LanguageCurrencyModal({ onClose, initialTab = 'language' }: LanguageCurrencyModalProps) {
   const { t } = useTranslation()
-  const [activeTab, setActiveTab] = useState<TabKey>('language')
+  const [activeTab, setActiveTab] = useState<TabKey>(initialTab)
   const currentLang = i18n.language.substring(0, 2)
   const { currency, setCurrency: setAppCurrency } = useCurrency()
 

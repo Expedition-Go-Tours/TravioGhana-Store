@@ -1,0 +1,169 @@
+/* ============================================================
+   Shared image lightbox — light frosted dialog used by the
+   About and Foundation galleries. Theme via --lb-* custom
+   properties; the defaults match the "Mist & Emerald" palette.
+   ============================================================ */
+.img-lightbox {
+  --lb-ink: #0b2e22;
+  --lb-muted: #5d6b7e;
+  --lb-accent: #16a34a;
+  --lb-radius: 28px;
+  --lb-scrim: rgba(244, 250, 246, 0.72);
+  --lb-surface: rgba(255, 255, 255, 0.72);
+  --lb-surface-strong: rgba(255, 255, 255, 0.74);
+  --lb-border: rgba(255, 255, 255, 0.85);
+  --lb-border-strong: rgba(255, 255, 255, 0.92);
+  --lb-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  --lb-shadow-sm: 0 1px 2px rgba(11, 46, 34, 0.04), 0 10px 24px -16px rgba(11, 46, 34, 0.22);
+  --lb-shadow-lg: 0 6px 16px rgba(11, 46, 34, 0.06), 0 44px 90px -34px rgba(11, 46, 34, 0.34);
+
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 72px 20px 48px;
+  cursor: zoom-out;
+  background: var(--lb-scrim);
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+}
+
+.img-lightbox-figure {
+  position: relative;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  width: min(94vw, 1020px);
+  max-height: 82vh;
+  border-radius: var(--lb-radius);
+  overflow: hidden;
+  background: var(--lb-surface);
+  border: 1px solid var(--lb-border);
+  box-shadow: var(--lb-shadow-lg), var(--lb-highlight);
+  cursor: default;
+}
+
+.img-lightbox-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 68vh;
+  object-fit: contain;
+  background: rgba(247, 251, 248, 0.6);
+}
+
+.img-lightbox-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.img-lightbox-caption-text {
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--lb-ink);
+}
+
+.img-lightbox-counter {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--lb-muted);
+  white-space: nowrap;
+}
+
+.img-lightbox-close,
+.img-lightbox-arrow {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--lb-border-strong);
+  background: var(--lb-surface-strong);
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  color: var(--lb-ink);
+  box-shadow: var(--lb-shadow-sm), var(--lb-highlight);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.img-lightbox-close {
+  top: 20px;
+  right: 20px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.img-lightbox-close:hover,
+.img-lightbox-arrow:hover {
+  background: #fff;
+}
+
+.img-lightbox-close:hover {
+  transform: scale(1.04);
+}
+
+.img-lightbox-close:focus-visible,
+.img-lightbox-arrow:focus-visible {
+  outline: 2px solid var(--lb-accent);
+  outline-offset: 2px;
+}
+
+.img-lightbox-arrow {
+  top: 50%;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+}
+
+.img-lightbox-arrow--prev {
+  left: max(14px, calc(50vw - 560px));
+}
+
+.img-lightbox-arrow--next {
+  right: max(14px, calc(50vw - 560px));
+}
+
+.img-lightbox-arrow:hover {
+  transform: translateY(-50%) scale(1.05);
+}
+
+@media (max-width: 640px) {
+  /* Arrows are redundant on touch — swipe and the counter remain. */
+  .img-lightbox-arrow {
+    display: none;
+  }
+
+  .img-lightbox {
+    padding: 64px 12px 32px;
+  }
+
+  .img-lightbox-figure {
+    width: 100%;
+    max-height: 78vh;
+  }
+
+  .img-lightbox-figure img {
+    max-height: 62vh;
+  }
+
+  .img-lightbox-close {
+    top: 14px;
+    right: 14px;
+  }
+
+  .img-lightbox-caption {
+    padding: 11px 14px;
+  }
+}

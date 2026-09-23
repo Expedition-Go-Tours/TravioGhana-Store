@@ -35,11 +35,19 @@
 }
 
 .no-tours-sub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   margin: 0;
   max-width: 620px;
   font-size: 0.98rem;
   line-height: 1.6;
   color: #475569;
+}
+
+.no-tours-sub-line {
+  display: block;
 }
 
 .no-tours-actions {
@@ -96,11 +104,10 @@
 }
 
 .no-tours-chips {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
-  overflow-x: auto;
   padding: 4px 2px 10px;
-  scrollbar-width: none;
 }
 
 .no-tours-chips::-webkit-scrollbar {
@@ -111,8 +118,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  flex: 0 0 auto;
-  min-width: 220px;
+  min-width: 0;
+  width: 100%;
   padding: 8px 16px 8px 8px;
   background: #fff;
   border: 1px solid #e2e8f0;
@@ -196,6 +203,29 @@
   color: #64748b;
 }
 
+@media (max-width: 1024px) {
+  .no-tours-chips {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  /* Mobile: uniform-width chips in a swipeable rail. */
+  .no-tours-chips {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  .no-tours-chip {
+    flex: 0 0 78vw;
+    max-width: 320px;
+    scroll-snap-align: start;
+  }
+}
+
 @media (max-width: 640px) {
   .no-tours {
     padding: 4px 14px 40px;
@@ -212,5 +242,22 @@
   .no-tours-rail-item {
     flex-basis: 82vw;
     max-width: 82vw;
+  }
+}
+
+/* Desktop only: let the empty-state sections span the page's content column
+   (max-width 1400px + 40px gutters) so section headings, chips and card rails
+   line up with the navbar logo (left) and the right-hand nav items (right). */
+@media (min-width: 1025px) {
+  .no-tours {
+    max-width: none;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .no-tours-chips,
+  .no-tours-rail {
+    padding-left: 0;
+    padding-right: 0;
   }
 }

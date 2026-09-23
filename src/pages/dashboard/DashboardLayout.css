@@ -1,0 +1,639 @@
+/* Dashboard page keep-alive: pages stay mounted, the active one is revealed
+   with a light entrance instead of a full remount. */
+.dash-pages {
+  width: 100%;
+}
+
+/* Inner Suspense skeleton for lazy-loaded sub-pages */
+.dash-page-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px 0;
+}
+
+.dash-page-skeleton-bar {
+  height: 18px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f0f0f0 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.dash-main-content {
+  padding-top: 32px;
+}
+
+.dash-pane.active {
+  animation: dash-pane-in 0.24s cubic-bezier(0.3, 0.8, 0.4, 1);
+}
+
+@keyframes dash-pane-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-pane.active {
+    animation: none;
+  }
+}
+
+/* ================================================================
+   TOP BAR (replaces sidebar on desktop)
+   ================================================================ */
+.dash-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+  height: var(--dash-topbar-height, 100px);
+  background: var(--dash-topbar-bg, #ffffff);
+  border-bottom: 1px solid var(--dash-topbar-border, rgba(0, 0, 0, 0.06));
+  box-shadow: var(--dash-topbar-shadow, 0 1px 3px rgba(0, 0, 0, 0.04));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 1023px) {
+  .dash-topbar {
+    height: 72px;
+  }
+}
+
+.dash-topbar-inner {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  height: 100%;
+  padding: 0 24px;
+}
+
+/* Left section: logo + mobile hamburger */
+.dash-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Logo */
+.dash-topbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.dash-topbar-logo:hover {
+  opacity: 0.8;
+}
+
+.dash-topbar-logo-img {
+  height: 120px;
+  width: auto;
+  object-fit: contain;
+}
+
+@media (max-width: 1023px) {
+  .dash-topbar-logo-img {
+    height: 90px;
+  }
+}
+
+/* Center nav tabs (desktop only — hidden below lg via Tailwind hidden lg:flex) */
+.dash-topbar-nav {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  margin-left: 40px;
+}
+
+@media (min-width: 1024px) {
+  .dash-topbar-nav {
+    display: flex;
+  }
+}
+
+.dash-topbar-tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+  outline: none;
+}
+
+.dash-topbar-tab:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.dash-topbar-tab.active {
+  color: #111827;
+  font-weight: 600;
+}
+
+.dash-topbar-underline {
+  position: absolute;
+  bottom: -2px;
+  left: 14px;
+  right: 14px;
+  height: 2.5px;
+  border-radius: 2px;
+  background: var(--bv-accent, #166534);
+}
+
+/* Right utilities */
+.dash-topbar-utilities {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Icon button (bell, chat) — desktop only */
+.dash-topbar-icon-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+@media (min-width: 1024px) {
+  .dash-topbar-icon-btn {
+    display: flex;
+  }
+}
+
+.dash-topbar-icon-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.dash-topbar-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+/* Notification badge */
+.dash-topbar-badge {
+  position: absolute;
+  top: -5px;
+  right: -8px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--bv-danger-dot, #ef4444);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  box-shadow: 0 0 0 2px #ffffff;
+  pointer-events: none;
+}
+
+/* Profile trigger button */
+.dash-profile-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px 4px 4px;
+  border: none;
+  background: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  outline: none;
+}
+
+.dash-profile-trigger:hover {
+  background: #f3f4f6;
+}
+
+.dash-topbar-avatar {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--bv-accent, #166534);
+  background: var(--bv-accent-soft, #dcfce7);
+  flex-shrink: 0;
+}
+
+.dash-topbar-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dash-topbar-avatar-initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bv-accent-strong, #166534);
+}
+
+.dash-topbar-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bv-ink, #111827);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-topbar-chevron {
+  color: #9ca3af;
+  transition: transform 0.2s ease;
+}
+
+.dash-topbar-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* ================================================================
+   PROFILE DROPDOWN
+   ================================================================ */
+.dash-profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 280px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+  padding: 8px;
+  z-index: 100;
+  outline: none;
+}
+
+/* User info header */
+.dash-profile-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f0fdf4, #ffffff);
+}
+
+.dash-profile-user-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--bv-accent, #166534);
+  background: var(--bv-accent-soft, #dcfce7);
+  flex-shrink: 0;
+}
+
+.dash-profile-user-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dash-profile-user-initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--bv-accent-strong, #166534);
+}
+
+.dash-profile-user-info {
+  min-width: 0;
+}
+
+.dash-profile-user-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--bv-ink, #111827);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.dash-profile-user-email {
+  font-size: 12.5px;
+  color: var(--bv-muted, #6b7280);
+  margin: 0;
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
+/* Divider */
+.dash-profile-divider {
+  height: 1px;
+  background: var(--bv-border, #e5e7eb);
+  margin: 4px 12px;
+}
+
+/* Nav item */
+.dash-profile-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: none;
+  background: none;
+  border-radius: 10px;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--bv-text, #374151);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+  text-align: left;
+  outline: none;
+}
+
+.dash-profile-item:hover {
+  background: #f0fdf4;
+  color: var(--bv-accent-strong, #166534);
+}
+
+.dash-profile-item.active {
+  background: #f0fdf4;
+  color: var(--bv-accent-strong, #166534);
+  font-weight: 600;
+}
+
+.dash-profile-item.active svg {
+  color: var(--bv-accent-strong, #166534);
+}
+
+/* Badge inside dropdown */
+.dash-profile-badge {
+  margin-left: auto;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--bv-danger-dot, #ef4444);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+/* Sign out */
+.dash-profile-signout:hover {
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+}
+
+.dash-profile-signout:hover svg {
+  color: #dc2626;
+}
+
+/* Sign out confirm */
+.dash-profile-signout-confirm {
+  padding: 8px 12px;
+}
+
+.dash-profile-signout-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--bv-text, #374151);
+  margin: 0 0 8px;
+}
+
+.dash-profile-signout-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.dash-profile-signout-cancel {
+  flex: 1;
+  height: 32px;
+  border: 1px solid var(--bv-border, #e5e7eb);
+  background: #ffffff;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--bv-text, #374151);
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.dash-profile-signout-cancel:hover {
+  background: #f9fafb;
+}
+
+.dash-profile-signout-btn {
+  flex: 1;
+  height: 32px;
+  border: none;
+  background: #dc2626;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.dash-profile-signout-btn:hover {
+  background: #b91c1c;
+}
+
+.dash-profile-signout-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ================================================================
+   MOBILE BOTTOM TAB BAR
+   ================================================================ */
+.dash-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: none;
+  padding: 0 12px env(safe-area-inset-bottom, 8px);
+  pointer-events: none;
+}
+
+.dash-bottom-bar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 6px 8px 4px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 22px;
+  box-shadow:
+    0 -2px 20px rgba(16, 24, 40, 0.12),
+    0 1px 3px rgba(16, 24, 40, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  pointer-events: auto;
+}
+
+@media (max-width: 1023px) {
+  .dash-bottom-bar {
+    display: block;
+  }
+
+  .dash-main-content {
+    padding-top: 20px;
+    padding-bottom: 90px !important;
+  }
+}
+
+/* Individual tab */
+.dash-bottom-tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 8px 5px;
+  min-width: 48px;
+  min-height: 48px;
+  border: none;
+  background: none;
+  color: var(--bv-faint, #9ca3af);
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  font-weight: 500;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  outline: none;
+}
+
+.dash-bottom-tab.active {
+  color: var(--bv-accent-strong, #166534);
+}
+
+/* Small active dot below icon */
+.dash-bottom-active-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--bv-accent, #166534);
+  margin-top: 1px;
+}
+
+/* Icon wrapper — holds icon + badge */
+.dash-bottom-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  line-height: 0;
+}
+
+.dash-bottom-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Unread badge */
+.dash-bottom-badge {
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--bv-danger-dot, #ef4444);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  z-index: 2;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9);
+}
+
+/* Label */
+.dash-bottom-label {
+  display: block;
+  z-index: 1;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  max-width: 56px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Press state for non-motion fallback */
+.dash-bottom-tab:active {
+  transform: scale(0.88);
+  transition: transform 0.1s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-bottom-tab {
+    transition: color 0.15s ease;
+  }
+
+  .dash-bottom-tab:active {
+    transform: none;
+  }
+}

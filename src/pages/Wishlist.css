@@ -1,4 +1,4 @@
-/* ===== WISHLIST CONTAINER ===== */
+﻿/* ===== WISHLIST CONTAINER ===== */
 .wishlist-container {
   width: 100%;
 }
@@ -7,7 +7,7 @@
 .wishlist-header {
   margin-bottom: 28px;
   padding-bottom: 20px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--bv-border);
 }
 
 .wishlist-count {
@@ -17,11 +17,11 @@
   font-family: var(--font-body);
   font-weight: 600;
   font-size: 16px;
-  color: var(--dash-accent);
+  color: var(--bv-accent-strong);
 }
 
 .wishlist-count svg {
-  color: var(--dash-accent);
+  color: var(--bv-accent);
 }
 
 /* ===== WISHLIST GRID ===== */
@@ -33,16 +33,20 @@
 
 /* ===== WISHLIST CARD ===== */
 .wishlist-card {
-  background: #fff;
-  border-radius: 12px;
-  border: 1px solid var(--border);
+  background: var(--bv-surface);
+  border-radius: 16px;
+  border: 1px solid var(--bv-border);
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   display: flex;
   flex-direction: column;
+  box-shadow: var(--bv-shadow-sm);
 }
 
 .wishlist-card:hover {
+  border-color: var(--bv-border-strong);
+  box-shadow: var(--bv-shadow-md);
+  transform: translateY(-2px);
 }
 
 .wishlist-card.removing {
@@ -70,7 +74,7 @@
   transform: scale(1.05);
 }
 
-/* Remove Button — explicit X on the image's top-right corner. */
+/* Remove Button â€” explicit X on the image's top-right corner. */
 .wishlist-remove-btn {
   position: absolute;
   top: 12px;
@@ -80,7 +84,7 @@
   border-radius: 50%;
   border: none;
   background: rgba(255, 255, 255, 0.95);
-  color: #374151;
+  color: var(--bv-text);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -91,7 +95,7 @@
 }
 
 .wishlist-remove-btn:hover {
-  background: #dc2626;
+  background: var(--bv-danger-dot);
   color: #fff;
   transform: scale(1.1);
 }
@@ -111,7 +115,7 @@
   font-family: var(--font-body);
   font-weight: 600;
   font-size: 12px;
-  color: #1a1a1a;
+  color: var(--bv-ink);
   backdrop-filter: blur(8px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -136,7 +140,7 @@
   font-family: var(--font-heading);
   font-weight: 600;
   font-size: 16px;
-  color: #1a1a1a;
+  color: var(--bv-ink);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -152,12 +156,12 @@
   gap: 6px;
   font-family: var(--font-body);
   font-size: 13px;
-  color: #6b7280;
+  color: var(--bv-muted);
 }
 
 .wishlist-card-location svg {
   flex-shrink: 0;
-  color: var(--dash-accent);
+  color: var(--bv-accent);
 }
 
 /* Card Meta */
@@ -177,17 +181,17 @@
 }
 
 .wishlist-card-rating svg {
-  color: #179237;
+  color: var(--bv-accent);
   flex-shrink: 0;
 }
 
 .rating-value {
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--bv-ink);
 }
 
 .rating-count {
-  color: #9ca3af;
+  color: var(--bv-faint);
   font-size: 13px;
 }
 
@@ -200,14 +204,14 @@
 .price-label {
   font-family: var(--font-body);
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--bv-faint);
 }
 
 .price-value {
   font-family: var(--font-heading);
   font-weight: 700;
   font-size: 20px;
-  color: var(--dash-accent);
+  color: var(--bv-accent-strong);
 }
 
 /* Card Footer */
@@ -223,17 +227,17 @@
 .wishlist-added-date {
   font-family: var(--font-body);
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--bv-faint);
   font-weight: 500;
 }
 
 .wishlist-book-btn {
-  background: var(--dash-accent) !important;
+  background: var(--bv-accent) !important;
   color: #fff !important;
   border: none !important;
   font-weight: 600 !important;
   padding: 8px 20px !important;
-  border-radius: 8px !important;
+  border-radius: 10px !important;
   font-size: 13px !important;
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, background 0.2s ease !important;
   flex-shrink: 0;
@@ -242,7 +246,7 @@
 }
 
 .wishlist-book-btn:hover {
-  background: #01513f !important;
+  background: var(--bv-accent-strong) !important;
   transform: translateY(-2px) scale(1.03);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12) !important;
 }
@@ -283,9 +287,10 @@
   justify-content: center;
   padding: 80px 24px;
   text-align: center;
-  background: #fff;
-  border-radius: 12px;
-  border: 1px solid var(--border);
+  background: var(--bv-surface);
+  border-radius: 16px;
+  border: 1px solid var(--bv-border);
+  box-shadow: var(--bv-shadow-sm);
   position: relative;
   overflow: hidden;
 }
@@ -296,7 +301,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: var(--dash-accent);
+  color: var(--bv-accent);
   opacity: 0.3;
   pointer-events: none;
   z-index: 1;
@@ -304,9 +309,9 @@
 
 .empty-icon {
   margin-bottom: 20px;
-  color: var(--dash-accent);
+  color: var(--bv-accent);
   opacity: 0.8;
-  filter: drop-shadow(0 4px 8px rgba(105, 201, 130, 0.2));
+  filter: drop-shadow(0 4px 8px rgba(22, 163, 74, 0.2));
   z-index: 2;
   position: relative;
 }
@@ -314,13 +319,33 @@
 /* Animated empty-state icon */
 .empty-icon-wrap {
   position: relative;
-  width: 120px;
-  height: 120px;
-  margin-bottom: 24px;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2;
+}
+
+.empty-icon-wrap .wishlist-lottie {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+}
+
+/* Grey to green animation for Lottie */
+.empty-icon-wrap .wishlist-lottie {
+  animation: greyToGreen 2s ease-in-out forwards;
+}
+
+@keyframes greyToGreen {
+  0% {
+    filter: grayscale(100%) brightness(0.8);
+  }
+  100% {
+    filter: grayscale(0%) hue-rotate(95deg) saturate(1.6) brightness(0.9);
+  }
 }
 
 .empty-halo {
@@ -328,7 +353,7 @@
   width: 96px;
   height: 96px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(105, 201, 130, 0.35) 0%, rgba(105, 201, 130, 0) 70%);
+  background: radial-gradient(circle, rgba(34, 175, 71, 0.35) 0%, rgba(34, 175, 71, 0) 70%);
   pointer-events: none;
 }
 
@@ -340,13 +365,13 @@
 .empty-heart {
   position: relative;
   z-index: 3;
-  color: var(--dash-accent);
-  filter: drop-shadow(0 6px 14px rgba(105, 201, 130, 0.35));
+  color: var(--bv-accent);
+  filter: drop-shadow(0 6px 14px rgba(22, 163, 74, 0.35));
 }
 
 .empty-sparkle {
   position: absolute;
-  color: var(--dash-accent);
+  color: var(--bv-accent);
   pointer-events: none;
   z-index: 3;
 }
@@ -355,7 +380,7 @@
   font-family: var(--font-heading);
   font-weight: 600;
   font-size: 20px;
-  color: #1a1a1a;
+  color: var(--bv-ink);
   margin-bottom: 8px;
   z-index: 2;
   position: relative;
@@ -364,7 +389,7 @@
 .empty-text {
   font-family: var(--font-body);
   font-size: 15px;
-  color: #6b7280;
+  color: var(--bv-muted);
   margin-bottom: 28px;
   max-width: 380px;
   line-height: 1.6;
@@ -373,23 +398,23 @@
 }
 
 .empty-cta {
-  background: var(--dash-accent) !important;
+  background: var(--bv-accent) !important;
   color: #fff !important;
   border: none !important;
   font-weight: 600 !important;
   padding: 12px 32px !important;
-  border-radius: 8px !important;
+  border-radius: 10px !important;
   font-size: 15px !important;
   transition: all 0.2s ease !important;
   z-index: 2;
   position: relative;
-  box-shadow: 0 4px 12px rgba(105, 201, 130, 0.25);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
 }
 
 .empty-cta:hover {
-  background: #01513f !important;
+  background: var(--bv-accent-strong) !important;
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(105, 201, 130, 0.35) !important;
+  box-shadow: 0 6px 16px rgba(22, 163, 74, 0.35) !important;
 }
 
 /* ===== RESPONSIVE ===== */
@@ -700,3 +725,4 @@
     font-size: 14px !important;
   }
 }
+

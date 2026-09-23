@@ -4,7 +4,7 @@ import SectionHeading from './SectionHeading'
 import TourCard from './TourCard'
 import TourCardSkeleton from './TourCardSkeleton'
 import { useRecommendedTours, useExpeditionOffers, type TourCardData } from '../hooks/useExpeditionTours'
-import { useRecommended, mapToTourCard, type HomepageTour } from '../hooks/useHomepageSections'
+import { useRecommended, mapToTourCard, type HomepageTour, type HomepageBackfill } from '../hooks/useHomepageSections'
 import './RecommendSection.css'
 
 const CARD_WIDTH = 295
@@ -15,16 +15,19 @@ interface Props {
   isLoading?: boolean
   title?: string
   location?: string
+  backfill?: HomepageBackfill | null
 }
 
-export default function RecommendSection({ preloaded, isLoading, title, location }: Props) {
+export default function RecommendSection({ preloaded, isLoading, title, location, backfill }: Props) {
   const { t } = useTranslation()
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
   const { data: personalizedTours } = useRecommended(12, !preloaded)
-  const { data: liveTours } = useRecommendedTours(12)
-  const { data: offerTours } = useExpeditionOffers(12)
+  // Only fall back to live endpoints when the aggregate homepage payload did
+  // not supply the section — otherwise these duplicate the boot requests.
+  const { data: liveTours } = useRecommendedTours(12, !preloaded)
+  const { data: offerTours } = useExpeditionOffers(12, !preloaded)
 
   // Prefer preloaded > personalized > liveTours
   const baseTours = preloaded?.length
@@ -35,17 +38,24 @@ export default function RecommendSection({ preloaded, isLoading, title, location
         ? liveTours
         : null
 
+  // Backfill tours (from nearby regions when local has few)
+  const backfillTours = useMemo(() => {
+    if (!backfill?.tours?.length) return []
+    return backfill.tours.map(mapToTourCard)
+  }, [backfill])
+
   // Offer tours replace their plain card when present, appended otherwise.
   const items = useMemo(() => {
     if (!baseTours) return null
-    if (!offerTours || offerTours.length === 0) return baseTours
+    const all = backfillTours.length > 0 ? [...baseTours, ...backfillTours] : baseTours
+    if (!offerTours || offerTours.length === 0) return all
     const keyOf = (t: { slug?: string; title: string }) => t.slug || t.title
     const offerByKey = new Map<string, TourCardData>()
     for (const tour of offerTours) offerByKey.set(keyOf(tour), tour)
 
     const seen = new Set<string>()
-    const merged: Array<typeof baseTours[number]> = []
-    for (const tour of baseTours) {
+    const merged: Array<typeof all[number]> = []
+    for (const tour of all) {
       const key = keyOf(tour)
       seen.add(key)
       const offer = offerByKey.get(key)
@@ -58,7 +68,7 @@ export default function RecommendSection({ preloaded, isLoading, title, location
       merged.push(tour)
     }
     return merged
-  }, [baseTours, offerTours])
+  }, [baseTours, offerTours, backfillTours])
 
   const updateArrows = useCallback(() => {
     const el = scrollRef.current

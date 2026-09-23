@@ -289,8 +289,8 @@ export default function FAQPage() {
           jsonLd={[
             buildFAQSchema(allFaqs.map((faq) => ({ question: faq.q, answer: faq.a }))),
             buildBreadcrumbSchema([
-              { name: 'Home', url: 'https://www.expeditiongotours.com/' },
-              { name: 'FAQ', url: 'https://www.expeditiongotours.com/faq' },
+              { name: 'Home', url: 'https://www.travioghana.com/' },
+              { name: 'FAQ', url: 'https://www.travioghana.com/faq' },
             ]),
           ]}
         />

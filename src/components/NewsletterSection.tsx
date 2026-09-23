@@ -1,40 +1,77 @@
-import { useTranslation } from 'react-i18next'
+import { useState, type FormEvent } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
+import { Mail } from 'lucide-react'
+import { useComingSoon } from '../hooks/useComingSoon'
+import newsletterImg from '../assets/newsletter-square.jpg'
 import './NewsletterSection.css'
-import heroSrc from '../assets/newsletter-square.jpg'
 
 export default function NewsletterSection() {
-  const { t } = useTranslation()
+  const [email, setEmail] = useState('')
+  const comingSoon = useComingSoon()
+  const reduce = useReducedMotion()
+
+  // The mailing-list API is not wired up yet: the button is marked
+  // "coming soon" and submission is deliberately a no-op.
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault()
+  }
 
   return (
     <section className="newsletter-section">
       <div className="newsletter-container">
-        <div className="newsletter-viewport">
-          <div className="newsletter-card">
-        <div className="newsletter-image">
-          <img src={heroSrc} alt={t('newsletter.imageAlt')} loading="lazy" decoding="async" width={800} height={1200} />
-        </div>
-        <div className="newsletter-content">
-          <h2 className="newsletter-heading">Don't just dream it, Book it</h2>
-          <p className="newsletter-text">
-            {t('newsletter.description')}
-          </p>
-          <form className="newsletter-form" onSubmit={(e) => e.preventDefault()}>
-            <div className="newsletter-input-wrap">
-              <input
-                type="email"
-                className="newsletter-input"
-                placeholder={t('newsletter.emailPlaceholder')}
-                required
-                autoComplete="email"
-              />
-              <button type="submit" className="newsletter-btn">{t('newsletter.signUp')}</button>
-            </div>
-          </form>
-          <p className="newsletter-disclaimer">
-            {t('newsletter.disclaimer')} <a href="#" className="newsletter-link">{t('newsletter.privacyLink')}</a>.
-          </p>
-        </div>
-          </div>
+        <div className="newsletter-card">
+          <motion.div
+            className="newsletter-image-wrap"
+            initial={reduce ? undefined : { opacity: 0, x: -30 }}
+            whileInView={reduce ? undefined : { opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            <img
+              src={newsletterImg}
+              alt="Aerial view of Black Star Square and Independence Arch in Accra"
+              className="newsletter-image"
+              loading="lazy"
+            />
+          </motion.div>
+
+          <motion.div
+            className="newsletter-content"
+            initial={reduce ? undefined : { opacity: 0, x: 30 }}
+            whileInView={reduce ? undefined : { opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.6, delay: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            <h2 className="newsletter-title">
+              Never Miss a Deal or Destination
+            </h2>
+            <p className="newsletter-sub">
+              Get exclusive travel tips, early-bird offers, and curated Ghana experiences
+              delivered straight to your inbox. No spam, just adventures.
+            </p>
+
+            <form className="newsletter-form" onSubmit={handleSubmit}>
+              <div className="newsletter-input-wrap">
+                <input
+                  type="email"
+                  className="newsletter-input"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  aria-label="Email address"
+                />
+                <Mail className="newsletter-input-icon" size={20} />
+                <button
+                  type="submit"
+                  className="newsletter-btn is-coming-soon"
+                  aria-label="Sign up"
+                  {...comingSoon}
+                >
+                  Sign up
+                </button>
+              </div>
+            </form>
+          </motion.div>
         </div>
       </div>
     </section>

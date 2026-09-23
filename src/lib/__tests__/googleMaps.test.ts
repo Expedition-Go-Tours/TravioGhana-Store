@@ -1,4 +1,4 @@
-﻿import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   GOOGLE_MAPS_OUTCOME_KEY,
   GoogleMapsLoadError,
@@ -9,7 +9,7 @@ import {
   shouldAttemptGoogleMaps,
 } from '../googleMaps'
 
-const CALLBACK_KEY = '__travioGhanaMapsCallback'
+const CALLBACK_KEY = '__expeditionGoMapsCallback'
 type Win = Window & { [CALLBACK_KEY]?: () => void; gm_authFailure?: () => void; google?: { maps?: unknown } }
 
 let appended: HTMLScriptElement | null = null

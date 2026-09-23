@@ -383,11 +383,11 @@ export const CalendarPicker = ({ isOpen, onClose, onDateSelect, selectedDate, ge
         {showDropdown && (
           <div className="absolute inset-0 z-30 flex flex-col p-3 rounded-[16px] bg-white/98 backdrop-blur-md transition-all duration-200">
             <div className="flex items-center justify-between mb-3 border-b pb-2.5 border-black/5">
-              <button onClick={() => { setCurrentYear(y => y - 1); setInspectDay(null) }} className="p-1.5 text-gray-500 hover:text-[#179237] hover:bg-[#179237]/8 rounded-full transition-colors">
+              <button onClick={() => { const y = currentYear - 1; setCurrentYear(y); setInspectDay(null); onMonthChange?.(y, currentMonth) }} className="p-1.5 text-gray-500 hover:text-[#179237] hover:bg-[#179237]/8 rounded-full transition-colors">
                 <ChevronLeftIcon />
               </button>
               <span className="font-bold text-[16px] text-gray-900">{currentYear}</span>
-              <button onClick={() => { setCurrentYear(y => y + 1); setInspectDay(null) }} className="p-1.5 text-gray-500 hover:text-[#179237] hover:bg-[#179237]/8 rounded-full transition-colors">
+              <button onClick={() => { const y = currentYear + 1; setCurrentYear(y); setInspectDay(null); onMonthChange?.(y, currentMonth) }} className="p-1.5 text-gray-500 hover:text-[#179237] hover:bg-[#179237]/8 rounded-full transition-colors">
                 <ChevronRightIcon />
               </button>
             </div>

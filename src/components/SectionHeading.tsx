@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import './SectionHeading.css'
 
@@ -33,7 +34,7 @@ export default function SectionHeading({
       {viewAllLink || onScrollLeft || onScrollRight || onViewAllClick ? (
         <div className="section-heading-actions">
           {viewAllLink && (
-            <a href={viewAllLink} className="section-view-all">{t('sections.viewAll')}</a>
+            <Link to={viewAllLink} className="section-view-all">{t('sections.viewAll')}</Link>
           )}
           {onViewAllClick && (
             <button className="section-view-all" onClick={onViewAllClick}>{t('sections.viewAll')}</button>

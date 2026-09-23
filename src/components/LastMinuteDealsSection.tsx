@@ -1,4 +1,4 @@
-﻿import { useRef, useState, useEffect, useCallback } from 'react'
+import { useRef, useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import SectionHeading from './SectionHeading'
 import TourCard from './TourCard'
@@ -40,7 +40,7 @@ function mapOfferToCardProps(t: HomepageOfferTour): TourCardData {
     location,
     image: t.coverPhoto || t.photos?.[0] || '',
     photos: t.photos,
-    source: 'Travio Ghana' as const,
+    source: 'expedition-go' as const,
     priceValue: t.startingPrice,
     discount,
     specialOffers: t.specialOffers,

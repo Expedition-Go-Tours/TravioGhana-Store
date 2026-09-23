@@ -8,6 +8,7 @@ import FormattedPrice from '../../components/FormattedPrice'
 import { getCategoryMeta } from '../../components/categoryMeta'
 import './SimilarTourCard.css'
 import OptimizedImage from '@/components/shared/OptimizedImage'
+import { useCombinedTourStats } from '../../hooks/useExternalReviews'
 
 interface SimilarTourCardProps extends Tour {
   discount?: string
@@ -36,15 +37,18 @@ export default function SimilarTourCard({
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist()
   const item = toWishlistItem({ id, title, duration, features, price, rating: String(rating), reviews, location, image, source, externalUrl } as Tour)
   const inWishlist = isInWishlist(item.id)
+  // Include matched scraped reviews in the displayed stats (wishlist stays raw).
+  const combinedStats = useCombinedTourStats({ title, location, rating, reviewCount: reviews })
+  const displayRating = combinedStats.reviewCount > 0 ? combinedStats.rating.toFixed(1) : String(rating)
+  const displayReviewCount = combinedStats.reviewCount > 0 ? combinedStats.reviewCount : reviews
 
   const categoryMeta = getCategoryMeta(category)
   // "Guide" appended for the same reason as TourCard: makes clear this is
   // the language the tour guide conducts the experience in.
   const languageLabel = languages?.length ? `${languages.join(', ')} Guide` : ''
-  const policy = typeof cancellationPolicy === 'string' ? cancellationPolicy : (cancellationPolicy as any)?.label || ''
-  const isNonRefundable = !!policy && /non[- ]?refundable/i.test(policy)
-  const cancellationLabel = policy
-    ? (isNonRefundable ? 'Non-refundable' : (policy.toLowerCase().includes('free') ? 'Free cancellation' : policy))
+  const isNonRefundable = !!cancellationPolicy && /non[- ]?refundable/i.test(cancellationPolicy)
+  const cancellationLabel = cancellationPolicy
+    ? (isNonRefundable ? 'Non-refundable' : (cancellationPolicy.toLowerCase().includes('free') ? 'Free cancellation' : cancellationPolicy))
     : ''
 
   const handleWishlist = (e: React.MouseEvent) => {
@@ -60,6 +64,7 @@ export default function SimilarTourCard({
 
   const tourSlug = getTourSlug(title)
 
+  // New tab, like every other tour card.
   const handleCardClick = () => {
     window.open(`/tour/${tourSlug}`, '_blank', 'noopener')
   }
@@ -74,9 +79,9 @@ export default function SimilarTourCard({
   return (
     <div className="similar-tour-card" onClick={handleCardClick} onKeyDown={handleKeyDown} role="link" tabIndex={0}>
       <div className="similar-tour-image">
-        {source === 'travio-ghana' && (
+        {source === 'travio-africa' && (
           <div className="source-badge">
-            <img src="/travio_logo.png" alt="Travio Ghana" />
+            <img src="/travio_logo.png" alt="Travio Africa" />
           </div>
         )}
         <OptimizedImage src={image} alt={title} width={400} />
@@ -144,8 +149,8 @@ export default function SimilarTourCard({
         <div className="similar-tour-footer">
           <div className="similar-tour-rating">
             <Star size={14} fill="#179237" stroke="#179237" strokeWidth={1} />
-            <span className="similar-tour-rating-value">{rating}</span>
-            <span className="similar-tour-rating-count">({reviews})</span>
+            <span className="similar-tour-rating-value">{displayRating}</span>
+            <span className="similar-tour-rating-count">({displayReviewCount})</span>
           </div>
 
           <div className="similar-tour-price">

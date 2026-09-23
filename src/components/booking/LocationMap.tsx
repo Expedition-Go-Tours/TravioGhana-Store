@@ -3,8 +3,11 @@ import { buildTourPoints, toNumber, type MapPoint, type PickupMapSource, type Se
 import { getMapboxToken } from '@/lib/mapbox'
 import { pickupZoneRings } from '@/lib/pickupZone'
 import type { GeoapifyRoute } from '@/lib/geoapifyRouting'
-import MapboxPickupMap from './MapboxPickupMap'
 import PickupZoneMap, { type PickupZoneMapTour } from './PickupZoneMap'
+
+/** The Mapbox fallback renderer, loaded on demand only when MapLibre fails
+ * fatally (otherwise its ~900 KB engine chunk should never ship). */
+type MapboxPickupMapComponent = typeof import('./MapboxPickupMap')['default']
 
 interface LocationMapProps {
   tour: PickupZoneMapTour
@@ -55,6 +58,16 @@ interface LocationMapProps {
 export default function LocationMap({ tour, userMarker, onUserPointChange, onUserAddressChange, extraPoints, onPinClick, mapHeight, userOutOfRange, userChosen, selectedPin, selectedPinLabel, suppressDraggablePin, focusPoint, route }: LocationMapProps) {
   const [osmFailed, setOsmFailed] = useState(false)
   const [mapboxFailed, setMapboxFailed] = useState(false)
+  const [MapboxPickupMap, setMapboxPickupMap] = useState<MapboxPickupMapComponent | null>(null)
+
+  // Loading the fallback engine is a last resort; a failed chunk load simply
+  // drops through to the textual fallback instead of crashing the route.
+  const handleOsmFatalFailure = () => {
+    setOsmFailed(true)
+    void import('./MapboxPickupMap')
+      .then((mod) => setMapboxPickupMap(() => mod.default))
+      .catch(() => setMapboxFailed(true))
+  }
 
   // Mapbox token — evaluated once per mount; a missing token skips layer 2.
   const mapboxToken = useMemo(() => getMapboxToken(), [])
@@ -122,14 +135,15 @@ export default function LocationMap({ tour, userMarker, onUserPointChange, onUse
         selectedPinLabel={selectedPinLabel}
         suppressDraggablePin={suppressDraggablePin}
         focusPoint={focusPoint}
-        onFatalFailure={() => setOsmFailed(true)}
+        onFatalFailure={handleOsmFatalFailure}
         route={route}
       />
     )
   }
 
-  // 2. FALLBACK — Mapbox GL (2D) when a token is configured.
-  if (mapboxToken && !mapboxFailed) {
+  // 2. FALLBACK — Mapbox GL (2D) when a token is configured. While the engine
+  // chunk downloads (or if it fails), the textual fallback keeps the UI usable.
+  if (mapboxToken && !mapboxFailed && MapboxPickupMap) {
     return (
       <MapboxPickupMap
         tour={tour}

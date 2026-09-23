@@ -1,41 +1,19 @@
 import { useState, useMemo, useRef, useCallback, useEffect, type ReactNode } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, X, Star, ArrowLeft } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X, Star, ArrowLeft, MapPin } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import Navbar from '../components/Navbar'
 import TourCard from '../components/TourCard'
 import TourCardSkeleton from '../components/TourCardSkeleton'
 import NoToursEmptyState from '../components/NoToursEmptyState'
 import { useLocationSearch } from '../context/LocationSearchContext'
-import { usePlaceResolve } from '../hooks/usePlaceResolve'
 
+import SEO, { buildItemListSchema, buildBreadcrumbSchema } from '../components/SEO'
 import { useAllExpeditionTours, useTourFilterOptions, type TourCardData } from '../hooks/useExpeditionTours'
-import { useSectionTourIds, useHomepageOffers, useAttractionTours, type HomepageOfferTour } from '../hooks/useHomepageSections'
+import { useSectionTourIds, useHomepageOffers, useAttractionTours, useLikelySellOut, type HomepageOfferTour } from '../hooks/useHomepageSections'
 import './AllToursPage.css'
 
 const PAGE_SIZE = 12
-
-/**
- * Builds a windowed list of page numbers for the pagination bar: always shows
- * the first and last page plus the pages around the current one, collapsing
- * large gaps into an ellipsis (e.g. 1 … 4 5 6 … 24).
- */
-function getPageWindow(current: number, total: number): (number | '…')[] {
-  if (total <= 7) {
-    return Array.from({ length: total }, (_, i) => i + 1)
-  }
-  const pages = new Set<number>([1, total, current - 1, current, current + 1])
-  const sorted = [...pages].filter(p => p >= 1 && p <= total).sort((a, b) => a - b)
-  const out: (number | '…')[] = []
-  let prev = 0
-  for (const p of sorted) {
-    if (prev && p - prev > 1) out.push('…')
-    out.push(p)
-    prev = p
-  }
-  return out
-}
 
 function computeDiscountLabel(t: HomepageOfferTour): string | undefined {
   if (t.discountType === 'PERCENTAGE' && t.discountPercentage) {
@@ -48,6 +26,12 @@ function computeDiscountLabel(t: HomepageOfferTour): string | undefined {
   return undefined
 }
 
+/** Mirrors SellOutContext's normalized-title matching so the All Tours page
+    tags the same tours as the homepage's sell-out provider. */
+function normalizeTitle(title: string): string {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+}
+
 const RATING_OPTIONS = [
   { value: '5', label: '5' },
   { value: '4', label: '4' },
@@ -55,37 +39,6 @@ const RATING_OPTIONS = [
   { value: '2', label: '2' },
   { value: '1', label: '1' },
 ] as const
-
-const TOUR_TYPE_OPTIONS = [
-  { value: 'day', label: 'Day Tours' },
-  { value: 'multi-day', label: 'Multi-Day' },
-] as const
-
-const DURATION_BUCKETS = [
-  { value: 'under-4', label: '< 4 hours', match: (m: number) => m > 0 && m < 240 },
-  { value: '4-6', label: '4–6 hours', match: (m: number) => m >= 240 && m <= 360 },
-  { value: 'full-day', label: 'Full Day (6+)', match: (m: number) => m > 360 && m < 1440 },
-  { value: '2-3-days', label: '2–3 Days', match: (m: number) => m >= 2880 && m <= 4320 },
-  { value: '4-plus-days', label: '4+ Days', match: (m: number) => m > 4320 },
-]
-
-const PRICE_RANGES = [
-  { value: 'under-50', label: 'Under $50', match: (p: number) => p < 50 },
-  { value: '50-100', label: '$50 – $100', match: (p: number) => p >= 50 && p <= 100 },
-  { value: '100-200', label: '$100 – $200', match: (p: number) => p > 100 && p <= 200 },
-  { value: 'over-200', label: '$200+', match: (p: number) => p > 200 },
-]
-
-const SECTION_TITLES: Record<string, string> = {
-  'Recommended': 'Recommended For You',
-  'Day Tours': 'Day Tours',
-  'Multi-Day Tours': 'Multi-Day Tours',
-  'Top Rated': 'Top Rated by Travellers',
-  'Sell Out': 'Likely to Sell Out',
-  'Last Minute Deals': 'Special Offers',
-  'Top Attractions Nearby': 'Top Attractions Nearby',
-  'New Experiences': 'New Experiences',
-}
 
 /** Maps a homepage section to a client-side sort key used when the user hasn't
     picked an explicit sort (the "recommended" default). */
@@ -109,6 +62,10 @@ function popularityValue(tour: TourCardData): number {
  * far-away popular tour never overtakes one that belongs to the place.
  */
 function placeTier(tour: TourCardData): number {
+  // Backend-provided fine relevance: 0-3 in-place (based there / title /
+  // attractions-tags / description), 4 nearby. Falls back to the coarse
+  // placeMatch + distance pair for endpoints that don't compute placeRank.
+  if (tour.placeRank != null) return tour.placeRank
   if (tour.placeMatch) return 0
   if (tour.distanceKm != null && tour.distanceKm <= 50) return 1
   return 2
@@ -166,15 +123,11 @@ function applySort(tours: TourCardData[], sortKey: SortKey, nearCity = ''): Tour
   }
 }
 
-interface AllToursPageProps {
-  onOpenAuth?: (mode: 'signin' | 'signup') => void
-}
-
-export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
+export default function AllToursPage() {
   const { t } = useTranslation()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { currentLocation } = useLocationSearch()
+  const { currentLocation, setLocation } = useLocationSearch()
   const sectionParam = searchParams.get('section') || ''
   const locationParam = searchParams.get('location') || ''
   const categoryParam = searchParams.get('category') || ''
@@ -194,53 +147,150 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   const sortByVal = (sortBy[0] || 'recommended') as SortKey
-  // A `place` param is only place-scoped once it resolves to a real place;
-  // otherwise it's treated as a plain text search. The listing fetch is gated
-  // until the resolve settles so there's no text→place flicker.
-  const { data: resolvedPlace, isFetching: isResolvingPlace } = usePlaceResolve(placeParam, 'ghana')
-  const placeValue = resolvedPlace?.displayName || resolvedPlace?.name || ''
-  const isPlaceQuery = !!placeValue
+
+  const TOUR_TYPE_OPTIONS = useMemo(() => [
+    { value: 'day', label: t('allTours.typeDay') },
+    { value: 'multi-day', label: t('allTours.typeMulti') },
+  ] as const, [t])
+
+  const DURATION_BUCKETS = useMemo(() => [
+    { value: 'under-4', label: t('allTours.duration1'), match: (m: number) => m > 0 && m < 240 },
+    { value: '4-6', label: t('allTours.duration2'), match: (m: number) => m >= 240 && m <= 360 },
+    { value: 'full-day', label: t('allTours.duration3'), match: (m: number) => m > 360 && m < 1440 },
+    { value: '2-3-days', label: t('allTours.duration4'), match: (m: number) => m >= 2880 && m <= 4320 },
+    { value: '4-plus-days', label: t('allTours.duration5'), match: (m: number) => m > 4320 },
+  ], [t])
+
+  const PRICE_RANGES = useMemo(() => [
+    { value: 'under-50', label: t('allTours.price1'), match: (p: number) => p < 50 },
+    { value: '50-100', label: t('allTours.price2'), match: (p: number) => p >= 50 && p <= 100 },
+    { value: '100-200', label: t('allTours.price3'), match: (p: number) => p > 100 && p <= 200 },
+    { value: 'over-200', label: t('allTours.price4'), match: (p: number) => p > 200 },
+  ], [t])
+
+  const SECTION_TITLES: Record<string, string> = useMemo(() => ({
+    'Recommended': t('allTours.sectionRecommended'),
+    'Day Tours': t('allTours.sectionDayTours'),
+    'Multi-Day Tours': t('allTours.sectionMultiDay'),
+    'Top Rated': t('allTours.sectionTopRated'),
+    'Sell Out': t('allTours.sectionSellOut'),
+    'Last Minute Deals': t('allTours.sectionSpecial'),
+    'Top Attractions Nearby': t('allTours.sectionAttractions'),
+    'New Experiences': t('allTours.sectionNew'),
+  }), [t])
+
+  const sortOptions = useMemo(() => [
+    { value: 'recommended', label: t('allTours.sortPopular') },
+    { value: 'near', label: t('allTours.sortClosest', { defaultValue: 'Closest' }) },
+    { value: 'rating', label: t('allTours.sortPriceLow') },
+    { value: 'popular', label: t('allTours.sortPriceHigh') },
+    { value: 'price-low', label: t('allTours.sortPriceLow') },
+    { value: 'price-high', label: t('allTours.sortPriceHigh') },
+  ] as const, [t])
+
+  // Unified listing query: the client sends the RAW query and the SERVER decides
+  // whether it's a place (scope to it, with region fallback) or a plain text
+  // search. One request — no resolve→listing waterfall, so there is no window in
+  // which the page can render a placeholder scope.
+  const { data: allToursData, isPending, isError, error } = useAllExpeditionTours({
+    mood: moodParam,
+    near: nearParam,
+    q: placeParam,
+  })
+  const allTours = allToursData?.tours
+  // Read scope fields straight off the hook result rather than via an
+  // intermediate object binding — a local object reference is treated as
+  // mutable by React Compiler, which then can't preserve this component's
+  // manual memoization.
+  //
+  // When the backend widened the search to the place's region (the place itself
+  // has no tours), the result is region-level, not place-level — rank by
+  // popularity instead of place relevance and label it honestly.
+  const fallbackRegion = allToursData?.placeScope?.fallbackRegion ?? null
+  const placeValue = allToursData?.placeScope?.displayName || allToursData?.placeScope?.requested || placeParam
+  // The region the place sits in (sent for both modes). Viewing a place-scoped
+  // listing personalizes the homepage, so this is applied no matter which route
+  // brought the user here — suggestion click, recent search, shared link, Back.
+  const scopeRegion = allToursData?.placeScope?.region || fallbackRegion
+  useEffect(() => {
+    if (scopeRegion) setLocation(scopeRegion)
+  }, [scopeRegion, setLocation])
+  // Only a true in-place scope gets place ranking; region fallback and text
+  // searches sort by popularity. Computed in the component body (not inside the
+  // memo) so the memo's dependency list stays compiler-friendly.
+  const isPlaceQuery = allToursData?.placeScope?.mode === 'place'
   const effectiveSortKey: SortKey =
     sortByVal === 'near'
       ? 'near'
-      : sortByVal === 'recommended' && isPlaceQuery
+      : sortByVal === 'recommended' && isPlaceQuery && !fallbackRegion
         ? 'place'
         : sortByVal === 'recommended' && nearParam
           ? 'near'
           : sortByVal === 'recommended' && sectionParam
             ? sectionSortKey(sectionParam)
             : sortByVal
-
-  const { data: allTours, isLoading, isError, error } = useAllExpeditionTours({
-    mood: moodParam,
-    near: nearParam,
-    place: placeValue,
-    search: !isPlaceQuery && placeParam ? placeParam : '',
-    enabled: !isResolvingPlace,
-  })
   const { data: filterOptionData } = useTourFilterOptions()
 
   // Single lightweight call to get section tour IDs (reads pre-computed Redis cache)
   const { data: sectionTourIdList } = useSectionTourIds(sectionParam)
   const isOffersSection = sectionParam === 'Last Minute Deals'
   const { data: offerTours } = useHomepageOffers(50)
+  const { data: sellOutTours } = useLikelySellOut(50)
   const offersMap = useMemo(() => {
     if (!offerTours?.length) return null
     const map = new Map<string, HomepageOfferTour>()
     for (const o of offerTours) map.set(o.id, o)
     return map
   }, [offerTours])
+
+  // Id + normalized-title membership of the homepage sell-out list, so cards
+  // carry the same "Likely to sell out" tag they get on the homepage (which
+  // uses SellOutProvider around its sections).
+  const sellOutSet = useMemo(() => {
+    if (!sellOutTours?.length) return null
+    const ids = new Set<string>()
+    const titles = new Set<string>()
+    for (const t of sellOutTours) {
+      if (t.id) ids.add(t.id)
+      if (t.title) titles.add(normalizeTitle(t.title))
+    }
+    return { ids, titles }
+  }, [sellOutTours])
+
+  const isSellOutTour = (tour: TourCardData): boolean => {
+    if (sectionParam === 'Sell Out') return true
+    if (!sellOutSet) return false
+    if (tour.id && sellOutSet.ids.has(tour.id)) return true
+    const title = normalizeTitle(tour.title)
+    return !!title && sellOutSet.titles.has(title)
+  }
   const sectionTourIds = useMemo(() => {
     if (!sectionTourIdList?.length) return null
     return new Set(sectionTourIdList)
   }, [sectionTourIdList])
 
   // Fetch tours for a specific attraction (when ?attraction= is set)
-  const { data: attractionToursData } = useAttractionTours(attractionParam, 50)
+  const { data: attractionToursData, isLoading: isLoadingAttractionTours } = useAttractionTours(attractionParam, 50)
   const attractionTourIds = useMemo(() => {
     if (!attractionParam || !attractionToursData?.length) return null
     return new Set(attractionToursData.map(t => t.id))
   }, [attractionParam, attractionToursData])
+
+  // True when an attraction search returned zero linked tours — the page should
+  // show the "not quite there yet" empty state for the attraction, then fall
+  // back to region-level tours below.
+  const hasZeroAttractionTours = !!attractionParam
+    && !isLoadingAttractionTours
+    && attractionToursData !== undefined
+    && attractionToursData.length === 0
+
+  // Single "we don't know the result set yet" flag. `isPending` is react-query's
+  // "no data for the current query key yet", which covers the first frame (before
+  // the fetch starts) as well as the request itself — so the header can never
+  // render a count or scope before the server has told us what it resolved to.
+  // The attraction-tours fetch is included because the grid would otherwise show
+  // the unfiltered place list before the attraction filter is known.
+  const isBusy = isPending || (!!attractionParam && isLoadingAttractionTours)
 
   // Seed the destination filter from a /tours?location=... link (once per value).
   const seededLocationRef = useRef<string | null>(null)
@@ -265,68 +315,71 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
     window.setTimeout(() => setPage(1), 0)
   }, [tourTypes, destinations, categories, durationFilter, priceFilter, ratingFilter, sortBy])
 
-  const filteredTours = useMemo(() => {
-    let list = allTours || []
+  // React Compiler is enabled in this build and memoizes this automatically.
+  // A manual useMemo it cannot preserve makes it skip the ENTIRE component
+  // (react-hooks/preserve-manual-memoization), and its own analysis handles
+  // deps a dep-array cannot express (e.g. `sortBy[0]` or hook-derived values).
+  const filteredTours = (() => {
+  let list = allTours || []
 
-    if (tourTypes.length > 0) {
-      list = list.filter((tour) => {
-        const isMultiDay = (tour.durationMinutes ?? 0) >= 1440
-        return tourTypes.includes(isMultiDay ? 'multi-day' : 'day')
+  if (tourTypes.length > 0) {
+    list = list.filter((tour) => {
+      const isMultiDay = (tour.durationMinutes ?? 0) >= 1440
+      return tourTypes.includes(isMultiDay ? 'multi-day' : 'day')
+    })
+  }
+  if (durationFilter.length > 0) {
+    list = list.filter((tour) => {
+      const mins = tour.durationMinutes
+      if (mins == null || mins <= 0) return false
+      return durationFilter.some(value => DURATION_BUCKETS.find(b => b.value === value)?.match(mins))
+    })
+  }
+  if (priceFilter.length > 0) {
+    list = list.filter((tour) => {
+      const price = tour.priceValue
+      if (price == null) return false
+      return priceFilter.some(value => PRICE_RANGES.find(r => r.value === value)?.match(price))
+    })
+  }
+  if (ratingFilter.length > 0) {
+    const minRating = Math.min(...ratingFilter.map(Number))
+    list = list.filter((tour) => (tour.ratingValue ?? 0) >= minRating)
+  }
+  if (categories.length > 0) {
+    list = list.filter((tour) => categories.some(c => c.toLowerCase() === tour.category?.toLowerCase()))
+  }
+  if (destinations.length > 0) {
+    list = list.filter((tour) => {
+      const locLower = tour.location.toLowerCase()
+      return destinations.some((d) => {
+        const dl = d.toLowerCase()
+        return locLower === dl || locLower.startsWith(`${dl},`) || locLower.includes(`, ${dl}`)
       })
-    }
-    if (durationFilter.length > 0) {
-      list = list.filter((tour) => {
-        const mins = tour.durationMinutes
-        if (mins == null || mins <= 0) return false
-        return durationFilter.some(value => DURATION_BUCKETS.find(b => b.value === value)?.match(mins))
-      })
-    }
-    if (priceFilter.length > 0) {
-      list = list.filter((tour) => {
-        const price = tour.priceValue
-        if (price == null) return false
-        return priceFilter.some(value => PRICE_RANGES.find(r => r.value === value)?.match(price))
-      })
-    }
-    if (ratingFilter.length > 0) {
-      const minRating = Math.min(...ratingFilter.map(Number))
-      list = list.filter((tour) => (tour.ratingValue ?? 0) >= minRating)
-    }
-    if (categories.length > 0) {
-      list = list.filter((tour) => categories.some(c => c.toLowerCase() === tour.category?.toLowerCase()))
-    }
-    if (destinations.length > 0) {
-      list = list.filter((tour) => {
-        const locLower = tour.location.toLowerCase()
-        return destinations.some((d) => {
-          const dl = d.toLowerCase()
-          return locLower === dl || locLower.startsWith(`${dl},`) || locLower.includes(`, ${dl}`)
-        })
-      })
-    }
+    })
+  }
 
-    // Filter by section algorithm (tours curated by the homepage backend)
-    if (sectionTourIds) {
-      list = list.filter(tour => sectionTourIds.has(tour.id))
-    }
+  // Filter by section algorithm (tours curated by the homepage backend)
+  if (sectionTourIds) {
+    list = list.filter(tour => sectionTourIds.has(tour.id))
+  }
 
-    // Filter by attraction (tours that visit a specific attraction)
-    if (attractionTourIds) {
-      list = list.filter(tour => attractionTourIds.has(tour.id))
-    }
+  // Filter by attraction (tours that visit a specific attraction)
+  if (attractionTourIds) {
+    list = list.filter(tour => attractionTourIds.has(tour.id))
+  }
 
-    return applySort(list, effectiveSortKey, nearParam)
-  }, [allTours, tourTypes, durationFilter, priceFilter, ratingFilter, categories, destinations, effectiveSortKey, nearParam, sectionTourIds, attractionTourIds])
+  return applySort(list, effectiveSortKey, nearParam)
+  })()
 
   const totalCount = filteredTours.length
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
   const hasNextPage = page < totalPages
   const hasPrevPage = page > 1
 
-  const displayTours = useMemo(
-    () => filteredTours.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
-    [filteredTours, page],
-  )
+  // Cheap slice — no manual memo (React Compiler memoizes it, and a manual one
+  // it can't preserve makes it skip the whole component).
+  const displayTours = filteredTours.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const filterOptions = useMemo(() => {
     const optionDestinations = [...(filterOptionData?.destinations || [])]
@@ -348,7 +401,7 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
     filterOptions.categories.forEach(c => pills.push({ key: `cat-${c.value}`, value: c.value, label: c.label }))
     RATING_OPTIONS.forEach(r => pills.push({ key: `rating-${r.value}`, value: r.value, label: r.label }))
     return pills
-  }, [filterOptions])
+  }, [filterOptions, TOUR_TYPE_OPTIONS, DURATION_BUCKETS, PRICE_RANGES])
 
   const isPillActive = (value: string) => {
     return tourTypes.includes(value) || destinations.includes(value) ||
@@ -366,28 +419,23 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
   }
 
   const baseTitle = attractionParam
-    ? attractionParam
+    ? hasZeroAttractionTours
+      ? t('sections.toursIn', { location: placeValue || placeParam || attractionParam })
+      : attractionParam
     : placeParam
-    ? t('sections.toursIn', { location: placeValue || placeParam })
+    ? fallbackRegion
+      ? t('sections.toursInRegion', { region: fallbackRegion })
+      : t('sections.toursIn', { location: placeValue || placeParam })
     : moodParam
     ? moodParam
     : locationParam
     ? t('sections.toursIn', { location: locationParam })
-    : SECTION_TITLES[sectionParam] || t('sections.allToursTitle')
+    : SECTION_TITLES[sectionParam] || t('allTours.pageTitle')
 
   // When arriving "near {city}", surface it in the heading.
   const pageTitle = nearParam
     ? t('allTours.nearLocation', { title: baseTitle, location: nearParam, defaultValue: '{{title}} near {{location}}' })
     : baseTitle
-
-  const sortOptions = useMemo(() => [
-    { value: 'recommended', label: t('sections.recommendedTitle') },
-    { value: 'near', label: t('allTours.sortClosest', { defaultValue: 'Closest' }) },
-    { value: 'rating', label: t('sections.topRatedTitle') },
-    { value: 'popular', label: 'Most Popular' },
-    { value: 'price-low', label: 'Price: Low – High' },
-    { value: 'price-high', label: 'Price: High – Low' },
-  ] as const, [t])
 
   const handleMulti = (setter: React.Dispatch<React.SetStateAction<string[]>>) =>
     (value: string) => setter(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value])
@@ -419,57 +467,105 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
   const handleScroll = useCallback(() => updateArrows(), [updateArrows])
 
   const goNextPage = () => {
-    if (hasNextPage) goToPage(page + 1)
+    if (hasNextPage) setPage(p => p + 1)
   }
 
   const goPrevPage = () => {
-    if (hasPrevPage) goToPage(page - 1)
+    if (hasPrevPage) setPage(p => Math.max(1, p - 1))
   }
 
-  const goToPage = (target: number) => {
-    const next = Math.min(Math.max(1, target), totalPages)
-    if (next === page) return
-    setPage(next)
-    requestAnimationFrame(() => {
-      document.querySelector('.filter-bar-sticky')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    })
-  }
+  // Real back navigation when the user arrived from within the app; otherwise
+  // (direct link / new tab, where there is no in-app history) go to the
+  // homepage so the button is never a dead end.
+  const handleBack = useCallback(() => {
+    const idx = typeof window !== 'undefined' ? (window.history.state?.idx ?? 0) : 0
+    if (idx > 0) navigate(-1)
+    else navigate('/')
+  }, [navigate])
 
-  const pageWindow = useMemo(
-    () => getPageWindow(page, totalPages),
-    [page, totalPages],
-  )
+  const seoTitle = fallbackRegion
+    ? `Tours in ${fallbackRegion}`
+    : placeParam
+    ? `Tours in ${placeParam} | Ghana Tours & Experiences`
+    : 'Ghana Tours & Experiences | Book Authentic African Adventures'
+
+  const seoDescription = placeParam
+    ? `Discover ${totalCount || 'the best'} tours and experiences in ${placeParam}, Ghana. Book cultural tours, food tours, wildlife safaris, and adventure activities. Free cancellation, best prices guaranteed.`
+    : 'Explore authentic Ghana tours and experiences. Book cultural tours, wildlife safaris, food tours, and adventure activities across Accra, Cape Coast, Volta Region, and more. Free cancellation.'
+
+  const seoKeywords = placeParam
+    ? `${placeParam} tours, things to do in ${placeParam}, ${placeParam} Ghana, ${placeParam} activities, ${placeParam} experiences, Ghana tours, book tours in ${placeParam}`
+    : 'Ghana tours, things to do in Ghana, Ghana experiences, Accra tours, Cape Coast tours, Ghana safari, Ghana food tour, Ghana cultural tour, West Africa tours'
 
   return (
     <div className="all-tours-page">
-      <Navbar onOpenAuth={onOpenAuth} />
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        keywords={seoKeywords}
+        jsonLd={[
+          buildBreadcrumbSchema([
+            { name: 'Home', url: 'https://www.travioghana.com/' },
+            ...(placeParam
+              ? [{ name: placeParam, url: `https://www.travioghana.com/tours?place=${encodeURIComponent(placeParam)}` }]
+              : []),
+            { name: 'Tours', url: 'https://www.travioghana.com/tours' },
+          ]),
+          ...(filteredTours.length > 0 ? [buildItemListSchema(
+            filteredTours.slice(0, 20).map((t: TourCardData) => ({
+              name: t.title,
+              url: `https://www.travioghana.com/tour/${t.slug}`,
+              image: t.image || undefined,
+            }))
+          )] : []),
+        ]}
+      />
       <div className="all-tours-container">
         <div className="all-tours-header">
           <div className="all-tours-header-left">
-            {(sectionParam || moodParam || attractionParam || locationParam || categoryParam) && (
-              <button
-                onClick={() => navigate('/')}
-                className="all-tours-back-btn"
-                aria-label="Back to homepage"
-              >
-                <ArrowLeft size={20} />
-              </button>
-            )}
             <div>
-              <h1 className="all-tours-title">{pageTitle}</h1>
-              {isLoading ? (
-                <p className="all-tours-count">Loading tours...</p>
+              {isBusy ? (
+                <div className="all-tours-title-skeleton" aria-hidden="true" />
+              ) : (
+                <h1 className="all-tours-title">{pageTitle}</h1>
+              )}
+              {isBusy ? (
+                <p className="all-tours-count">{t('allTours.loading')}</p>
               ) : (
                 <p className="all-tours-count">
-                  {totalCount} tour{totalCount !== 1 ? 's' : ''} found
+                  {totalCount === 1
+                    ? t('allTours.tourFound', { count: totalCount })
+                    : t('allTours.toursFound', { count: totalCount })}
                 </p>
               )}
+              <button
+                type="button"
+                className="all-tours-back-inline"
+                onClick={handleBack}
+                aria-label={t('allTours.back', { defaultValue: 'Go back' })}
+              >
+                <ArrowLeft size={16} aria-hidden="true" />
+                <span>{t('allTours.back', { defaultValue: 'Back' })}</span>
+              </button>
             </div>
           </div>
           {activeFilterCount > 0 && (
-            <button className="all-tours-clear" onClick={clearAll}>Clear all filters</button>
+            <button className="all-tours-clear" onClick={clearAll}>{t('allTours.clearFilters')}</button>
           )}
         </div>
+
+        {!isBusy && !isError && fallbackRegion && (
+          <div className="all-tours-region-fallback" role="status" aria-live="polite">
+            <MapPin size={16} className="all-tours-region-fallback-icon" aria-hidden="true" />
+            <span>
+              {t('allTours.regionFallbackNotice', {
+                location: allToursData?.placeScope?.requested || placeParam,
+                region: fallbackRegion,
+                defaultValue: "We don't have tours in {{location}} yet, but here are experiences across {{region}}.",
+              })}
+            </span>
+          </div>
+        )}
 
         <div className="filter-bar-sticky">
           <div className="filter-bar">
@@ -477,7 +573,7 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6, flexShrink: 0 }}>
                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
               </svg>
-              Filters
+              {t('allTours.filters')}
               {activeFilterCount > 0 && <span className="filter-count-badge">{activeFilterCount}</span>}
             </button>
 
@@ -548,7 +644,19 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
           </div>
         </div>
 
-        {isLoading && (
+        {/* Attraction with zero linked tours. If the region fallback produced
+            tours, just show those under the normal heading — an empty-state hero
+            there reads as "this region has nothing" while listing its tours. */}
+        {!isBusy && !isError && hasZeroAttractionTours && displayTours.length === 0 && (
+          <NoToursEmptyState
+            location={placeValue || placeParam}
+            attraction={attractionParam}
+            region={placeValue || placeParam}
+            onBrowseAll={() => navigate('/tours')}
+          />
+        )}
+
+        {isBusy && displayTours.length === 0 && (
           <div className="all-tours-grid">
             {Array.from({ length: PAGE_SIZE }).map((_, i) => (
               <TourCardSkeleton key={i} />
@@ -558,12 +666,12 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
 
         {isError && (
           <div className="all-tours-empty">
-            <h3>Failed to load tours</h3>
-            <p>{(error as Error)?.message || 'Please try again later.'}</p>
+            <h3>{t('allTours.failedToLoad')}</h3>
+            <p>{(error as Error)?.message || t('allTours.tryAgain')}</p>
           </div>
         )}
 
-        {!isLoading && !isError && (
+        {!isBusy && !isError && (
           <div className="all-tours-grid">
             <AnimatePresence mode="popLayout">
               {displayTours.map((tour) => (
@@ -576,8 +684,6 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
                   transition={{ duration: 0.25 }}
                 >
                     <TourCard
-                      imageClean
-                      hideFeatures
                       title={tour.title}
                       category={tour.category}
                       duration={tour.duration}
@@ -595,15 +701,16 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
                       cancellationPolicy={tour.cancellationPolicy}
                       pickupIncluded={tour.pickupIncluded}
                       meetingMode={tour.meetingMode}
-                      accommodationIncluded={tour.accommodationIncluded}
                       languages={tour.languages}
                       discount={offersMap?.get(tour.id) ? computeDiscountLabel(offersMap.get(tour.id)!) : undefined}
                       specialOffers={offersMap?.get(tour.id)?.specialOffers}
                       hideOfferBadge={isOffersSection}
-                      likelyToSellOut={sectionParam === 'Sell Out'}
+                      likelyToSellOut={isSellOutTour(tour)}
+                      imageClean
+                      hideFeatures
                       compactDurationOnMobile
                       bodyOfferBadgesOnMobile
-                      factsGridOnMobile
+                      openInNewTab
                     />
                 </motion.div>
               ))}
@@ -611,53 +718,38 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
           </div>
         )}
 
-        {!isLoading && !isError && displayTours.length === 0 && (
+        {!isBusy && !isError && !hasZeroAttractionTours && displayTours.length === 0 && (
           <NoToursEmptyState
             location={placeParam || nearParam || locationParam || currentLocation || ''}
             onBrowseAll={() => navigate('/tours')}
-            onSecondary={clearAll}
-            secondaryLabel={t('allTours.clearAll', { defaultValue: 'Clear All Filters' })}
           />
         )}
 
-        {totalPages > 1 && (
+        {!isBusy && (hasNextPage || hasPrevPage) && (
           <div className="all-tours-load-more">
-            <nav className="all-tours-pagination" aria-label="Pagination">
+            <div className="pagination-controls">
               <button
-                className="pagination-btn pagination-prev"
+                className="all-tours-load-btn"
                 onClick={goPrevPage}
                 disabled={!hasPrevPage}
-                aria-label="Previous page"
+                style={{ opacity: hasPrevPage ? 1 : 0.4 }}
               >
-                <ChevronLeft size={18} />
+                <ChevronLeft size={14} />
+                {t('allTours.prev')}
               </button>
-              {pageWindow.map((item, idx) =>
-                item === '…' ? (
-                  <span key={`ellipsis-${idx}`} className="pagination-ellipsis" aria-hidden="true">
-                    …
-                  </span>
-                ) : (
-                  <button
-                    key={item}
-                    className={`pagination-btn ${item === page ? 'active' : ''}`}
-                    onClick={() => goToPage(item)}
-                    disabled={item === page}
-                    aria-label={`Page ${item}`}
-                    aria-current={item === page ? 'page' : undefined}
-                  >
-                    {item}
-                  </button>
-                )
-              )}
+              <span className="pagination-indicator">
+                {t('allTours.pageOf', { page, total: totalPages })}
+              </span>
               <button
-                className="pagination-btn pagination-next"
+                className="all-tours-load-btn"
                 onClick={goNextPage}
                 disabled={!hasNextPage}
-                aria-label="Next page"
+                style={{ opacity: hasNextPage ? 1 : 0.4 }}
               >
-                <ChevronRight size={18} />
+                {t('allTours.next')}
+                <ChevronRight size={14} />
               </button>
-            </nav>
+            </div>
           </div>
         )}
       </div>
@@ -681,14 +773,14 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
             >
               <div className="filter-drawer-header">
-                <h2 className="filter-drawer-title">Filters</h2>
+                <h2 className="filter-drawer-title">{t('allTours.filters')}</h2>
                 <button type="button" className="filter-drawer-close" onClick={() => setDrawerOpen(false)}>
                   <X size={18} />
                 </button>
               </div>
               {activeFilterCount > 0 && (
                 <button className="filter-drawer-clear" onClick={() => { clearAll(); }}>
-                  Clear all filters ({activeFilterCount})
+                  {t('allTours.clearFilters')} ({activeFilterCount})
                 </button>
               )}
 
@@ -701,12 +793,10 @@ export default function AllToursPage({ onOpenAuth }: AllToursPageProps) {
                     ))}
                   </span>
                 )} />
-                <FilterSection title="Type" options={[...TOUR_TYPE_OPTIONS]} selected={tourTypes} onChange={handleMulti(setTourTypes)} />
-                <FilterSection title={t('common.duration')} options={DURATION_BUCKETS.map(b => ({ value: b.value, label: b.label }))} selected={durationFilter} onChange={handleMulti(setDurationFilter)} />
-                <FilterSection title="Price" options={PRICE_RANGES.map(r => ({ value: r.value, label: r.label }))} selected={priceFilter} onChange={handleMulti(setPriceFilter)} />
-                <FilterSection title={t('hero.destination')} options={filterOptions.destinations} selected={destinations} onChange={handleMulti(setDestinations)} />
-                <FilterSection title="Category" options={filterOptions.categories} selected={categories} onChange={handleMulti(setCategories)} />
-                <FilterSection title="Sort" options={[...sortOptions]} selected={sortBy} onChange={handleSingle(setSortBy)} single />
+                <FilterSection title={t('allTours.filterType')} options={[...TOUR_TYPE_OPTIONS]} selected={tourTypes} onChange={handleMulti(setTourTypes)} />
+                <FilterSection title={t('allTours.filterPrice')} options={PRICE_RANGES.map(r => ({ value: r.value, label: r.label }))} selected={priceFilter} onChange={handleMulti(setPriceFilter)} />
+                <FilterSection title={t('allTours.filterCategory')} options={filterOptions.categories} selected={categories} onChange={handleMulti(setCategories)} />
+                <FilterSection title={t('allTours.filterSort')} options={[...sortOptions]} selected={sortBy} onChange={handleSingle(setSortBy)} single />
               </div>
             </motion.div>
           </>

@@ -1,28 +1,35 @@
-﻿import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useQueryClient } from '@tanstack/react-query'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence, useAnimate } from 'framer-motion'
 import { toast } from 'sonner'
 import {
   Check, ArrowLeft, MapPin, CalendarDays, CalendarCheck, Users, Info, X,
-  Phone, MessageSquare, ShieldCheck, Star, Clock, Globe, Loader2,
-  Car, CreditCard, Ticket, ExternalLink,
+  Phone, ShieldCheck, Clock, Globe, Loader2,
+  Car, CreditCard, Ticket, ExternalLink, Layers,
 } from 'lucide-react'
 import logoSrc from '../assets/TravioG.png'
 import Footer from '../components/Footer'
+import StarRating from '../components/StarRating'
 import StepBadge from '../components/booking/StepBadge'
 import { FieldLabel, TextInput, SelectInput } from '../components/booking/FormFields'
 import ChangeBookingModal from '../components/booking/ChangeBookingModal'
 import ExpiredHoldModal from '../components/booking/ExpiredHoldModal'
 import SignInPromptModal from '../components/booking/SignInPromptModal'
 import CardField from '../components/booking/CardField'
+import SavedCardPicker, { NEW_CARD } from '../components/booking/SavedCardPicker'
+import { getPaymentMethods } from '../features/account/api'
+import OptionSelector from '../components/booking/OptionSelector'
+import BookingTransition from '../components/BookingTransition'
 import { useAuthUser } from '../hooks/useAuthUser'
 import { setAuthReturnTo } from '../lib/auth'
 import type { CardElementHandle } from '../components/booking/CardField'
 import { fetchWithAuth } from '../lib/api'
-import { useCreateBooking } from '../hooks/useExpeditionBookings'
-import { buildE164Phone, isValidPhoneInput, COUNTRY_CODES } from '../lib/phone'
+import { useCreateBooking, useCalculateCheckout } from '../hooks/useExpeditionBookings'
+import { buildE164Phone, isValidPhoneInput, splitE164Phone, COUNTRY_CODES } from '../lib/phone'
+import { getAccount } from '../features/account/api'
+import type { TourOption } from '../lib/tourTypes'
 import { hasLocationOnlyAreas, isPickupLocationSatisfied, pickupZoneStatus, distanceMeters, type PickupAreaShape } from '../lib/pickupZone'
 import LocationMap from '../components/booking/LocationMap'
 import MapErrorBoundary from '../components/booking/MapErrorBoundary'
@@ -46,7 +53,9 @@ import {
   formatTime12h,
   type TourScheduleInfo,
 } from '../lib/tourAvailability'
-import { freeCancellationDateLabel } from '../lib/cancellationLabel'
+import { cancellationStatus } from '../lib/cancellationLabel'
+import { requestLocation } from '../lib/analytics'
+import { reverseGeocode } from '../lib/locations'
 
 /* --- Tour data from location state --- */
 
@@ -54,6 +63,14 @@ import { freeCancellationDateLabel } from '../lib/cancellationLabel'
 // (no router state, no matching draft, and the by-id re-fetch is still in
 // flight). The full booking tour shape lives in lib/bookingTour.
 const FALLBACK_TOUR: BookingTour = DEFAULT_BOOKING_TOUR
+
+// Reserve-now-pay-later floor: the backend (payLaterLeadTime, default 48h) only
+// lets a customer reserve now/pay later when the activity is at least this far
+// out, so the pay-later sweep always has its 24h charge window. Mirrored here
+// (client heuristic) so the UI disables the option instead of dead-ending on a
+// server 400. The server remains authoritative regardless.
+const PAY_LATER_MIN_HOURS = 48
+const PAY_LATER_WINDOW_MS = PAY_LATER_MIN_HOURS * 60 * 60 * 1000
 
 // Time label for the date/time summary rows: time-slot tours show the chosen
 // slot; opening-hours tours show the selected day's opening hours, falling back
@@ -246,7 +263,7 @@ function referenceStartLabel(value?: string): string {
 // Drop-off is appended when the supplier configured one.
 // `embedded` renders it as a sub-section (no outer card border/background) so
 // it can sit inside the tour summary card without a nested box.
-function MeetingPickupCard({ tour, embedded = false, onOpenMap, showMapLink = true, showDirections = false }: {
+function MeetingPickupCard({ tour, embedded = false, onOpenMap, showMapLink = true, showDirections = false, capturedLocation, isCapturingLocation }: {
   tour: typeof FALLBACK_TOUR
   embedded?: boolean
   /** Opens the map modal (a pin per pickup spot). */
@@ -255,6 +272,10 @@ function MeetingPickupCard({ tour, embedded = false, onOpenMap, showMapLink = tr
   showMapLink?: boolean
   /** Whether the Google/Apple Maps directions links (meeting-point tours) are shown. */
   showDirections?: boolean
+  /** User's captured location address for meeting point tours. */
+  capturedLocation?: string
+  /** Whether location is still being captured. */
+  isCapturingLocation?: boolean
 }) {
   const mode = tour.meetingMode
 
@@ -397,6 +418,18 @@ function MeetingPickupCard({ tour, embedded = false, onOpenMap, showMapLink = tr
             )}
             {tour.meetingPointDescription && (
               <p className="pl-[22px] leading-relaxed text-slate-500">{tour.meetingPointDescription}</p>
+            )}
+            {isCapturingLocation && (
+              <p className="flex items-center gap-2 pl-[22px] text-sm text-slate-500">
+                <Loader2 size={13} className="animate-spin" />
+                Detecting your location…
+              </p>
+            )}
+            {capturedLocation && !isCapturingLocation && (
+              <p className="flex items-center gap-2 pl-[22px] text-sm text-slate-600">
+                <MapPin className="size-3.5 shrink-0 text-emerald-600" />
+                Your location: {capturedLocation}
+              </p>
             )}
             </div>
         )}
@@ -673,6 +706,9 @@ function ContactDetailsStep({
 function ActivityDetailsStep({
   tour, onNext, step, onNavigate, hasError, disabled,
   contact, onContactChange, showPickupLocation, locationValid,
+  isCapturingLocation,
+  options, optionValue, onOptionChange, optionQuoting, optionError,
+  staticInfo = false,
 }: {
   tour: typeof FALLBACK_TOUR
   onNext: () => void
@@ -684,6 +720,17 @@ function ActivityDetailsStep({
   onContactChange: (key: string, value: string | boolean | number | null) => void
   showPickupLocation: boolean
   locationValid: boolean
+  isCapturingLocation: boolean
+  /** Multi-option tours: sellable (non-private) options for the GYG-style
+      "Choose your option" picker shown at the top of step 1. */
+  options?: TourOption[]
+  optionValue?: string | null
+  onOptionChange?: (optionId: string) => void
+  optionQuoting?: boolean
+  optionError?: string
+  /** Meeting-point tours whose step 1 is skipped: render the meeting details
+      as a static, non-editable block (no step header, badge, Next or Edit). */
+  staticInfo?: boolean
 }) {
   const isActive = step === 1
   const isCompleted = step > 1
@@ -784,6 +831,8 @@ function ActivityDetailsStep({
         embedded
         onOpenMap={handleOpenMap}
         showDirections
+        capturedLocation={contact.location}
+        isCapturingLocation={isCapturingLocation}
       />
     </div>
   )
@@ -804,6 +853,7 @@ function ActivityDetailsStep({
     <MapErrorBoundary resetKey={mapTour || tour}>
       <LocationMap
         tour={(mapTour || tour) as PickupZoneMapTour}
+        suppressDraggablePin={tour.meetingMode === 'meeting_point'}
         userMarker={selectedPin ? null : { lat: contact.pickupLat, lng: contact.pickupLng, label: contact.location }}
         userOutOfRange={mapUserOutOfRange}
         userChosen={contact.pickupLat != null && contact.pickupLng != null && !selectedPin}
@@ -860,6 +910,84 @@ function ActivityDetailsStep({
     />
   )
 
+  // GYG parity: the "Choose your option" picker renders only when the tour
+  // offers >1 sellable option. Single-option tours show nothing (and never
+  // send an optionId). Built as a fragment so `options` narrows past the
+  // length guard.
+  const optionPicker = (() => {
+    if (!options || options.length <= 1) return null
+    return (
+      <div className="space-y-3">
+        <div>
+          <h3 className="text-base font-bold text-slate-900 tracking-tight">Choose your option</h3>
+          {optionQuoting ? (
+            <p className="mt-1 flex items-center gap-1.5 text-xs font-medium text-emerald-600">
+              <Loader2 className="size-3 animate-spin" />
+              Updating price…
+            </p>
+          ) : (
+            <p className="mt-1 text-xs text-slate-400">
+              Each option has its own availability and pricing — switching re-prices your booking.
+            </p>
+          )}
+        </div>
+        <OptionSelector
+          options={options}
+          value={optionValue}
+          onChange={(id) => onOptionChange?.(id)}
+          disabledIds={optionQuoting ? new Set(options.map((o) => o.id)) : undefined}
+        />
+        {optionError && (
+          <p role="alert" className="rounded-lg bg-rose-50 px-4 py-2.5 text-xs font-semibold text-rose-600">
+            {optionError}
+          </p>
+        )}
+      </div>
+    )
+  })()
+
+  // Chosen-option summary row shown once the step is collapsed (steps 2-3).
+  const optionSummaryCollapsed = (() => {
+    if (!options || options.length <= 1 || !optionValue) return null
+    const title = options.find((o) => o.id === optionValue)?.title
+    if (!title) return null
+    return (
+      <div className="flex items-start gap-2 text-sm text-slate-600">
+        <Layers className="mt-0.5 size-3.5 shrink-0 text-emerald-600" />
+        <p>
+          <span className="font-semibold text-slate-800">Option:</span>{' '}
+          <span>{title}</span>
+        </p>
+      </div>
+    )
+  })()
+
+  // Meeting-point tours whose step 1 is skipped: show the meeting details as a
+  // static, non-editable block (no step header, badge, Next or Edit).
+  if (staticInfo) {
+    return (
+      <div className="rounded-[1.75rem] border border-slate-200/40 bg-white p-7 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] sm:p-9">
+        <h2 className="text-lg font-bold text-slate-900 tracking-tight">Meeting point</h2>
+        <div className="mt-4 space-y-5">
+          {meetingSummaryCard}
+          {showZoneMap && (
+            <div className="space-y-1">
+              {resolvingPoints && (
+                <p className="flex items-center gap-1.5 px-1 text-[11px] font-medium text-slate-400">
+                  <Loader2 className="size-3 animate-spin" />
+                  Locating pickup points…
+                </p>
+              )}
+              {locationMap}
+              {travelTimeChip}
+            </div>
+          )}
+          {pickupPhoto}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <>
     <StepCard id="booking-step-1">
@@ -904,6 +1032,8 @@ function ActivityDetailsStep({
             exit="exit"
             className="space-y-5 p-7 sm:p-9"
           >
+            {optionPicker}
+
             {!showPickupLocation && meetingSummaryCard}
 
             {showPickupLocation && (
@@ -970,6 +1100,7 @@ function ActivityDetailsStep({
             animate="visible"
             className="space-y-3 p-7 sm:p-9"
           >
+            {optionSummaryCollapsed}
             {meetingSummaryCollapsed}
             {/* The map stays out of the collapsed summary — the traveller just
                 picked their location on it, so only the ETA chip remains. */}
@@ -1061,13 +1192,55 @@ function PaymentDetailsStep({
   const isCompleted = step > 3
   const [cardHandle, setCardHandle] = useState<CardElementHandle | null>(null)
   const [creating, setCreating] = useState(false)
+  const [selectedCardId, setSelectedCardId] = useState('')
+  const user = useAuthUser()
+  const authenticated = Boolean(user?.email)
+  // Saved cards for the reserve-now-pay-later step. Signed-out customers (and
+  // failures) simply get an empty list and the plain card field.
+  const savedCardsQuery = useQuery({
+    queryKey: ['booking', 'saved-cards'],
+    queryFn: getPaymentMethods,
+    enabled: authenticated,
+    staleTime: 60_000,
+  })
+  const savedCards = (savedCardsQuery.data ?? []).filter((c) => !c.expired)
+  const savedCardsReady = !authenticated || savedCardsQuery.isFetched
+  // Derived default: first saved card unless the customer picked one explicitly.
+  const effectiveCardId = selectedCardId || savedCards[0]?.id || NEW_CARD
   const { formatPrice } = useCurrency()
 
-  const buttonLabel = data.paymentTiming === 'later' ? 'Reserve Now' : 'Pay Now'
+  // Client-side pay-later availability heuristic (the server enforces the same
+  // 48h floor authoritatively). Captured lazily via state so no impure
+  // Date.now() call happens during render; remounts when the step activates.
+  const [nowMs] = useState(() => Date.now())
+  const payLaterAvailable = useMemo(() => {
+    const iso = tour.selectedDate || tour.dateISO || ''
+    if (!iso) return true // no concrete date yet — let the server decide
+    const [y, mo, d] = iso.split('-').map(Number)
+    if (!y || !mo || !d) return true
+    const activityDayStart = Date.UTC(y, mo - 1, d)
+    return activityDayStart - nowMs >= PAY_LATER_WINDOW_MS
+  }, [tour.selectedDate, tour.dateISO, nowMs])
+
+  // When the chosen date is inside the pay-later window the option is disabled
+  // and the booking quietly falls back to Pay now (no dead-end 400 for the
+  // customer who previously had "later" selected).
+  const timing: 'now' | 'later' = !payLaterAvailable ? 'now' : (data.paymentTiming === 'later' ? 'later' : 'now')
+
+  // Date-aware cancellation status — a selected date inside the policy window
+  // is non-refundable (Viator's rule), matching the tour widget's badge.
+  const cancellation = cancellationStatus(
+    tour.cancellation || '',
+    tour.selectedDate || tour.dateISO || '',
+    tour.selectedTime ?? null,
+    nowMs,
+  )
+
+  const buttonLabel = timing === 'later' ? 'Reserve Now' : 'Pay Now'
 
   const paymentSummary = (
     <div className="space-y-2 text-sm text-slate-600">
-      <p><span className="font-semibold text-slate-800">When to pay:</span> {data.paymentTiming === 'now' ? `Pay now — ${formatPrice(tour.price)}` : 'Reserve now, pay later'}</p>
+      <p><span className="font-semibold text-slate-800">When to pay:</span> {timing === 'now' ? `Pay now — ${formatPrice(tour.price)}` : 'Reserve now, pay later'}</p>
     </div>
   )
 
@@ -1101,14 +1274,14 @@ function PaymentDetailsStep({
               <p className="mb-3 text-sm font-semibold text-slate-800">Choose when to pay</p>
               <div className="space-y-2">
                 <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
-                  data.paymentTiming === 'now'
+                  timing === 'now'
                     ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
                     : 'border-slate-200/60 bg-white hover:border-slate-300'
                 }`}>
                   <div className={`grid size-5 shrink-0 place-items-center rounded-full border-2 transition ${
-                    data.paymentTiming === 'now' ? 'border-emerald-500' : 'border-slate-300'
+                    timing === 'now' ? 'border-emerald-500' : 'border-slate-300'
                   }`}>
-                    {data.paymentTiming === 'now' && (
+                    {timing === 'now' && (
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
@@ -1118,18 +1291,20 @@ function PaymentDetailsStep({
                   </div>
                   <span className="min-w-0 flex-1 text-sm font-semibold text-slate-900">Pay now</span>
                   <span className="shrink-0 text-sm font-bold text-slate-900">{formatPrice(tour.price)}</span>
-                  <input type="radio" name="paymentTiming" className="sr-only" checked={data.paymentTiming === 'now'} onChange={() => onChange('paymentTiming', 'now')} />
+                  <input type="radio" name="paymentTiming" className="sr-only" checked={timing === 'now'} onChange={() => onChange('paymentTiming', 'now')} />
                 </label>
 
                 <label className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all sm:items-center ${
-                  data.paymentTiming === 'later'
+                  timing === 'later'
                     ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
-                    : 'border-slate-200/60 bg-white hover:border-slate-300'
+                    : payLaterAvailable
+                      ? 'border-slate-200/60 bg-white hover:border-slate-300'
+                      : 'cursor-not-allowed border-slate-100 bg-slate-50 opacity-70'
                 }`}>
                   <div className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border-2 transition sm:mt-0 ${
-                    data.paymentTiming === 'later' ? 'border-emerald-500' : 'border-slate-300'
+                    timing === 'later' ? 'border-emerald-500' : 'border-slate-300'
                   }`}>
-                    {data.paymentTiming === 'later' && (
+                    {timing === 'later' && (
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
@@ -1138,14 +1313,26 @@ function PaymentDetailsStep({
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-sm font-semibold text-slate-900">Reserve now, pay later</span>
+                    <span className={`text-sm font-semibold ${payLaterAvailable ? 'text-slate-900' : 'text-slate-400'}`}>Reserve now, pay later</span>
                     <p className="text-xs text-slate-400">Book your spot and pay nothing today</p>
+                    {!payLaterAvailable && (
+                      <p className="mt-1.5 text-xs font-medium text-amber-600">
+                        Available for dates at least {PAY_LATER_MIN_HOURS} hours away — so we can charge your card before the activity.
+                      </p>
+                    )}
                   </div>
                   <div className="shrink-0 text-right">
                     <span className="text-sm font-bold text-slate-900">$0.00</span>
                     <p className="text-[10px] text-slate-400">now</p>
                   </div>
-                  <input type="radio" name="paymentTiming" className="sr-only" checked={data.paymentTiming === 'later'} onChange={() => onChange('paymentTiming', 'later')} />
+                  <input
+                    type="radio"
+                    name="paymentTiming"
+                    className="sr-only"
+                    disabled={!payLaterAvailable}
+                    checked={timing === 'later'}
+                    onChange={() => onChange('paymentTiming', 'later')}
+                  />
                 </label>
               </div>
             </div>
@@ -1153,30 +1340,54 @@ function PaymentDetailsStep({
             <div className="rounded-xl border border-slate-200/40 bg-slate-50/30 p-6 text-center">
               <p className="text-2xl font-bold text-slate-900 tracking-tight">{formatPrice(tour.price)}</p>
               <div className="mt-2 flex items-center justify-center gap-1.5 text-xs text-slate-500">
-                <ShieldCheck className="size-3.5 text-emerald-600" />
-                {freeCancellationDateLabel(tour.cancellation || '', tour.selectedDate || tour.dateISO || '')}
+                <ShieldCheck className={`size-3.5 ${cancellation && !cancellation.refundable ? 'text-rose-500' : 'text-emerald-600'}`} />
+                <span className={cancellation && !cancellation.refundable ? 'font-semibold text-rose-600' : ''}>
+                  {cancellation?.refundable === false
+                    ? `Non-refundable${cancellation.sublabel ? ` — ${cancellation.sublabel}` : ''}`
+                    : (cancellation?.label || 'Free cancellation')}
+                </span>
               </div>
             </div>
 
-            {data.paymentTiming === 'now' ? (
+            {timing === 'now' ? (
               <div className="flex items-center justify-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50/50 px-4 py-3 text-sm text-emerald-700">
                 <ShieldCheck className="size-4 shrink-0" />
-                <span>You'll be redirected to Stripe's secure checkout to complete payment.</span>
+                <span>Secure payment powered by Stripe — you'll finish on the next step.</span>
               </div>
+            ) : !savedCardsReady ? (
+              <div className="h-[52px] animate-pulse rounded-xl border border-slate-200/60 bg-slate-50/40" />
             ) : (
-              <CardField onReady={setCardHandle} />
+              <div className="space-y-3">
+                <SavedCardPicker
+                  cards={savedCards}
+                  value={effectiveCardId}
+                  onChange={setSelectedCardId}
+                />
+                {effectiveCardId === NEW_CARD && <CardField onReady={setCardHandle} />}
+              </div>
             )}
 
             <p className="text-xs leading-relaxed text-slate-400">
               By clicking &quot;{buttonLabel}&quot;, you agree to our{' '}
-              <a href="#" className="font-semibold underline text-slate-500 hover:text-slate-700">Terms</a> &amp;{' '}
-              <a href="#" className="font-semibold underline text-slate-500 hover:text-slate-700">Privacy and Cookies Statement</a>
+              <Link to="/terms-and-conditions" className="font-semibold underline text-slate-500 hover:text-slate-700">Terms</Link> &amp;{' '}
+              <Link to="/privacy-policy" className="font-semibold underline text-slate-500 hover:text-slate-700">Privacy and Cookies Statement</Link>
               , plus the tour operator&apos;s rules &amp; regulations.
             </p>
 
             <motion.button
               onClick={async () => {
-                if (data.paymentTiming === 'later') {
+                if (timing === 'later') {
+                  // A saved card needs no Card Element — send its payment method
+                  // id straight through. Only the "new card" path collects one.
+                  if (effectiveCardId && effectiveCardId !== NEW_CARD) {
+                    setCreating(true)
+                    try {
+                      onBook(effectiveCardId, 'later')
+                    } finally {
+                      setCreating(false)
+                    }
+                    return
+                  }
                   if (!cardHandle) {
                     toast.error('Please enter your card details to continue.')
                     return
@@ -1254,10 +1465,16 @@ function PaymentDetailsStep({
 function BookingTourCard({ tour, onChangeClick }: { tour: typeof FALLBACK_TOUR; onChangeClick: () => void }) {
   const { t } = useTranslation()
   const { formatPrice } = useCurrency()
-  const stars = useMemo(() => {
-    const full = Math.floor(tour.rating)
-    return Array.from({ length: 5 }, (_, i) => i < full)
-  }, [tour.rating])
+
+  // Date-aware cancellation badge — non-refundable once the selected date is
+  // inside the policy's free-cancellation window (Viator's rule).
+  const [nowMs] = useState(() => Date.now())
+  const cancellation = cancellationStatus(
+    tour.cancellation || '',
+    tour.selectedDate || tour.dateISO || '',
+    tour.selectedTime ?? null,
+    nowMs,
+  )
 
   return (
     <div className="overflow-hidden rounded-[1.75rem] border border-slate-200/40 bg-white shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)]">
@@ -1268,9 +1485,13 @@ function BookingTourCard({ tour, onChangeClick }: { tour: typeof FALLBACK_TOUR; 
           <div className="mt-2 flex items-center gap-1">
             <span className="text-sm font-bold text-slate-900">{tour.rating}</span>
             <div className="flex items-center gap-0.5">
-              {stars.map((filled, i) => (
-                <Star key={i} className={`size-3 ${filled ? 'fill-emerald-500 text-emerald-500' : 'text-slate-200'}`} />
-              ))}
+              <StarRating
+                value={tour.rating}
+                size={12}
+                gap={2}
+                filledColor="#10b981"
+                emptyColor="#e2e8f0"
+              />
             </div>
             <span className="text-xs text-slate-400">({tour.reviews})</span>
           </div>
@@ -1361,11 +1582,15 @@ function BookingTourCard({ tour, onChangeClick }: { tour: typeof FALLBACK_TOUR; 
 
       <div className="border-t border-slate-100/60 px-5 py-3 space-y-3">
         <div className="flex items-start gap-2">
-          <ShieldCheck className="mt-0.5 size-4 shrink-0 text-emerald-600" />
+          <ShieldCheck className={`mt-0.5 size-4 shrink-0 ${cancellation && !cancellation.refundable ? 'text-rose-500' : 'text-emerald-600'}`} />
           <p className="text-xs leading-relaxed text-slate-500">
             <span className="font-semibold text-slate-700">Cancellation policy</span>
             {' • '}
-            <span>{freeCancellationDateLabel(tour.cancellation || '', tour.selectedDate || tour.dateISO || '')}</span>
+            <span className={cancellation && !cancellation.refundable ? 'font-semibold text-rose-600' : ''}>
+              {cancellation?.refundable === false
+                ? `Non-refundable${cancellation.sublabel ? ` — ${cancellation.sublabel}` : ''}`
+                : (cancellation?.label || 'Free cancellation')}
+            </span>
           </p>
         </div>
         <div className="flex items-start gap-2">
@@ -1504,9 +1729,6 @@ function BookingSidebar({
           <a href="tel:+18337642166" className="inline-flex items-center gap-1.5 font-medium text-slate-500 hover:text-emerald-600 transition-colors">
             <Phone className="size-4" /> +1 833 764 2166
           </a>
-          <button type="button" className="inline-flex items-center gap-1.5 font-medium text-slate-500 hover:text-emerald-600 transition-colors">
-            <MessageSquare className="size-4" /> Chat now
-          </button>
         </div>
       </motion.div>
     </motion.div>
@@ -1531,6 +1753,8 @@ interface EditableTourState {
   selectedDate: string
   selectedTime: string | null
   price: number
+  /** Multi-option tours: the sellable option chosen for this booking. */
+  optionId?: string | null
 }
 
 interface BookingDraftData {
@@ -1551,6 +1775,19 @@ function readBookingDraft(): BookingDraftData | null {
   }
 }
 
+// Default sellable option for a multi-option tour: the supplier's
+// defaultOptionId when it is one of the sellable (non-private) options, else
+// the first sellable option. Null on single-option tours so nothing ever
+// sends an optionId there.
+function resolveDefaultOptionId(options: TourOption[], defaultOptionId?: string | null): string | null {
+  if (!Array.isArray(options)) return null
+  const selectable = options.filter((o) => !o.isPrivate)
+  if (selectable.length === 0) return null
+  const def = defaultOptionId ?? null
+  if (def && selectable.some((o) => o.id === def)) return def
+  return selectable[0]?.id ?? null
+}
+
 function buildEditableTour(tour: typeof FALLBACK_TOUR): EditableTourState {
   const travelersCount =
     tour.travelersCount && typeof tour.travelersCount === 'object'
@@ -1567,6 +1804,7 @@ function buildEditableTour(tour: typeof FALLBACK_TOUR): EditableTourState {
     selectedDate: String(tour.selectedDate || tour.dateISO || ''),
     selectedTime: (tour.selectedTime as string | null | undefined) ?? null,
     price: Number(tour.price) || 0,
+    optionId: resolveDefaultOptionId(tour.options || [], tour.defaultOptionId),
   }
 }
 
@@ -1583,30 +1821,75 @@ export default function BookingPage() {
   const draft = useMemo(() => readBookingDraft(), [])
   const freshTour = location.state?.tour
 
+  // A partial router-state tour (e.g. the wishlist's Book Now hand-builds a
+  // stub with no supplier meeting/pickup/schedule config) can't drive the
+  // booking steps. Treat it like a direct-URL arrival: re-fetch the real tour
+  // by its URL id and rebuild the full context from the detail. Only genuine
+  // tour ids (backend cuids) are refetched — legacy mock/hash ids have no
+  // server record and keep their offline stub.
+  const freshTourPartial =
+    freshTour != null && !('pickupIncluded' in (freshTour as Record<string, unknown>))
+  const plausibleTourId =
+    typeof urlTourId === 'string' && urlTourId.length > 0 && /^[A-Za-z0-9_-]{8,}$/.test(urlTourId)
+
   // The URL carries the tour id (/{tourId}/booking) so a refresh can rebuild
   // the booking context. The persisted draft is only trusted when it belongs
-  // to THIS URL's tour — a stale draft for another tour must never bleed in.
-  const draftMatches = !freshTour && Boolean(draft) && !!urlTourId && draft?.tourId === urlTourId
+  // to THIS tour — matched against the URL id (refresh / back-from-checkout /
+  // sign-in round-trip) or the arriving state tour's own id/slug (browser Back
+  // restores that entry's router state, and checkout's back link may deep-link
+  // with the slug instead of the id). A stale draft for another tour must
+  // never bleed in.
+  const freshTourId = freshTour ? String((freshTour as Record<string, unknown>).id || (freshTour as Record<string, unknown>).slug || '') : ''
+  // The persisted draft stores the whole tour, so it can be matched against a
+  // URL that carries the tour's id OR its slug — checkout's back links deep-link
+  // with the slug ({slug}/booking) while the widget navigates with the id.
+  const draftTour = (draft?.tour ?? null) as { id?: string; slug?: string } | null | undefined
+  const matchesUrlTour =
+    !!urlTourId &&
+    Boolean(draft) &&
+    (urlTourId === String(draft?.tourId ?? '') || urlTourId === draftTour?.id || urlTourId === draftTour?.slug)
+  const matchesFreshTour = !!freshTour && Boolean(draft) && freshTourId !== '' && draft?.tourId === freshTourId
+  const draftMatches = matchesUrlTour || matchesFreshTour
 
   // Restore the tour from router state when arriving fresh from a tour detail
   // page, otherwise fall back to the matching persisted draft (refresh /
-  // sign-in round-trip). With neither, re-fetch the tour by its URL id so the
-  // booking context survives even when the draft is missing or was cleared.
-  const needFetch = !freshTour && !draftMatches && !!urlTourId
+  // sign-in round-trip). With neither — or with only a partial stub — re-fetch
+  // the tour by its URL id so the booking context survives even when the draft
+  // is missing or was cleared.
+  const needFetch = ((freshTourPartial && plausibleTourId) || (!freshTour && !draftMatches)) && !!urlTourId
   const { data: fetchedTour, isLoading: tourLoading } = useExpeditionTour(needFetch ? urlTourId : undefined)
 
-  const [tour, setTour] = useState(() => freshTour || (draftMatches ? draft?.tour : FALLBACK_TOUR))
+  const [tour, setTour] = useState(() => {
+    if (!freshTourPartial) return freshTour || (draftMatches ? draft?.tour : FALLBACK_TOUR)
+    // Partial stub with a refetchable id: hold the placeholder until the
+    // by-id fetch rebuilds the full context. Stubs without a plausible id
+    // (legacy mock content) stay on the stub itself — no fetch will run.
+    return plausibleTourId ? FALLBACK_TOUR : (freshTour as typeof FALLBACK_TOUR)
+  })
 
-  // Only restore the form fields when we're NOT arriving fresh (i.e. this is a
-  // sign-in/refresh round-trip) and the stored draft belongs to this tour —
-  // otherwise a draft from a previous booking would bleed its data in.
+  // Restore the form fields whenever a draft exists for THIS tour — whether
+  // arriving fresh from the tour page (a matching draft means the traveller
+  // was mid-booking: returning from checkout or a previous attempt resumes
+  // instead of wiping), or on a refresh / sign-in round-trip (no state tour).
+  // Drafts for a different tour never restore.
   const canRestore = draftMatches
 
   const user = useAuthUser()
 
-  const [step, setStep] = useState(() =>
-    canRestore && typeof draft?.step === 'number' && draft.step >= 1 && draft.step <= 3 ? draft.step : 1,
-  )
+  // Meeting-point tours with a single sellable option have no meaningful first
+  // step — the meeting info is static and nothing there is editable — so the
+  // booking skips straight to Lead Traveler Details. Multi-option tours keep
+  // step 1 because the "Choose your option" picker lives there.
+  const skipMeetingStep =
+    tour.meetingMode === 'meeting_point' &&
+    (Array.isArray(tour.options) ? (tour.options as TourOption[]).filter((o) => !o.isPrivate).length : 0) <= 1
+
+  const [step, setStep] = useState(() => {
+    const restored =
+      canRestore && typeof draft?.step === 'number' && draft.step >= 1 && draft.step <= 3 ? draft.step : 1
+    // A restored draft parked on the skipped step resumes on Lead Traveler.
+    return skipMeetingStep ? Math.max(restored, 2) : restored
+  })
   const [attempted, setAttempted] = useState<Record<number, boolean>>({})
   // Prefill with a promo code validated on the tour detail page (the widget
   // passes it through router state); it is re-validated against the backend.
@@ -1616,35 +1899,97 @@ export default function BookingPage() {
   const [appliedPromo, setAppliedPromo] = useState<{ name: string; discountAmount: number } | null>(null)
   const [discount, setDiscount] = useState(0)
 
-  const [contact, setContact] = useState(() =>
-    canRestore && draft?.contact ? { ...DEFAULT_CONTACT, ...draft.contact } : DEFAULT_CONTACT,
-  )
+  const [contact, setContact] = useState(() => {
+    const restored = canRestore && draft?.contact
+      ? { ...DEFAULT_CONTACT, ...draft.contact }
+      : { ...DEFAULT_CONTACT }
+    // Signed-in traveller: prefill the Lead Traveler email with the login
+    // email, but only while the field is still empty — a draft email the user
+    // typed (or a deliberate clearing) is never overwritten.
+    if (!restored.email.trim() && user?.email) restored.email = user.email
+    // Same rule for the name: split the profile's full name into first/last.
+    if (!restored.firstName.trim() && !restored.lastName.trim() && user?.name) {
+      const parts = user.name.trim().split(/\s+/)
+      restored.firstName = parts[0] || ''
+      restored.lastName = parts.slice(1).join(' ') || ''
+    }
+    return restored
+  })
+
+  // Signed-in traveller: prefill the phone from the saved profile once, only
+  // while the field is still empty (a restored draft or typed value wins).
+  useEffect(() => {
+    if (!user?.id) return
+    let cancelled = false
+    getAccount()
+      .then((profile) => {
+        if (cancelled || !profile.phone) return
+        const split = splitE164Phone(profile.phone)
+        if (!split) return
+        setContact((prev) => (
+          prev.phone.trim()
+            ? prev
+            : { ...prev, countryCode: split.countryCode, phone: split.nationalNumber }
+        ))
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [user?.id])
 
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false)
-  const [editableTour, setEditableTour] = useState<EditableTourState>(() =>
-    canRestore && draft?.editableTour ? draft.editableTour : buildEditableTour(tour),
-  )
+  const [editableTour, setEditableTour] = useState<EditableTourState>(() => {
+    // When arriving with router-state tour context (fresh widget click, or
+    // browser Back restoring that entry) the state tour already carries the
+    // traveller's chosen date/time/party — building from it keeps the step
+    // selections in sync with the arriving tour. The draft's editableTour is
+    // only authoritative when there is no state tour (refresh / deep link).
+    if (canRestore && draft?.editableTour && !freshTour) return draft.editableTour
+    return buildEditableTour(tour)
+  })
   const [payment, setPayment] = useState(() =>
     canRestore && draft?.payment ? { ...DEFAULT_PAYMENT, ...draft.payment } : DEFAULT_PAYMENT,
   )
   const [isBooking, setIsBooking] = useState(false)
+  const [showCheckoutTransition, setShowCheckoutTransition] = useState(false)
+  const pendingCheckoutUrl = useRef<string | null>(null)
 
   const [isActive, setIsActive] = useState(false)
 
   const [isExpired, setIsExpired] = useState(false)
   const [showExpiredModal, setShowExpiredModal] = useState(false)
   const [showSignInPrompt, setShowSignInPrompt] = useState(false)
+  const [isCapturingLocation, setIsCapturingLocation] = useState(false)
   const lastActivityAt = useRef(0)
 
-  // Refresh / direct-URL arrival with no usable draft: once the by-URL-id fetch
+  // Refresh / direct-URL / partial-stub arrival: once the by-URL-id fetch
   // lands, rebuild the tour context (and its editable selection) from the
   // fetched detail so the page never sits on the "Loading..." placeholder.
   // React-recommended "adjust state during render" pattern — guarded so the
-  // rebuild runs exactly once (setting the tour id flips the guard).
-  if (!tour?.id && fetchedTour) {
+  // rebuild runs exactly once (setting the fetched tour's id flips the guard).
+  if (needFetch && fetchedTour && !tour?.id) {
     const built = buildBookingTour(fetchedTour)
     setTour(built)
     setEditableTour(buildEditableTour(built))
+  } else if (
+    needFetch &&
+    freshTourPartial &&
+    !tourLoading &&
+    !fetchedTour &&
+    !tour?.id
+  ) {
+    // The by-id refetch failed (legacy/mock wishlist items have no backend
+    // record): fall back to the partial stub so the item still books with the
+    // data it carries — no supplier pickup config exists for it anyway.
+    const stub = freshTour as typeof FALLBACK_TOUR
+    setTour(stub)
+    setEditableTour(buildEditableTour(stub))
+  }
+
+  // The real tour can arrive after the initial render (by-URL refetch). If it
+  // turns out to be a skipped-step meeting-point tour while we're still on
+  // step 1, advance to Lead Traveler Details (render-time adjust pattern).
+  if (skipMeetingStep && step === 1) {
+    setStep(2)
   }
 
   // Bring a restored later step into view (mount-only; no state changes).
@@ -1660,6 +2005,10 @@ export default function BookingPage() {
   /* Save draft to localStorage on field changes (also persists the tour on
      first arrival so a refresh / sign-in round-trip can restore it). */
   useEffect(() => {
+    // While the placeholder tour is still being fetched for an unmatched URL,
+    // never overwrite an existing draft with the placeholder + reset fields —
+    // that would destroy the traveller's data before the real tour arrives.
+    if (needFetch && !tour?.id) return
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         tour,
@@ -1670,7 +2019,7 @@ export default function BookingPage() {
         payment,
       }))
     } catch { /* ignore */ }
-  }, [tour, contact, editableTour, step, payment])
+  }, [tour, contact, editableTour, step, payment, needFetch])
 
   const clearDraft = () => {
     try { localStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
@@ -1703,10 +2052,15 @@ export default function BookingPage() {
     [showPickupLocation, contact.pickupLater, contact.location, contact.pickupLat, contact.pickupLng, tour.pickupAreas],
   )
   const noPickupConfig = showPickupLocation && (tour.pickupAreas || []).length === 0 && (tour.pickupLocations || []).length === 0
+  // Single designated pickup point (address mode, one location): there is
+  // nothing to choose — the section shows it read-only and auto-fills it — so
+  // the step is always valid even before its coordinates resolve.
+  const isSinglePoint = (tour.pickupLocations || []).length === 1 && (tour.pickupAreas || []).length === 0
   const pickupLocationValid = useMemo(
     () =>
       !showPickupLocation ||
       noPickupConfig ||
+      isSinglePoint ||
       isPickupLocationSatisfied({
         pickupLater: contact.pickupLater,
         pickedArea: contact.pickupArea,
@@ -1715,7 +2069,7 @@ export default function BookingPage() {
         zonesDrawn,
         hasLocationOnlyAreas: hasPointAreas,
       }),
-    [showPickupLocation, noPickupConfig, contact.pickupLater, contact.pickupArea, contact.location, pickupZoneStatusValue, zonesDrawn, hasPointAreas],
+    [showPickupLocation, noPickupConfig, isSinglePoint, contact.pickupLater, contact.pickupArea, contact.location, pickupZoneStatusValue, zonesDrawn, hasPointAreas],
   )
 
   const contactValid = useMemo(() => ({
@@ -1735,6 +2089,77 @@ export default function BookingPage() {
 
   const trackActivity = () => { lastActivityAt.current = Date.now() }
 
+  /* Multi-option tours (GYG parity) — the "Choose your option" picker lives on
+     this details step (post-"Book now"), before lead traveler/payment. Only
+     tours with >1 sellable (non-private) option show the picker; single-option
+     tours stay untouched and never send an optionId. */
+  const selectableOptions = useMemo(
+    () => (Array.isArray(tour.options) ? (tour.options as TourOption[]).filter((o) => !o.isPrivate) : []),
+    [tour.options],
+  )
+  const hasMultipleOptions = selectableOptions.length > 1
+  const optionDefaultId = useMemo(
+    () => (hasMultipleOptions ? resolveDefaultOptionId(selectableOptions, tour.defaultOptionId) : null),
+    [hasMultipleOptions, selectableOptions, tour.defaultOptionId],
+  )
+  const selectedOptionId = useMemo(() => {
+    if (!hasMultipleOptions) return null
+    const stored = editableTour.optionId ?? null
+    if (stored && selectableOptions.some((o) => o.id === stored)) return stored
+    return optionDefaultId
+  }, [hasMultipleOptions, selectableOptions, optionDefaultId, editableTour.optionId])
+
+  const calculateOption = useCalculateCheckout()
+  const [optionQuoting, setOptionQuoting] = useState(false)
+  const [optionError, setOptionError] = useState('')
+
+  // Re-quote against /travioghana/checkout/calculate whenever the traveller
+  // switches option, so the totals stay live for the selected option. Quote
+  // failures (e.g. the chosen date/time isn't offered by that option) roll the
+  // switch back — another option's date/time or a stale price is never kept.
+  const quoteOption = useCallback(async (optionId: string) => {
+    const travelDate = editableTour.selectedDate || editableTour.date || ''
+    const travelers = editableTour.travelersCount || { adults: 1, children: 0, infants: 0 }
+    setOptionQuoting(true)
+    setOptionError('')
+    try {
+      if (travelDate) {
+        const res = await calculateOption.mutateAsync({
+          tourId: tour.id || tour.slug,
+          travelDate,
+          travelers,
+          ...(editableTour.selectedTime ? { selectedTime: editableTour.selectedTime } : {}),
+          optionId,
+        })
+        if (!res?.available) {
+          throw new Error('This option is not available on the selected date.')
+        }
+        setEditableTour((prev) => ({
+          ...prev,
+          optionId,
+          price: Number(res?.pricing?.total) || prev.price,
+        }))
+        return
+      }
+      // No concrete date/time yet — record the option; the price is re-derived
+      // once a date/traveler selection is made.
+      setEditableTour((prev) => ({ ...prev, optionId }))
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Could not update the price for this option. Please try again.'
+      setOptionError(msg)
+      throw err
+    } finally {
+      setOptionQuoting(false)
+    }
+  }, [calculateOption, editableTour.selectedDate, editableTour.date, editableTour.selectedTime, editableTour.travelersCount, tour.id, tour.slug])
+
+  const handleOptionChange = useCallback((optionId: string) => {
+    trackActivity()
+    if (!hasMultipleOptions) return
+    if (optionId === selectedOptionId) return
+    void quoteOption(optionId).catch(() => { /* handled inline via optionError */ })
+  }, [hasMultipleOptions, selectedOptionId, quoteOption])
+
   const handleContactChange = (key: string, value: string | boolean | number | null) => {
     trackActivity()
     setContact((prev) => ({ ...prev, [key]: value }))
@@ -1743,6 +2168,45 @@ export default function BookingPage() {
     trackActivity()
     setPayment((prev) => ({ ...prev, [key]: value }))
   }
+
+  // Auto-capture user location for meeting point tours so the backend
+  // receives travellers.location (required for all tours).
+  useEffect(() => {
+    if (tour.meetingMode !== 'meeting_point' || contact.location) return
+
+    let active = true
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsCapturingLocation(true)
+
+    requestLocation().then((loc) => {
+      if (!active || !loc) {
+        if (active) setIsCapturingLocation(false)
+        return
+      }
+
+      reverseGeocode(loc.lat, loc.lng).then((result) => {
+        if (active) {
+          const address = result?.formatted || `${loc.lat}, ${loc.lng}`
+          handleContactChange('location', address)
+          handleContactChange('pickupLat', loc.lat)
+          handleContactChange('pickupLng', loc.lng)
+          setIsCapturingLocation(false)
+        }
+      }).catch(() => {
+        if (active) {
+          handleContactChange('location', `${loc.lat}, ${loc.lng}`)
+          handleContactChange('pickupLat', loc.lat)
+          handleContactChange('pickupLng', loc.lng)
+          setIsCapturingLocation(false)
+        }
+      })
+    }).catch(() => {
+      if (active) setIsCapturingLocation(false)
+    })
+
+    return () => { active = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tour.meetingMode])
 
   const scrollToStep = (n: number) => {
     // Wait for the step-content swap (exit ~0.1s) to settle before scrolling,
@@ -1758,16 +2222,19 @@ export default function BookingPage() {
   const goToStep = (target: number) => {
     if (target < 1 || target > 3) return
 
-    if (target > step) {
+    // Meeting-point tours with no editable step 1 never navigate back to it.
+    const resolvedTarget = skipMeetingStep ? Math.max(target, 2) : target
+
+    if (resolvedTarget > step) {
       // Step 1 (Pickup) must be valid before going to Step 2 (Contact)
-      if (target >= 2 && !locationValid) {
+      if (resolvedTarget >= 2 && !locationValid) {
         setAttempted((p) => ({ ...p, 1: true }))
         setStep(1)
         scrollToStep(1)
         return
       }
       // Step 2 (Contact) must be valid before going to Step 3 (Payment)
-      if (target >= 3 && !contactValid.all) {
+      if (resolvedTarget >= 3 && !contactValid.all) {
         setAttempted((p) => ({ ...p, 2: true }))
         setStep(2)
         scrollToStep(2)
@@ -1775,8 +2242,8 @@ export default function BookingPage() {
       }
     }
 
-    setStep(target)
-    if (target !== step) scrollToStep(target)
+    setStep(resolvedTarget)
+    if (resolvedTarget !== step) scrollToStep(resolvedTarget)
   }
 
   const contactHasError = !contactValid.all && attempted[2] === true
@@ -1884,7 +2351,7 @@ export default function BookingPage() {
       }
       const fullName = `${contact.firstName} ${contact.lastName}`.trim()
       const detailsName = fullName || undefined
-      const details = detailsName ? [{ name: detailsName, age: 30, ageGroup: 'adult' }] : []
+      const details = detailsName ? [{ name: detailsName, ageGroup: 'adult' }] : []
 
       // Authoritative per-category map (adults/children/infants + any supplier
       // categories like seniors/students) so every category is priced at its
@@ -1897,13 +2364,18 @@ export default function BookingPage() {
       // autocomplete-resolved address + coordinates (coords stay out of the
       // legacy travelers payload on purpose).
       const hasPickupAddress = contact.pickupLat != null && contact.pickupLng != null && contact.location.trim().length > 0
+      // An out-of-zone address is allowed: skip server geofencing so the
+      // booking succeeds, while the stored address still reaches the supplier
+      // (the traveller was cautioned to pick an in-zone location).
+      const pickupOutOfZone = pickupZoneStatusValue === 'outside'
       const pickupSelection = contact.pickupLater
         ? { skipValidation: true }
         : showPickupLocation && (contact.pickupArea || hasPickupAddress)
           ? {
-              // Drawn geoshapes mean the server validates against zone
-              // polygons (area mode) — never the location-list mode.
-              mode: zonesDrawn ? 'area' : tour.pickupType || 'area',
+              // Any pickup areas (drawn geoshapes or location-only) mean the
+              // server validates in area mode — never the location-list mode.
+              mode: zonesDrawn || hasPointAreas ? 'area' : tour.pickupType || 'area',
+              ...(pickupOutOfZone ? { skipValidation: true } : {}),
               ...(!hasPickupAddress && contact.pickupArea ? { areaName: contact.pickupArea } : {}),
               ...(hasPickupAddress
                 ? { address: { name: contact.location.trim(), address: contact.location.trim(), lat: contact.pickupLat, lng: contact.pickupLng } }
@@ -1915,6 +2387,9 @@ export default function BookingPage() {
         tourId: tour.id || tour.slug,
         travelDate: editableTour.selectedDate || editableTour.date,
         ...(editableTour.selectedTime ? { selectedTime: editableTour.selectedTime } : {}),
+        // Multi-option tours only: the "Choose your option" picker's selection.
+        // Single-option tours never send an optionId (legacy behavior).
+        ...(hasMultipleOptions && selectedOptionId ? { optionId: selectedOptionId } : {}),
         ...(pickupSelection ? { pickup: pickupSelection } : {}),
         travelers: {
           ...counts,
@@ -1926,6 +2401,9 @@ export default function BookingPage() {
         },
         ...(paymentMethodId ? { paymentMethodId } : {}),
         paymentTiming,
+        // Pay-now uses the branded Payment Element checkout (the server mints
+        // the PaymentIntent; the amount is never trusted from the browser).
+        ...(paymentTiming === 'now' ? { checkoutFlow: 'payment-element' as const } : {}),
         specialRequests: '',
         // Lead traveler details from the "Lead Traveler Details" step so the
         // supplier dashboard and confirmation emails show the traveler rather
@@ -1942,9 +2420,17 @@ export default function BookingPage() {
 
       const result = await createBooking.mutateAsync(payload)
 
-      // Pay now: the backend returned a hosted Stripe Checkout URL. Hand the
-      // browser over to Stripe — the checkout.session.completed webhook settles
-      // the booking and the confirmation page polls until it lands.
+      // Pay now (branded Payment Element): the backend minted an unconfirmed
+      // PaymentIntent for the reserved spot. Continue on our own checkout page —
+      // success is settled ONLY by the payment_intent.succeeded webhook, and the
+      // confirmation page polls the by-session endpoint until it lands.
+      if (result?.payment?.clientSecret) {
+        pendingCheckoutUrl.current = `/booking/checkout?draft=${encodeURIComponent(result.payment.draftId)}`
+        setShowCheckoutTransition(true)
+        return
+      }
+
+      // Legacy pay-now: hosted Stripe Checkout URL (kept for other storefronts).
       if (result?.checkout?.url) {
         window.location.assign(result.checkout.url)
         return
@@ -1961,7 +2447,14 @@ export default function BookingPage() {
     } finally {
       setIsBooking(false)
     }
-  }, [createBooking, contact, editableTour, tour, showPickupLocation, zonesDrawn, isBooking, isActive, pollBooking, user, payment.paymentTiming, appliedPromo, promoCode])
+  }, [createBooking, contact, editableTour, tour, showPickupLocation, zonesDrawn, hasPointAreas, pickupZoneStatusValue, isBooking, isActive, pollBooking, user, payment.paymentTiming, appliedPromo, promoCode, hasMultipleOptions, selectedOptionId])
+
+  const handleCheckoutTransitionDone = useCallback(() => {
+    if (pendingCheckoutUrl.current) {
+      navigate(pendingCheckoutUrl.current)
+      pendingCheckoutUrl.current = null
+    }
+  }, [navigate])
 
   const handleApplyPromo = useCallback(async () => {
     const code = promoCode.trim().toUpperCase()
@@ -2048,9 +2541,11 @@ export default function BookingPage() {
     [tour, editableTour, finalPrice],
   )
 
-  // Refresh / direct-URL arrival with no draft: show a spinner while the tour
-  // is re-fetched by the URL id, instead of a broken "Loading..." placeholder.
-  if (needFetch && tourLoading && !tour?.id) {
+  // Refresh / direct-URL arrival with no usable draft (or only a partial
+  // router-state stub): show a spinner while the tour is re-fetched by the
+  // URL id, instead of a broken "Loading..." placeholder or a stub that hides
+  // the supplier's pickup configuration.
+  if (needFetch && tourLoading) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-white">
         <Loader2 className="size-8 animate-spin text-emerald-600" />
@@ -2061,7 +2556,7 @@ export default function BookingPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
-      <div className="relative flex items-center justify-center px-4 pt-5 sm:justify-between sm:px-6 lg:px-8">
+      <div className="relative mx-auto flex w-full max-w-[1200px] items-center justify-center px-4 pt-5 sm:justify-between sm:px-6 lg:px-8">
         <motion.button
           onClick={() => navigate(-1)}
           whileTap={{ scale: 0.97 }}
@@ -2092,7 +2587,7 @@ export default function BookingPage() {
             initial="hidden"
             animate="visible"
           >
-            <div className="sticky top-0 z-10 mb-6 bg-[#f9fafb] pt-4 md:hidden">
+            <div className="mb-6 bg-[#f9fafb] pt-4 md:hidden">
               <HoldTimer onExpire={handleExpire} lastActivityAt={lastActivityAt} isExpired={isExpired} />
             </div>
 
@@ -2113,6 +2608,13 @@ export default function BookingPage() {
                   onContactChange={handleContactChange}
                   showPickupLocation={showPickupLocation}
                   locationValid={locationValid}
+                  isCapturingLocation={isCapturingLocation}
+                  options={hasMultipleOptions ? selectableOptions : undefined}
+                  optionValue={selectedOptionId}
+                  onOptionChange={handleOptionChange}
+                  optionQuoting={optionQuoting}
+                  optionError={optionError}
+                  staticInfo={skipMeetingStep}
                 />
                 <ContactDetailsStep
                   tour={activeTour}
@@ -2182,6 +2684,7 @@ export default function BookingPage() {
             initialTravelers={(activeTour.adults || 0) + (activeTour.children || 0) + (activeTour.infants || 0)}
             initialDate={editableTour.selectedDate || ''}
             travelersCount={editableTour.travelersCount}
+            optionId={selectedOptionId}
             onReserve={(updates) => setEditableTour((prev) => {
               // The modal prices a specific travellers mix; use that exact
               // payload so the displayed total matches what gets confirmed.
@@ -2215,6 +2718,16 @@ export default function BookingPage() {
           <SignInPromptModal
             onSignIn={handleSignInPrompt}
             onClose={() => setShowSignInPrompt(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showCheckoutTransition && (
+          <BookingTransition
+            onDone={handleCheckoutTransitionDone}
+            animationSrc="/animations/vintage-car.lottie"
+            caption="Redirecting to checkout"
           />
         )}
       </AnimatePresence>

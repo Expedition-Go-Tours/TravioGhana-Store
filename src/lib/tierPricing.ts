@@ -1,11 +1,11 @@
-﻿/**
+/**
  * Age-category tier pricing helpers shared by the booking widget and its
  * tests. Mirrors Travio Ghana-Backend/utils/tourHelpers.js#calculateTourPrice
  * (the "dependsOnAge" branch): when a pricing category defines tiers, the
  * per-person price for that category depends on the TOTAL number of
  * travelers across the whole booking (not just how many of that category
  * are booked) — this is the same GetYourGuide-style tiered pricing model
- * used on the supplier side (Travio Ghana-Supplier's Step 14 pricing step).
+ * used on the supplier side (TravioAfrica-Supplier's Step 14 pricing step).
  */
 
 export interface PricingTierLike {

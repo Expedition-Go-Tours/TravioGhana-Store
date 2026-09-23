@@ -63,7 +63,7 @@ function AttractionCard({
           <span>{attraction.tourCount} {t('sections.tours', { defaultValue: 'tours' })}</span>
         </div>
         <div className="attraction-card-title-row">
-          <h3 className="attraction-card-title">{attraction.name}</h3>
+          <h3 className="attraction-card-title" title={attraction.name}>{attraction.name}</h3>
           {priceStr && (
             <div className="attraction-card-price">
               <p className="attraction-card-from">{t('common.from')}</p>
@@ -89,20 +89,22 @@ export default function TopAttractionsNearbySection({ preloaded, title, location
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
   const { data: attractionsData, isLoading } = useAttractions(12, !preloaded)
-  const [locationRequested, setLocationRequested] = useState(false)
+  const locationRequestedRef = useRef(false)
 
   const attractions = (preloaded ?? attractionsData) ?? []
 
   // Request geolocation permission once to store location for the hook.
   // Backend now handles proximity sorting — this just ensures the stored
-  // location is available for subsequent API calls. Deferred past the first
-  // paint/network burst so it doesn't compete with the initial load.
+  // location is available for subsequent API calls. (Ref guard — no re-render
+  // needed for a one-time request.) Deferred past the first paint/network
+  // burst so the prompt + proximity fetch don't compete with the initial load.
   useEffect(() => {
-    if (locationRequested) return
+    if (locationRequestedRef.current) return
     if (!navigator.geolocation) return
 
     const request = () => {
-      setLocationRequested(true)
+      if (locationRequestedRef.current) return
+      locationRequestedRef.current = true
       navigator.geolocation.getCurrentPosition(
         (position) => {
           storeLocation(position.coords.latitude, position.coords.longitude)
@@ -124,7 +126,7 @@ export default function TopAttractionsNearbySection({ preloaded, title, location
       if (w.requestIdleCallback && w.cancelIdleCallback) w.cancelIdleCallback(id)
       else window.clearTimeout(id)
     }
-  }, [locationRequested])
+  }, [])
 
   const updateArrows = useCallback(() => {
     const el = scrollRef.current

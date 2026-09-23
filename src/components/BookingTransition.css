@@ -1,5 +1,11 @@
 /* ==================================================================
-   Booking transition — vehicle fixed centre, background scrolls
+   Booking transition — full-screen loader between Book Now and the
+   booking page.
+
+   Mobile / reduced-data / reduced-motion use a pure-CSS loader (the
+   dotLottie WASM is skipped there); desktop crossfades it with the
+   Lottie player. Everything here animates transform/opacity only and
+   is compositor-driven — no per-frame JS.
    ================================================================== */
 
 .bt-overlay {
@@ -13,65 +19,90 @@
   gap: 28px;
   background: #ffffff;
   overflow: hidden;
+  /* A full-screen takeover: no scroll/tap-through, no rubber-banding. */
+  touch-action: none;
+  overscroll-behavior: contain;
+  -webkit-user-select: none;
+  user-select: none;
+  /* Keep this subtree's layout/paint work isolated from the page below. */
+  contain: layout paint;
 }
 
-/* Moving clouds */
-.bt-cloud {
-  position: absolute;
-  border-radius: 999px;
-  background: #bfeeff;
-  opacity: 0.55;
-  filter: blur(1px);
-  will-change: transform;
-  pointer-events: none;
-}
-
-.bt-cloud::before,
-.bt-cloud::after {
-  content: '';
-  position: absolute;
-  background: inherit;
-  border-radius: 999px;
-}
-
-.bt-cloud::before {
-  width: 55%;
-  height: 130%;
-  left: 12%;
-  bottom: 25%;
-}
-
-.bt-cloud::after {
-  width: 45%;
-  height: 110%;
-  right: 12%;
-  bottom: 20%;
-}
-
-/* Speed lines */
-.bt-speedline {
-  position: absolute;
-  right: 0;
-  width: 90px;
-  height: 3px;
-  border-radius: 3px;
-  background: linear-gradient(90deg, rgba(23, 146, 55, 0.5) 0%, rgba(23, 146, 55, 0) 100%);
-  will-change: transform;
-  pointer-events: none;
-}
-
-/* Fixed, centred vehicle */
-.bt-vehicle {
+/* Lottie container */
+.bt-lottie {
   position: relative;
   z-index: 2;
-  height: clamp(110px, 26vh, 240px);
-  width: auto;
-  will-change: transform;
-  user-select: none;
+  width: clamp(180px, 40vw, 320px);
+  height: clamp(180px, 40vw, 320px);
   pointer-events: none;
-  /* Blend the illustration's white backdrop away so the background shows through. */
-  mix-blend-mode: multiply;
 }
+
+.bt-lottie-player {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.25s ease-out;
+}
+
+.bt-lottie-player--ready {
+  opacity: 1;
+}
+
+/* ---------- CSS loader (mobile / fallback / while Lottie boots) ---------- */
+
+.bt-loader {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  transition: opacity 0.25s ease-out;
+}
+
+.bt-loader--hidden {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease-out, visibility 0s linear 0.25s;
+}
+
+/* Once the Lottie player has taken over, stop the fallback spinner instead of
+   animating an invisible element for the rest of the transition. */
+.bt-loader--hidden .bt-loader-ring,
+.bt-loader--hidden .bt-loader-dot {
+  animation-play-state: paused;
+}
+
+.bt-loader-ring {
+  grid-area: 1 / 1;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 5px solid #e4efe6;
+  border-top-color: #179237;
+  border-right-color: #179237;
+  animation: bt-spin 0.9s linear infinite;
+  will-change: transform;
+}
+
+.bt-loader-dot {
+  grid-area: 1 / 1;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #179237;
+  animation: bt-pulse 1.2s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes bt-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes bt-pulse {
+  0%, 100% { transform: scale(0.7); opacity: 0.4; }
+  50% { transform: scale(1); opacity: 1; }
+}
+
+/* ---------- Caption + dots ---------- */
 
 .bt-caption {
   position: relative;
@@ -79,7 +110,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--font-heading, 'GT Esti Pro Display', sans-serif);
+  font-family: var(--font-heading, 'Manrope', sans-serif);
   font-size: clamp(16px, 3vw, 20px);
   font-weight: 700;
   color: #0f172a;
@@ -97,7 +128,24 @@
   height: 6px;
   border-radius: 50%;
   background: #179237;
+  animation: bt-dot 0.9s ease-in-out infinite;
+  will-change: transform, opacity;
 }
+
+.bt-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.bt-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes bt-dot {
+  0%, 100% { transform: translateY(0); opacity: 0.25; }
+  50% { transform: translateY(-3px); opacity: 1; }
+}
+
+/* ---------- Progress bar ---------- */
 
 .bt-bar {
   position: relative;
@@ -113,11 +161,40 @@
   display: block;
   height: 100%;
   width: 100%;
-  transform-origin: 0 50%;
   border-radius: 999px;
   background: linear-gradient(90deg, #179237, #22c55e);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  animation: bt-progress var(--bt-duration, 2400ms) linear forwards;
+  will-change: transform;
+}
+
+@keyframes bt-progress {
+  to { transform: scaleX(1); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bt-cloud, .bt-speedline, .bt-vehicle { animation: none; }
+  .bt-loader-ring,
+  .bt-loader-dot,
+  .bt-dot,
+  .bt-bar-fill {
+    animation: none;
+  }
+
+  .bt-loader-dot {
+    opacity: 1;
+  }
+
+  .bt-dot {
+    opacity: 0.6;
+  }
+
+  .bt-bar-fill {
+    transform: scaleX(1);
+  }
+
+  .bt-loader,
+  .bt-lottie-player {
+    transition: none;
+  }
 }

@@ -1,15 +1,14 @@
-import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react'
-import { createPortal } from 'react-dom'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { AnimatePresence, MotionConfig, motion, type Variants } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { MapPin, X } from 'lucide-react'
 import { useSearchAutocomplete, type SearchSuggestion } from '../hooks/useSearchAutocomplete'
-import { useRecentSearches } from '../hooks/useRecentSearches'
+import { useRecentSearches, type RecentSearch } from '../hooks/useRecentSearches'
 import { useLocationSearch } from '../context/LocationSearchContext'
+import { useSearchInput } from '../context/SearchInputContext'
 import { trackSearch } from '../lib/analytics'
+import SearchSuggestionIcon from './shared/SearchSuggestionIcon'
 import './SearchBar.css'
-import OptimizedImage from '@/components/shared/OptimizedImage'
 
 const dropdownVariants: Variants = {
   hidden: { opacity: 0, y: -8, scale: 0.985 },
@@ -27,87 +26,147 @@ const dropdownVariants: Variants = {
   },
 }
 
+function suggestionKindClass(kind: string) {
+  if (kind === 'attraction') return ' suggestion--attraction'
+  if (kind === 'region') return ' suggestion--region'
+  if (kind === 'tour') return ' suggestion--tour'
+  return ' suggestion--place'
+}
+
 export default function SearchBar() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { setLocation } = useLocationSearch()
-  const [inputValue, setInputValue] = useState('')
+  const { searchValue: inputValue, setSearchValue: setInputValue } = useSearchInput()
   const [showDropdown, setShowDropdown] = useState(false)
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
   const [isFocused, setIsFocused] = useState(false)
   const [isPersonalizing, setIsPersonalizing] = useState(false)
-  const { suggestions, isSearching } = useSearchAutocomplete(inputValue)
+  const { suggestions, isSearching, stats } = useSearchAutocomplete(inputValue)
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches()
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const barRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  // Tracks whether a mousedown just happened on a suggestion/recent item,
-  // so the blur handler knows not to close the dropdown prematurely.
   const suppressBlurRef = useRef(false)
 
   const navigateToSuggestion = useCallback((suggestion: SearchSuggestion) => {
-    if (suggestion.type === 'tour' && suggestion.slug) {
-      addSearch({ slug: suggestion.slug, title: suggestion.title, type: 'tour', image: suggestion.image, city: suggestion.city })
-    }
     setShowDropdown(false)
     setInputValue('')
     setHighlightedIndex(-1)
-    // Blur the input so the dropdown fully closes. Without this the just-added
-    // recent search keeps it open (isFocused stays true), forcing a 2nd click.
     setIsFocused(false)
     inputRef.current?.blur()
-    if (suggestion.type === 'destination' || suggestion.type === 'attraction') {
-      addSearch({ slug: suggestion.title, title: suggestion.title, type: 'destination' })
-      setIsPersonalizing(true)
-      setLocation(suggestion.title)
-    } else if (suggestion.type === 'tour' && suggestion.slug) {
-      // Selecting a tour from the search bar personalizes the homepage to its
-      // city, so returning to the homepage filters to that city.
-      if (suggestion.city) setLocation(suggestion.city)
-      navigate(`/tour/${suggestion.slug}`)
-    }
-  }, [navigate, addSearch, setLocation])
 
-  const navigateToRecent = useCallback((item: { slug: string; title: string; type: 'destination' | 'tour'; image?: string; city?: string }) => {
+    // Tour: go to product page, set region for homepage personalization
+    if (suggestion.kind === 'tour' && suggestion.slug) {
+      addSearch({ slug: suggestion.slug, title: suggestion.name, type: 'tour', image: suggestion.image, city: suggestion.city, region: suggestion.region })
+      if (suggestion.region) setLocation(suggestion.region)
+      navigate(`/tour/${suggestion.slug}`)
+      return
+    }
+
+    // Attraction: go to search results with attraction param, set region
+    if (suggestion.kind === 'attraction') {
+      addSearch({ slug: suggestion.name, title: suggestion.name, type: 'destination', region: suggestion.region })
+      if (suggestion.region) setLocation(suggestion.region)
+      setIsPersonalizing(true)
+      navigate(`/tours?attraction=${encodeURIComponent(suggestion.name)}&place=${encodeURIComponent(suggestion.region || '')}`)
+      return
+    }
+
+    // Place: go to place-scoped listing, set region for homepage personalization
+    if (suggestion.kind === 'place') {
+      addSearch({ slug: suggestion.name, title: suggestion.name, type: 'destination', region: suggestion.region })
+      if (suggestion.region) setLocation(suggestion.region)
+      setIsPersonalizing(true)
+      navigate(`/tours?place=${encodeURIComponent(suggestion.name)}`)
+      return
+    }
+
+    // Region: go to region listing, set region for homepage personalization
+    if (suggestion.kind === 'region') {
+      addSearch({ slug: suggestion.name, title: suggestion.name, type: 'destination', region: suggestion.region })
+      // suggestion.name is e.g. "Ashanti Region" — store raw region for API matching
+      const rawRegion = suggestion.region || suggestion.name.replace(/\s*Region$/i, '')
+      setLocation(rawRegion)
+      setIsPersonalizing(true)
+      navigate(`/tours?place=${encodeURIComponent(suggestion.name)}`)
+      return
+    }
+
+    // Fallback: text search
+    addSearch({ slug: suggestion.name, title: suggestion.name, type: 'destination' })
+    setIsPersonalizing(true)
+    navigate(`/tours?place=${encodeURIComponent(suggestion.name)}`)
+  }, [navigate, addSearch, setLocation, setInputValue])
+
+  const navigateToRecent = useCallback((item: RecentSearch) => {
     setShowDropdown(false)
     setInputValue('')
     setHighlightedIndex(-1)
     setIsFocused(false)
     inputRef.current?.blur()
+    // Personalize the homepage exactly like the live suggestion does. Entries
+    // carry the region; ones saved before that only have the tour's city.
+    const region = item.region || item.city
+    if (region) setLocation(region)
     if (item.type === 'destination') {
       setIsPersonalizing(true)
-      setLocation(item.title)
+      navigate(`/tours?place=${encodeURIComponent(item.title)}`)
     } else if (item.type === 'tour' && item.slug) {
-      if (item.city) setLocation(item.city)
       navigate(`/tour/${item.slug}`)
     }
-  }, [navigate, setLocation])
+  }, [navigate, setLocation, setInputValue])
 
   const navigateToSearchPage = useCallback(() => {
     setShowDropdown(false)
     setHighlightedIndex(-1)
-
     const q = inputValue.trim()
     if (!q) return
-
     trackSearch(q)
-    setLocation(q)
-    // Always land on the listing page scoped to the query. If it resolves to a
-    // place (city / attraction) it shows "Tours in {place}"; otherwise the
-    // AllToursPage falls back to a plain text search.
-    navigate(`/tours?place=${encodeURIComponent(q)}`)
-  }, [inputValue, navigate, setLocation])
+    // Use the top suggestion to route to the correct page type
+    if (suggestions.length > 0) {
+      // Prefer place/region over attraction for Enter — user likely wants the destination, not a single site
+      const top = suggestions[0]
+      // Find a place/region that actually matches the query (not a random substring match)
+      const matchingPlace = suggestions.find(s =>
+        (s.kind === 'place' || s.kind === 'region') &&
+        (s.name.toLowerCase().startsWith(q.toLowerCase()) ||
+         q.toLowerCase().startsWith(s.name.toLowerCase()))
+      )
+      if (matchingPlace) {
+        if (matchingPlace.region) setLocation(matchingPlace.region)
+        navigate(`/tours?place=${encodeURIComponent(matchingPlace.name)}`)
+      } else if (top.kind === 'place' || top.kind === 'region') {
+        if (top.region) setLocation(top.region)
+        navigate(`/tours?place=${encodeURIComponent(top.name)}`)
+      } else {
+        // Tour / attraction / no match — land on the All Tours page for the
+        // query (a tour keyword becomes a text search there; a place becomes
+        // place-scoped). Selecting a tour from the dropdown still opens the
+        // tour page — this is only the Enter / Search-button path.
+        const regionName = top.region || ''
+        if (regionName) setLocation(regionName)
+        navigate(`/tours?place=${encodeURIComponent(q)}`)
+      }
+    } else {
+      navigate(`/tours?place=${encodeURIComponent(q)}`)
+    }
+  }, [inputValue, navigate, setLocation, suggestions])
 
   useEffect(() => {
     if (suggestions.length > 0 && inputValue.trim().length >= 2) {
+      window.setTimeout(() => setShowDropdown(true), 0)
+      window.setTimeout(() => setHighlightedIndex(-1), 0)
+    } else if (!isSearching && inputValue.trim().length >= 2) {
+      // No suggestions — still show dropdown for "no matches" state
       window.setTimeout(() => setShowDropdown(true), 0)
       window.setTimeout(() => setHighlightedIndex(-1), 0)
     } else {
       window.setTimeout(() => setShowDropdown(false), 0)
       window.setTimeout(() => setHighlightedIndex(-1), 0)
     }
-  }, [suggestions, inputValue])
+  }, [suggestions, inputValue, isSearching])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -121,55 +180,32 @@ export default function SearchBar() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Clear personalizing indicator once city data arrives
-  useEffect(() => {
-    if (isPersonalizing && !isSearching) {
-      setIsPersonalizing(false)
-    }
-  }, [isPersonalizing, isSearching])
-
   const dropdownOpen =
     (isFocused && recentSearches.length > 0) ||
-    (showDropdown && suggestions.length > 0) ||
+    (showDropdown && (suggestions.length > 0 || inputValue.trim().length >= 2)) ||
     (isSearching && isFocused)
 
-  const showSkeleton = isSearching && isFocused && suggestions.length === 0
+  const showSkeleton = isSearching && isFocused && suggestions.length === 0 && inputValue.trim().length < 2
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!dropdownOpen) return
-    const measure = () => {
-      const el = dropdownRef.current
-      const bar = barRef.current
-      if (!el || !bar) return
-      const rect = bar.getBoundingClientRect()
-      el.style.top = `${rect.bottom + 6}px`
-      el.style.left = `${rect.left}px`
-      el.style.width = `${rect.width}px`
-      el.style.visibility = 'visible'
-    }
-    measure()
-    window.addEventListener('resize', measure)
     const onScroll = () => {
       if (window.scrollY > 8) {
         setShowDropdown(false)
-      } else {
-        measure()
       }
     }
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => {
-      window.removeEventListener('resize', measure)
-      window.removeEventListener('scroll', onScroll)
-    }
+    return () => window.removeEventListener('scroll', onScroll)
   }, [dropdownOpen])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value)
+    // Typing starts a fresh interaction, so drop the "handing off to the results
+    // page" flag. This used to be reset from an effect watching isSearching,
+    // which set state synchronously during an effect and cascaded a render.
+    if (isPersonalizing) setIsPersonalizing(false)
   }
 
-  /** Shared mousedown handler for dropdown items (suggestions + recent).
-   *  Calls e.preventDefault() to stop the input from losing focus, which
-   *  prevents the blur handler from racing with the click. */
   const handleItemMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
     suppressBlurRef.current = true
@@ -225,12 +261,15 @@ export default function SearchBar() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (highlightedIndex >= 0 && highlightedIndex < suggestions.length) {
-      navigateToSuggestion(suggestions[highlightedIndex])
-    } else {
-      navigateToSearchPage()
-    }
+    // The Search button ALWAYS runs the search — it must never open a suggestion.
+    // It used to fall through to the highlighted row, and because the hover
+    // handler fed the same index the arrow keys use, a mouse crossing the
+    // dropdown made the button open whichever tour it passed over. Suggestions
+    // now open only on an explicit click (or via Tab).
+    navigateToSearchPage()
   }
+
+  const hasQuery = inputValue.trim().length >= 2
 
   return (
     <div className={`hero-search-wrap${isSearching ? ' searching' : ''}`} ref={containerRef}>
@@ -252,6 +291,8 @@ export default function SearchBar() {
                 className="hero-search-input"
                 placeholder={isPersonalizing ? `${t('hero.search')}...` : t('hero.destinationPlaceholder')}
                 autoComplete="off"
+                aria-autocomplete="list"
+                aria-controls="search-dropdown"
                 value={inputValue}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
@@ -262,8 +303,6 @@ export default function SearchBar() {
                   }
                 }}
                 onBlur={() => {
-                  // If a mousedown just happened on a dropdown item, suppress
-                  // the blur — the item's onClick/onMouseDown will handle it.
                   if (suppressBlurRef.current) {
                     suppressBlurRef.current = false
                     return
@@ -279,25 +318,18 @@ export default function SearchBar() {
         </div>
 
         <MotionConfig reducedMotion="user">
-          {createPortal(
-            <AnimatePresence initial={false}>
-              {dropdownOpen && (
-                <motion.div
-                  className="search-dropdown"
-                  ref={dropdownRef}
-                  variants={dropdownVariants}
-                  initial="hidden"
-                  animate="show"
-                  exit="exit"
-                  style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    width: 0,
-                    visibility: 'hidden',
-                    zIndex: 1000,
-                  }}
-                >
+          <AnimatePresence initial={false}>
+            {dropdownOpen && (
+              <motion.div
+                className="search-dropdown"
+                id="search-dropdown"
+                ref={dropdownRef}
+                variants={dropdownVariants}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+                role="listbox"
+              >
                 {showSkeleton ? (
                   <div className="search-skeleton" aria-hidden="true">
                     {[0, 1, 2].map((i) => (
@@ -312,121 +344,124 @@ export default function SearchBar() {
                   </div>
                 ) : (
                   <>
-                    {isFocused && recentSearches.length > 0 && (
-              <>
-                <div className="search-dropdown-section">{t('search.recentSearches')}</div>
-                {recentSearches.map((item) => (
-                  <div
-                    key={item.slug}
-                    className="search-recent-item"
-                    onMouseDown={(e) => {
-                      handleItemMouseDown(e)
-                      navigateToRecent(item)
-                    }}
-                  >
-                    {item.type === 'tour' && item.image ? (
-                      <div className="search-suggestion-img">
-                        <OptimizedImage src={item.image} alt="" width={100} />
-                      </div>
-                    ) : (
-                      <div className="search-suggestion-icon">
-                        <MapPin size={16} />
+                    {/* Recent searches — only when idle (no query typed) */}
+                    {isFocused && !hasQuery && recentSearches.length > 0 && (
+                      <>
+                        <div className="search-recent-panel">
+                          <div className="search-recent-heading">{t('search.recentSearches')}</div>
+                          {recentSearches.map((item) => (
+                            <div
+                              key={item.slug}
+                              className="search-recent-item"
+                              onMouseDown={(e) => {
+                                handleItemMouseDown(e)
+                                navigateToRecent(item)
+                              }}
+                            >
+                              <div className="search-recent-clock">◷</div>
+                              <div className="search-recent-text">
+                                <span className="search-recent-title">{item.title}</span>
+                                <span className="search-recent-sub">{item.type === 'destination' ? t('search.destination') : t('search.tour')}</span>
+                              </div>
+                              <button
+                                type="button"
+                                className="search-recent-remove"
+                                onMouseDown={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  removeSearch(item.slug)
+                                }}
+                                aria-label={t('search.removeRecent')}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                          <div className="search-recent-clear" onMouseDown={(e) => { e.preventDefault(); clearAll() }}>
+                            {t('search.clearRecent')}
+                          </div>
+                        </div>
+                        {showDropdown && suggestions.length > 0 && <div className="search-recent-divider" />}
+                      </>
+                    )}
+
+                    {/* Best matches header */}
+                    {showDropdown && suggestions.length > 0 && (
+                      <div className="search-smart-header">
+                        <strong>Best matches</strong>
+                        <span>Matching &ldquo;{inputValue.trim()}&rdquo;</span>
                       </div>
                     )}
-                    <div className="search-suggestion-text">
-                      <span className="search-suggestion-title">{item.title}</span>
-                      <span className="search-suggestion-sub">{item.type === 'destination' ? t('search.destination') : t('search.tour')}</span>
-                    </div>
-                    <button
-                      type="button"
-                      className="search-recent-remove"
-                      onMouseDown={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        removeSearch(item.slug)
-                      }}
-                      aria-label={t('search.removeRecent')}
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                ))}
-                <div className="search-recent-clear" onMouseDown={(e) => { e.preventDefault(); clearAll() }}>
-                  {t('search.clearRecent')}
-                </div>
-                {showDropdown && suggestions.length > 0 && <div className="search-recent-divider" />}
-              </>
-            )}
-            {showDropdown && suggestions.length > 0 && (
-              <>
-                {suggestions.map((suggestion, idx) => {
-                  const isHighlighted = idx === highlightedIndex
-                  const isPlace = suggestion.type !== 'tour'
-                  const showPlaceHeader = isPlace && (idx === 0 || suggestions[idx - 1]?.type === 'tour')
-                  const showTourHeader = suggestion.type === 'tour' && (idx === 0 || suggestions[idx - 1]?.type !== 'tour')
 
-                  return (
-                    <motion.div
-                      key={suggestion.id}
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.18, ease: 'easeOut', delay: Math.min(idx * 0.03, 0.45) }}
-                    >
-                      {showPlaceHeader && (
-                        <div className="search-dropdown-section">{t('search.placesToSee')}</div>
-                      )}
-                      {showTourHeader && (
-                          <div className="search-dropdown-section">{t('search.toursAndExperiences')}</div>
-                      )}
-                      <div
-                        className={`search-suggestion${isHighlighted ? ' highlighted' : ''}`}
-                        onMouseDown={(e) => {
-                          handleItemMouseDown(e)
-                          navigateToSuggestion(suggestion)
-                        }}
-                        onMouseEnter={() => setHighlightedIndex(idx)}
-                      >
-                        {suggestion.type === 'tour' ? (
-                          <>
-                            <div className="search-suggestion-img">
-                              <OptimizedImage src={suggestion.image} alt="" width={100} />
-                            </div>
-                            <div className="search-suggestion-text">
-                              <span className="search-suggestion-title">{suggestion.title}</span>
-                              <span className="search-suggestion-sub">{suggestion.subtitle}</span>
-                            </div>
-                            <span className="search-suggestion-price">{suggestion.price}</span>
-                          </>
-                        ) : (
-                          <>
-                            {suggestion.image ? (
-                              <div className="search-suggestion-img">
-                                <OptimizedImage src={suggestion.image} alt="" width={100} />
+                    {/* Suggestion items */}
+                    {showDropdown && suggestions.length > 0 && (
+                      <>
+                        {suggestions.map((suggestion, idx) => {
+                          const isHighlighted = idx === highlightedIndex
+                          return (
+                            <motion.div
+                              key={suggestion.id}
+                              initial={{ opacity: 0, y: 6 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.18, ease: 'easeOut', delay: Math.min(idx * 0.03, 0.45) }}
+                            >
+                              <div
+                                className={`search-suggestion${suggestionKindClass(suggestion.kind)}${isHighlighted ? ' highlighted' : ''}`}
+                                role="option"
+                                aria-selected={isHighlighted}
+                                onMouseDown={(e) => {
+                                  handleItemMouseDown(e)
+                                  navigateToSuggestion(suggestion)
+                                }}
+                              >
+                                {suggestion.kind === 'tour' && suggestion.image ? (
+                                  <div className="search-suggestion-thumb">
+                                    <img src={suggestion.image} alt="" loading="lazy" />
+                                  </div>
+                                ) : (
+                                  <div className="search-suggestion-icon-wrap">
+                                    <span className="search-suggestion-icon">
+                                      <SearchSuggestionIcon kind={suggestion.kind} />
+                                    </span>
+                                  </div>
+                                )}
+                                <div className="search-suggestion-text">
+                                  <span className="search-suggestion-title">{suggestion.name}</span>
+                                  {suggestion.subtitle && (
+                                    <span className="search-suggestion-sub">{suggestion.subtitle}</span>
+                                  )}
+                                  {suggestion.meta && (
+                                    <span className="search-suggestion-meta">{suggestion.meta}</span>
+                                  )}
+                                </div>
+                                <span className="search-suggestion-badge">{suggestion.badge}</span>
                               </div>
-                            ) : (
-                              <div className="search-suggestion-icon">
-                                <MapPin size={16} />
-                              </div>
-                            )}
-                            <div className="search-suggestion-text">
-                              <span className="search-suggestion-title">{suggestion.title}</span>
-                              <span className="search-suggestion-sub">{suggestion.subtitle}</span>
-                            </div>
-                          </>
-                        )}
+                            </motion.div>
+                          )
+                        })}
+                      </>
+                    )}
+
+                    {/* No matches state */}
+                    {showDropdown && suggestions.length === 0 && !isSearching && hasQuery && (
+                      <div className="search-suggestion-empty">
+                        <b>No matching place or attraction found</b>
+                        Try another Ghana city, town, region or attraction name.
                       </div>
-                    </motion.div>
-                  )
-                })}
-              </>
-            )}
-              </>
-            )}
+                    )}
+
+                    {/* Stats footer */}
+                    {showDropdown && suggestions.length > 0 && (
+                      <div className="search-smart-footer">
+                        <span>{stats.places} destinations · {stats.attractions} attractions · {stats.tours} tours · {stats.regions} regions</span>
+                        <span>Ghana search database</span>
+                      </div>
+                    )}
+                  </>
+                )}
                 </motion.div>
               )}
-            </AnimatePresence>,
-            document.body,
-          )}
+            </AnimatePresence>
         </MotionConfig>
       </form>
     </div>

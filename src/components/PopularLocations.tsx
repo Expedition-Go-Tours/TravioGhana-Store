@@ -91,7 +91,7 @@ export default function PopularLocations({ preloaded }: Props) {
               ) : (
                 items?.map((dest, i) => (
                   <div key={`${dest.title}-${i}`} className="location-card-wrap">
-                    <PopularLocationCard {...dest} onClick={() => navigate(`/tours?location=${encodeURIComponent(dest.title)}`)} />
+                    <PopularLocationCard {...dest} onClick={() => navigate(`/tours?place=${encodeURIComponent(dest.title)}`)} />
                   </div>
                 ))
               )}

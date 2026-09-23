@@ -564,10 +564,11 @@ a.supplier-contact-value:hover {
 
 /* `.tour-card` sets `height: 100%`, and a definite height opts a flex/grid item
    out of `align-items: stretch`. These cards are DIRECT children of this
-   container, so that 100% has nothing to resolve against and every card falls
+   container, so that 100% has nothing to resolve against and every card fell
    back to its content height — unlike the homepage carousels, which wrap each
    card in a motion div the percentage can resolve against. Cards whose title
-   fits on one line therefore came out a line shorter than the rest.
+   fits on one line therefore came out a line shorter than the rest (measured
+   343px vs 362px: "Traditional Beadmaking Workshop" and "The North Safari").
    `height: auto` restores stretching, so every card in the row matches. */
 .supplier-tours-grid .tour-card {
   height: auto;
@@ -576,34 +577,35 @@ a.supplier-contact-value:hover {
 @media (min-width: 600px) {
   .supplier-tours-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
     overflow-x: visible;
     scroll-snap-type: none;
     -webkit-overflow-scrolling: auto;
     padding-bottom: 0;
     /* Grid stretch only equalises cards within a row, so rows with a one-line
-       title would still be shorter than their neighbours. `1fr` gives every row
-       the tallest card's height; the `height: auto` above lets cards fill it. */
+       title were ~19px shorter than their neighbours. `1fr` gives every row the
+       tallest card's height; the `height: auto` above lets the cards fill it. */
     grid-auto-rows: 1fr;
   }
 
   .supplier-tours-grid > * {
     flex: none;
+    min-width: 0;
     scroll-snap-align: none;
   }
 }
 
 @media (min-width: 900px) {
   .supplier-tours-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16px;
   }
 }
 
 @media (min-width: 1200px) {
   .supplier-tours-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 16px;
   }
 }

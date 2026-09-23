@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { lowestAdultRetailPrice, lowestAdultFromTravelerPricing } from './startingPrice'
+import { lowestAdultRetailPrice, lowestAdultFromTravelerPricing, headlineUnitPrice, cardParityUnitPrice } from './startingPrice'
 import type { TravelerPricing } from './tourTypes'
 
 describe('lowestAdultRetailPrice', () => {
@@ -132,5 +132,114 @@ describe('lowestAdultFromTravelerPricing', () => {
   it('returns null for empty lists (per-group tours)', () => {
     expect(lowestAdultFromTravelerPricing(undefined)).toBeNull()
     expect(lowestAdultFromTravelerPricing([])).toBeNull()
+  })
+})
+
+describe('headlineUnitPrice', () => {
+  const tieredAdult = (): TravelerPricing => ({
+    label: 'Adult',
+    price: 70,
+    tiers: [
+      { from: 2, to: 4, pricePerPerson: 60 },
+      { from: 5, to: 99, pricePerPerson: 55 },
+    ],
+  })
+
+  it('quotes the active adult tier for the current headcount', () => {
+    expect(headlineUnitPrice({
+      isPerGroup: false,
+      adultGroup: tieredAdult(),
+      totalTravelers: 3,
+      travelerGroups: [tieredAdult(), { label: 'Child', price: 30 }],
+    })).toBe(60)
+    expect(headlineUnitPrice({
+      isPerGroup: false,
+      adultGroup: tieredAdult(),
+      totalTravelers: 5,
+      travelerGroups: [tieredAdult(), { label: 'Child', price: 30 }],
+    })).toBe(55)
+  })
+
+  it('uses the flat adult price when no tier matches the headcount', () => {
+    expect(headlineUnitPrice({
+      isPerGroup: false,
+      adultGroup: { label: 'Adult', price: 70 },
+      totalTravelers: 2,
+      travelerGroups: [{ label: 'Adult', price: 70 }],
+    })).toBe(70)
+  })
+
+  it('falls back to the lowest adult rate then the tour price without an adult category', () => {
+    expect(headlineUnitPrice({
+      isPerGroup: false,
+      adultGroup: null,
+      totalTravelers: 2,
+      travelerGroups: [{ label: 'Child', price: 40 }],
+      tourPrice: 90,
+    })).toBe(40)
+    expect(headlineUnitPrice({
+      isPerGroup: false,
+      adultGroup: null,
+      totalTravelers: 2,
+      travelerGroups: [],
+      tourPrice: 90,
+    })).toBe(90)
+  })
+
+  it('quotes the band matching the selected headcount on per-group tours', () => {
+    const bands = [
+      { from: 1, to: 4, price: 300 },
+      { from: 5, to: 10, price: 500 },
+    ]
+    expect(headlineUnitPrice({
+      isPerGroup: true,
+      matchingGroupBand: bands[1],
+      lowestGroupBand: bands[0],
+      totalTravelers: 6,
+    })).toBe(500)
+  })
+
+  it('falls back to the cheapest band when no band matches the headcount', () => {
+    expect(headlineUnitPrice({
+      isPerGroup: true,
+      matchingGroupBand: null,
+      lowestGroupBand: { price: 300 },
+      totalTravelers: 11,
+    })).toBe(300)
+  })
+})
+
+describe('cardParityUnitPrice', () => {
+  it('returns the lowest adult tier — exactly what the tour card quotes', () => {
+    expect(cardParityUnitPrice({
+      isPerGroup: false,
+      travelerGroups: [
+        { label: 'Adult', price: 70, tiers: [
+          { from: 2, to: 4, pricePerPerson: 60 },
+          { from: 5, to: 99, pricePerPerson: 55 },
+        ] },
+        { label: 'Child', price: 30 },
+      ],
+    })).toBe(55)
+  })
+
+  it('returns the cheapest group band on per-group tours', () => {
+    expect(cardParityUnitPrice({
+      isPerGroup: true,
+      lowestGroupBand: { price: 300 },
+    })).toBe(300)
+  })
+
+  it('falls back to the tour price when nothing is priceable', () => {
+    expect(cardParityUnitPrice({
+      isPerGroup: false,
+      travelerGroups: [],
+      tourPrice: 90,
+    })).toBe(90)
+    expect(cardParityUnitPrice({
+      isPerGroup: true,
+      lowestGroupBand: null,
+      tourPrice: 90,
+    })).toBe(0)
   })
 })

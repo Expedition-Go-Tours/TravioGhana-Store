@@ -118,12 +118,11 @@ export function buildOrganizationSchema() {
     '@type': 'Organization',
     name: SITE_NAME,
     url: SITE_URL,
-    logo: `${SITE_URL}/logo.png`,
+    logo: `${SITE_URL}/src/assets/icons/compyIcon.png`,
     sameAs: [
       'https://www.facebook.com/p/Travio Ghana-Tours-LTD-61567042001418/',
       'https://www.instagram.com/travioGhanatours',
       'https://www.youtube.com/c/travioGhanaTravelandToursLTD',
-      'https://www.tiktok.com/@travioGhanatours',
     ],
     contactPoint: {
       '@type': 'ContactPoint',

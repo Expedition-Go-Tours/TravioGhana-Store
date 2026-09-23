@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Star, Heart, Car, Compass, Languages as LanguagesIcon, ShieldCheck, Ban, TrendingUp } from 'lucide-react'
@@ -11,20 +12,20 @@ import { useSellOutContext } from '../context/SellOutContext'
 import { getCategoryMeta } from './categoryMeta'
 import i18n from '../i18n/config'
 import './ContinuePlanningSection.css'
+import './skeleton.css'
 import OptimizedImage from '@/components/shared/OptimizedImage'
 import { bestOfferDiscountAmount, type SpecialOfferData } from '../hooks/useExpeditionTours'
+import { useCombinedTourStats } from '../hooks/useExternalReviews'
 
 const CARD_WIDTH = 560
 const GAP = 24
 
 function shortCancellation(policy?: string): string {
   if (!policy) return ''
-  // Coerce defensively — stale localStorage items can carry non-strings.
-  const raw = String(policy)
-  const lower = raw.toLowerCase()
+  const lower = policy.toLowerCase()
   if (/non[ -]?refundable/.test(lower)) return 'Non-refundable'
   if (lower.includes('free')) return 'Free cancellation'
-  return raw.split(' up to')[0].trim()
+  return policy.split(' up to')[0].trim()
 }
 
 // Maps a Continue Planning item onto the TourCard props used by the
@@ -71,13 +72,24 @@ function hasActiveOffer(offers: SpecialOfferData[] | undefined): boolean {
 
 function ContinuePlanningCard({ item, likelyToSellOut }: { item: ContinuePlanningItem; likelyToSellOut?: boolean }) {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist()
   const inWishlist = isInWishlist(item.id)
   const hasOffer = hasActiveOffer(item.specialOffers)
+  // Display stats include matched scraped reviews; the stored item keeps the
+  // raw in-app stats so re-rendering through TourCard never double-counts.
+  const combinedStats = useCombinedTourStats({
+    title: item.title,
+    location: item.location,
+    rating: item.rating,
+    reviewCount: item.reviewCount,
+  })
+  const displayRating = combinedStats.reviewCount > 0 ? combinedStats.rating.toFixed(1) : String(item.rating)
+  const displayReviewCount = combinedStats.reviewCount > 0 ? combinedStats.reviewCount : item.reviewCount
 
   const openTour = () => {
     const slug = item.slug || item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-    window.open(`/tour/${slug}`, '_blank', 'noopener')
+    navigate(`/tour/${slug}`)
   }
 
   const handleWishlist = (e: React.MouseEvent) => {
@@ -174,9 +186,9 @@ function ContinuePlanningCard({ item, likelyToSellOut }: { item: ContinuePlannin
     >
       {discountLabel && <span className="cp-card-discount-chip">{discountLabel}</span>}
       <div className="cp-card-media">
-        {item.source === 'travio-ghana' && (
+        {item.source === 'travio-africa' && (
           <div className="cp-card-source-badge">
-            <img src="/travio_logo.png" alt="Travio Ghana" />
+            <img src="/travio_logo.png" alt="Travio Africa" />
           </div>
         )}
         <OptimizedImage src={item.imageUrl} alt={item.title} width={400} />
@@ -223,8 +235,8 @@ function ContinuePlanningCard({ item, likelyToSellOut }: { item: ContinuePlannin
 
         <div className="cp-card-rating">
           <Star size={17} className="cp-card-star" fill="currentColor" stroke="currentColor" strokeWidth={1} />
-          <span className="cp-card-rating-value">{item.rating}</span>
-          {item.reviewCount > 0 && <span className="cp-card-rating-count">({item.reviewCount})</span>}
+          <span className="cp-card-rating-value">{displayRating}</span>
+          {displayReviewCount > 0 && <span className="cp-card-rating-count">({displayReviewCount})</span>}
         </div>
       </div>
 
@@ -244,6 +256,83 @@ function ContinuePlanningCard({ item, likelyToSellOut }: { item: ContinuePlannin
     </div>
   )
 }
+
+/** One carousel slide: shows a skeleton shaped exactly like the real card
+ *  (vertical TourCard on mobile, horizontal cp-card on desktop/tablet) until
+ *  that card's image has loaded, so cards never pop in over a blank box. */
+function ContinuePlanningSlide({
+  item,
+  likelyToSellOut,
+  isMobile,
+}: {
+  item: ContinuePlanningItem
+  likelyToSellOut?: boolean
+  isMobile: boolean
+}) {
+  const [imageReady, setImageReady] = useState(() => !item.imageUrl)
+
+  useEffect(() => {
+    if (!item.imageUrl) return
+    let cancelled = false
+    const img = new Image()
+    const done = () => {
+      if (!cancelled) setImageReady(true)
+    }
+    img.onload = done
+    img.onerror = done
+    img.src = item.imageUrl
+    const timeout = window.setTimeout(done, 4000)
+    return () => {
+      cancelled = true
+      window.clearTimeout(timeout)
+      img.onload = null
+      img.onerror = null
+    }
+  }, [item.imageUrl])
+
+  if (!imageReady) {
+    return isMobile ? (
+      <div className="continue-skeleton continue-skeleton-mobile" aria-hidden="true">
+        <span className="continue-skeleton-media">
+          <span className="skeleton-shimmer" />
+        </span>
+        <span className="continue-skeleton-mobile-body">
+          <span className="skeleton-line continue-skeleton-loc" />
+          <span className="skeleton-line continue-skeleton-title" />
+          <span className="skeleton-line continue-skeleton-title-short" />
+          <span className="continue-skeleton-row">
+            <span className="skeleton-line continue-skeleton-price" />
+            <span className="skeleton-line continue-skeleton-rating" />
+          </span>
+        </span>
+      </div>
+    ) : (
+      <div className="continue-skeleton continue-skeleton-card" aria-hidden="true">
+        <span className="continue-skeleton-media">
+          <span className="skeleton-shimmer" />
+        </span>
+        <span className="continue-skeleton-card-body">
+          <span className="skeleton-line continue-skeleton-card-line-title" />
+          <span className="skeleton-line continue-skeleton-card-line-short" />
+          <span className="skeleton-line continue-skeleton-card-line-facts" />
+          <span className="continue-skeleton-card-row">
+            <span className="skeleton-line continue-skeleton-card-line-rating" />
+          </span>
+        </span>
+        <span className="continue-skeleton-card-price">
+          <span className="skeleton-line continue-skeleton-card-line-price" />
+        </span>
+      </div>
+    )
+  }
+
+  return isMobile ? (
+    <TourCard {...toTourCardProps(item, likelyToSellOut ?? false)} imageClean hideFeatures hideOfferBadge />
+  ) : (
+    <ContinuePlanningCard item={item} likelyToSellOut={likelyToSellOut} />
+  )
+}
+
 export default function ContinuePlanningSection() {
   const { t } = useTranslation()
   const { continuePlanning } = useContinuePlanning()
@@ -255,11 +344,11 @@ export default function ContinuePlanningSection() {
   // On mobile the section reuses the Recommended carousel's vertical TourCard
   // so the two sections look identical; desktop keeps the horizontal card.
   const [isMobile, setIsMobile] = useState(
-    () => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(max-width: 767px)').matches,
+    () => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(max-width: 768px)').matches,
   )
 
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)')
+    const mq = window.matchMedia('(max-width: 768px)')
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
@@ -316,11 +405,11 @@ export default function ContinuePlanningSection() {
             <div className="continue-planning-carousel" ref={scrollRef}>
               {continuePlanning.map((item) => (
                 <div key={item.id} className="continue-planning-card-wrap">
-                  {isMobile ? (
-                    <TourCard {...toTourCardProps(item, isLikelyToSellOut({ id: item.id, title: item.title }))} imageClean hideFeatures hideOfferBadge />
-                  ) : (
-                    <ContinuePlanningCard item={item} likelyToSellOut={isLikelyToSellOut({ id: item.id, title: item.title })} />
-                  )}
+                  <ContinuePlanningSlide
+                    item={item}
+                    likelyToSellOut={isLikelyToSellOut({ id: item.id, title: item.title })}
+                    isMobile={isMobile}
+                  />
                 </div>
               ))}
             </div>

@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import './SplashScreen.css'
@@ -7,7 +7,7 @@ import './SplashScreen.css'
  * Travio Ghana animated splash screen — composed from separate elements so
  * each phase animates independently and nothing is ever cut:
  *   1. Emblem  — /logo.png rolls in from the left, scaling up as it settles
- *   2. Wordmark — "Travio Ghana Tours Limited" slides out from behind the stamp
+ *   2. Wordmark — "EXPEDITION-GO TOURS LIMITED" slides out from behind the stamp
  *   3. Flag    — inline SVG Ghana ribbon ripples continuously
  *   4. Tagline — "Your Gateway to Africa" fades in
  *

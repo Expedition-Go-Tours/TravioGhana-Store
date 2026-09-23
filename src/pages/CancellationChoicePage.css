@@ -1,11 +1,12 @@
-/* /cancellation-choice — supplier-cancelled booking: reschedule or refund. */
+/* /cancellation-choice — supplier-cancelled booking: reschedule or refund.
+   Uses the booking theme tokens (--bv-*) with safe fallbacks. */
 
 .cc-page {
   min-height: 100vh;
-  padding: calc(64px + 32px) 20px 64px;
+  padding: calc(64px + 32px) 20px 0;
   background:
-    radial-gradient(1200px 320px at 50% -120px, rgba(6, 95, 70, 0.08), transparent 70%),
-    var(--background, #fff);
+    radial-gradient(1200px 320px at 50% -120px, rgba(22, 163, 74, 0.07), transparent 70%),
+    var(--bv-canvas, #fff);
   font-family: var(--font-body, inherit);
 }
 
@@ -13,10 +14,10 @@
   max-width: 860px;
   margin: 0 auto;
   padding: 28px;
-  background: #fff;
-  border: 1px solid var(--border, #e5e4e7);
-  border-radius: 16px;
-  box-shadow: 0 12px 40px -24px rgba(16, 24, 40, 0.35);
+  background: var(--bv-surface, #fff);
+  border: 1px solid var(--bv-border, #eceef2);
+  border-radius: 18px;
+  box-shadow: var(--bv-shadow-md, 0 10px 30px -12px rgba(16, 24, 40, 0.18));
 }
 
 .cc-card-message,
@@ -28,6 +29,7 @@
   align-items: center;
   gap: 12px;
   padding: 44px 28px;
+  margin-bottom: 48px;
 }
 
 .cc-back {
@@ -37,7 +39,7 @@
   margin-bottom: 18px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--dash-accent, #065f46);
+  color: var(--bv-accent-strong, #15803d);
   text-decoration: none;
 }
 
@@ -56,7 +58,7 @@
   height: 96px;
   object-fit: cover;
   border-radius: 12px;
-  border: 1px solid var(--border, #e5e4e7);
+  border: 1px solid var(--bv-border, #eceef2);
   flex-shrink: 0;
 }
 
@@ -70,7 +72,7 @@
   font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: #b45309;
+  color: var(--bv-warn-text, #b54708);
 }
 
 .cc-title {
@@ -80,14 +82,14 @@
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.01em;
-  color: var(--foreground, #101828);
+  color: var(--bv-ink, #101828);
 }
 
 .cc-text {
   margin: 0;
   font-size: 14.5px;
   line-height: 1.6;
-  color: #475467;
+  color: var(--bv-text, #344054);
 }
 
 .cc-meta {
@@ -97,7 +99,7 @@
   gap: 12px;
   margin-top: 10px;
   font-size: 13.5px;
-  color: #667085;
+  color: var(--bv-muted, #667085);
 }
 
 .cc-meta span {
@@ -109,8 +111,8 @@
 .cc-summary-ref {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 12.5px;
-  color: var(--dash-accent, #065f46);
-  background: #f0fdf4;
+  color: var(--bv-accent-strong, #15803d);
+  background: var(--bv-accent-soft, #ecfdf3);
   border: 1px solid #dcfce7;
   border-radius: 6px;
   padding: 2px 8px;
@@ -123,7 +125,7 @@
   align-items: center;
   gap: 10px;
   font-size: 13.5px;
-  color: #667085;
+  color: var(--bv-muted, #667085);
 }
 
 .cc-deadline {
@@ -134,11 +136,11 @@
   margin: 12px 0 0;
   font-size: 13.5px;
   font-weight: 600;
-  color: #b45309;
+  color: var(--bv-warn-text, #b54708);
 }
 
 .cc-deadline.is-passed {
-  color: #b42318;
+  color: var(--bv-danger-text, #b42318);
 }
 
 .cc-deadline-chip {
@@ -155,7 +157,7 @@
   margin: 22px 0 0;
   font-size: 14.5px;
   line-height: 1.6;
-  color: #475467;
+  color: var(--bv-text, #344054);
 }
 
 .cc-error {
@@ -163,14 +165,14 @@
   padding: 10px 14px;
   border: 1px solid #fecaca;
   border-radius: 10px;
-  background: #fef2f2;
-  color: #b42318;
+  background: var(--bv-danger-bg, #fef3f2);
+  color: var(--bv-danger-text, #b42318);
   font-size: 13.5px;
   line-height: 1.5;
 }
 
 .cc-error-text {
-  color: #b42318;
+  color: var(--bv-danger-text, #b42318);
 }
 
 /* ---------- option cards ---------- */
@@ -187,9 +189,9 @@
   align-items: flex-start;
   gap: 8px;
   padding: 20px;
-  border: 1px solid var(--border, #e5e4e7);
+  border: 1px solid var(--bv-border, #eceef2);
   border-radius: 14px;
-  background: #fff;
+  background: var(--bv-surface, #fff);
 }
 
 .cc-option-icon {
@@ -198,8 +200,8 @@
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background: #f0fdf4;
-  color: var(--dash-accent, #065f46);
+  background: var(--bv-accent-soft, #ecfdf3);
+  color: var(--bv-accent-strong, #15803d);
 }
 
 .cc-option-title {
@@ -207,7 +209,7 @@
   font-family: var(--font-heading, inherit);
   font-size: 17px;
   font-weight: 700;
-  color: var(--foreground, #101828);
+  color: var(--bv-ink, #101828);
 }
 
 .cc-option-amount {
@@ -215,14 +217,18 @@
   font-family: var(--font-heading, inherit);
   font-size: 21px;
   font-weight: 700;
-  color: var(--dash-accent, #065f46);
+  color: var(--bv-accent-strong, #15803d);
 }
 
 .cc-option-text {
   margin: 0 0 6px;
   font-size: 13.5px;
   line-height: 1.55;
-  color: #667085;
+  color: var(--bv-muted, #667085);
+}
+
+.cc-option .bk-btn {
+  margin-top: auto;
 }
 
 .cc-date-form {
@@ -235,29 +241,28 @@
 .cc-date-label {
   font-size: 12.5px;
   font-weight: 600;
-  color: #344054;
+  color: var(--bv-text, #344054);
 }
 
 .cc-date-input {
   width: 100%;
-  height: 40px;
+  height: 42px;
   padding: 0 12px;
-  border: 1px solid var(--border, #e5e4e7);
-  border-radius: 8px;
-  background: #fff;
+  border: 1px solid var(--bv-border-strong, #d8dce3);
+  border-radius: 10px;
+  background: var(--bv-surface, #fff);
   font-family: var(--font-body, inherit);
   font-size: 14px;
-  color: #101828;
+  color: var(--bv-ink, #101828);
 }
 
 .cc-date-input:focus-visible {
-  outline: 2px solid var(--dash-accent, #065f46);
+  outline: 2px solid var(--bv-focus, rgba(22, 163, 74, 0.35));
   outline-offset: 1px;
 }
 
-.cc-primary-btn,
-.cc-secondary-btn {
-  margin-top: auto;
+.cc-date-form .bk-btn {
+  width: 100%;
 }
 
 .cc-message-actions {
@@ -276,13 +281,13 @@
 }
 
 .cc-message-icon-warn {
-  background: #fef3c7;
-  color: #b45309;
+  background: var(--bv-warn-bg, #fef3c7);
+  color: var(--bv-warn-text, #b54708);
 }
 
 .cc-message-icon-ok {
-  background: #f0fdf4;
-  color: var(--dash-accent, #065f46);
+  background: var(--bv-success-bg, #ecfdf3);
+  color: var(--bv-success-text, #067647);
 }
 
 /* ---------- refund confirmation dialog ---------- */
@@ -299,9 +304,9 @@
 .cc-dialog {
   width: min(440px, 100%);
   padding: 24px;
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 24px 60px -20px rgba(16, 24, 40, 0.4);
+  background: var(--bv-surface, #fff);
+  border-radius: 16px;
+  box-shadow: var(--bv-shadow-lg, 0 24px 60px -20px rgba(16, 24, 40, 0.28));
 }
 
 .cc-dialog-title {
@@ -309,14 +314,14 @@
   font-family: var(--font-heading, inherit);
   font-size: 18px;
   font-weight: 700;
-  color: var(--foreground, #101828);
+  color: var(--bv-ink, #101828);
 }
 
 .cc-dialog-text {
   margin: 0 0 18px;
   font-size: 14px;
   line-height: 1.6;
-  color: #475467;
+  color: var(--bv-text, #344054);
 }
 
 .cc-dialog-actions {
@@ -325,17 +330,13 @@
   gap: 10px;
 }
 
-.cc-dialog-actions > * {
-  margin-top: 0;
-}
-
 /* ---------- loading ---------- */
 .cc-spinner {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  border: 3px solid rgba(6, 95, 70, 0.15);
-  border-top-color: var(--dash-accent, #065f46);
+  border: 3px solid rgba(22, 163, 74, 0.18);
+  border-top-color: var(--bv-accent, #16a34a);
   animation: cc-spin 0.8s linear infinite;
 }
 
@@ -358,7 +359,7 @@
 
 @media (max-width: 720px) {
   .cc-page {
-    padding: calc(64px + 20px) 14px 48px;
+    padding: calc(64px + 20px) 14px 0;
   }
 
   .cc-card {

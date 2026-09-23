@@ -1,71 +1,91 @@
+/* Design tokens (--bv-* / --primary and friends) must exist on EVERY page
+   from the first paint: many global components (SearchBar, Navbar, tour
+   cards, ...) style themselves with var(--primary) = var(--bv-accent).
+   bookingTheme.css declares those tokens but was only imported by lazy
+   booking/dashboard chunks, so public pages rendered token-colored
+   elements (e.g. the hero Search button) transparent until some later
+   chunk happened to load. Import it globally. */
+@import './components/booking/bookingTheme.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @font-face {
-  font-family: 'GT Esti Pro Display';
-  src: url('/fonts/gteestiprodisplay_bold.woff2') format('woff2');
-  font-weight: 700;
+  font-family: 'Manrope';
+  src: url('/fonts/manrope-variable-latin-ext.woff2') format('woff2');
+  font-weight: 200 800;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
 @font-face {
-  font-family: 'GT Esti Pro Display';
-  src: url('/fonts/gteestiprodisplay_light.woff2') format('woff2');
-  font-weight: 300;
+  font-family: 'Manrope';
+  src: url('/fonts/manrope-variable-latin.woff2') format('woff2');
+  font-weight: 200 800;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
-  font-family: 'GT Esti Pro Display';
-  src: url('/fonts/gteestiprodisplay_regular.woff2') format('woff2');
-  font-weight: 400;
+  font-family: 'DM Sans';
+  src: url('/fonts/dmsans-variable-latin-ext.woff2') format('woff2');
+  font-weight: 100 1000;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
 @font-face {
-  font-family: 'GT Esti Pro Display';
-  src: url('/fonts/gteestiprodisplay_medium.woff2') format('woff2');
-  font-weight: 500;
+  font-family: 'DM Sans';
+  src: url('/fonts/dmsans-variable-latin.woff2') format('woff2');
+  font-weight: 100 1000;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
-  font-family: 'Raleway';
-  src: url('/fonts/Raleway-VariableFont_wght.woff2') format('woff2');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Raleway';
-  src: url('/fonts/Raleway-Italic-VariableFont_wght.woff2') format('woff2');
-  font-weight: 100 900;
+  font-family: 'DM Sans';
+  src: url('/fonts/dmsans-italic-variable-latin-ext.woff2') format('woff2');
+  font-weight: 100 1000;
   font-style: italic;
   font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'DM Sans';
+  src: url('/fonts/dmsans-italic-variable-latin.woff2') format('woff2');
+  font-weight: 100 1000;
+  font-style: italic;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 :root {
-  --dash-accent: #065f46;
-  --primary: #179237;
-  --primary-hover: #137a2e;
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --font-heading: 'GT Esti Pro Display', sans-serif;
-  --font-body: 'Raleway', sans-serif;
+  /* Legacy aliases — map to the unified --bv-* / --dash-* tokens */
+  --dash-accent: var(--bv-forest);
+  --primary: var(--bv-accent);
+  --primary-hover: var(--bv-accent-strong);
+  --text: var(--bv-muted);
+  --text-h: var(--bv-ink);
+  --bg: var(--bv-canvas);
+  --border: var(--bv-border);
+  --font-heading: 'Manrope', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
 
   font-family: var(--font-body);
   font-size: 18px;
   line-height: 145%;
   letter-spacing: 0.18px;
-  color-scheme: light dark;
+  /* The site is light-only (the hero relies on a translucent powdered-green
+     gradient over a light canvas). `light dark` let dark-mode OS/browsers
+     paint a dark canvas behind the transparent page background, turning the
+     hero dark. Force light so the hero always keeps its pale green. */
+  color-scheme: light;
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
@@ -85,9 +105,13 @@
 }
 
 html {
-  /* Reserve the vertical scrollbar gutter so the page never shifts
-     horizontally when a scrollbar appears/disappears (e.g. dropdown opens). */
-  scrollbar-gutter: stable;
+  /* Solid light canvas: the `--bg` var used by :root only resolves inside
+     booking-scoped themes, so on regular pages the page background was
+     transparent and dark-mode browsers showed a dark canvas behind the
+     translucent hero gradient. */
+  background-color: #ffffff;
+  /* Always show vertical scrollbar to prevent layout shift from dropdowns */
+  overflow-y: scroll;
   /* Clip horizontal overflow so a fixed-position overlay (dropdown panel)
      can never introduce a horizontal scrollbar that jolts the page. */
   overflow-x: clip;
@@ -98,6 +122,8 @@ body {
   /* Stop scroll-anchoring from nudging the scroll position when an overlay
      (dropdown) opens near the bottom of the page. */
   overflow-anchor: none;
+  /* Prevent any horizontal shift from dropdown portals */
+  overflow-x: clip;
 }
 
 #root {
@@ -105,6 +131,7 @@ body {
   max-width: 100%;
   margin: 0;
   min-height: 100svh;
+  overflow-x: clip;
 }
 
 /* ContactCard Component Styles */
@@ -279,14 +306,12 @@ body {
   100% { background-position: -200% 0; }
 }
 
-/* Soft breathing glow around the search pill while a search is in flight */
-@keyframes search-glow-pulse {
-  0%, 100% {
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), 0 0 0 0 rgba(23, 146, 55, 0);
-  }
-  50% {
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), 0 0 0 5px rgba(23, 146, 55, 0.12);
-  }
+/* Soft breathing glow around the search pill while a search is in flight.
+   Only opacity animates (composited); the ring itself is a static box-shadow
+   on a pseudo-element so mobile never repaints the pill every frame. */
+@keyframes search-glow-fade {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
 }
 
 /* Hide the scrollbar while keeping scrolling (pickup locations list,
@@ -334,8 +359,8 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .search-skeleton-icon,
   .search-skeleton-line,
-  .hero-search-wrap.searching .hero-search-bar,
-  .navbar-compact-search.searching .navbar-search-form,
+  .hero-search-wrap.searching .hero-search-bar::after,
+  .navbar-compact-search.searching .navbar-search-form::after,
   .pin-glow {
     animation: none;
   }
@@ -350,6 +375,7 @@ body {
 img.optimized-img {
   opacity: 1;
   transition: opacity 0.2s ease-out;
+  object-fit: cover;
 }
 img.optimized-img.optimized-img-loading {
   opacity: 0;
@@ -381,5 +407,41 @@ input[type="radio"].pickup-radio:focus {
 
 input[type="radio"].pickup-radio:checked:focus {
   box-shadow: inset 0 0 0 3px #179237, 0 0 0 3px rgba(23, 146, 55, 0.2);
+}
+
+/* (Backfill divider removed — backfill tours now flow into the carousel with
+   no "More experiences near …" label.) */
+
+/* Global reduced-motion kill switch: one rule that neutralises every
+   decorative animation/transition (component-level blocks elsewhere still
+   provide static fallbacks). Keeps mobile accessibility cheap and reliable. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Below-fold homepage sections: the browser skips style/layout/paint for
+   off-screen children entirely. `auto` intrinsic size reuses the real
+   rendered height once a section has been seen, so the scrollbar stays
+   stable. */
+.home-deferred > * {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}
+
+/* "Coming soon" affordance for controls whose feature is not built yet.
+   Deliberately NOT the `disabled` attribute: a disabled button does not fire
+   mouse events in Chrome/Safari, so its `title` tooltip would never appear.
+   These controls stay hoverable, intercept their own click, and expose
+   `aria-disabled="true"` to assistive tech. */
+.is-coming-soon {
+  cursor: not-allowed !important;
+  opacity: 0.55;
 }
 

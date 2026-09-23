@@ -146,6 +146,39 @@ describe('resolvedPointsToTour', () => {
     expect(tour.pickupAreas?.[0]).toMatchObject({ name: 'Oasis Park', lat: 5.626746, lng: -0.169995, radiusKm: 15 })
   })
 
+  it('preserves the source meeting coordinates before any point resolves', () => {
+    // The map consumes `mapTour` on the FIRST render, before the async resolve
+    // settles — the backend coordinates must survive or the meeting pin is
+    // missing until (or unless) geocoding completes.
+    const tour = resolvedPointsToTour([], {
+      meetingMode: 'meeting_point',
+      meetingPoint: 'Sankofa Monument',
+      meetingPointAddress: 'Sankofa Monument, Accra',
+      meetingPointLat: 5.5451,
+      meetingPointLng: -0.1926,
+    })
+    expect(tour.meetingPointLat).toBe(5.5451)
+    expect(tour.meetingPointLng).toBe(-0.1926)
+  })
+
+  it('does not clobber source meeting coordinates with an unresolved point', () => {
+    const tour = resolvedPointsToTour(
+      [{ id: 'meeting-0', kind: 'meeting' as const, name: 'Sankofa Monument', address: '', lat: null, lng: null, query: 'Sankofa Monument' }],
+      { meetingMode: 'meeting_point', meetingPoint: 'Sankofa Monument', meetingPointLat: 5.5451, meetingPointLng: -0.1926 },
+    )
+    expect(tour.meetingPointLat).toBe(5.5451)
+    expect(tour.meetingPointLng).toBe(-0.1926)
+  })
+
+  it('uses resolved meeting coordinates when present', () => {
+    const tour = resolvedPointsToTour(
+      [{ id: 'meeting-0', kind: 'meeting' as const, name: 'Sankofa Monument', address: 'Sankofa, Accra', lat: 5.5451, lng: -0.1926, query: '' }],
+      { meetingMode: 'meeting_point' },
+    )
+    expect(tour.meetingPointLat).toBe(5.5451)
+    expect(tour.meetingPointLng).toBe(-0.1926)
+  })
+
   it('handles meetingMode === "none" gracefully', () => {
     const points = [
       { id: 'point-0', kind: 'point' as const, name: 'Spot A', address: '', lat: 5.5, lng: -0.1, query: 'Spot A' },

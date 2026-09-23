@@ -177,8 +177,8 @@ export default function AboutUsPage() {
           keywords="Travio Ghana, about us, Ghana tour company, Ghana travel platform, local tours Ghana, authentic experiences Ghana, Ghana tourism company, trusted travel partners Ghana, why book with us"
           jsonLd={[
             buildBreadcrumbSchema([
-              { name: 'Home', url: 'https://www.expeditiongotours.com/' },
-              { name: 'About Us', url: 'https://www.expeditiongotours.com/about-us' },
+              { name: 'Home', url: 'https://www.travioghana.com/' },
+              { name: 'About Us', url: 'https://www.travioghana.com/about-us' },
             ]),
             buildOrganizationSchema(),
           ]}

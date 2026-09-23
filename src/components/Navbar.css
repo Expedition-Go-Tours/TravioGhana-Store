@@ -4,16 +4,31 @@
   left: 0;
   width: 100%;
   height: 64px;
-  padding: 0 max(32px, calc((100% - (295px * 5 + 16px * 4)) / 2));
+  /* Align the logo (left) and the right-hand items (List an Experience,
+     language/currency, Wishlist, Profile) with the homepage sections:
+     the section headings sit inside a centered viewport of
+     calc(295px * 5 + 16px * 4) with 32px gutters, so the navbar content
+     gets the same centered bounds (and 32px on narrower screens). */
+  padding-left: max(32px, calc((100vw - (295px * 5 + 16px * 4)) / 2));
+  padding-right: max(32px, calc((100vw - (295px * 5 + 16px * 4)) / 2));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: rgba(255, 255, 255, 0.9);
-  background-image: linear-gradient(180deg, rgba(201, 150, 33, 0.32) 0%, rgba(23, 146, 55, 0.16) 55%, rgba(23, 146, 55, 0.05) 100%);
-  backdrop-filter: blur(8px);
+  /* Solid white by default so every page (footer pages included) shows a
+     white navbar from the very first frame. The powdered-green translucent
+     look below only applies to the homepage hero (see .navbar--over-hero). */
+  background-color: #fff;
   z-index: 100;
   color: #333;
   transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+/* Homepage only (navbar sits over the hero at the top of the page): the soft
+   translucent white + green-tint glass look. Any scroll or route change drops
+   the class and the navbar returns to solid white. */
+.navbar--over-hero {
+  background-color: rgba(255, 255, 255, 0.95);
+  background-image: linear-gradient(180deg, rgba(23, 146, 55, 0.1) 0%, rgba(23, 146, 55, 0.04) 100%);
 }
 
 /* Shadow only while scrolling — same resting look as the homepage. Applied on
@@ -26,29 +41,34 @@
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* Search in the navbar (homepage scrolled, or pages that always show it):
-   flat white so the green tint doesn't linger behind the search bar */
-body.hero--search-sticky .navbar,
-.navbar--tour-detail,
-body:has(.tour-detail-page) .navbar,
-body:has(.all-tours-page) .navbar,
-body:has(.supplier-page) .navbar,
-body:has(.supplier-landing-page) .navbar,
-body:has(.review-page) .navbar,
-body:has(.all-stories-page) .navbar,
-body:has(.story-detail) .navbar {
-  background-color: #fff;
-  background-image: none;
-}
-
 /* Hamburger - hidden on desktop */
 .nav-hamburger {
   display: none;
 }
 
-/* Mobile wishlist - hidden on desktop (desktop uses .nav-icons wishlist) */
-.nav-wishlist-mobile {
+/* Mobile wishlist + bookings - hidden on desktop (desktop uses .nav-icons) */
+.nav-wishlist-mobile,
+.nav-bookings-mobile {
   display: none;
+}
+
+/* Mobile bookings + wishlist render icon over a responsive, lowercase label */
+.nav-wishlist-mobile,
+.nav-bookings-mobile {
+  flex-direction: column;
+  gap: 1px;
+}
+
+.nav-wishlist-mobile .nav-icon-label,
+.nav-bookings-mobile .nav-icon-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: clamp(7px, 1.8vw, 9.5px);
+  font-weight: 500;
+  letter-spacing: 0.15px;
+  text-transform: lowercase;
+  color: inherit;
+  line-height: 1.1;
+  white-space: nowrap;
 }
 
 /* Logo */
@@ -69,8 +89,8 @@ body:has(.story-detail) .navbar {
 }
 
 .nav-logo-img {
-  width: 180px;
-  height: auto;
+  height: 120px;
+  width: auto;
   display: block;
 }
 
@@ -102,7 +122,7 @@ body.hero--search-sticky .navbar-compact-search {
 /* Always show search bar on tour detail, all tours, supplier, review, stories, and story-detail pages */
 .navbar--tour-detail .navbar-compact-search,
 body:has(.tour-detail-page) .navbar-compact-search,
-body:has(.all-tours-page) .navbar-compact-search,
+.page-all-tours .navbar-compact-search,
 body:has(.supplier-page) .navbar-compact-search,
 body:has(.review-page) .navbar-compact-search,
 body:has(.all-stories-page) .navbar-compact-search,
@@ -112,8 +132,17 @@ body:has(.story-detail) .navbar-compact-search {
   pointer-events: auto;
 }
 
-.navbar-compact-search.searching .navbar-search-form {
-  animation: search-glow-pulse 1.6s ease-in-out infinite;
+/* Searching glow: pulse a pseudo-element ring's opacity instead of animating
+   box-shadow (which repaints the pill every frame). Keyframes live in index.css. */
+.navbar-compact-search.searching .navbar-search-form::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 4px rgba(23, 146, 55, 0.08);
+  opacity: 0;
+  pointer-events: none;
+  animation: search-glow-fade 1.6s ease-in-out infinite;
 }
 
 .navbar-search-form {
@@ -123,15 +152,15 @@ body:has(.story-detail) .navbar-compact-search {
   width: 100%;
   max-width: 640px;
   border-radius: 999px;
-  border: 2px solid rgba(201, 150, 33, 0.35);
+  border: 2px solid rgba(23, 146, 55, 0.2);
   background: #fff;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(23, 146, 55, 0.08);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .navbar-search-form.focused {
-  border-color: rgba(201, 150, 33, 0.5);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 0 0 3px rgba(201, 150, 33, 0.14);
+  border-color: rgba(23, 146, 55, 0.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 0 0 3px rgba(23, 146, 55, 0.1);
 }
 
 .navbar-search-inner {
@@ -161,12 +190,13 @@ body:has(.story-detail) .navbar-compact-search {
   outline: none;
   background: transparent;
   font-size: 15px;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   color: #333;
 }
 
 .navbar-search-input::placeholder {
   color: #94a3b8;
+  font-weight: 600;
 }
 
 .navbar-search-btn-wrap {
@@ -175,7 +205,7 @@ body:has(.story-detail) .navbar-compact-search {
 }
 
 .navbar-search-btn {
-  background: linear-gradient(135deg, #c99621, #179237);
+  background: var(--primary);
   color: #fff;
   border: none;
   border-radius: 999px;
@@ -183,15 +213,14 @@ body:has(.story-detail) .navbar-compact-search {
   padding: 0 22px;
   font-size: 14px;
   font-weight: 600;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   cursor: pointer;
-  transition: background 0.2s, box-shadow 0.2s;
+  transition: background 0.2s;
   white-space: nowrap;
 }
 
 .navbar-search-btn:hover {
-  background: linear-gradient(135deg, #b5861d, #137a2e);
-  box-shadow: 0 2px 8px rgba(201, 150, 33, 0.3);
+  background: var(--primary-hover);
 }
 
 /* Navbar search dropdown */
@@ -205,67 +234,15 @@ body:has(.story-detail) .navbar-compact-search {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
   z-index: 1000;
   padding: 6px 0;
+  max-height: 420px;
+  overflow: hidden auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-/* Recent Searches in Navbar */
-.navbar-search-dropdown .search-recent-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
-  cursor: pointer;
-  transition: background 0.15s;
-  min-height: 48px;
-}
-
-.navbar-search-dropdown .search-recent-item:hover {
-  background: #f8fafc;
-}
-
-.navbar-search-dropdown .search-recent-remove {
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: none;
-  background: transparent;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  color: #9ca3af;
-  transition: background 0.15s, color 0.15s;
-  opacity: 0;
-}
-
-.navbar-search-dropdown .search-recent-item:hover .search-recent-remove {
-  opacity: 1;
-}
-
-.navbar-search-dropdown .search-recent-remove:hover {
-  background: #f1f5f9;
-  color: #64748b;
-}
-
-.navbar-search-dropdown .search-recent-clear {
-  padding: 8px 16px 10px;
-  font-family: 'Raleway', sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  color: #166534;
-  cursor: pointer;
-  transition: color 0.15s;
-}
-
-.navbar-search-dropdown .search-recent-clear:hover {
-  color: #14532d;
-  text-decoration: underline;
-}
-
-.navbar-search-dropdown .search-recent-divider {
-  height: 1px;
-  background: #e2e8f0;
-  margin: 2px 0;
-}
+/* Recent Searches: styles are owned by SearchBar.css (.search-recent-*) so the
+   navbar dropdown and the hero search bar render identically. Do not re-declare
+   them here — scoped overrides are what let the two drift apart. */
 
 /* Right - icons */
 .nav-right {
@@ -307,7 +284,7 @@ body:has(.story-detail) .navbar-compact-search {
 
 .nav-icon-label {
   position: relative;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 10px;
   font-weight: 600;
   color: inherit;
@@ -335,6 +312,42 @@ body:has(.story-detail) .navbar-compact-search {
 
 .nav-icon-item:hover .nav-icon-label::after {
   transform: scaleX(1);
+}
+
+/* Icon glyph wrapper (positioned anchor for the unread badge) */
+.nav-icon-glyph {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+/* Unread bookings-count bubble on the top-bar icon */
+.nav-icon-badge {
+  position: absolute;
+  top: -5px;
+  right: -9px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #179237;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (max-width: 1024px) {
+  .nav-icon-badge {
+    right: -8px;
+  }
 }
 
 /* List an Experience — desktop pill CTA. Sits inline with the icon items
@@ -380,7 +393,7 @@ body:has(.story-detail) .navbar-compact-search {
 }
 
 .nav-list-experience-label {
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.1px;
@@ -430,7 +443,7 @@ body:has(.story-detail) .navbar-compact-search {
 }
 
 .nav-mobile-list-experience-title {
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 15px;
   font-weight: 700;
   color: #14532d;
@@ -438,7 +451,7 @@ body:has(.story-detail) .navbar-compact-search {
 }
 
 .nav-mobile-list-experience-sub {
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: #4b7a5c;
@@ -477,7 +490,7 @@ body:has(.story-detail) .navbar-compact-search {
   align-items: center;
   justify-content: space-between;
   padding: 3px 7px 1px;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
@@ -501,7 +514,7 @@ body:has(.story-detail) .navbar-compact-search {
   border-radius: 7px;
   background: transparent;
   color: #1e293b;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   cursor: pointer;
   transition: all 0.15s ease;
   text-align: left;
@@ -582,7 +595,6 @@ body:has(.story-detail) .navbar-compact-search {
 
 /* Avatar dropdown */
 .nav-avatar-wrapper {
-  position: relative;
   height: 22px;
   display: flex;
   align-items: center;
@@ -613,9 +625,12 @@ body:has(.story-detail) .navbar-compact-search {
 }
 
 .nav-dropdown {
-  position: fixed;
-  top: 72px;
-  right: max(32px, calc((100% - (295px * 5 + 16px * 4)) / 2));
+  /* Anchored to the profile icon item (position:relative) so it drops below
+     the avatar + label and never overlaps them, regardless of the navbar's
+     dynamic padding */
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
@@ -641,7 +656,7 @@ body:has(.story-detail) .navbar-compact-search {
 }
 
 .nav-dropdown-email {
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   color: #666;
   white-space: nowrap;
@@ -656,7 +671,7 @@ body:has(.story-detail) .navbar-compact-search {
   align-items: center;
   gap: 10px;
   white-space: nowrap;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-weight: 600;
   font-size: 14px;
   color: #333;
@@ -674,7 +689,7 @@ body:has(.story-detail) .navbar-compact-search {
   align-items: center;
   gap: 10px;
   padding: 12px 20px;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   color: #333;
   text-decoration: none;
@@ -713,7 +728,7 @@ body:has(.story-detail) .navbar-compact-search {
   align-items: center;
   gap: 10px;
   padding: 12px 20px;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   color: #e53e3e;
   text-decoration: none;
@@ -746,7 +761,7 @@ body:has(.story-detail) .navbar-compact-search {
   align-items: center;
   gap: 10px;
   padding: 12px 20px;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: #e53e3e;
@@ -815,7 +830,7 @@ body:has(.story-detail) .navbar-compact-search {
 .nav-mobile-heading {
   margin: 0 0 10px;
   padding: 0 16px;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 20px;
   font-weight: 800;
   color: #111827;
@@ -827,7 +842,7 @@ body:has(.story-detail) .navbar-compact-search {
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 16px;
   font-weight: 600;
   color: #137A2E;
@@ -845,7 +860,7 @@ body:has(.story-detail) .navbar-compact-search {
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 16px;
   font-weight: 500;
   color: #333;
@@ -874,7 +889,7 @@ body:has(.story-detail) .navbar-compact-search {
   gap: 10px;
   white-space: nowrap;
   padding: 14px 16px;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-weight: 600;
   font-size: 15px;
   color: #333;
@@ -912,7 +927,7 @@ body:has(.story-detail) .navbar-compact-search {
 }
 
 .nav-mobile-user-name {
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: #333;
@@ -922,7 +937,7 @@ body:has(.story-detail) .navbar-compact-search {
 }
 
 .nav-mobile-user-email {
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 12px;
   color: #888;
   white-space: nowrap;
@@ -930,12 +945,33 @@ body:has(.story-detail) .navbar-compact-search {
   text-overflow: ellipsis;
 }
 
+.nav-mobile-user-settings {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav-mobile-user-settings:hover {
+  background: #e8e8e8;
+  color: #333;
+}
+
 .nav-mobile-signout {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-weight: 600;
   font-size: 15px;
   color: #e53e3e;
@@ -959,7 +995,7 @@ body:has(.story-detail) .navbar-compact-search {
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-weight: 600;
   font-size: 15px;
   color: #e53e3e;
@@ -988,7 +1024,7 @@ body:has(.story-detail) .navbar-compact-search {
   color: #333;
   font-size: 16px;
   font-weight: 500;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   cursor: pointer;
   transition: background 0.2s;
   text-align: left;
@@ -1037,7 +1073,7 @@ body:has(.story-detail) .navbar-compact-search {
   border-radius: 10px;
   background: transparent;
   color: #1e293b;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -1128,7 +1164,8 @@ body:has(.story-detail) .navbar-compact-search {
     display: none;
   }
 
-  .nav-wishlist-mobile {
+  .nav-wishlist-mobile,
+  .nav-bookings-mobile {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1138,7 +1175,8 @@ body:has(.story-detail) .navbar-compact-search {
     transition: color 0.2s;
   }
 
-  .nav-wishlist-mobile:hover {
+  .nav-wishlist-mobile:hover,
+  .nav-bookings-mobile:hover {
     color: var(--primary);
   }
 
@@ -1169,24 +1207,21 @@ body:has(.story-detail) .navbar-compact-search {
   }
 
   body.hero--search-sticky .nav-icons,
-  body:has(.all-tours-page) .nav-icons {
+  .page-all-tours .nav-icons {
     display: none;
   }
 
   body.hero--search-sticky .nav-globe-trigger,
   body.hero--search-sticky .nav-hamburger,
-  body.hero--search-sticky .nav-wishlist-mobile {
+  body.hero--search-sticky .nav-wishlist-mobile,
+  body.hero--search-sticky .nav-bookings-mobile {
     display: none;
   }
 
   body.hero--search-sticky .navbar,
-  body:has(.all-tours-page) .navbar {
+  .page-all-tours .navbar {
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-    padding: 0 16px;
-  }
-
-  .navbar {
-    padding: 0 16px;
+    padding: 0 8px;
   }
 
   /* Mobile/tablet: hamburger drawer becomes a full-screen sheet (GYG-style) */
@@ -1224,13 +1259,40 @@ body:has(.story-detail) .navbar-compact-search {
 }
 
 @media (max-width: 768px) {
+  .navbar {
+    /* Match the homepage sections' 16px gutters on mobile */
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
   .nav-logo-img {
-    width: 140px;
+    height: 90px;
   }
 
   .navbar-search-dropdown {
     max-height: 40vh;
     overflow-y: auto;
+  }
+
+  .navbar-search-input {
+    font-size: 14px;
+    text-overflow: ellipsis;
+  }
+
+  .navbar-search-input::placeholder {
+    text-overflow: ellipsis;
+  }
+}
+
+@media (max-width: 400px) {
+  .navbar-search-input {
+    font-size: 13px;
+  }
+
+  .navbar-search-btn {
+    height: 34px;
+    padding: 0 12px;
+    font-size: 12px;
   }
 }
 
@@ -1276,7 +1338,7 @@ body:has(.story-detail) .navbar-compact-search {
 
 .nav-subdrawer-title {
   margin: 0;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 20px;
   font-weight: 800;
   color: #111827;
@@ -1317,7 +1379,7 @@ body:has(.story-detail) .navbar-compact-search {
   border: none;
   border-radius: 10px;
   background: transparent;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 15px;
   font-weight: 500;
   color: #333;
@@ -1394,7 +1456,7 @@ body:has(.story-detail) .navbar-compact-search {
   padding: 4px 6px;
   border: none;
   background: transparent;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   font-weight: 600;
   color: #137A2E;
@@ -1440,7 +1502,7 @@ body:has(.story-detail) .navbar-compact-search {
 }
 
 .nav-updates-preview-title {
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: #111827;
@@ -1472,4 +1534,91 @@ body:has(.story-detail) .navbar-compact-search {
   text-align: center;
   font-size: 14px;
   color: #94a3b8;
+}
+
+/* Support pages (Help Centre / Contact Us / FAQ & shared .support-page shell):
+   center the navbar content on the support container's inner content edges
+   (max-width 1280px + 24px gutters) so the logo (left) and profile icon
+   (right) line up with the page grid instead of the homepage column. */
+.page-support .navbar {
+  padding-left: max(24px, calc((100vw - 1280px) / 2 + 24px));
+  padding-right: max(24px, calc((100vw - 1280px) / 2 + 24px));
+}
+
+@media (max-width: 768px) {
+  .page-support .navbar {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+/* All Tours (/tours — homepage "View all", mood/location/attraction filters)
+   and Search results (/search — city/free-text search): the content column is
+   max-width 1400px with 40px gutters. Desktop+ aligns the navbar items on that
+   column's inner content edges, matching the support-page fix. */
+@media (min-width: 1025px) {
+  .page-all-tours .navbar,
+  .page-search .navbar {
+    padding-left: max(40px, calc((100vw - 1400px) / 2 + 40px));
+    padding-right: max(40px, calc((100vw - 1400px) / 2 + 40px));
+  }
+}
+
+/* Search page keeps 40px gutters down to 601px; align the navbar there too. */
+@media (min-width: 601px) and (max-width: 1024px) {
+  .page-search .navbar {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+
+/* Booking confirmation: content column is max-width 1280px with 32px gutters.
+   Align the navbar items on its inner content edges on desktop only. */
+@media (min-width: 1025px) {
+  .page-confirmation .navbar {
+    padding-left: max(32px, calc((100vw - 1280px) / 2 + 32px));
+    padding-right: max(32px, calc((100vw - 1280px) / 2 + 32px));
+  }
+}
+
+/* Footer-linked pages: align the navbar (logo + icons) with each page's
+   content grid on desktop. Grouped by container max-width + gutter. */
+
+/* 1140px container + 32px gutters: Blog */
+/* 1140px container + 32px gutters: Hotels, Travel Agents, Transport */
+@media (min-width: 1025px) {
+  .page-hotel .navbar,
+  .page-travel-agents .navbar,
+  .page-transport-providers .navbar,
+  .page-blog .navbar {
+    padding-left: max(32px, calc((100vw - 1140px) / 2 + 32px));
+    padding-right: max(32px, calc((100vw - 1140px) / 2 + 32px));
+  }
+}
+
+/* 1200px container + 32px gutters: Foundation, Blog */
+@media (min-width: 1025px) {
+  .page-foundation .navbar,
+  .page-blog .navbar {
+    padding-left: max(32px, calc((100vw - 1200px) / 2 + 32px));
+    padding-right: max(32px, calc((100vw - 1200px) / 2 + 32px));
+  }
+}
+
+/* 1100px container + 24px gutters: About Us */
+@media (min-width: 1025px) {
+  .page-about .navbar {
+    padding-left: max(24px, calc((100vw - 1100px) / 2 + 24px));
+    padding-right: max(24px, calc((100vw - 1100px) / 2 + 24px));
+  }
+}
+
+/* Glass navbar is desktop-only. A full-width fixed backdrop-filter forces the
+   compositor to re-sample and re-blur the page behind it on every scroll
+   frame — the single most expensive paint on mobile. The bar is 95% opaque
+   anyway, so mobile is visually identical without it. */
+@media (min-width: 1024px) {
+  .navbar {
+    backdrop-filter: blur(8px);
+  }
 }

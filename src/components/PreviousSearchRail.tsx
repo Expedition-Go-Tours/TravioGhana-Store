@@ -63,7 +63,7 @@ export default function PreviousSearchRail({ location, title, note }: Props) {
           <SectionHeading
             title={title}
             subtitle={note}
-            viewAllLink={`/tours?location=${encodeURIComponent(location)}`}
+            viewAllLink={`/tours?place=${encodeURIComponent(location)}`}
             onScrollLeft={() => scroll('left')}
             onScrollRight={() => scroll('right')}
             disableLeft={!canScrollLeft}

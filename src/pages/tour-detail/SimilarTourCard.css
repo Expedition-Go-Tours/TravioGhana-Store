@@ -62,7 +62,7 @@
   right: 10px;
   background: rgba(0, 0, 0, 0.75);
   color: #fff;
-  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-family: var(--font-body, 'DM Sans', sans-serif);
   font-size: 11px;
   font-weight: 600;
   padding: 5px 10px;
@@ -120,7 +120,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-family: var(--font-body, 'DM Sans', sans-serif);
   font-size: 12px;
   font-weight: 500;
   color: #6b7280;
@@ -134,7 +134,7 @@
 
 /* Title */
 .similar-tour-title {
-  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-family: var(--font-body, 'DM Sans', sans-serif);
   font-size: 15px;
   font-weight: 600;
   color: #111827;
@@ -149,7 +149,7 @@
 
 /* Features */
 .similar-tour-features {
-  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-family: var(--font-body, 'DM Sans', sans-serif);
   font-size: 12px;
   font-weight: 400;
   color: #6b7280;
@@ -167,13 +167,14 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 6px;
+  overflow: hidden;
 }
 
 .similar-tour-meta-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-family: var(--font-body, 'DM Sans', sans-serif);
   font-size: 11px;
   font-weight: 600;
   color: #6b7280;
@@ -231,9 +232,9 @@
 }
 
 .similar-tour-meta-badge-type-activity {
-  color: #7e22ce;
-  background: rgba(147, 51, 234, 0.09);
-  border-color: rgba(147, 51, 234, 0.2);
+  color: #15803d;
+  background: rgba(22, 163, 74, 0.09);
+  border-color: rgba(22, 163, 74, 0.2);
 }
 
 .similar-tour-meta-badge-type-transport {
@@ -270,7 +271,7 @@
 }
 
 .similar-tour-rating-value {
-  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-family: var(--font-body, 'DM Sans', sans-serif);
   font-size: 13px;
   font-weight: 700;
   color: #111827;
@@ -278,7 +279,7 @@
 }
 
 .similar-tour-rating-count {
-  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-family: var(--font-body, 'DM Sans', sans-serif);
   font-size: 12px;
   font-weight: 400;
   color: #9ca3af;
@@ -294,14 +295,14 @@
 }
 
 .similar-tour-price-label {
-  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-family: var(--font-body, 'DM Sans', sans-serif);
   font-size: 11px;
   font-weight: 500;
   color: #6b7280;
 }
 
 .similar-tour-price-value {
-  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-family: var(--font-body, 'DM Sans', sans-serif);
   font-size: 20px;
   font-weight: 700;
   color: #111827;
@@ -420,7 +421,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-family: var(--font-body, 'Raleway', sans-serif);
+  font-family: var(--font-body, 'DM Sans', sans-serif);
   font-size: 11px;
   font-weight: 700;
   color: #fff;
@@ -435,7 +436,7 @@
 }
 
 .similar-tour-image-type-badge.similar-tour-meta-badge-type-activity {
-  background: rgba(147, 51, 234, 0.92);
+  background: rgba(22, 163, 74, 0.92);
 }
 
 .similar-tour-image-type-badge.similar-tour-meta-badge-type-transport {
@@ -444,4 +445,57 @@
 
 .similar-tour-image-type-badge.similar-tour-meta-badge-type-default {
   background: rgba(55, 65, 81, 0.85);
+}
+
+@media (max-width: 640px) {
+  .similar-tour-image-type-badge {
+    font-size: 10px;
+    padding: 3px 7px;
+  }
+
+  .similar-tour-duration {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .similar-tour-meta-badge {
+    font-size: 10px;
+    padding: 3px 6px;
+    gap: 3px;
+  }
+
+  .similar-tour-meta-badge svg,
+  .similar-tour-image-type-badge svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .source-badge {
+    width: 30px;
+    height: 30px;
+  }
+
+  .similar-tour-wishlist {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+@media (max-width: 400px) {
+  .similar-tour-image-type-badge {
+    font-size: 9px;
+    padding: 2px 6px;
+  }
+
+  .similar-tour-meta-badge {
+    font-size: 9px;
+    padding: 2px 5px;
+    gap: 3px;
+  }
+
+  .similar-tour-meta-badge svg,
+  .similar-tour-image-type-badge svg {
+    width: 9px;
+    height: 9px;
+  }
 }

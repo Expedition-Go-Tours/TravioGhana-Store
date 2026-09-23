@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
-import { useQueryClient } from '@tanstack/react-query'
 import { Car, Languages as LanguagesIcon, ShieldCheck, Ban, TrendingUp, BedDouble, Compass } from 'lucide-react'
 import i18n from '../i18n/config'
 import './TourCard.css'
@@ -13,6 +13,20 @@ import { getCategoryMeta } from './categoryMeta'
 import OptimizedImage from '@/components/shared/OptimizedImage'
 import type { SpecialOfferData } from '../hooks/useExpeditionTours'
 import { bestOfferDiscountAmount, hasActiveOffer } from '../hooks/useExpeditionTours'
+import { useCombinedTourStats } from '../hooks/useExternalReviews'
+import { shouldIdlePrefetch } from '../lib/perfProfile'
+
+// Tour cards open the detail page in a new tab so a traveller never loses the
+// list they were browsing. Warming the lazy route chunk here puts its hashed
+// JS/CSS in the browser HTTP cache (`/assets/*` is immutable per vercel.json),
+// so the new tab renders without flashing the Suspense fallback. Runs once
+// per session, at idle or on first hover/focus/touch.
+let tourRouteWarmed = false
+function warmTourRouteChunk() {
+  if (tourRouteWarmed) return
+  tourRouteWarmed = true
+  void import('../pages/tour-detail/TourDetailPage')
+}
 
 function shortDuration(d: string): string {
   return d
@@ -47,20 +61,28 @@ interface TourCardProps extends Tour {
   /** On mobile, render the offer / likely-to-sell-out badges in the card body
       after the facts list instead of over the photo. */
   bodyOfferBadgesOnMobile?: boolean
-  /** On mobile, hide the features/quick-facts section from the card body
-      entirely (used on dense listing pages like All Tours). */
-  factsGridOnMobile?: boolean
   /** Mark the card's first image as the LCP (eager + fetchpriority=high). */
   priority?: boolean
+  /** Open the tour in a new tab instead of SPA navigation. Defaults to true —
+      every tour click keeps the current page; pass false to opt a surface
+      back into same-tab routing. */
+  openInNewTab?: boolean
 }
 
-export default function TourCard({ id, title, duration, features, price, rating, reviews, location, image, photos, discount, difficulty, cancellationPolicy, pickupIncluded, accommodationIncluded, meetingMode, category, languages, source, externalUrl, slug, isNew, hideSourceBadge, hideFeatures, imageClean, priceValue, specialOffers, likelyToSellOut, hideOfferBadge, compactDurationOnMobile, bodyOfferBadgesOnMobile, factsGridOnMobile, priority }: TourCardProps) {
+export default function TourCard({ id, title, duration, features, price, rating, reviews, location, image, photos, discount, difficulty, cancellationPolicy, pickupIncluded, accommodationIncluded, meetingMode, category, languages, source, externalUrl, slug, isNew, hideSourceBadge, hideFeatures, imageClean, priceValue, specialOffers, likelyToSellOut, hideOfferBadge, compactDurationOnMobile, bodyOfferBadgesOnMobile, priority, openInNewTab = true }: TourCardProps) {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist()
   const { isLikelyToSellOut } = useSellOutContext()
   const showSellOutTag = likelyToSellOut || isLikelyToSellOut({ id, title })
   const item = toWishlistItem({ id, title, duration, features, price, rating: String(rating), reviews, location, image, source, externalUrl } as Tour)
   const inWishlist = isInWishlist(item.id)
+  // Headline stats include the scraped TripAdvisor/GetYourGuide reviews matched
+  // to this product, so the card agrees with the tour detail page. The stored
+  // wishlist item above keeps the raw in-app stats (re-combined on display).
+  const combinedStats = useCombinedTourStats({ title, location, rating, reviewCount: reviews })
+  const displayRating = combinedStats.reviewCount > 0 ? combinedStats.rating.toFixed(1) : (rating || '0')
+  const displayReviewCount = combinedStats.reviewCount > 0 ? combinedStats.reviewCount : reviews
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(max-width: 768px)').matches,
   )
@@ -70,8 +92,24 @@ export default function TourCard({ id, title, duration, features, price, rating,
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
   }, [])
+
+  // Idle warm so touch users (no hover) also get a cached route chunk.
+  // Skipped on save-data/2G-3G connections so it can't compete with the page
+  // the user is actually waiting for.
+  useEffect(() => {
+    if (!shouldIdlePrefetch()) return
+    const w = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout?: number }) => number
+      cancelIdleCallback?: (id: number) => void
+    }
+    if (typeof w.requestIdleCallback === 'function') {
+      const id = w.requestIdleCallback(warmTourRouteChunk, { timeout: 3000 })
+      return () => w.cancelIdleCallback?.(id)
+    }
+    const id = setTimeout(warmTourRouteChunk, 1500)
+    return () => clearTimeout(id)
+  }, [])
   const moveBadgesToBody = bodyOfferBadgesOnMobile && isMobile
-  const moveFactsToGrid = factsGridOnMobile && isMobile
 
   // "tour" / "activity" / "transport" is the supplier's Step 2 product type
   // choice — give each its own icon + accent so the badge reads at a glance,
@@ -83,13 +121,9 @@ export default function TourCard({ id, title, duration, features, price, rating,
   // tour guide conducts the experience in (e.g. "English Guide"), not the
   // language of e.g. printed materials or the page itself.
   const languageLabel = languages?.length ? `${languages.join(', ')} Guide` : ''
-  // Guard defensively: cancellationPolicy is typed as string|null but a
-  // stale localStorage item or a badges response can carry a raw JSON
-  // object ({type,label,...}) which would crash .toLowerCase().
-  const policy = typeof cancellationPolicy === 'string' ? cancellationPolicy : (cancellationPolicy as any)?.label || ''
-  const isNonRefundable = !!policy && /non[- ]?refundable/i.test(policy)
-  const cancellationLabel = policy
-    ? (isNonRefundable ? 'Non-refundable' : (policy.toLowerCase().includes('free') ? 'Free cancellation' : policy))
+  const isNonRefundable = !!cancellationPolicy && /non[- ]?refundable/i.test(cancellationPolicy)
+  const cancellationLabel = cancellationPolicy
+    ? (isNonRefundable ? 'Non-refundable' : (cancellationPolicy.toLowerCase().includes('free') ? 'Free cancellation' : cancellationPolicy))
     : ''
   // The Accommodation badge only applies to overnight trips — gate it on a
   // duration of more than one day ("2 days", "3 days", ...). Hour-based
@@ -167,25 +201,22 @@ export default function TourCard({ id, title, duration, features, price, rating,
     }
   }
 
-  const queryClient = useQueryClient()
-
-  const handleCardClick = () => {
+  const handleCardClick = (event?: React.MouseEvent) => {
     // A horizontal swipe on the image ends with a click — don't navigate.
     if (swipeJustHappened.current) {
       swipeJustHappened.current = false
       return
     }
-    window.open(`/tour/${tourSlug}`, '_blank', 'noopener')
+    const url = `/tour/${tourSlug}`
+    // Modifier/middle clicks keep their browser meaning: open a new tab.
+    const wantsNewTab = openInNewTab
+      || (event != null && (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button === 1))
+    if (wantsNewTab) {
+      window.open(url, '_blank', 'noopener')
+      return
+    }
+    navigate(url)
   }
-
-  // Prefetch tour detail on hover so the page loads instantly when clicked
-  const handleMouseEnter = useCallback(() => {
-    if (!tourSlug) return
-    queryClient.prefetchQuery({
-      queryKey: ['expedition', 'tour', tourSlug],
-      staleTime: 60_000,
-    })
-  }, [tourSlug, queryClient])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -221,7 +252,17 @@ export default function TourCard({ id, title, duration, features, price, rating,
   const showOfferBadge = hasActiveOffer(specialOffers)
 
   return (
-    <div className={`tour-card${imageClean ? ' tour-card-clean' : ''}`} onClick={handleCardClick} onKeyDown={handleKeyDown} onMouseEnter={handleMouseEnter} role="link" tabIndex={0}>
+    <div
+      className={`tour-card${imageClean ? ' tour-card-clean' : ''}`}
+      onClick={handleCardClick}
+      onAuxClick={(e) => { if (e.button === 1) handleCardClick(e) }}
+      onKeyDown={handleKeyDown}
+      onMouseEnter={warmTourRouteChunk}
+      onFocus={warmTourRouteChunk}
+      onTouchStart={warmTourRouteChunk}
+      role="link"
+      tabIndex={0}
+    >
       <div className={`tour-card-image${isCarousel ? ' tour-card-has-carousel' : ''}`}>
         {!moveBadgesToBody && showSellOutTag && !(showOfferBadge && !hideOfferBadge) && (
           <span className="tour-card-sellout-tag">
@@ -231,9 +272,9 @@ export default function TourCard({ id, title, duration, features, price, rating,
         )}
         {!moveBadgesToBody && showOfferBadge && !hideOfferBadge && <span className="tour-card-special-offer">{t('card.specialOffer')}</span>}
         {!imageClean && isNew && !showSellOutTag && !showOfferBadge && <span className="tour-card-new-pill">New</span>}
-        {!imageClean && !hideSourceBadge && !showSellOutTag && !showOfferBadge && source === 'travio-ghana' && (
+        {!imageClean && !hideSourceBadge && !showSellOutTag && !showOfferBadge && source === 'travio-africa' && (
           <div className="source-badge">
-            <img src="/travio_logo.png" alt="Travio Ghana" />
+            <img src="/travio_logo.png" alt="Travio Africa" />
           </div>
         )}
         <div
@@ -252,7 +293,7 @@ export default function TourCard({ id, title, duration, features, price, rating,
             return (
               <div key={`${src}-${i}`} className={`tour-card-slide${isActive ? ' tour-card-slide-active' : ''}`}>
                 {shouldLoad ? (
-                  <OptimizedImage src={src} alt={title} width={600} height={400} fit="crop" loading={isActive ? 'eager' : 'lazy'} priority={priority && i === 0} />
+                  <OptimizedImage src={src} alt={title} width={600} height={400} fit="crop" loading={priority && i === 0 ? 'eager' : 'lazy'} priority={priority && i === 0} />
                 ) : null}
               </div>
             )
@@ -328,7 +369,7 @@ export default function TourCard({ id, title, duration, features, price, rating,
           </span>
           {discount && <span className="tour-card-discount">{discount}</span>}
         </div>
-        <h3 className="tour-card-title">{title}</h3>
+        <h3 className="tour-card-title" title={title}>{title}</h3>
         <div className="tour-card-meta">
           {meetingMode === 'meeting_point' ? (
             <span className="tour-card-badge tour-card-badge-meeting">
@@ -375,16 +416,20 @@ export default function TourCard({ id, title, duration, features, price, rating,
             </span>
           )}
         </div>
-        {!hideFeatures && !moveFactsToGrid && (
-          <div className="tour-card-features">{features}</div>
-        )}
+        {!hideFeatures && <div className="tour-card-features">{features}</div>}
         <div className="tour-card-bottom">
           <div className="tour-card-rating">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#39AD6C" stroke="#39AD6C" strokeWidth="1">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-            </svg>
-            <span className="tour-card-rating-value">{rating || '0'}</span>
-            {reviews > 0 && <span className="tour-card-rating-reviews">({reviews})</span>}
+            {displayRating && displayRating !== '0' ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#39AD6C" stroke="#39AD6C" strokeWidth="1">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+            )}
+            <span className="tour-card-rating-value">{displayRating || '0'}</span>
+            {displayReviewCount > 0 && <span className="tour-card-rating-reviews">({displayReviewCount})</span>}
           </div>
           {price && (
             <div className="tour-card-price">

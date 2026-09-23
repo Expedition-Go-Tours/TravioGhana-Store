@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import {
-  DEFAULT_CENTER, TILE_STYLE, pinMatchesSelection, toNumber, warmMapResources,
+  DEFAULT_CENTER, TILE_STYLE, buildTourPoints, pinMatchesSelection, toNumber, warmMapResources,
 } from '../mapUtils'
 
 describe('mapUtils tile style', () => {
@@ -44,6 +44,30 @@ describe('mapUtils toNumber', () => {
     expect(toNumber('abc')).toBeNull()
     expect(toNumber(NaN)).toBeNull()
     expect(toNumber(Infinity)).toBeNull()
+  })
+})
+
+describe('mapUtils buildTourPoints', () => {
+  it('builds a meeting-point pin from the supplied coordinates', () => {
+    const points = buildTourPoints({
+      meetingMode: 'meeting_point',
+      meetingPoint: 'Sankofa Monument',
+      meetingPointLat: 5.5451,
+      meetingPointLng: -0.1926,
+    })
+    expect(points).toHaveLength(1)
+    expect(points[0]).toMatchObject({ lat: 5.5451, lng: -0.1926, label: 'Sankofa Monument', kind: 'tour' })
+  })
+
+  it('infers a meeting point from an address-only config', () => {
+    // meetingMode omitted; only the address + coordinates are set.
+    const points = buildTourPoints({
+      meetingPointAddress: 'Independence Square, Accra',
+      meetingPointLat: 5.5486,
+      meetingPointLng: -0.1928,
+    })
+    expect(points).toHaveLength(1)
+    expect(points[0]).toMatchObject({ lat: 5.5486, lng: -0.1928, kind: 'tour' })
   })
 })
 

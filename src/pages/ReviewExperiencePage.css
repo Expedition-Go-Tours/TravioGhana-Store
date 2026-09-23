@@ -404,45 +404,68 @@
 }
 
 /* Photos */
-.review-photos-subtitle {
-  font-size: 13px;
-  color: #64748b;
-  margin: -12px 0 16px;
+.review-photos-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.review-photos-head .review-form-section-title {
+  margin-bottom: 0;
+}
+
+.review-optional-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #eef4ef;
+  color: #166534;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .review-photos-info {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 16px;
-  padding: 20px;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
+  border: 1px solid #d8e7dc;
+  background: linear-gradient(180deg, #f3faf4, #f9fcf9);
 }
 
 .review-photos-info-icon {
-  display: grid;
-  width: 40px;
-  height: 40px;
-  place-items: center;
-  border-radius: 50%;
-  background: #e2e8f0;
-  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #dcf5e3;
+  color: #0f7a3d;
   flex-shrink: 0;
 }
 
+.review-photos-info-copy {
+  min-width: 0;
+}
+
 .review-photos-info-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1e293b;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #1e3a2b;
   margin: 0 0 2px;
+  letter-spacing: -0.01em;
 }
 
 .review-photos-info-desc {
-  font-size: 13px;
+  font-size: 12.5px;
   line-height: 1.5;
-  color: #475569;
+  color: #52715f;
   margin: 0;
 }
 
@@ -451,70 +474,134 @@
   width: 100%;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  border-radius: 12px;
-  border: 2px dashed #cbd5e1;
-  background: #f8fafc;
-  padding: 40px 16px;
+  gap: 6px;
+  border-radius: 16px;
+  border: 1.5px dashed #bcd8c2;
+  background: #fbfdfb;
+  padding: 34px 16px 30px;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-  color: #94a3b8;
+  transition: border-color 0.15s, background 0.15s, transform 0.05s;
+  font-family: inherit;
+  color: inherit;
 }
 
 .review-photos-upload:hover {
-  border-color: #94a3b8;
-  background: #f1f5f9;
+  border-color: #2f9e57;
+  background: #f4fbf5;
+}
+
+.review-photos-upload:active {
+  transform: translateY(1px);
+}
+
+.review-photos-upload:focus-visible {
+  outline: 2px solid #15803d;
+  outline-offset: 2px;
+}
+
+.review-photos-upload-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #35a563, #15803d);
+  color: #fff;
+  box-shadow: 0 8px 18px -8px rgba(21, 128, 61, 0.55);
+  margin-bottom: 4px;
 }
 
 .review-photos-upload-text {
   font-size: 14px;
-  font-weight: 600;
-  color: #334155;
+  font-weight: 700;
+  color: #14532d;
 }
 
 .review-photos-upload-hint {
-  font-size: 12px;
-  color: #94a3b8;
+  font-size: 12.5px;
+  color: #7b9a86;
 }
 
 .review-photos-input {
   display: none;
 }
 
+.review-photos-previews-block {
+  margin-top: 16px;
+}
+
+.review-photos-count {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.review-photos-count span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #eef4ef;
+  color: #166534;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
 .review-photos-previews {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 16px;
+  gap: 10px;
 }
 
 .review-photo-preview {
   position: relative;
-  width: 80px;
-  height: 80px;
+  width: 86px;
+  height: 86px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px -6px rgba(16, 24, 40, 0.18);
 }
 
 .review-photo-preview img {
   width: 100%;
   height: 100%;
-  border-radius: 8px;
   object-fit: cover;
+  display: block;
 }
 
 .review-photo-remove {
   position: absolute;
-  right: -6px;
-  top: -6px;
-  width: 20px;
-  height: 20px;
+  right: 4px;
+  top: 4px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  border: none;
-  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(15, 23, 42, 0.72);
   color: #fff;
-  font-size: 10px;
+  font-size: 11px;
+  line-height: 1;
   display: grid;
   place-items: center;
   cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.review-photo-remove:hover {
+  background: #b91c1c;
+  transform: scale(1.08);
+}
+
+.review-photo-remove:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+
+.review-photo-remove span {
+  transform: translateY(-0.5px);
 }
 
 /* Certification */
@@ -610,4 +697,82 @@
 .review-submit-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ── Photos: minimal flat refinements (no rounded callout) ── */
+.review-optional-badge {
+  background: #eef1f5;
+  color: #475569;
+}
+
+.review-photos-info {
+  border: none;
+  background: transparent;
+  border-radius: 0;
+  padding: 0 0 14px;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.review-photos-info-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: transparent;
+  color: #6b7280;
+  margin-top: 1px;
+}
+
+.review-photos-info-title {
+  display: inline;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1f2937;
+  letter-spacing: 0;
+}
+
+.review-photos-info-desc {
+  display: inline;
+  margin-left: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #6b7280;
+}
+
+.review-photos-upload {
+  border-radius: 10px;
+  border: 1.5px dashed #cbd5e1;
+  background: #fff;
+  padding: 22px 16px;
+  gap: 4px;
+}
+
+.review-photos-upload:hover {
+  border-color: #94a3b8;
+  background: #fafbfc;
+}
+
+.review-photos-upload-icon {
+  width: 34px;
+  height: 34px;
+  background: #eef2f7;
+  color: #0f7a3d;
+  box-shadow: none;
+  margin-bottom: 6px;
+}
+
+.review-photos-upload-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.review-photos-upload-hint {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.review-photos-count span {
+  background: #f1f5f9;
+  color: #475569;
 }

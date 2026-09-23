@@ -12,17 +12,19 @@
 }
 
 .section-title {
-  font-family: 'GT Esti Pro Display', sans-serif;
-  font-weight: 700;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
   font-size: clamp(19px, 2.2vw, 32px);
   color: #1a1a1a;
   margin: 0;
   line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
   overflow-wrap: anywhere;
 }
 
 .section-subtitle {
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 15px;
   color: #666;
   margin: 4px 0 0;
@@ -68,7 +70,7 @@
 }
 
 .section-view-all {
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: var(--primary);
@@ -103,5 +105,24 @@
 
   .section-arrows {
     display: none;
+  }
+}
+
+/* Narrow screens: keep the title and "View all" horizontally aligned on one
+   row — the title may wrap, but the link stays vertically centered on the right. */
+@media (max-width: 480px) {
+  .section-heading {
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-heading-text {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .section-heading-actions {
+    margin-left: 0;
+    flex-shrink: 0;
   }
 }

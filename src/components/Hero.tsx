@@ -18,7 +18,7 @@ export default function Hero() {
         {hasActiveSearch && currentLocation && (
           <div className="hero-active-chip">
             {t('hero.currentSearch', {
-              location: currentLocation,
+              location: /region$/i.test(currentLocation) ? currentLocation : `${currentLocation} Region`,
               defaultValue: 'Current search: {{location}}',
             })}
           </div>

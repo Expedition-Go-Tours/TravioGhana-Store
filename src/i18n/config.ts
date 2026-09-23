@@ -3,10 +3,29 @@ import { initReactI18next } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 
 import en from './locales/en.json'
-import es from './locales/es.json'
-import fr from './locales/fr.json'
-import de from './locales/de.json'
-import nl from './locales/nl.json'
+
+// Only English ships in the entry bundle. Other locales are fetched as
+// separate chunks the first time they're selected — saving ~270 KB of JSON
+// parse/download for the (majority) English-first visit.
+const localeLoaders: Record<string, () => Promise<{ default: Record<string, unknown> }>> = {
+  es: () => import('./locales/es.json'),
+  fr: () => import('./locales/fr.json'),
+  de: () => import('./locales/de.json'),
+  nl: () => import('./locales/nl.json'),
+}
+
+async function loadLocaleBundle(lng: string) {
+  const base = (lng || 'en').split('-')[0]
+  if (base === 'en' || i18n.hasResourceBundle(base, 'translation')) return
+  const loader = localeLoaders[base]
+  if (!loader) return
+  try {
+    const mod = await loader()
+    i18n.addResourceBundle(base, 'translation', mod.default ?? mod, true, true)
+  } catch {
+    // Offline or chunk-load failure: fall back to the bundled English strings.
+  }
+}
 
 i18n
   .use(LanguageDetector)
@@ -14,11 +33,8 @@ i18n
   .init({
     resources: {
       en: { translation: en },
-      es: { translation: es },
-      fr: { translation: fr },
-      de: { translation: de },
-      nl: { translation: nl },
     },
+    partialBundledLanguages: true,
     fallbackLng: 'en',
     supportedLngs: ['en', 'es', 'fr', 'de', 'nl'],
     defaultNS: 'translation',
@@ -31,5 +47,10 @@ i18n
       escapeValue: false,
     },
   })
+  .then(() => loadLocaleBundle(i18n.language))
+
+i18n.on('languageChanged', (lng) => {
+  void loadLocaleBundle(lng)
+})
 
 export default i18n

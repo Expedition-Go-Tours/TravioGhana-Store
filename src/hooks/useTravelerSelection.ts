@@ -125,7 +125,12 @@ export function useTravelerSelection(tour: TravelerSelectionTour, options?: Trav
   // asynchronously) — React-recommended "adjust state during render" pattern,
   // guarded so it only runs when the categories actually change.
   const [prevCategories, setPrevCategories] = useState(travelerGroups)
-  if (!isPerGroup && travelerGroups.length > 0 && prevCategories !== travelerGroups) {
+  // When the caller seeds exact per-category counts (e.g. restoring a booking's
+  // mix on the change/modify flows) never overwrite them when pricing arrives
+  // asynchronously — only the unseeded default widget reseeds from the minimum.
+  const hasProvidedInitialCounts =
+    !!(options?.initialCounts && Object.keys(options.initialCounts).length > 0)
+  if (!isPerGroup && !hasProvidedInitialCounts && travelerGroups.length > 0 && prevCategories !== travelerGroups) {
     setPrevCategories(travelerGroups)
     setCategoryCounts(defaultCountsFor(travelerGroups, bookableBounds.min))
   }
@@ -189,9 +194,10 @@ export function useTravelerSelection(tour: TravelerSelectionTour, options?: Trav
   }
 
   // When a tier is currently active for a category, show the age range plus the
-  // tier's headcount band so it's clear why the per-person price changed.
+  // tier's headcount band so it's clear why the per-person price changed. A
+  // single traveler never gets the "Group of ..." suffix.
   const withTierNote = (baseLabel: string, tier: ReturnType<typeof findActiveTier>): string => {
-    if (!tier) return baseLabel
+    if (!tier || totalTravelers <= 1) return baseLabel
     return `${baseLabel} · ${t('booking.groupOf', 'Group of {{range}}', { range: tierRangeLabel(tier) })}`
   }
 
@@ -288,7 +294,9 @@ export function useTravelerSelection(tour: TravelerSelectionTour, options?: Trav
     ? [
         {
           label: t('booking.travelers'),
-          age: matchingGroupBand ? activeGroupBandLabel : t('booking.perGroupHeadcount', 'Group headcount'),
+          age: matchingGroupBand
+            ? (totalTravelers > 1 ? activeGroupBandLabel : '')
+            : t('booking.perGroupHeadcount', 'Group headcount'),
           price: matchingGroupBand ? formatPrice(matchingGroupBand.price) : '',
           lineTotal: matchingGroupBand?.price ?? 0,
           count: groupHeadcount,

@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo, type ReactNode } from 'react'
+import { readGated, writeGated, removeGated } from '../lib/consentGatedStorage'
 
 export interface LocationSearchData {
   currentLocation: string | null
@@ -17,7 +18,7 @@ const STORAGE_KEY = 'expedition_go_location_search'
 
 function loadStorage(): LocationSearchData {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY)
+    const stored = readGated(STORAGE_KEY)
     if (stored) {
       const parsed = JSON.parse(stored)
       return {
@@ -35,7 +36,7 @@ export function LocationSearchProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     dataRef.current = data
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    writeGated(STORAGE_KEY, JSON.stringify(data))
   }, [data])
 
   const setLocation = useCallback((city: string) => {
@@ -61,7 +62,7 @@ export function LocationSearchProvider({ children }: { children: ReactNode }) {
 
   const resetLocation = useCallback(() => {
     setData({ currentLocation: null, previousLocations: [] })
-    localStorage.removeItem(STORAGE_KEY)
+    removeGated(STORAGE_KEY)
   }, [])
 
   // Memoize value to prevent unnecessary re-renders of consumers

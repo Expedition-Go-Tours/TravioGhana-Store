@@ -15,12 +15,23 @@ import { useTranslation } from 'react-i18next'
 import { useExpeditionTour, useSimilarTours } from '../../hooks/useExpeditionTours'
 import { useSupplierTourCount } from '../../hooks/useSupplierTourCount'
 import { useExpeditionTourReviews, useCreateReview } from '../../hooks/useExpeditionReviews'
+import {
+  useTourExternalReviews,
+  useTourExternalProducts,
+  combineReviewStats,
+  aggregateProducts,
+  aggregateResolvedDistribution,
+  scaleDistribution,
+  COUNTED_SOURCES,
+} from '../../hooks/useExternalReviews'
 import { useTourAvailability, useReviewableBookingForTour } from '../../hooks/useExpeditionBookings'
 import { freeCancellationDateLabel } from '../../lib/cancellationLabel'
 import { mapSupplierProfile } from '../../lib/supplierProfile'
 import type { Tour } from '../../components/data'
 import type { DayAvailability, DayAvailabilityInfo } from '../../lib/tourAvailability'
 
+import SEO, { buildProductSchema, buildBreadcrumbSchema } from '../../components/SEO'
+import Breadcrumb from './Breadcrumb'
 import TourImageGallery from './TourImageGallery'
 import TourHeader from './TourHeader'
 import TourQuickFacts from './TourQuickFacts'
@@ -43,14 +54,17 @@ import DetailsSection, {
 import TourItineraryPreview from './TourItineraryPreview'
 import ReviewsSection from './ReviewsSection'
 import SupplierSection from './SupplierSection'
-import Breadcrumb from './Breadcrumb'
 
 import './TourDetailPage.css'
 
+/** Reviews rendered per "Load more" step (local + matched scraped cards). */
+const REVIEW_PAGE_SIZE = 10
+
 /** Skeleton placeholder shown while the tour loads: header, image gallery and booking widget. */
 function TourDetailSkeleton() {
+  const { t } = useTranslation()
   return (
-    <div className="tour-detail-skeleton" role="status" aria-label="Loading tour">
+    <div className="tour-detail-skeleton" role="status" aria-label={t('tourDetail.loadingTour')}>
       {/* Breadcrumb bar — full-bleed strip under the navbar, like the loaded page */}
       <div className="skeleton-breadcrumb">
         <div className="skeleton-block skeleton-breadcrumb-line" />
@@ -100,14 +114,10 @@ function TourDetailSkeleton() {
   )
 }
 
-interface TourDetailPageProps {
-  onOpenAuth?: (mode: 'signin' | 'signup') => void
-}
-
-export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {}) {
+export default function TourDetailPage() {
   const { t } = useTranslation()
   const tourDetailTabs = useMemo(() => [
-    { key: 'overview', label: 'Overview' },
+    { key: 'overview', label: t('tourDetail.tabOverview') },
     { key: 'additional', label: t('tourDetail.additionalInformation') },
     { key: 'reviews', label: t('sections.reviews') },
     { key: 'supplier', label: t('tourDetail.supplier') },
@@ -116,9 +126,34 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
   const navigate = useNavigate()
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist()
   const { addToContinuePlanning } = useContinuePlanning()
+  const [activeTab, setActiveTab] = useState('overview')
 
-  const { data: tour, isLoading, isError } = useExpeditionTour(tourId)
+  const { data: tour, isLoading, isError, isFetching } = useExpeditionTour(tourId)
   const { data: reviewsData } = useExpeditionTourReviews(tourId, 1, 10, tour?.id)
+  // Platform reviews (TripAdvisor / GetYourGuide / Google) whose scraped tour
+  // title maps to this product via matchTourForTitle — shown alongside the
+  // in-app reviews with the same card layouts. The 1.6 MB row dataset is only
+  // fetched once the reviews tab is actually opened.
+  const { reviews: externalMatchedReviews } = useTourExternalReviews(
+    tour ? { title: tour.title, location: tour.location } : null,
+    activeTab === 'reviews',
+  )
+  // Official product totals (e.g. TripAdvisor "4.9 (595 reviews)") for the
+  // matched scraped listings — used for the headline rating/count.
+  const { products: externalMatchedProducts } = useTourExternalProducts(
+    tour ? { title: tour.title, location: tour.location } : null,
+  )
+  // Headline review stats = in-app reviews + the matched scraped TripAdvisor /
+  // GetYourGuide product totals (falling back to counted rows when a product
+  // header was not captured), so the numbers agree with the cards shown below.
+  const combinedTourStats = useMemo(
+    () => combineReviewStats(
+      { rating: tour?.rating, reviewCount: tour?.reviewCount },
+      externalMatchedReviews,
+      aggregateProducts(externalMatchedProducts),
+    ),
+    [tour?.rating, tour?.reviewCount, externalMatchedReviews, externalMatchedProducts],
+  )
   const { data: reviewableBookingId } = useReviewableBookingForTour(tourId)
   const { data: similarTours } = useSimilarTours(tourId)
 
@@ -185,9 +220,6 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
 
   useEffect(() => {
     if (tour) {
-      document.title = `${tour.title} | Travio Ghana Tours`
-    }
-    if (tour) {
       addToContinuePlanning(toContinuePlanningItem({
         title: tour.title,
         location: tour.location,
@@ -198,7 +230,7 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
         reviews: tour.reviewCount,
         duration: tour.duration,
         features: tour.highlights?.length ? tour.highlights.slice(0, 4).join(' · ') : '',
-        source: tour.bookingFlow === 'EXTERNAL' ? 'travio-ghana' as const : 'Travio Ghana' as const,
+        source: tour.bookingFlow === 'EXTERNAL' ? 'travio-africa' as const : 'expedition-go' as const,
         externalUrl: tour.externalUrl || undefined,
         category: tour.category,
         difficulty: tour.difficulty,
@@ -217,25 +249,32 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
   // the top they stick instead, so the title bar steps aside.
   const [showStickyTitle, setShowStickyTitle] = useState(false)
   useEffect(() => {
-    const STICKY_TOP = 64
-    const compute = () => {
-      if (window.innerWidth >= 1024) {
-        setShowStickyTitle(false)
-        return
+    // Synchronous (not rAF-throttled): iOS Safari pauses rAF during momentum
+    // scrolling, which would delay the sticky title until the scroll stops.
+    // Writes only happen when the boolean actually changes.
+    let lastShow = false
+    const computeStickyTitle = () => {
+      let next = false
+      if (window.innerWidth < 1024) {
+        const header = document.querySelector<HTMLElement>('.tour-header-new')
+        const tabs = document.querySelector<HTMLElement>('.tour-detail-tabs')
+        if (header && tabs) {
+          const STICKY_TOP = 64
+          const headerGone = header.getBoundingClientRect().bottom <= STICKY_TOP + 1
+          const tabsReached = tabs.getBoundingClientRect().top <= STICKY_TOP + 1
+          next = headerGone && !tabsReached
+        }
       }
-      const header = document.querySelector<HTMLElement>('.tour-header-new')
-      const tabs = document.querySelector<HTMLElement>('.tour-detail-tabs')
-      if (!header || !tabs) return
-      const headerGone = header.getBoundingClientRect().bottom <= STICKY_TOP + 1
-      const tabsReached = tabs.getBoundingClientRect().top <= STICKY_TOP + 1
-      setShowStickyTitle(headerGone && !tabsReached)
+      if (next === lastShow) return
+      lastShow = next
+      setShowStickyTitle(next)
     }
-    compute()
-    window.addEventListener('scroll', compute, { passive: true })
-    window.addEventListener('resize', compute)
+    computeStickyTitle()
+    window.addEventListener('scroll', computeStickyTitle, { passive: true })
+    window.addEventListener('resize', computeStickyTitle)
     return () => {
-      window.removeEventListener('scroll', compute)
-      window.removeEventListener('resize', compute)
+      window.removeEventListener('scroll', computeStickyTitle)
+      window.removeEventListener('resize', computeStickyTitle)
     }
   }, [])
 
@@ -256,13 +295,13 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
     observer.observe(el)
     return () => observer.disconnect()
   }, [isLoading, tour])
-  const [activeTab, setActiveTab] = useState('overview')
   const [reviewDetail, setReviewDetail] = useState<{ name: string; date: string; rating: number; text: string } | null>(null)
   const [isWriteReviewOpen, setIsWriteReviewOpen] = useState(false)
   const [reviewStarFilter, setReviewStarFilter] = useState<number | null>(null)
   const [supplierInfoOpen, setSupplierInfoOpen] = useState(true)
-  const [hasMoreReviews, setHasMoreReviews] = useState(false)
-  const [loadingMoreReviews, setLoadingMoreReviews] = useState(false)
+  // Review list pagination: render one page at a time so a product with
+  // hundreds of matched scraped reviews never mounts them all at once.
+  const [reviewVisibleCount, setReviewVisibleCount] = useState(REVIEW_PAGE_SIZE)
   const [isMobile, setIsMobile] = useState(false)
   const [widgetSelectedDate, setWidgetSelectedDate] = useState<Date | null>(null)
 
@@ -283,8 +322,13 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
 
   const isExternal = tour?.bookingFlow === 'EXTERNAL'
   const selectedTourTitle = tour?.title || ''
-  const selectedTourRating = tour?.rating || 0
-  const selectedTourReviews = tour?.reviewCount || 0
+  // Local (in-app) stats, kept separate so wishlist/continue-planning storage
+  // stays canonical — cards re-combine on display, so storing combined values
+  // here would double-count the scraped reviews.
+  const localTourRating = tour?.rating || 0
+  const localTourReviews = tour?.reviewCount || 0
+  const selectedTourRating = combinedTourStats.rating
+  const selectedTourReviews = combinedTourStats.reviewCount
   const slug = tourId || tour?.slug || ''
 
   const wishlistItemId = tour?.id || selectedTourTitle
@@ -303,10 +347,10 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
         price: tour?.price || 0,
         duration: tour?.duration || '',
         imageUrl: mergedImages[0] || '',
-        rating: selectedTourRating,
-        reviewCount: selectedTourReviews,
+        rating: localTourRating,
+        reviewCount: localTourReviews,
         addedDate: new Date().toISOString(),
-        source: isExternal ? 'travio-ghana' : 'Travio Ghana',
+        source: isExternal ? 'travio-africa' : 'expedition-go',
         externalUrl: tour?.externalUrl || undefined,
       })
       toast.success(t('common.addedToWishlist'))
@@ -337,15 +381,15 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
         tour: {
           title: selectedTourTitle,
           slug,
-          rating: selectedTourRating,
-          reviews: selectedTourReviews,
+          rating: localTourRating,
+          reviews: localTourReviews,
           duration: tour?.duration || '',
           price: tour?.price || 0,
           image: mergedImages[0],
           images: mergedImages.slice(0, 5),
           location: tour?.location || 'Accra, Ghana',
           tourId: tour?.id || '',
-          supplierName: tour?.supplierName || 'Travio Ghana Tours Ltd',
+          supplierName: tour?.supplierName || 'Expedition-Go Tours Ltd',
           supplierLogo: tour?.supplierPhoto || '',
         },
       },
@@ -372,12 +416,8 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
 
   const handleReviewsTab = () => handleTabChange('reviews')
 
-  const loadMoreReviews = async () => {
-    setLoadingMoreReviews(true)
-    setTimeout(() => {
-      setHasMoreReviews(false)
-      setLoadingMoreReviews(false)
-    }, 800)
+  const loadMoreReviews = () => {
+    setReviewVisibleCount((count) => count + REVIEW_PAGE_SIZE)
   }
 
   const allReviewCards = useMemo(() => {
@@ -402,42 +442,107 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
     }))
   }, [reviews, t])
 
+  // External reviews projected into the same card shape as in-app ones so the
+  // "What Travellers are Saying" list and the Overview carousel render them
+  // with the internal card layout (plus a source badge).
+  const externalReviewCards = useMemo(() => {
+    return externalMatchedReviews.map((r) => ({
+      id: r.id,
+      name: r.reviewerName,
+      date: r.originalDate
+        ? new Date(r.originalDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+        : '',
+      rating: r.rating,
+      text: r.text,
+      title: r.title || '',
+      avatar: r.reviewerAvatar || undefined,
+      bookingId: undefined as string | undefined,
+      photos: undefined as string[] | undefined,
+      supplierResponse: null,
+      supplierResponseAt: null,
+      valueForMoneyRating: null,
+      guideRating: null,
+      meetingRating: null,
+      travelMonth: null,
+      companions: undefined as string[] | undefined,
+      source: r.source,
+      externalUrl: r.tourUrl,
+    }))
+  }, [externalMatchedReviews])
+
   const filteredReviewCards = useMemo(() => {
-    return allReviewCards.filter((r) => {
+    return [...allReviewCards, ...externalReviewCards].filter((r) => {
       if (reviewStarFilter !== null && r.rating !== reviewStarFilter) return false
       return true
     })
-  }, [allReviewCards, reviewStarFilter])
+  }, [allReviewCards, externalReviewCards, reviewStarFilter])
 
-  // "With photos" quick filter (GetYourGuide pattern). Composes with the star
-  // filter; only surfaces when some loaded review has photos.
+  // "With photos" quick filter (GetYourGuide pattern). Filters the star-filtered
+  // set so the two chips compose; only surfaces when some loaded review has photos.
   const [reviewPhotosOnly, setReviewPhotosOnly] = useState(false)
   const photoReviewCount = useMemo(
     () => filteredReviewCards.filter((r) => (r.photos?.length ?? 0) > 0).length,
     [filteredReviewCards],
   )
-  const visibleReviewCards = useMemo(() => {
+  const photoFilteredReviewCards = useMemo(() => {
     if (!reviewPhotosOnly) return filteredReviewCards
     return filteredReviewCards.filter((r) => (r.photos?.length ?? 0) > 0)
   }, [filteredReviewCards, reviewPhotosOnly])
 
+  // Reset back to the first page whenever a filter changes (render-phase state
+  // adjustment — the linter-approved way to sync state to a derived change).
+  const reviewFilterKey = `${reviewStarFilter}|${reviewPhotosOnly}`
+  const [prevReviewFilterKey, setPrevReviewFilterKey] = useState(reviewFilterKey)
+  if (reviewFilterKey !== prevReviewFilterKey) {
+    setPrevReviewFilterKey(reviewFilterKey)
+    setReviewVisibleCount(REVIEW_PAGE_SIZE)
+  }
+
+  const visibleReviewCards = photoFilteredReviewCards.slice(0, reviewVisibleCount)
+  const hasMoreReviews = photoFilteredReviewCards.length > reviewVisibleCount
+
   const reviewBreakdown = useMemo(() => {
     const labels = [
-      { label: '5 stars', stars: 5 },
-      { label: '4 stars', stars: 4 },
-      { label: '3 stars', stars: 3 },
-      { label: '2 stars', stars: 2 },
-      { label: '1 star', stars: 1 },
+      { label: t('reviews.starsCount', { count: 5 }), stars: 5 },
+      { label: t('reviews.starsCount', { count: 4 }), stars: 4 },
+      { label: t('reviews.starsCount', { count: 3 }), stars: 3 },
+      { label: t('reviews.starsCount', { count: 2 }), stars: 2 },
+      { label: t('reviews.starsCount', { count: 1 }), stars: 1 },
     ]
+    // In-app reviews: only the first page is loaded, so scale the loaded star
+    // counts to the tour's real total — otherwise the bars under-count the
+    // local part of the headline.
+    const localWeights: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+    allReviewCards.forEach((r) => { if (localWeights[r.rating] !== undefined) localWeights[r.rating]++ })
+    const localDistribution = localTourReviews > 0 &&
+      Object.values(localWeights).some(Boolean) &&
+      localTourReviews !== allReviewCards.length
+      ? scaleDistribution(localWeights, localTourReviews)
+      : localWeights
+
+    // Scraped products contribute official totals (their distribution when the
+    // platform exposes one, otherwise their sampled rows scaled to the total),
+    // so the bars always reconcile with the headline count.
     const counts: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
-    allReviewCards.forEach((r) => { if (counts[r.rating] !== undefined) counts[r.rating]++ })
-    const total = allReviewCards.length || 1
+    const officialDistribution = aggregateResolvedDistribution(externalMatchedProducts)
+    if (officialDistribution) {
+      for (const star of [5, 4, 3, 2, 1]) {
+        counts[star] = localDistribution[star] + (officialDistribution[star] ?? 0)
+      }
+    } else {
+      for (const star of [5, 4, 3, 2, 1]) counts[star] = localDistribution[star]
+      externalReviewCards
+        .filter((r) => r.source && COUNTED_SOURCES.includes(r.source))
+        .forEach((r) => { if (counts[r.rating] !== undefined) counts[r.rating]++ })
+    }
+
+    const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1
     return labels.map((item) => ({
       ...item,
       count: counts[item.stars],
       percentage: Math.round((counts[item.stars] / total) * 100),
     }))
-  }, [allReviewCards])
+  }, [allReviewCards, externalReviewCards, externalMatchedProducts, localTourReviews, t])
 
   const difficultyColorMap = useMemo<Record<string, string>>(() => ({
     'Easy': '#22c55e',
@@ -663,7 +768,7 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
         ),
       },
 
-      // 7. Skip the line — always shown, red "No" when not offered.
+      // 8. Skip the line — always shown, red "No" when not offered.
       {
         icon: UserCheck,
         title: t('tourDetail.skipTheLineTitle'),
@@ -795,7 +900,7 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
   }, [tour])
 
   const highlights = tour?.highlights || []
-  const cancellationPolicy = tour?.cancellationPolicy || 'Free cancellation up to 24 hours before'
+  const cancellationPolicy = tour?.cancellationPolicy || t('tourDetail.fallbackCancellation')
 
   const descriptionSteps = useMemo(() => {
     const desc = tour?.description
@@ -843,17 +948,17 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
     const mapped = mapSupplierProfile({
       supplier: tour?.supplierProfile,
       fallback: {
-        name: tour?.supplierName || 'Travio Ghana Tours Ltd',
+        name: tour?.supplierName || 'Expedition-Go Tours Ltd',
         logo: tour?.supplierPhoto || '',
-        description: tour?.supplierName ? `${tour.supplierName} offers authentic guided experiences.` : null,
+        description: tour?.supplierName ? t('tourDetail.supplierDescription', { name: tour.supplierName }) : null,
         rating: tour?.rating,
       },
     })
     return {
       supplierId: mapped.supplierId,
-      name: mapped.name || tour?.supplierName || 'Travio Ghana Tours Ltd',
+      name: mapped.name || tour?.supplierName || 'Expedition-Go Tours Ltd',
       logo: mapped.logo || tour?.supplierPhoto || '',
-      description: mapped.description || (tour?.supplierName ? `${tour.supplierName} offers authentic guided experiences.` : ''),
+      description: mapped.description || (tour?.supplierName ? t('tourDetail.supplierDescription', { name: tour.supplierName }) : ''),
       rating: mapped.rating ?? (tour?.rating ?? null),
       phone: mapped.phone || '',
       email: mapped.email || '',
@@ -862,7 +967,7 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
       verified: mapped.verified,
       supplierType: mapped.supplierType,
     }
-  }, [tour])
+  }, [tour, t])
 
   // Authoritative supplier tour total for the "N tours" label. Falls back to
   // the similar-row length only until the count request resolves.
@@ -893,7 +998,7 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
     toast.success(t('reviews.thankYou'))
   }
 
-  if (isLoading) {
+  if (isLoading || (isFetching && !tour)) {
     return <TourDetailSkeleton />
   }
 
@@ -909,6 +1014,34 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
   return (
     <TourDetailErrorBoundary>
     <>
+      <SEO
+        title={`${tour.title} in ${tour.location?.split(',')[0] || 'Ghana'}`}
+        description={`${tour.title} - ${tour.duration} ${tour.category || 'experience'} in ${tour.location || 'Ghana'}. Book from $${tour.price}. ${tour.rating ? `Rated ${tour.rating}/5` : ''} Free cancellation, instant confirmation.`}
+        keywords={`${tour.title}, ${tour.location} tours, ${tour.category || 'tours'} in ${tour.location?.split(',')[0] || 'Ghana'}, Ghana tours, book ${tour.title}`}
+        image={mergedImages[0] || undefined}
+        type="product"
+        price={{ amount: String(tour.price), currency: 'USD' }}
+        jsonLd={[
+          buildProductSchema({
+            title: tour.title,
+            description: tour.description || tour.title,
+            image: mergedImages[0] || '',
+            price: tour.price,
+            currency: 'USD',
+            ratingValue: tour.rating,
+            reviewCount: tour.reviewCount,
+            slug: slug,
+            city: tour.location?.split(',')[0],
+            region: tour.location?.split(',')[1]?.trim(),
+          }),
+          buildBreadcrumbSchema([
+            { name: 'Home', url: 'https://www.travioghana.com/' },
+            { name: tour.location?.split(',')[1]?.trim() || 'Ghana', url: 'https://www.travioghana.com/tours' },
+            { name: tour.location?.split(',')[0] || 'Tours', url: `https://www.travioghana.com/tours?place=${encodeURIComponent(tour.location?.split(',')[0] || '')}` },
+            { name: tour.title, url: `https://www.travioghana.com/tour/${slug}` },
+          ]),
+        ]}
+      />
       <StickyNavHeader show={showStickyTitle} title={selectedTourTitle} onWriteReview={handleWriteReview} />
       <div className="tour-detail-page">
         {/* Inside the page wrapper so the wrapper's 64px navbar clearance puts
@@ -970,9 +1103,9 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
                   border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
                   textAlign: 'center',
                 }}>
-                  <img src="/travio_logo.png" alt="Travio Ghana" style={{ height: 32, marginBottom: 16 }} />
+                  <img src="/travio_logo.png" alt="Travio Africa" style={{ height: 32, marginBottom: 16 }} />
                   <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>
-                    This tour is operated by a partner on Travio Ghana
+                    {t('tourDetail.operatedByPartner')}
                   </p>
                   <a
                     href={tour.externalUrl}
@@ -984,7 +1117,7 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
                       fontWeight: 600, textDecoration: 'none', fontSize: 16,
                     }}
                   >
-                    Book on Travio Ghana
+                    {t('tourDetail.bookOnTravioAfrica')}
                   </a>
                 </div>
               ) : (
@@ -1002,7 +1135,6 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
                   }}
                   availabilityLoading={availabilityLoading}
                   onMonthChange={handleAvailabilityMonthChange}
-                  onOpenAuth={onOpenAuth}
                   onSelectedDateChange={setWidgetSelectedDate}
                 />
               )}
@@ -1048,7 +1180,10 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
                           descriptionSteps={descriptionSteps}
                           descriptionLong={(tour?.description?.length || 0) > 300}
                           highlights={highlights}
-                          reviews={allReviewCards.map(r => ({ id: r.id, name: r.name, date: r.date, rating: r.rating, text: r.text, country: '' }))}
+                          reviews={[
+                            ...allReviewCards.map(r => ({ id: r.id, name: r.name, date: r.date, rating: r.rating, text: r.text, country: '' })),
+                            ...externalReviewCards.map(r => ({ id: r.id, name: r.name, date: r.date, rating: r.rating, text: r.text, country: '', source: r.source, externalUrl: r.externalUrl })),
+                          ].slice(0, 12)}
                           onTabChange={handleTabChange}
                           onReviewReadMore={setReviewDetail}
                         />
@@ -1076,7 +1211,7 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
                         reviewBreakdown={reviewBreakdown}
                         reviews={visibleReviewCards}
                         hasMore={hasMoreReviews}
-                        loadingMore={loadingMoreReviews}
+                        loadingMore={false}
                         onLoadMore={loadMoreReviews}
                         onWriteReview={handleWriteReview}
                         starFilter={reviewStarFilter}

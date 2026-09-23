@@ -232,13 +232,19 @@ export function resolvedPointsToTour(points: ResolvedTourPoint[], source: Resolv
     meetingMode: effectiveMode,
     meetingPoint: source?.meetingPoint,
     meetingPointAddress: source?.meetingPointAddress,
+    // Carry the supplier's meeting coordinates straight through so the map
+    // has a pin on the FIRST render — the resolved meeting point (which may
+    // need async geocoding) only overrides them when it actually resolved.
+    meetingPointLat: source?.meetingPointLat ?? null,
+    meetingPointLng: source?.meetingPointLng ?? null,
   }
   for (const p of points) {
     if (p.kind === 'meeting') {
       tour.meetingPoint = p.name
       tour.meetingPointAddress = p.address
-      tour.meetingPointLat = p.lat
-      tour.meetingPointLng = p.lng
+      // Never clobber real source coordinates with an unresolved (null) point.
+      if (p.lat != null) tour.meetingPointLat = p.lat
+      if (p.lng != null) tour.meetingPointLng = p.lng
     }
   }
   const zones = points.filter((p) => p.kind === 'zone')

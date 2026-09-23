@@ -100,8 +100,15 @@ export function useExpeditionTourReviews(
   tourId?: string | undefined
 ) {
   return useQuery({
-    queryKey: ['expedition', 'tours', slug, 'reviews', page, tourId],
+    // tourId is intentionally NOT part of the key: it loads after the tour
+    // query resolves, and keying on it fired a second identical request for
+    // the same URL on every detail-page mount. The fallback below already
+    // accepts the slug when no id is available yet.
+    queryKey: ['expedition', 'tours', slug, 'reviews', page],
     enabled: !!slug,
+    // The queryFn walks curated -> public fallback; a 404 for an uncurated
+    // tour should not be re-run up to 3× by the global retry: 2 default.
+    retry: 1,
     queryFn: async () => {
       try {
         const payload = await expeditionFetchRaw(
@@ -148,6 +155,7 @@ interface CreateReviewInput {
   rating: number
   title?: string
   comment: string
+  photos?: File[]
 }
 
 export function useCreateReview() {
@@ -155,17 +163,29 @@ export function useCreateReview() {
 
   return useMutation({
     mutationFn: async (input: CreateReviewInput) => {
-      const res = await fetchWithAuth('/travioghana/reviews', {
+      // Canonical create endpoint (multipart) — the shared handler verifies the
+      // booking (COMPLETED + paid + owned + travelDate past), stores one review
+      // per booking (DB unique) and aggregates ratings + notifies the supplier.
+      const form = new FormData()
+      form.append('bookingId', input.bookingId)
+      form.append('rating', String(input.rating))
+      if (input.title) form.append('title', input.title)
+      form.append('comment', input.comment)
+      if (Array.isArray(input.photos)) {
+        input.photos.forEach((f) => form.append('photos', f))
+      }
+      const res = await fetchWithAuth('/reviews', {
         method: 'POST',
-        body: JSON.stringify(input),
+        body: form,
       })
       const payload = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(payload.message || `Request failed (${res.status})`)
       return payload.data ?? payload
     },
-    onSuccess: () => {
+    onSuccess: (_data, vars) => {
       queryClient.invalidateQueries({ queryKey: ['expedition', 'tours'] })
       queryClient.invalidateQueries({ queryKey: ['expedition', 'bookings'] })
+      queryClient.invalidateQueries({ queryKey: ['expedition', 'bookings', vars.bookingId, 'detail'] })
       queryClient.invalidateQueries({ queryKey: ['my-reviews'] })
     },
   })
@@ -184,6 +204,8 @@ export interface MyReviewData {
   comment: string
   createdAt: string
   status: string
+  supplierResponse?: string | null
+  supplierResponseAt?: string | null
 }
 
 /**
@@ -220,6 +242,8 @@ export function useMyReviews() {
               comment: review.comment || '',
               createdAt: review.createdAt,
               status: review.status,
+              supplierResponse: review.supplierResponse || null,
+              supplierResponseAt: review.supplierResponseAt || null,
             } as MyReviewData
           } catch {
             return null
@@ -237,6 +261,7 @@ interface UpdateReviewInput {
   rating?: number
   title?: string
   comment?: string
+  photos?: File[]
 }
 
 export function useUpdateReview() {
@@ -248,6 +273,9 @@ export function useUpdateReview() {
       if (input.rating != null) formData.append('rating', String(input.rating))
       if (input.title != null) formData.append('title', input.title)
       if (input.comment != null) formData.append('comment', input.comment)
+      if (Array.isArray(input.photos)) {
+        input.photos.forEach((f) => formData.append('photos', f))
+      }
 
       const res = await fetchWithAuth(`/reviews/${encodeURIComponent(id)}`, {
         method: 'PATCH',

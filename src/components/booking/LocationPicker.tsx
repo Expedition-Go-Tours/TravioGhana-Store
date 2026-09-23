@@ -335,6 +335,7 @@ export default function LocationPicker({
                   aria-selected={index === highlightedIndex}
                   onClick={() => handleSelect(r)}
                   onMouseEnter={() => setHighlightedIndex(index)}
+                  onMouseDown={(e) => e.preventDefault()}
                   className={`cursor-pointer px-4 py-2.5 text-sm ${
                     index === highlightedIndex ? 'bg-emerald-50 text-emerald-900' : 'text-slate-700 hover:bg-slate-50'
                   }`}
@@ -361,6 +362,7 @@ export default function LocationPicker({
                 aria-selected={highlightedIndex === results.length}
                 onClick={() => commitManual(query)}
                 onMouseEnter={() => setHighlightedIndex(results.length)}
+                onMouseDown={(e) => e.preventDefault()}
                 className={`cursor-pointer border-t border-slate-100 px-4 py-3 text-sm ${
                   highlightedIndex === results.length ? 'bg-emerald-50 text-emerald-900' : 'text-slate-700 hover:bg-slate-50'
                 }`}

@@ -45,6 +45,25 @@ export interface GroupSizeBand {
   price: number
 }
 
+/** A sellable option of a tour (multi-option products). */
+export interface TourOption {
+  id: string
+  title: string
+  refCode?: string
+  isPrivate?: boolean
+  skipTheLine?: string
+  description?: string | null
+  audioGuide?: boolean
+  infoBooklet?: boolean
+  maxGroupSize?: number | null
+  validityType?: string | null
+  validity?: number | null
+  validityUnit?: string | null
+  /** Display-only "from" price (authoritative pricing stays server-side). */
+  fromPrice?: number | null
+  currency?: string
+}
+
 export interface TourDetail {
   id: string
   slug: string
@@ -89,6 +108,9 @@ export interface TourDetail {
   /** Supplier capacity bounds for the whole party (Viator pax-mix parity). */
   minParticipants?: number | null
   maxParticipants?: number | null
+  /** Sellable options; >1 ⇒ the booking panel shows a GYG-style option picker. */
+  options?: TourOption[]
+  defaultOptionId?: string | null
   /** Instant confirmation (Step 12 Options); false ⇒ the operator confirms manually. */
   instantConfirmation?: boolean
 }

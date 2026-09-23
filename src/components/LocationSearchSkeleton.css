@@ -1,12 +1,13 @@
 /* LocationSearchSkeleton — "Finding the best experiences in {loc}…" loader.
-   The hero renders above this; only the status line + shimmer rows live here. */
+   Structure mirrors the real homepage sections (TopRatedSection, etc.) so the
+   skeleton cards are the same size and position as the real cards. */
 @keyframes skeletonShimmer {
   0% { background-position: -400px 0; }
   100% { background-position: 400px 0; }
 }
 
 .location-loader {
-  padding: 0 0 60px;
+  padding: 0;
 }
 
 .location-loader-status {
@@ -16,9 +17,9 @@
   font-size: 14px;
   color: #687386;
   font-weight: 700;
-  max-width: 1200px;
+  max-width: calc(295px * 5 + 16px * 4);
   margin: 0 auto;
-  padding: 28px 24px 0;
+  padding: 28px 32px 0;
 }
 
 .location-loader-spinner {
@@ -35,54 +36,68 @@
   to { transform: rotate(360deg); }
 }
 
+/* ── Each skeleton section matches a real section (e.g. .toprated-section) ── */
+
 .location-skeleton-sections {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 28px 24px 0;
   display: flex;
   flex-direction: column;
-  gap: 40px;
 }
 
 .location-skeleton-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  padding: 45px 0;
+  background: #fff;
+}
+
+.location-skeleton-section-inner {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 32px;
+  position: relative;
 }
 
 .location-skeleton-heading {
   width: 260px;
   height: 24px;
   border-radius: 6px;
+  margin-bottom: 20px;
+  max-width: calc(295px * 5 + 16px * 4);
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 800px 100%;
   animation: skeletonShimmer 1.6s ease-in-out infinite;
+}
+
+.location-skeleton-viewport {
+  max-width: calc(295px * 5 + 16px * 4);
+  margin: 0 auto;
 }
 
 .location-skeleton-cards {
   display: flex;
   gap: 16px;
   overflow: hidden;
+  align-items: stretch;
+  padding: 4px 0 8px;
 }
 
 .location-skeleton-card {
-  flex: 0 0 280px;
-  border-radius: 12px;
+  flex: 0 0 295px;
+  min-width: 295px;
+  border-radius: 8px;
   background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   overflow: hidden;
 }
 
 .location-skeleton-card-img {
   width: 100%;
-  height: 160px;
+  height: 205px;
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 800px 100%;
   animation: skeletonShimmer 1.6s ease-in-out infinite;
 }
 
 .location-skeleton-card-lines {
-  padding: 12px 14px 16px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -101,6 +116,41 @@
 .location-skeleton-line--medium { width: 60%; }
 
 @media (max-width: 768px) {
-  .location-skeleton-card { flex: 0 0 240px; }
-  .location-skeleton-card-img { height: 130px; }
+  .location-loader-status {
+    max-width: 100%;
+    padding: 28px 16px 0;
+  }
+
+  .location-skeleton-section {
+    padding: 30px 0;
+  }
+
+  .location-skeleton-section-inner {
+    padding: 0 16px;
+  }
+
+  .location-skeleton-heading {
+    max-width: 100%;
+  }
+
+  .location-skeleton-viewport {
+    max-width: 100%;
+  }
+
+  .location-skeleton-cards {
+    gap: 12px;
+  }
+
+  .location-skeleton-card {
+    flex: 0 0 280px;
+    min-width: 280px;
+  }
+
+  .location-skeleton-card-img {
+    height: 180px;
+  }
+
+  .location-skeleton-card-lines {
+    padding: 12px;
+  }
 }

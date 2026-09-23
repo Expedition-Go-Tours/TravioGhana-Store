@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Promo-code helpers shared by the booking widget and its tests.
  *
  * The validation contract (POST /tours/offers/validate-promo) and the pricing

@@ -257,7 +257,7 @@ describe('PickupSelectModal search', () => {
     expect(screen.getByText(/These are the available pickup locations — please choose from those options only/i)).toBeInTheDocument()
   })
 
-  it('rejects a blue-pin drop outside the pickup zone with an inline error', () => {
+  it('allows a blue-pin drop outside the pickup zone with a caution', () => {
     render(<PickupSelectModal {...baseProps} points={[zonePoint]} />)
     const onUserPointChange = mapProps.current.onUserPointChange as (lat: number, lng: number) => void
 
@@ -265,18 +265,23 @@ describe('PickupSelectModal search', () => {
     act(() => {
       onUserPointChange(5.9, -0.5)
     })
-    expect(screen.getByText(/out of range from the pickup zone/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Confirm dragged location' })).toBeDisabled()
+    expect(screen.getByText(/outside the pickup zone/i)).toBeInTheDocument()
+    const confirm = screen.getByRole('button', { name: 'Confirm dragged location' })
+    expect(confirm).not.toBeDisabled()
 
-    // Drop inside the zone → the normal confirm flow is restored.
+    // Confirming keeps the out-of-zone choice instead of blocking it.
+    fireEvent.click(confirm)
+    expect(screen.getByText('Your location')).toBeInTheDocument()
+
+    // Drop inside the zone → the normal (non-caution) confirm flow is restored.
     act(() => {
       onUserPointChange(5.56, -0.185)
     })
-    expect(screen.queryByText(/out of range from the pickup zone/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/outside the pickup zone/i)).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Confirm dragged location' })).not.toBeDisabled()
   })
 
-  it('shows an inline error when a searched address is outside the pickup zone', () => {
+  it('allows an out-of-zone searched address with a caution and commits it', () => {
     mockAutocomplete.mockReturnValue({
       search: vi.fn(),
       retry: vi.fn(),
@@ -285,15 +290,23 @@ describe('PickupSelectModal search', () => {
       loading: false,
       error: null,
     })
-    render(<PickupSelectModal {...baseProps} points={[zonePoint]} />)
+    const onContactChange = vi.fn()
+    render(<PickupSelectModal {...baseProps} points={[zonePoint]} onContactChange={onContactChange} />)
     const input = screen.getByPlaceholderText('Search for your address…')
 
     fireEvent.change(input, { target: { value: 'Somewhere Far' } })
     fireEvent.click(screen.getByText('Somewhere Far, Ghana'))
 
-    expect(screen.getByText(/out of range from the pickup zone/i)).toBeInTheDocument()
-    // Nothing was pinned/committed.
-    expect(screen.queryByText('Your location')).not.toBeInTheDocument()
+    // A caution is shown, but the location is committed (left-panel row + Select).
+    expect(screen.getByText(/outside the pickup zone/i)).toBeInTheDocument()
+    expect(screen.getByText('Your location')).toBeInTheDocument()
+    const select = screen.getByRole('button', { name: /Select/ })
+    expect(select).not.toBeDisabled()
+    fireEvent.click(select)
+
+    expect(onContactChange).toHaveBeenCalledWith('location', 'Somewhere Far, Ghana')
+    expect(onContactChange).toHaveBeenCalledWith('pickupLat', 5.9)
+    expect(onContactChange).toHaveBeenCalledWith('pickupLng', -0.5)
   })
 
   it('marks a tapped pickup point with the green check pin instead of the blue pin', () => {

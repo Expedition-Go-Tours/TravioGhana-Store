@@ -17,6 +17,8 @@
  */
 
 import { getApiBaseUrl, getAuthToken } from './auth'
+import { hasConsent, subscribeConsent } from './cookieConsent'
+import { readGated, writeGated } from './consentGatedStorage'
 
 // ─── Event queue (batched sends) ──────────────────────────────────────
 interface PendingEvent {
@@ -32,11 +34,19 @@ const FLUSH_INTERVAL = 5000 // 5 seconds
 const MAX_QUEUE_SIZE = 10
 
 function flush() {
+  // Nothing may leave the browser without analytics consent. If consent was
+  // withdrawn after events were queued, those events are dropped rather than
+  // sent late — consent must be current at the moment of the request.
+  if (!hasConsent('analytics')) {
+    queue.length = 0
+    return
+  }
   if (queue.length === 0) return
   const events = queue.splice(0, MAX_QUEUE_SIZE)
 
   const base = getApiBaseUrl()
   getAuthToken().then(token => {
+    if (!hasConsent('analytics')) return
     fetch(`${base}/analytics/batch`, {
       method: 'POST',
       headers: {
@@ -57,12 +67,25 @@ function flush() {
 }
 
 function enqueue(event: PendingEvent) {
+  if (!hasConsent('analytics')) return
   queue.push(event)
   if (queue.length >= MAX_QUEUE_SIZE) {
     flush()
   } else if (!flushTimer) {
     flushTimer = setInterval(flush, FLUSH_INTERVAL)
   }
+}
+
+// React to the visitor changing their mind: send anything already queued as
+// soon as analytics is allowed, and discard it the moment it is withdrawn.
+if (typeof window !== 'undefined') {
+  subscribeConsent(() => {
+    if (hasConsent('analytics')) {
+      if (queue.length > 0) flush()
+    } else {
+      queue.length = 0
+    }
+  })
 }
 
 // Flush on page unload
@@ -118,11 +141,11 @@ export interface UserLocation {
 
 export function getStoredLocation(): UserLocation | null {
   try {
-    const stored = localStorage.getItem(LOCATION_KEY)
+    const stored = readGated(LOCATION_KEY)
     if (!stored) return null
     const loc = JSON.parse(stored) as UserLocation
     if (Date.now() - loc.timestamp > LOCATION_TTL) {
-      localStorage.removeItem(LOCATION_KEY)
+      writeGated(LOCATION_KEY, '')
       return null
     }
     return loc
@@ -133,18 +156,26 @@ export function getStoredLocation(): UserLocation | null {
 
 export function storeLocation(lat: number, lng: number): void {
   try {
-    localStorage.setItem(LOCATION_KEY, JSON.stringify({
+    writeGated(LOCATION_KEY, JSON.stringify({
       lat,
       lng,
       timestamp: Date.now(),
     }))
   } catch {
-    // localStorage full or unavailable
+    // storage unavailable — location simply isn't remembered
   }
 }
 
 export function requestLocation(): Promise<UserLocation | null> {
   return new Promise((resolve) => {
+    // Approximate location is optional personalisation: we must not touch the
+    // browser's location API, the IP lookup, or store the result until the
+    // visitor has agreed to functional cookies.
+    if (!hasConsent('functional')) {
+      resolve(null)
+      return
+    }
+
     const stored = getStoredLocation()
     if (stored) {
       resolve(stored)

@@ -47,9 +47,14 @@ export default function MobileSubDrawer({ tab, onClose, onNavigate }: SubDrawerP
   useEffect(() => {
     if (tab !== 'updates') return
     let cancelled = false
-    setLoading(true)
-    setMarkedAllRead(false)
-    setNotifications([])
+    // Reset + start loading on the next microtask (still before paint) so the
+    // state updates aren't synchronous setState-in-effect.
+    Promise.resolve().then(() => {
+      if (cancelled) return
+      setLoading(true)
+      setMarkedAllRead(false)
+      setNotifications([])
+    })
     ;(async () => {
       try {
         const res = await fetchWithAuth('/notifications?page=1&limit=5')

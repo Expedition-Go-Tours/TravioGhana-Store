@@ -1,4 +1,4 @@
-﻿export interface Tour {
+export interface Tour {
   title: string
   category: string
   duration: string
@@ -19,7 +19,7 @@
   accommodationIncluded?: boolean
   /** How travelers assemble at the start: a fixed meeting point, or pickup. */
   meetingMode?: 'meeting_point' | 'pickup' | 'none'
-  source?: 'Travio Ghana' | 'travio-ghana'
+  source?: 'expedition-go' | 'travio-africa'
   externalUrl?: string
   /** Real backend tour ID, present only for tours fetched from the API (not the static mock lists below). Enables wishlist backend sync. */
   id?: string
@@ -52,8 +52,8 @@ const dayTours: Tour[] = [
     reviews: 43,
     location: 'Cape Coast, Ghana',
     image: 'https://images.unsplash.com/photo-1590868169155-f1a0c43106ef?w=400&q=80',
-    source: 'travio-ghana',
-    externalUrl: 'https://travioghana.com/tour/cape-coast-castle-heritage-tour',
+    source: 'travio-africa',
+    externalUrl: 'https://travioafrica.com/tour/cape-coast-castle-heritage-tour',
   },
   {
     title: 'Kakum Canopy Walk & Rainforest Hike',
@@ -178,8 +178,8 @@ const dayTours: Tour[] = [
     location: 'Accra, Ghana',
     image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=400&q=80',
     languages: ['English'],
-    source: 'travio-ghana',
-    externalUrl: 'https://travioghana.com/tour/experience-the-beauty-history-and-the-culture-of-accra-in-a-day',
+    source: 'travio-africa',
+    externalUrl: 'https://travioafrica.com/tour/experience-the-beauty-history-and-the-culture-of-accra-in-a-day',
   },
   {
     title: 'Accra City Explorer',
@@ -192,8 +192,8 @@ const dayTours: Tour[] = [
     location: 'Accra, Ghana',
     image: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=80',
     languages: ['English'],
-    source: 'travio-ghana',
-    externalUrl: 'https://travioghana.com/tour/accra-city-explorer',
+    source: 'travio-africa',
+    externalUrl: 'https://travioafrica.com/tour/accra-city-explorer',
   },
   {
     title: 'The Accra Road Trip Experience',
@@ -206,8 +206,8 @@ const dayTours: Tour[] = [
     location: 'Accra, Ghana',
     image: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400&q=80',
     languages: ['English'],
-    source: 'travio-ghana',
-    externalUrl: 'https://travioghana.com/tour/the-accra-road-trip-experience',
+    source: 'travio-africa',
+    externalUrl: 'https://travioafrica.com/tour/the-accra-road-trip-experience',
   },
   {
     title: 'Accra City Highlights & Local Market Tour',
@@ -220,8 +220,8 @@ const dayTours: Tour[] = [
     location: 'Accra, Ghana',
     image: 'https://images.unsplash.com/photo-1590868169155-f1a0c43106ef?w=400&q=80',
     languages: ['English'],
-    source: 'travio-ghana',
-    externalUrl: 'https://travioghana.com/tour/accra-city-highlights',
+    source: 'travio-africa',
+    externalUrl: 'https://travioafrica.com/tour/accra-city-highlights',
   },
   {
     title: 'Kumasi Cultural Walk & Ashanti Heritage Tour',
@@ -234,8 +234,8 @@ const dayTours: Tour[] = [
     location: 'Kumasi, Ghana',
     image: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?w=400&q=80',
     languages: ['English', 'French'],
-    source: 'travio-ghana',
-    externalUrl: 'https://travioghana.com/tour/kumasi-cultural-walk',
+    source: 'travio-africa',
+    externalUrl: 'https://travioafrica.com/tour/kumasi-cultural-walk',
   },
   {
     title: 'Ada Foah Water Sports & Boat Cruise',
@@ -248,8 +248,8 @@ const dayTours: Tour[] = [
     location: 'Ada Foah, Ghana',
     image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80',
     languages: ['English'],
-    source: 'travio-ghana',
-    externalUrl: 'https://travioghana.com/tour/ada-foah-cruise',
+    source: 'travio-africa',
+    externalUrl: 'https://travioafrica.com/tour/ada-foah-cruise',
   },
   {
     title: 'Volta Region Waterfalls & Scenic Hike',
@@ -262,8 +262,8 @@ const dayTours: Tour[] = [
     location: 'Volta Region, Ghana',
     image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80',
     languages: ['English', 'French'],
-    source: 'travio-ghana',
-    externalUrl: 'https://travioghana.com/tour/volta-waterfalls',
+    source: 'travio-africa',
+    externalUrl: 'https://travioafrica.com/tour/volta-waterfalls',
   },
 ]
 
@@ -278,7 +278,7 @@ export interface MultiDayTour {
   location: string
   image: string
   languages?: string[]
-  source?: 'Travio Ghana' | 'travio-ghana'
+  source?: 'expedition-go' | 'travio-africa'
   externalUrl?: string
   /** Real backend tour ID, present only for tours fetched from the API. Enables wishlist backend sync. */
   id?: string
@@ -319,8 +319,8 @@ const multiDayTours: MultiDayTour[] = [
     location: 'Kumasi, Ghana',
     image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=400&q=80',
     languages: ['English', 'Twi'],
-    source: 'travio-ghana',
-    externalUrl: 'https://travioghana.com/tour/the-kumasi-tour-experience',
+    source: 'travio-africa',
+    externalUrl: 'https://travioafrica.com/tour/the-kumasi-tour-experience',
   },
   {
     title: 'Volta Region Waterfalls & Nature Trek',
@@ -432,8 +432,8 @@ const multiDayTours: MultiDayTour[] = [
     location: 'Northern Region, Ghana',
     image: 'https://images.unsplash.com/photo-1549366021-9f761d450615?w=400&q=80',
     languages: ['English'],
-    source: 'travio-ghana',
-    externalUrl: 'https://travioghana.com/tour/mole-national-park',
+    source: 'travio-africa',
+    externalUrl: 'https://travioafrica.com/tour/mole-national-park',
   },
 ]
 
@@ -449,8 +449,8 @@ const travioTours: Tour[] = [
     location: 'Accra, Ghana',
     image: 'https://images.unsplash.com/photo-1590868169155-f1a0c43106ef?w=400&q=80',
     languages: ['English'],
-    source: 'travio-ghana',
-    externalUrl: 'https://travioghana.com/tour/accra-city-highlights',
+    source: 'travio-africa',
+    externalUrl: 'https://travioafrica.com/tour/accra-city-highlights',
   },
   {
     title: 'Kumasi Cultural Walk & Ashanti Heritage Tour',
@@ -463,8 +463,8 @@ const travioTours: Tour[] = [
     location: 'Kumasi, Ghana',
     image: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?w=400&q=80',
     languages: ['English', 'French'],
-    source: 'travio-ghana',
-    externalUrl: 'https://travioghana.com/tour/kumasi-cultural-walk',
+    source: 'travio-africa',
+    externalUrl: 'https://travioafrica.com/tour/kumasi-cultural-walk',
   },
   {
     title: 'Mole National Park Safari & Wildlife Experience',
@@ -477,8 +477,8 @@ const travioTours: Tour[] = [
     location: 'Northern Region, Ghana',
     image: 'https://images.unsplash.com/photo-1549366021-9f761d450615?w=400&q=80',
     languages: ['English'],
-    source: 'travio-ghana',
-    externalUrl: 'https://travioghana.com/tour/mole-national-park',
+    source: 'travio-africa',
+    externalUrl: 'https://travioafrica.com/tour/mole-national-park',
   },
   {
     title: 'Ada Foah Water Sports & Boat Cruise',
@@ -491,8 +491,8 @@ const travioTours: Tour[] = [
     location: 'Ada Foah, Ghana',
     image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80',
     languages: ['English'],
-    source: 'travio-ghana',
-    externalUrl: 'https://travioghana.com/tour/ada-foah-cruise',
+    source: 'travio-africa',
+    externalUrl: 'https://travioafrica.com/tour/ada-foah-cruise',
   },
   {
     title: 'Volta Region Waterfalls & Scenic Hike',
@@ -505,8 +505,8 @@ const travioTours: Tour[] = [
     location: 'Volta Region, Ghana',
     image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80',
     languages: ['English', 'French'],
-    source: 'travio-ghana',
-    externalUrl: 'https://travioghana.com/tour/volta-waterfalls',
+    source: 'travio-africa',
+    externalUrl: 'https://travioafrica.com/tour/volta-waterfalls',
   },
 ]
 
@@ -609,6 +609,10 @@ export interface TravelStory {
   author: string
   date: string
   link: string
+  /** Topic filters the story belongs to (nature, culture, food, adventure, heritage). */
+  categories?: string[]
+  /** Estimated reading time in minutes, shown on blog/story cards. */
+  readTime?: number
 }
 
 const travelStories: TravelStory[] = [
@@ -619,6 +623,8 @@ const travelStories: TravelStory[] = [
     author: 'Travio Ghana Team',
     date: 'June 12, 2026',
     link: '#',
+    categories: ['nature', 'adventure'],
+    readTime: 5,
   },
   {
     title: 'The History and Heritage of Cape Coast Castle',
@@ -627,6 +633,8 @@ const travelStories: TravelStory[] = [
     author: 'Kwame Asante',
     date: 'May 28, 2026',
     link: '#',
+    categories: ['heritage', 'culture'],
+    readTime: 7,
   },
   {
     title: 'A Food Lover\'s Guide to Accra',
@@ -635,6 +643,8 @@ const travelStories: TravelStory[] = [
     author: 'Ama Serwaa',
     date: 'May 15, 2026',
     link: '#',
+    categories: ['food', 'culture'],
+    readTime: 5,
   },
   {
     title: 'Wildlife Encounters: Mole National Park Safari',
@@ -643,6 +653,8 @@ const travelStories: TravelStory[] = [
     author: 'Travio Ghana Team',
     date: 'April 30, 2026',
     link: '#',
+    categories: ['nature', 'adventure'],
+    readTime: 6,
   },
   {
     title: 'The Best Beaches in Ghana for a Weekend Escape',
@@ -651,6 +663,8 @@ const travelStories: TravelStory[] = [
     author: 'Nana Yaw',
     date: 'April 18, 2026',
     link: '#',
+    categories: ['nature', 'adventure'],
+    readTime: 4,
   },
   {
     title: 'Exploring Ashanti Culture in Kumasi',
@@ -659,6 +673,8 @@ const travelStories: TravelStory[] = [
     author: 'Akua Mensah',
     date: 'March 22, 2026',
     link: '#',
+    categories: ['culture', 'heritage'],
+    readTime: 6,
   },
 ]
 

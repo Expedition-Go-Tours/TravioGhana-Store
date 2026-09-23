@@ -137,8 +137,8 @@ export default function ContactUsPage() {
           description="Get in touch with Travio Ghana. Contact us for booking inquiries, partnerships, supplier registration, and customer support. We're here to help with your Ghana travel experience."
           keywords="contact Travio Ghana, Ghana tours support, booking help, customer service, partnership inquiries"
           jsonLd={buildBreadcrumbSchema([
-            { name: 'Home', url: 'https://www.expeditiongotours.com/' },
-            { name: 'Contact Us', url: 'https://www.expeditiongotours.com/contact-us' },
+            { name: 'Home', url: 'https://www.travioghana.com/' },
+            { name: 'Contact Us', url: 'https://www.travioghana.com/contact-us' },
           ])}
         />
 

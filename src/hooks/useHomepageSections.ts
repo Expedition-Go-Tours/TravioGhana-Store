@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Homepage Section Hooks
  *
  * React Query hooks for each homepage section.
@@ -118,12 +118,22 @@ export interface HomepageAttraction {
 
 // â”€â”€â”€ Unified Homepage Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+export interface HomepageBackfill {
+  label: string
+  tours: HomepageTour[]
+}
+
 export interface HomepageData {
   sellOut: HomepageTour[]
+  sellOutBackfill?: HomepageBackfill | null
   topRated: HomepageTour[]
+  topRatedBackfill?: HomepageBackfill | null
   trending: HomepageTour[]
+  trendingBackfill?: HomepageBackfill | null
   recommended: HomepageTour[]
+  recommendedBackfill?: HomepageBackfill | null
   new: HomepageTour[]
+  newExperiencesBackfill?: HomepageBackfill | null
   attractions: HomepageAttraction[]
   mood: MoodKeyword[]
   destinations: PopularDestination[]
@@ -168,7 +178,7 @@ export function useHomepage({ enabled = true } = {}) {
 // â”€â”€â”€ Fetcher â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function fetchHomepageSection<T>(path: string): Promise<T> {
-  const res = await fetchWithAuth(`/travioghana/homepage${path}`)
+  const res = await fetchWithAuth(`/homepage${path}`)
   const payload = await res.json().catch(() => ({}))
   if (!res.ok) {
     throw new Error(payload.message || `Request failed (${res.status})`)
@@ -460,7 +470,7 @@ export function mapToTourCard(t: HomepageTour): TourCardData {
     location,
     image: t.coverPhoto || t.photos?.[0] || '',
     photos: t.photos,
-    source: 'Travio Ghana',
+    source: 'expedition-go',
     specialOffers: t.specialOffers,
     difficulty: t.difficulty || undefined,
     languages: t.languages?.length ? t.languages : undefined,

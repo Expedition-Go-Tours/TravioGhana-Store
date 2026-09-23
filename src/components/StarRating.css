@@ -1,0 +1,25 @@
+.star-rating {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+}
+
+.star-rating__cell {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.star-rating__icon {
+  display: block;
+  flex-shrink: 0;
+}
+
+.star-rating__fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  overflow: hidden;
+  display: inline-flex;
+}

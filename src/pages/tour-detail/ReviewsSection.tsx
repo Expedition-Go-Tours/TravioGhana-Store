@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Star, X, ChevronLeft, ChevronRight, Camera } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight, Camera } from 'lucide-react'
 import './ReviewsSection.css'
 import OptimizedImage from '@/components/shared/OptimizedImage'
+import StarRating from '@/components/StarRating'
+import SourceBadge from '@/components/SourceBadge'
+import '@/components/SourceBadge.css'
 
 interface Review {
   id: string
@@ -23,6 +26,10 @@ interface Review {
   companions?: string[]
   supplierResponse?: string | null
   supplierResponseAt?: string | null
+  /** Present on external (TripAdvisor / GetYourGuide / Google) reviews. */
+  source?: 'TRIPADVISOR' | 'GETYOURGUIDE' | 'GOOGLE'
+  /** Platform listing URL for the source badge (external reviews only). */
+  externalUrl?: string
 }
 
 interface ReviewsSectionProps {
@@ -78,7 +85,6 @@ export default function ReviewsSection({
   onPhotosOnlyChange,
 }: ReviewsSectionProps) {
   const { t } = useTranslation()
-  const ratingDots = Array.from({ length: 5 })
   const [expandedReviews, setExpandedReviews] = useState<Set<string>>(new Set())
   const [gallery, setGallery] = useState<{ photos: string[]; index: number } | null>(null)
 
@@ -141,9 +147,13 @@ export default function ReviewsSection({
               <div className="reviews-rating-score">
                 <p className="reviews-rating-number">{rating.toFixed(1)}</p>
                 <div className="reviews-rating-stars">
-                  {ratingDots.map((_, i) => (
-                    <Star key={i} size={24} className="reviews-star-filled" />
-                  ))}
+                  <StarRating
+                    value={rating}
+                    size={24}
+                    gap={4}
+                    filledColor="#16a34a"
+                    emptyColor="#e5e7eb"
+                  />
                 </div>
                 <p className="reviews-rating-label">{t('reviews.basedOn', { count: reviewCount })}</p>
               </div>
@@ -216,14 +226,14 @@ export default function ReviewsSection({
                   const hasPhotos = (review.photos?.length ?? 0) > 0
                   return (
                     <article key={review.id} className="review-card">
-                      <div className="review-card-stars" aria-label={`${review.rating} out of 5 stars`}>
-                        {ratingDots.map((_, i) => (
-                          <Star
-                            key={i}
-                            size={16}
-                            className={i < review.rating ? 'review-star-filled-sm' : 'review-star-empty-sm'}
-                          />
-                        ))}
+                      <div className="review-card-stars">
+                        <StarRating
+                          value={review.rating}
+                          size={16}
+                          gap={2}
+                          filledColor="#16a34a"
+                          emptyColor="#e2e8f0"
+                        />
                       </div>
 
                       <div className="review-card-head">
@@ -248,6 +258,14 @@ export default function ReviewsSection({
                             )}
                           </p>
                         </div>
+                        {review.source && (
+                          <span className="review-card-source">
+                            <SourceBadge
+                              source={review.source}
+                              url={review.source === 'GOOGLE' ? undefined : review.externalUrl}
+                            />
+                          </span>
+                        )}
                       </div>
 
                       {review.title && <p className="review-card-title">{review.title}</p>}

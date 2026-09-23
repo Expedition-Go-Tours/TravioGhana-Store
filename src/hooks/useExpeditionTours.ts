@@ -41,7 +41,7 @@ function parseJsonMaybe(value: unknown): any {
 
 /** Customer-facing special offer, projected by GET /tours/:id (the backend
     already filters to ACTIVE offers whose date window includes today).
-    Mirrors the supplier's offer builder (Travio Ghana-Supplier special-offers):
+    Mirrors the supplier's offer builder (TravioAfrica-Supplier special-offers):
     every term the customer-facing promo flow needs — the promo code, the
     offer's valid weekdays, capacity, thresholds and stackability. */
 export interface SpecialOfferData {
@@ -154,6 +154,8 @@ interface ExpeditionTourRecord {
     distanceKm?: number | null
     /** True when the tour belongs to the searched place (based there / visits it). */
     placeMatch?: boolean
+    /** Place-sort relevance tier (0-3 in-place, 4 nearby); null when unscoped. */
+    placeRank?: number | null
     categorization?: any
     productContent?: any
     bookingAndTickets?: any
@@ -185,7 +187,7 @@ export interface TourCardData {
   image: string
   /** All tour photos (the card's image carousel). */
   photos?: string[]
-  source: 'Travio Ghana' | 'travio-ghana'
+  source: 'expedition-go' | 'travio-africa'
   externalUrl?: string
   slug: string
   languages?: string[]
@@ -204,15 +206,19 @@ export interface TourCardData {
   specialOffers?: SpecialOfferData[]
   /** Discount badge label (e.g. "-30%") shown on cards. */
   discount?: string
-  /** Whether the tour is flagged as likely to sell out (drives the red tag on the card image). */
-  likelyToSellOut?: boolean
-  /** Geo coordinates + distance (km) from the searched location (`near`),
-   *  used by the All Tours page to order results "closest first". */
-  latitude?: number | null
-  longitude?: number | null
+  /** Whether the tour is flagged as new (drives the "New" pill on the card). */
+  isNew?: boolean
+    /** Whether the tour is flagged as likely to sell out (drives the red tag on the card image). */
+    likelyToSellOut?: boolean
+    /** Geo coordinates + distance (km) from the searched location (`near`),
+     *  used by the All Tours page to order results "closest first". */
+    latitude?: number | null
+    longitude?: number | null
     distanceKm?: number | null
     /** True when the tour belongs to the searched place (based there / visits it). */
     placeMatch?: boolean
+    /** Place-sort relevance tier (0-3 in-place, 4 nearby); null when unscoped. */
+    placeRank?: number | null
   }
 function extractDurationFromTour(tour: any): number | null {
   try {
@@ -285,7 +291,7 @@ function extractDifficultyFromTour(tour: any): string | null {
   }
 }
 
-function formatCancellationPolicy(policy: any): string | null {
+export function formatCancellationPolicy(policy: any): string | null {
   if (policy == null) return null
   if (typeof policy === 'string') {
     const trimmed = policy.trim()
@@ -563,12 +569,6 @@ export interface AvailabilityScheduleInfo {
   weeklySchedule: Record<string, { startTime: string; endTime: string }[]>
   operatingHoursStart?: string
   operatingHoursEnd?: string
-  /** The date window the tour runs in (availability block, falling back to
-      the first pricing schedule) — the checkout engine rejects dates outside
-      it ("No pricing available for selected date/time"), so the calendar must
-      block them too. Null = unbounded. */
-  startDate?: string | null
-  endDate?: string | null
 }
 
 function hasWeeklyHours(ws: unknown): boolean {
@@ -650,12 +650,6 @@ export function extractAvailabilitySchedule(rawTour: any): AvailabilityScheduleI
       weeklySchedule,
       operatingHoursStart: avail.operatingHoursStart || undefined,
       operatingHoursEnd: avail.operatingHoursEnd || undefined,
-      startDate: typeof avail.startDate === 'string' && avail.startDate
-        ? avail.startDate
-        : (typeof firstSched.startDate === 'string' && firstSched.startDate ? firstSched.startDate : null),
-      endDate: typeof avail.endDate === 'string' && avail.endDate
-        ? avail.endDate
-        : (typeof firstSched.endDate === 'string' && firstSched.endDate ? firstSched.endDate : null),
     }
   } catch {
     return {
@@ -663,8 +657,6 @@ export function extractAvailabilitySchedule(rawTour: any): AvailabilityScheduleI
       timeSlots: [],
       daysOfWeek: [],
       weeklySchedule: {},
-      startDate: null,
-      endDate: null,
     }
   }
 }
@@ -686,7 +678,7 @@ function extractSkipTheLine(rawTour: any): string | null {
 
 /**
  * Human-readable label for an option's ticket validity, mirroring the
- * supplier's ProductDetailPage validityLabel() (Travio Ghana-Supplier):
+ * supplier's ProductDetailPage validityLabel() (TravioAfrica-Supplier):
  *   from_activation → "Valid N days from first use"
  *   period          → "Valid N days from booking"
  *   date_picked     → "Valid on selected date"
@@ -832,7 +824,7 @@ function extractInstantConfirmation(rawTour: any): boolean {
 
 /**
  * Whether the tour is a private (not shared/group) experience. Sourced from
- * the Options step of Travio Ghana-Supplier's product builder, where "Is this
+ * the Options step of TravioAfrica-Supplier's product builder, where "Is this
  * a private activity?" is set per option (productContent.options[].isPrivate).
  * Falls back to the legacy product-level productContent.isPrivateActivity.
  */
@@ -974,18 +966,7 @@ export function extractMeetingInfo(rawTour: any) {
   const pickupLocations = effectivePickupType === 'address' ? pickupLocationsRaw : []
 
   return {
-    meetingMode: (() => {
-      const explicit = pick(bt?.meetingMode, pc?.meetingMode)
-      if (explicit) return explicit as 'meeting_point' | 'pickup' | 'none'
-      // The supplier data never stores an explicit mode field — the meeting
-      // point (bt.meetingPoint / pc.meetingPoint) is the signal: a tour with
-      // a configured meeting point starts there, never at pickup (the two
-      // configs are mutually exclusive in the builder). Deriving it here is
-      // what makes the "Meeting point" facts show on cards and the detail
-      // page start-point section.
-      const point = pick(bt?.meetingPoint, pc?.meetingPoint)
-      return point ? 'meeting_point' : 'none'
-    })(),
+    meetingMode: (pick(bt?.meetingMode, pc?.meetingMode) || 'none') as 'meeting_point' | 'pickup' | 'none',
     meetingPoint: pointString(meetingPoint) || '',
     meetingPointAddress: typeof meetingPoint === 'object' && meetingPoint ? meetingPoint.address || undefined : undefined,
     meetingPointDescription: pick(bt?.meetingPointDescription, pc?.meetingPointDescription) || '',
@@ -1121,15 +1102,6 @@ function mapToListing(tour: ExpeditionTourRecord['tour']): TourCardData {
   // reading productContent directly when it's actually present on `tour`.
   const languages = tour.languages?.length ? tour.languages : extractContentLanguage(tour)
 
-  // Feature line shown under the card title: prefer the stored column, else
-  // derive a compact summary from productContent.highlights (mirrors
-  // mapRawTourToListing so curated cards carry the same "Guide · Lunch ·
-  // Fees" style highlights instead of a blank row).
-  const features = tour.features
-    || (Array.isArray(parseProductContent(tour)?.highlights)
-      ? parseProductContent(tour).highlights.slice(0, 3).join(' · ')
-      : '')
-
   let effectiveDuration = tour.durationMinutes
   if (!effectiveDuration && tour.categorization) {
     const cat = typeof tour.categorization === 'string' ? JSON.parse(tour.categorization) : tour.categorization
@@ -1151,14 +1123,14 @@ function mapToListing(tour: ExpeditionTourRecord['tour']): TourCardData {
     title: tour.title,
     category: tour.category || '',
     duration: formatDuration(effectiveDuration),
-    features,
+    features: tour.features || '',
     price: formatPrice(effectivePrice),
     rating: tour.averageRating != null ? String(tour.averageRating) : '0',
     reviews: tour.reviewCount,
     location,
     image: tour.coverPhoto || tour.photos?.[0] || '',
     photos: Array.isArray(tour.photos) && tour.photos.length > 0 ? tour.photos : undefined,
-    source: isExternal ? 'travio-ghana' : 'Travio Ghana',
+    source: isExternal ? 'travio-africa' : 'expedition-go',
     externalUrl: isExternal ? (tour.externalUrl || undefined) : undefined,
     slug: tour.slug,
     languages: languages.length ? languages : undefined,
@@ -1176,6 +1148,7 @@ function mapToListing(tour: ExpeditionTourRecord['tour']): TourCardData {
     longitude: tour.longitude ?? null,
     distanceKm: tour.distanceKm ?? null,
     placeMatch: tour.placeMatch === true,
+    placeRank: tour.placeRank ?? null,
   }
 }
 
@@ -1193,52 +1166,6 @@ export interface ExpeditionToursFilters {
 }
 
 /**
- * Fetch the ENTIRE curated Ghana catalog by paging through
- * /travioghana/tours (limit capped at 50 per request by the backend schema —
- * a single limit=500 request is rejected with 400).
- */
-async function fetchAllCuratedTours(): Promise<any[]> {
-  const CATALOG_PAGE_SIZE = 50
-  const MAX_CATALOG_PAGES = 20 // 1000 tours max
-  const first = await expeditionFetchRaw(`/travioghana/tours?page=1&limit=${CATALOG_PAGE_SIZE}`)
-  const tours: any[] = first.data?.tours ?? []
-  const totalPages = Math.min(first.pagination?.totalPages ?? 1, MAX_CATALOG_PAGES)
-  if (totalPages > 1 && tours.length > 0) {
-    const rest = await Promise.all(
-      Array.from({ length: totalPages - 1 }, (_, i) =>
-        expeditionFetchRaw(`/travioghana/tours?page=${i + 2}&limit=${CATALOG_PAGE_SIZE}`)
-      )
-    )
-    for (const payload of rest) tours.push(...(payload.data?.tours ?? []))
-  }
-  return tours
-}
-
-/**
- * Fetch the full /tours listing — the only endpoint that projects the
- * productContent JSON blob (highlights), which the slim curated
- * /travioghana/tours select doesn't include. Paging is handled
- * defensively: today the endpoint returns the whole catalog in one
- * response, but if it ever grows pagination it stays correct.
- */
-async function fetchAllFullTours(): Promise<any[]> {
-  const CATALOG_PAGE_SIZE = 50
-  const MAX_CATALOG_PAGES = 20
-  const first = await expeditionFetchRaw(`/tours?page=1&limit=${CATALOG_PAGE_SIZE}`)
-  const tours: any[] = first.data?.tours ?? []
-  const totalPages = Math.min(first.pagination?.totalPages ?? 1, MAX_CATALOG_PAGES)
-  if (totalPages > 1 && tours.length > 0) {
-    const rest = await Promise.all(
-      Array.from({ length: totalPages - 1 }, (_, i) =>
-        expeditionFetchRaw(`/tours?page=${i + 2}&limit=${CATALOG_PAGE_SIZE}`)
-      )
-    )
-    for (const payload of rest) tours.push(...(payload.data?.tours ?? []))
-  }
-  return tours
-}
-
-/**
  * The curated /travioghana/tours endpoint only selects a handful of
  * top-level Tour columns (city, country, category, etc.), which are
  * frequently null — the real values live inside the productContent /
@@ -1246,8 +1173,7 @@ async function fetchAllFullTours(): Promise<any[]> {
  * doesn't fetch. This cross-references the full /tours listing (which
  * does include those JSON blobs) to backfill missing listing fields
  * (location, difficulty, cancellation policy, duration, pickup, languages,
- * features/highlights, price) on curated records by tour ID, mutating
- * them in place.
+ * price) on curated records by tour ID, mutating them in place.
  */
 async function enrichExpeditionRecords(records: ExpeditionTourRecord[]): Promise<void> {
   // Always run: curated records carry a stored startingPrice that can be
@@ -1256,10 +1182,8 @@ async function enrichExpeditionRecords(records: ExpeditionTourRecord[]): Promise
   // There is no cheap way to detect staleness up front, so skip the old
   // "needsBatch" short-circuit to keep every listing price authoritative.
   try {
-    const allTours = await fetchAllCuratedTours()
-    // The full /tours listing is the only source for the card's
-    // features/highlights line (the slim curated select never projects it).
-    const fullTours = await fetchAllFullTours()
+    const allPayload = await expeditionFetchRaw('/tours?limit=500')
+    const allTours: any[] = allPayload.data?.tours ?? []
     const priceMap = new Map<string, number>()
     const cityMap = new Map<string, string | null>()
     const countryMap = new Map<string, string | null>()
@@ -1272,32 +1196,13 @@ async function enrichExpeditionRecords(records: ExpeditionTourRecord[]): Promise
     const categoryMap = new Map<string, string | null>()
     const accommodationMap = new Map<string, boolean>()
     const photosMap = new Map<string, string[]>()
-    const featuresMap = new Map<string, string>()
-    for (const t of fullTours) {
-      // Full records carry the blobs the curated select omits — features
-      // falls back to a compact highlights line (mirrors mapRawTourToListing).
-      const highlights = parseProductContent(t)?.highlights
-      const features = t.features
-        || (Array.isArray(highlights) && highlights.length > 0
-          ? highlights.slice(0, 3).join(' · ')
-          : '')
-      if (features) featuresMap.set(t.id, features)
-      // Difficulty lives in categorization on full records; the curated
-      // select can't project it, so prefer the full listing when known.
-      const difficulty = extractDifficultyFromTour(t)
-      if (difficulty) difficultyMap.set(t.id, difficulty)
-      // Accommodation lives in categorization on full records too — the
-      // curated select never projects it, so extract it from the full
-      // listing (the previous source was the curated rows, which always
-      // read as false and the badge never rendered).
-      if (extractAccommodationIncluded(t)) accommodationMap.set(t.id, true)
-    }
     for (const t of allTours) {
       const p = extractStartingPriceFromRaw(t.schedulesAndPricing)
       if (p != null) priceMap.set(t.id, p)
       cityMap.set(t.id, extractCityFromTour(t))
       countryMap.set(t.id, extractCountryFromTour(t))
       durationMap.set(t.id, extractDurationFromTour(t))
+      difficultyMap.set(t.id, extractDifficultyFromTour(t))
       cancellationMap.set(t.id, extractCancellationFromTour(t))
       pickupMap.set(t.id, t.pickupIncluded ?? (t.bookingAndTickets?.pickupAvailable ?? t.bookingAndTickets?.pickupProvided) ?? undefined)
       meetingModeMap.set(t.id, extractMeetingInfo(t).meetingMode)
@@ -1306,6 +1211,7 @@ async function enrichExpeditionRecords(records: ExpeditionTourRecord[]): Promise
       languagesMap.set(t.id, extractContentLanguage(t))
       if (Array.isArray(t.photos) && t.photos.length > 1) photosMap.set(t.id, t.photos)
       categoryMap.set(t.id, t.category ?? null)
+      if (extractAccommodationIncluded(t)) accommodationMap.set(t.id, true)
     }
     for (const r of records) {
       // The curated /travioghana/tours records carry a stored startingPrice
@@ -1355,12 +1261,6 @@ async function enrichExpeditionRecords(records: ExpeditionTourRecord[]): Promise
         const fallbackLanguages = languagesMap.get(r.tour.id)
         if (fallbackLanguages?.length) r.tour.languages = fallbackLanguages
       }
-      // Backfill the features/amenities line from the full listing so the
-      // card's facts row isn't blank on the All Tours page.
-      if (!r.tour.features) {
-        const fallbackFeatures = featuresMap.get(r.tour.id)
-        if (fallbackFeatures) r.tour.features = fallbackFeatures
-      }
     }
   } catch (e) {
     console.warn('[enrichExpeditionRecords] batch fallback failed:', e)
@@ -1407,12 +1307,8 @@ export function useExpeditionTours(filters: ExpeditionToursFilters = {}) {
 
       await enrichExpeditionRecords(records)
 
-      const listings = records.map((r) => mapToListing(r.tour))
-      // Apply badge fields (languages, cancellation, accommodation, etc.)
-      // from the thin badges endpoint — the curated listing doesn't include
-      // the JSON blobs these are extracted from.
       return {
-        tours: await enrichTourBadgeFields(listings),
+        tours: records.map((r) => mapToListing(r.tour)),
         pagination,
       }
     },
@@ -1430,28 +1326,54 @@ export function useExpeditionTours(filters: ExpeditionToursFilters = {}) {
 const MAX_CATALOG_PAGES = 10
 const CATALOG_PAGE_SIZE = 50
 
-export function useAllExpeditionTours(opts?: { mood?: string; near?: string; place?: string; search?: string; enabled?: boolean }) {
+export interface PlaceScope {
+  /** What the user searched (resolved place name). */
+  requested: string
+  /** Canonical display name for the scope (e.g. "Dome", "Central Region"). */
+  displayName?: string
+  /**
+   * Which mode the server resolved the query to:
+   *  - `place`           — the query is a place and it has its own tours
+   *  - `region-fallback` — the query is a place with no tours; widened to its region
+   *  - `text`            — the query isn't a place; results are a text search
+   */
+  mode?: 'place' | 'region-fallback' | 'text'
+  /** Set when the place had no tours and the listing widened to its region. */
+  fallbackRegion: string | null
+  /**
+   * The region the place actually sits in, sent for BOTH modes. The listing uses
+   * it to personalize the homepage, so viewing a place-scoped listing filters
+   * the homepage to that region however the user got there.
+   */
+  region?: string | null
+}
+
+export function useAllExpeditionTours(opts?: { mood?: string; near?: string; place?: string; search?: string; q?: string; enabled?: boolean }) {
   const mood = opts?.mood || ''
   const near = opts?.near || ''
   const place = opts?.place || ''
   const search = opts?.search || ''
+  const q = opts?.q || ''
   const enabled = opts?.enabled !== false
   return useQuery({
-    queryKey: ['expedition', 'tours', 'all', mood, near, place, search],
+    queryKey: ['expedition', 'tours', 'all', mood, near, place, search, q],
     staleTime: 5 * 60_000,
     enabled,
-    queryFn: async (): Promise<TourCardData[]> => {
+    queryFn: async (): Promise<{ tours: TourCardData[]; placeScope: PlaceScope | null }> => {
       const records: ExpeditionTourRecord[] = []
       const moodParam = mood ? `&mood=${encodeURIComponent(mood)}` : ''
       const nearParam = near ? `&near=${encodeURIComponent(near)}` : ''
       const placeParam = place ? `&place=${encodeURIComponent(place)}` : ''
       const searchParam = search ? `&search=${encodeURIComponent(search)}` : ''
-      const extra = `${moodParam}${nearParam}${placeParam}${searchParam}`
+      // Unified query: the server resolves it and decides place vs text scope.
+      const qParam = q ? `&q=${encodeURIComponent(q)}` : ''
+      const extra = `${moodParam}${nearParam}${placeParam}${searchParam}${qParam}`
 
-      // Fetch first page to get totalPages
+      // Fetch first page to get totalPages (and the place-scope metadata)
       const first = await expeditionFetchRaw(`/travioghana/tours?page=1&limit=${CATALOG_PAGE_SIZE}${extra}`)
       const firstBatch: ExpeditionTourRecord[] = first.data?.tours ?? first.tours ?? []
       records.push(...firstBatch)
+      const placeScope: PlaceScope | null = first.data?.placeScope ?? null
       const totalPages = Math.min(first.pagination?.totalPages ?? 1, MAX_CATALOG_PAGES)
 
       // Fetch remaining pages in parallel
@@ -1469,8 +1391,7 @@ export function useAllExpeditionTours(opts?: { mood?: string; near?: string; pla
 
       await enrichExpeditionRecords(records)
 
-      const listings = records.map((r) => mapToListing(r.tour))
-      return enrichTourBadgeFields(listings)
+      return { tours: records.map((r) => mapToListing(r.tour)), placeScope }
     },
   })
 }
@@ -1489,7 +1410,7 @@ export function useTourFilterOptions() {
     queryKey: ['expedition', 'tours', 'filter-options'],
     staleTime: 60 * 60_000,
     queryFn: async (): Promise<TourFilterOptions> => {
-      const payload = await expeditionFetchRaw('/travioghana/tours/filters/options')
+      const payload = await expeditionFetchRaw('/tours/filters/options')
       const opts = payload.data?.filterOptions ?? {}
       return {
         categories: Array.isArray(opts.categories) ? opts.categories : [],
@@ -1672,9 +1593,6 @@ export interface TourDetailData extends Omit<TourDetail, 'guide' | 'contact' | '
   /** Weekdays the supplier set the tour to run on (empty = all days). */
   daysOfWeek?: string[]
   weeklySchedule?: Record<string, { startTime: string; endTime: string }[]>
-  /** The date window the tour runs in — days outside it are not bookable. */
-  startDate?: string | null
-  endDate?: string | null
   operatingHoursStart?: string
   operatingHoursEnd?: string
   /**
@@ -1791,6 +1709,25 @@ function buildTourDetailFromRawTour(rawTour: any): TourDetailData {
     minParticipants: extractParticipantsBound(rawTour, 'minParticipants'),
     maxParticipants: extractParticipantsBound(rawTour, 'maxParticipants'),
     specialOffers: mapSpecialOffers(rawTour),
+    options: Array.isArray(rawTour?.options)
+      ? (rawTour.options as any[]).map((o) => ({
+          id: String((o && o.id) ?? ''),
+          title: String((o && o.title) ?? ''),
+          refCode: (o && o.refCode) || undefined,
+          isPrivate: !!(o && o.isPrivate),
+          skipTheLine: (o && o.skipTheLine) || undefined,
+          description: (o && o.description) || null,
+          audioGuide: !!(o && o.audioGuide),
+          infoBooklet: !!(o && o.infoBooklet),
+          maxGroupSize: (o && o.maxGroupSize != null ? o.maxGroupSize : null),
+          validityType: (o && o.validityType) || null,
+          validity: o && o.validity != null ? Number(o.validity) : null,
+          validityUnit: (o && o.validityUnit) || null,
+          fromPrice: o && o.fromPrice != null ? Number(o.fromPrice) : null,
+          currency: (o && o.currency) || undefined,
+        }))
+      : [],
+    defaultOptionId: rawTour?.defaultOptionId ?? null,
   }
 }
 
@@ -1805,34 +1742,46 @@ export function useExpeditionTour(slug: string | undefined) {
     // edit, so this query always treats its data as stale and refetches on
     // every mount — the tour detail page (and its booking widget) should
     // always reflect the supplier's current pricing and availability.
-    staleTime: 0,
-    refetchOnMount: 'always',
+    // Freshness vs. mobile cost: treat the cached tour as usable for a short
+    // window so back/forward navigation doesn't refetch every mount (each
+    // remount otherwise costs a round trip + skeleton flash on 4G). Window
+    // focus still refreshes it, and checkout re-validates before payment.
+    staleTime: 60_000,
     // The global client default turns refetchOnWindowFocus off; the tour
     // detail page must stay fresh even while the tab sits in the background
     // (e.g. an admin just approved a supplier's update), so refetch on focus.
     refetchOnWindowFocus: true,
     queryFn: async () => {
-      // Try the curated (homepage) endpoint first — it's cached and includes
-      // a few pre-computed fields. If the tour hasn't been curated (e.g. it
-      // was just created by a supplier), fall back to the public /tours/:id
-      // endpoint so it's still viewable when found via search.
+      // Try the curated (homepage) endpoint — it's cached and includes a few
+      // pre-computed fields — while fetching the raw public record in parallel.
+      // If the tour hasn't been curated (e.g. it was just created by a supplier,
+      // or found via search) we build from the raw record. Running both at once
+      // means the first paint waits on one round trip instead of two sequential
+      // ones; the raw record is reused below for enrichment when it matches.
+      const rawBySlugPromise = fetchRawTourBySlugOrId(slug!, true)
+
       let payload: any
+      let curatedError: unknown = null
       try {
         payload = await expeditionFetchRaw(`/travioghana/tours/${encodeURIComponent(slug!)}`, true)
       } catch (e: any) {
-        const rawTour = await fetchRawTourBySlugOrId(slug!, true)
-        if (rawTour) {
-          return buildTourDetailFromRawTour(rawTour)
-        }
-        throw e
+        curatedError = e
       }
+
+      const rawBySlug = await rawBySlugPromise
+      if (!payload) {
+        if (rawBySlug) {
+          return buildTourDetailFromRawTour(rawBySlug)
+        }
+        throw curatedError ?? new Error('Tour not found')
+      }
+
       const wrapper = payload.data?.tour ?? {}
       const tour = wrapper.tour ?? {}
 
       if (!tour.id) {
-        const rawTour = await fetchRawTourBySlugOrId(slug!, true)
-        if (rawTour) {
-          return buildTourDetailFromRawTour(rawTour)
+        if (rawBySlug) {
+          return buildTourDetailFromRawTour(rawBySlug)
         }
       }
 
@@ -1857,17 +1806,23 @@ export function useExpeditionTour(slug: string | undefined) {
       let rawSchedule: AvailabilityScheduleInfo | null = null
       let rawSpecialOffers: SpecialOfferData[] | undefined
 
-      // Fetch raw tour data to get excluded and other missing fields
+      // Enrich from raw tour data to get excluded and other missing fields.
+      // Reuse the raw record fetched in parallel when it matches this tour;
+      // otherwise fetch it by id (bypassing HTTP caching so pricing/tier edits
+      // a supplier just saved are reflected immediately on the detail page).
       if (tour.id) {
         try {
-          // Bypass HTTP caching so pricing/tier edits a supplier just
-          // saved are reflected immediately on the tour detail page.
-          const rawRes = await fetchWithAuth(`/tours/${tour.id}`, {
-            cache: 'no-store',
-          })
-          if (rawRes.ok) {
-            const rawPayload = await rawRes.json()
-            const rawTour = rawPayload.data?.tour ?? rawPayload.tour ?? rawPayload
+          let rawTour = rawBySlug?.id === tour.id ? rawBySlug : null
+          if (!rawTour) {
+            const rawRes = await fetchWithAuth(`/tours/${tour.id}`, {
+              cache: 'no-store',
+            })
+            if (rawRes.ok) {
+              const rawPayload = await rawRes.json()
+              rawTour = rawPayload.data?.tour ?? rawPayload.tour ?? rawPayload
+            }
+          }
+          if (rawTour) {
             rawMeetingInfo = extractMeetingInfo(rawTour)
             rawSchedule = extractAvailabilitySchedule(rawTour)
             rawSpecialOffers = mapSpecialOffers(rawTour)
@@ -2110,7 +2065,7 @@ export function mapRawTourToListing(t: any): TourCardData {
     location,
     image: t.coverPhoto || t.photos?.[0] || '',
     photos: Array.isArray(t.photos) && t.photos.length > 0 ? t.photos : undefined,
-    source: 'Travio Ghana',
+    source: 'expedition-go',
     externalUrl: undefined,
     slug: t.slug,
     specialOffers: mapSpecialOffers(t),
@@ -2121,6 +2076,7 @@ export function mapRawTourToListing(t: any): TourCardData {
     meetingMode: extractMeetingInfo(t).meetingMode,
     accommodationIncluded: extractAccommodationIncluded(t),
     placeMatch: t.placeMatch === true,
+    placeRank: t.placeRank ?? null,
   }
 }
 
@@ -2134,7 +2090,6 @@ export interface TourBadgeFields {
   pickupIncluded?: boolean
   meetingMode?: 'meeting_point' | 'pickup' | 'none'
   accommodationIncluded?: boolean
-  difficulty?: string | null
 }
 
 interface BadgeFieldMaps {
@@ -2143,50 +2098,63 @@ interface BadgeFieldMaps {
   pickup: Map<string, boolean | undefined>
   meetingMode: Map<string, 'meeting_point' | 'pickup' | 'none'>
   accommodation: Map<string, boolean>
-  difficulty: Map<string, string>
 }
 
 let badgeMapsCache: { promise: Promise<BadgeFieldMaps>; expiresAt: number } | null = null
 
 /**
- * One shared batch fetch of the lightweight /travioghana/tours/badges
- * endpoint, extracting tour-card badge fields (languages, cancellation
- * policy, pickup, meeting mode, accommodation) into id-keyed maps.
- *
- * Uses the dedicated badges endpoint (~20KB, pre-extracted fields) instead
- * of the full /travioghana/tours listing (~500KB) for faster homepage loads.
- * Memoized for 60s.
+ * One shared batch fetch of the tour-card badge fields (languages,
+ * cancellation policy, pickup, meeting mode, accommodation) into id-keyed
+ * maps. Prefers the lightweight /tours/badges endpoint when the backend
+ * serves it, and falls back to the full /tours listing (same extraction as
+ * the extractors used elsewhere) so homepage cards always get their facts.
  */
 function getBadgeFieldMaps(): Promise<BadgeFieldMaps> {
   const now = Date.now()
   if (!badgeMapsCache || now >= badgeMapsCache.expiresAt) {
     badgeMapsCache = {
       promise: (async () => {
-        const payload = await expeditionFetchRaw('/travioghana/tours/badges')
-        const allTours: any[] = payload.data?.tours ?? payload.tours ?? []
-        const maps: BadgeFieldMaps = {
-          languages: new Map(),
-          cancellation: new Map(),
-          pickup: new Map(),
-          meetingMode: new Map(),
-          accommodation: new Map(),
-          difficulty: new Map(),
+        try {
+          const payload = await expeditionFetchRaw('/tours/badges')
+          const allTours: any[] = payload.data?.tours ?? payload.tours ?? []
+          if (allTours.length > 0) return extractBadgeFieldMaps(allTours)
+          console.warn('[enrichTourBadgeFields] badges endpoint returned no tours, falling back to full listing')
+        } catch (e) {
+          console.warn('[enrichTourBadgeFields] badges endpoint failed, falling back to full listing:', e)
         }
-        for (const t of allTours) {
-          // The badges endpoint returns pre-extracted fields
-          if (t.languages?.length) maps.languages.set(t.id, t.languages)
-          if (t.cancellationPolicy) maps.cancellation.set(t.id, t.cancellationPolicy)
-          if (t.pickupIncluded != null) maps.pickup.set(t.id, t.pickupIncluded)
-          if (t.meetingMode) maps.meetingMode.set(t.id, t.meetingMode)
-          if (t.accommodationIncluded) maps.accommodation.set(t.id, true)
-          if (t.difficulty) maps.difficulty.set(t.id, t.difficulty)
-        }
-        return maps
+        const fullPayload = await expeditionFetchRaw('/tours?limit=500')
+        const fullTours: any[] = fullPayload.data?.tours ?? fullPayload.tours ?? []
+        return extractBadgeFieldMaps(fullTours)
       })(),
       expiresAt: now + 60_000,
     }
   }
   return badgeMapsCache.promise
+}
+
+function extractBadgeFieldMaps(allTours: any[]): BadgeFieldMaps {
+  const maps: BadgeFieldMaps = {
+    languages: new Map(),
+    cancellation: new Map(),
+    pickup: new Map(),
+    meetingMode: new Map(),
+    accommodation: new Map(),
+  }
+  for (const t of allTours) {
+    const bt = parseJsonMaybe(t.bookingAndTickets)
+    // The badges endpoint returns pre-extracted fields; the full listing
+    // needs the same extraction the listing mappers use.
+    const languages = Array.isArray(t.languages) && t.languages.length ? t.languages : extractContentLanguage(t)
+    if (languages?.length) maps.languages.set(t.id, languages)
+    const cancellation = t.cancellationPolicy ?? extractCancellationFromTour(t)
+    if (cancellation) maps.cancellation.set(t.id, cancellation)
+    const pickup = t.pickupIncluded ?? (bt?.pickupProvided ?? bt?.pickupAvailable) ?? undefined
+    if (pickup != null) maps.pickup.set(t.id, pickup)
+    const meetingMode = t.meetingMode ?? extractMeetingInfo(t).meetingMode
+    if (meetingMode) maps.meetingMode.set(t.id, meetingMode)
+    if (t.accommodationIncluded === true || extractAccommodationIncluded(t)) maps.accommodation.set(t.id, true)
+  }
+  return maps
 }
 
 /**
@@ -2211,9 +2179,8 @@ export async function enrichTourBadgeFields<T extends { id: string } & TourBadge
     const pickup = maps.pickup.get(tour.id)
     const meetingMode = maps.meetingMode.get(tour.id)
     const accommodation = maps.accommodation.get(tour.id)
-    const difficulty = maps.difficulty.get(tour.id)
     if (
-      !languages?.length && !cancellation && pickup == null && !meetingMode && !accommodation && !difficulty
+      !languages?.length && !cancellation && pickup == null && !meetingMode && !accommodation
     ) {
       return tour
     }
@@ -2222,11 +2189,7 @@ export async function enrichTourBadgeFields<T extends { id: string } & TourBadge
     if (!tour.cancellationPolicy && cancellation) enriched.cancellationPolicy = cancellation
     if (tour.pickupIncluded == null && pickup != null) enriched.pickupIncluded = pickup
     if (tour.meetingMode == null && meetingMode) enriched.meetingMode = meetingMode
-    // `mapToListing` always projects accommodationIncluded as a boolean, so a
-    // `== null` guard would make the badges-endpoint backfill dead — treat
-    // false as missing so the authoritative badge data can correct it.
-    if (!tour.accommodationIncluded && accommodation) enriched.accommodationIncluded = accommodation
-    if (!tour.difficulty && difficulty) enriched.difficulty = difficulty
+    if (tour.accommodationIncluded == null && accommodation) enriched.accommodationIncluded = accommodation
     return enriched as T
   })
 }
@@ -2284,12 +2247,13 @@ export function hasActiveOffer(specialOffers: SpecialOfferData[] | undefined): b
  * fetched to decide eligibility. The catalog is small and the detail endpoint
  * is HTTP-cached (max-age=60), so this stays cheap after the first load.
  */
-export function useExpeditionOffers(limit = 12) {
+export function useExpeditionOffers(limit = 12, enabled = true) {
   return useQuery({
     queryKey: ['expedition', 'offers', limit],
     staleTime: 60_000,
+    enabled,
     queryFn: async (): Promise<TourCardData[]> => {
-      const payload = await expeditionFetchRaw(`/travioghana/tours?limit=${limit}&sortBy=views&sortOrder=desc`)
+      const payload = await expeditionFetchRaw(`/tours?limit=${limit}&sortBy=views&sortOrder=desc`)
       const tours: any[] = payload.data?.tours ?? payload.tours ?? []
       // Offer data is now included in the /tours listing response via
       // specialOfferTargets — no need to fetch each tour individually.
@@ -2301,12 +2265,11 @@ export function useExpeditionOffers(limit = 12) {
         })
         .filter((x): x is TourCardData => x != null)
       // Best deal (largest absolute saving) first.
-      const sorted = withOffers.sort((a, b) => {
+      return withOffers.sort((a, b) => {
         const bestA = bestOfferDiscountAmount(a.specialOffers || [], a.priceValue ?? 0)
         const bestB = bestOfferDiscountAmount(b.specialOffers || [], b.priceValue ?? 0)
         return bestB - bestA
       })
-      return enrichTourBadgeFields(sorted)
     },
   })
 }
@@ -2320,35 +2283,31 @@ export function useExpeditionOffers(limit = 12) {
  */
 async function fetchSimilarToursFallback(excludeTourId: string | undefined, category: string | null, city: string | null, country: string | null): Promise<TourCardData[]> {
   const tryFetch = async (params: URLSearchParams) => {
-    const payload = await expeditionFetchRaw(`/travioghana/tours?${params.toString()}`)
+    const payload = await expeditionFetchRaw(`/tours?${params.toString()}`)
     const tours: any[] = payload.data?.tours ?? payload.tours ?? []
     return tours.filter((t) => t.id !== excludeTourId)
   }
 
-  let raw: any[] = []
-
   // 1) Same category first (closest match to the curated endpoint's intent)
   if (category) {
     const params = new URLSearchParams({ category, limit: '8' })
-    raw = (await tryFetch(params)).slice(0, 4)
+    const results = await tryFetch(params)
+    if (results.length > 0) return results.slice(0, 4).map(mapRawTourToListing)
   }
 
   // 2) Fall back to same city/country
-  if (raw.length === 0 && (city || country)) {
+  if (city || country) {
     const params = new URLSearchParams({ limit: '8' })
     if (city) params.set('city', city)
     if (country) params.set('country', country)
-    raw = (await tryFetch(params)).slice(0, 4)
+    const results = await tryFetch(params)
+    if (results.length > 0) return results.slice(0, 4).map(mapRawTourToListing)
   }
 
   // 3) Last resort: just show other active tours
-  if (raw.length === 0) {
-    const params = new URLSearchParams({ limit: '8', sortBy: 'popularity' })
-    raw = (await tryFetch(params)).slice(0, 4)
-  }
-
-  const listings = raw.map(mapRawTourToListing)
-  return enrichTourBadgeFields(listings)
+  const params = new URLSearchParams({ limit: '8', sortBy: 'popularity' })
+  const results = await tryFetch(params)
+  return results.slice(0, 4).map(mapRawTourToListing)
 }
 
 /**
@@ -2363,13 +2322,14 @@ async function fetchSimilarToursFallback(excludeTourId: string | undefined, cate
  * manual curation. Curated tours still take priority in ordering; any
  * new tour not yet curated is appended (deduped) so nothing is lost.
  */
-export function useRecommendedTours(limit: number = 12) {
+export function useRecommendedTours(limit: number = 12, enabled = true) {
   return useQuery({
     queryKey: ['expedition', 'tours', 'recommended', limit],
+    enabled,
     queryFn: async (): Promise<TourCardData[]> => {
       const [curatedResult, newestResult] = await Promise.allSettled([
         expeditionFetchRaw(`/travioghana/tours?limit=${limit}`),
-        expeditionFetchRaw(`/travioghana/tours?limit=${limit}&sortBy=newest&sortOrder=desc`),
+        expeditionFetchRaw(`/tours?limit=${limit}&sortBy=newest&sortOrder=desc`),
       ])
 
       const curatedTours: TourCardData[] = []
@@ -2393,7 +2353,7 @@ export function useRecommendedTours(limit: number = 12) {
         merged.push(tour)
       }
 
-      return enrichTourBadgeFields(merged.slice(0, limit))
+      return merged.slice(0, limit)
     },
   })
 }
@@ -2416,7 +2376,7 @@ export function useNewestTours(limit: number = 10) {
       const payload = await expeditionFetchRaw(`/tours?limit=${limit}&sortBy=newest&sortOrder=desc`)
       const rawTours: any[] = payload.data?.tours ?? payload.tours ?? []
       const listings = rawTours.map(mapRawTourToListing)
-      const enriched = await Promise.all(
+      return Promise.all(
         listings.map(async (listing) => {
           try {
             const raw = await fetchRawTourBySlugOrId(listing.id)
@@ -2427,7 +2387,6 @@ export function useNewestTours(limit: number = 10) {
           }
         }),
       )
-      return enrichTourBadgeFields(enriched)
     },
   })
 }
@@ -2466,7 +2425,8 @@ export function useSimilarTours(slug: string | undefined) {
       // by cross-referencing the full /tours listing.
       {
         try {
-          const allTours = await fetchAllCuratedTours()
+          const allPayload = await expeditionFetchRaw('/tours?limit=500')
+          const allTours: any[] = allPayload.data?.tours ?? []
           const priceMap = new Map<string, number>()
           const cityMap = new Map<string, string | null>()
           const countryMap = new Map<string, string | null>()
@@ -2552,7 +2512,7 @@ export function useSimilarTours(slug: string | undefined) {
         }
       }
 
-      return enrichTourBadgeFields(records.map((r) => mapToListing(r.tour)))
+      return records.map((r) => mapToListing(r.tour))
     },
   })
 }

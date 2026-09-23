@@ -23,7 +23,7 @@ export default function ReviewTourCard({
 }: ReviewTourCardProps) {
   const displayImage = images[0] || ''
   const numericRating = Number(rating)
-  const ratingLabel = Number.isFinite(numericRating) ? numericRating.toFixed(1) : '—'
+  const ratingLabel = Number.isFinite(numericRating) && numericRating > 0 ? numericRating.toFixed(1) : '0'
 
   return (
     <div className="review-tour-card">
@@ -32,32 +32,39 @@ export default function ReviewTourCard({
       </div>
       <div className="review-tour-card-body">
         <h3 className="review-tour-card-title">{title}</h3>
-        <div className="review-tour-card-supplier-row">
-          <div className="review-tour-card-rating">
-            <Star className="review-tour-card-star" size={16} fill="currentColor" />
-            <span>{ratingLabel}</span>
-          </div>
-          <div className="review-tour-card-supplier">
-            {supplierLogo && (
-              <OptimizedImage src={supplierLogo} alt="" className="review-tour-card-supplier-logo" width={100} />
-            )}
-            <span>{supplierName}</span>
-          </div>
+
+        <div className="review-tour-card-rating">
+          <Star className="review-tour-card-star" size={14} fill="currentColor" />
+          <span>{ratingLabel}</span>
         </div>
+
         <div className="review-tour-card-meta">
           {location && (
             <span className="review-tour-card-meta-item">
-              <MapPin size={16} />
+              <MapPin size={15} />
               {location}
             </span>
           )}
           {duration && (
             <span className="review-tour-card-meta-item">
-              <Clock size={16} />
+              <Clock size={15} />
               {duration}
             </span>
           )}
         </div>
+
+        {supplierName && (
+          <div className="review-tour-card-supplier">
+            {supplierLogo ? (
+              <img src={supplierLogo} alt="" className="review-tour-card-supplier-logo" />
+            ) : (
+              <span className="review-tour-card-supplier-initial">
+                {supplierName.charAt(0).toUpperCase()}
+              </span>
+            )}
+            <span className="review-tour-card-supplier-name">{supplierName}</span>
+          </div>
+        )}
       </div>
     </div>
   )

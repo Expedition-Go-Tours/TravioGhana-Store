@@ -1,0 +1,405 @@
+/* ============================================================
+   Cookie consent — banner (layer 1) and preferences (layer 2).
+
+   Built on the shared design system in bookingTheme.css: every
+   colour, shadow and button comes from --bv-* / .bk-btn so the
+   consent UI matches the rest of the product instead of looking
+   bolted on. Nothing here hardcodes a hex value.
+   ============================================================ */
+
+.cookie-banner {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 9500;
+  display: flex;
+  justify-content: center;
+  padding: 0 20px 20px;
+  pointer-events: none;
+}
+
+.cookie-banner__card {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 1120px;
+  padding: 18px 22px;
+  background: var(--bv-surface);
+  border: 1px solid var(--bv-border);
+  border-radius: 16px;
+  box-shadow: var(--bv-shadow-lg);
+  font-family: var(--font-body);
+  animation: cookie-rise 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cookie-banner__card:focus-visible {
+  outline: 2px solid var(--bv-accent);
+  outline-offset: 3px;
+}
+
+@keyframes cookie-rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Brand mark — a small trust cue, the way OTAs lead these banners. */
+.cookie-banner__icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--bv-accent-soft);
+  color: var(--bv-accent-strong);
+}
+
+.cookie-banner__copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cookie-banner__title {
+  margin: 0 0 3px;
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--bv-ink);
+}
+
+.cookie-banner__text {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--bv-muted);
+}
+
+.cookie-banner__policy {
+  color: var(--bv-accent-strong);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  white-space: nowrap;
+}
+
+.cookie-banner__policy:hover {
+  color: var(--bv-forest);
+}
+
+.cookie-banner__actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ── Preferences panel ─────────────────────────────────────────────── */
+
+.cookie-prefs__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+  background: rgba(16, 24, 40, 0.5);
+  backdrop-filter: blur(2px);
+  animation: cookie-fade 180ms ease-out;
+}
+
+@keyframes cookie-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cookie-prefs {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 780px;
+  max-height: min(88vh, 920px);
+  overflow: hidden;
+  background: var(--bv-surface);
+  border-radius: 20px;
+  box-shadow: var(--bv-shadow-lg);
+  font-family: var(--font-body);
+  animation: cookie-pop 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cookie-prefs:focus-visible {
+  outline: 2px solid var(--bv-accent);
+  outline-offset: 3px;
+}
+
+@keyframes cookie-pop {
+  from { opacity: 0; transform: translateY(12px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.cookie-prefs__header {
+  padding: 24px 28px 18px;
+  border-bottom: 1px solid var(--bv-border);
+}
+
+.cookie-prefs__title {
+  margin: 0 0 6px;
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--bv-ink);
+}
+
+.cookie-prefs__intro {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--bv-muted);
+}
+
+.cookie-prefs__body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 28px 8px;
+}
+
+.cookie-prefs__footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 28px;
+  border-top: 1px solid var(--bv-border);
+  background: var(--bv-surface-2);
+}
+
+/* ── Category row ──────────────────────────────────────────────────── */
+
+.cookie-category {
+  padding: 20px 0 18px;
+  border-bottom: 1px solid var(--bv-border);
+}
+
+.cookie-category:last-child {
+  border-bottom: 0;
+}
+
+.cookie-category__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.cookie-category__name {
+  margin: 0 0 4px;
+  font-family: var(--font-heading);
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  color: var(--bv-ink);
+}
+
+.cookie-category__desc {
+  margin: 0;
+  max-width: 60ch;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--bv-muted);
+}
+
+.cookie-category__always {
+  flex: 0 0 auto;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--bv-accent-soft);
+  color: var(--bv-success-text);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* ── Switch ────────────────────────────────────────────────────────── */
+
+.cookie-switch {
+  position: relative;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 26px;
+  margin-top: 2px;
+  padding: 0;
+  border: 1px solid var(--bv-border-strong);
+  border-radius: 999px;
+  background: #eef0f3;
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease;
+}
+
+.cookie-switch[aria-checked='true'] {
+  background: var(--bv-accent);
+  border-color: var(--bv-accent);
+}
+
+.cookie-switch:focus-visible {
+  outline: 2px solid var(--bv-accent);
+  outline-offset: 2px;
+}
+
+.cookie-switch__dot {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--bv-shadow-sm);
+  transition: transform 0.16s ease;
+}
+
+.cookie-switch[aria-checked='true'] .cookie-switch__dot {
+  transform: translateX(20px);
+}
+
+/* ── Inventory table ───────────────────────────────────────────────── */
+
+.cookie-table {
+  width: 100%;
+  margin-top: 14px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.cookie-table th,
+.cookie-table td {
+  padding: 8px 12px 8px 0;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--bv-border);
+}
+
+.cookie-table tr:last-child th,
+.cookie-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.cookie-table th {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bv-faint);
+  white-space: nowrap;
+}
+
+.cookie-table td {
+  color: var(--bv-text);
+  line-height: 1.5;
+}
+
+.cookie-table td:first-child {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  color: var(--bv-ink);
+  word-break: break-all;
+}
+
+/* What it actually is — cookie, storage key or network request. Kept quiet so
+   it reads as a qualifier on the name rather than a competing column. */
+.cookie-table__type {
+  color: var(--bv-faint);
+  white-space: nowrap;
+}
+
+.cookie-table th:last-child,
+.cookie-table td:last-child {
+  padding-right: 0;
+  white-space: nowrap;
+}
+
+.cookie-table__empty {
+  margin: 14px 0 0;
+  font-size: 12.5px;
+  color: var(--bv-faint);
+}
+
+/* ── Responsive ────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .cookie-banner {
+    padding: 0 12px 12px;
+  }
+
+  .cookie-banner__card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 18px;
+  }
+
+  .cookie-banner__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cookie-banner__actions .bk-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .cookie-prefs__backdrop {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .cookie-prefs {
+    max-width: none;
+    max-height: 92vh;
+    border-radius: 20px 20px 0 0;
+    animation: cookie-sheet 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @keyframes cookie-sheet {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .cookie-prefs__header { padding: 20px 18px 16px; }
+  .cookie-prefs__body { padding: 4px 18px 8px; }
+  .cookie-prefs__footer {
+    flex-direction: column-reverse;
+    padding: 14px 18px;
+  }
+  .cookie-prefs__footer .bk-btn { width: 100%; }
+
+  .cookie-category__head { gap: 14px; }
+
+  /* Provider and duration are the least critical columns on a phone; name,
+     type and purpose carry the meaning, so drop the rest rather than scroll. */
+  .cookie-table th:nth-child(3),
+  .cookie-table td:nth-child(3),
+  .cookie-table th:nth-child(5),
+  .cookie-table td:nth-child(5) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cookie-banner__card,
+  .cookie-prefs,
+  .cookie-prefs__backdrop {
+    animation: none;
+  }
+  .cookie-switch,
+  .cookie-switch__dot {
+    transition: none;
+  }
+}

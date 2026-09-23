@@ -1,0 +1,157 @@
+/* Option selector — GYG-style "choose your option" rows shown above the date
+   step when a tour has more than one sellable option. */
+
+.osc {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.osc-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border: 1px solid #dfe5e2;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  font: inherit;
+  color: #16211b;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.osc-row:hover:not(:disabled) {
+  border-color: #168a35;
+}
+
+.osc-row:focus-visible {
+  outline: 2px solid #168a35;
+  outline-offset: 2px;
+}
+
+.osc-selected {
+  border-color: #168a35;
+  background: #f4fbf6;
+  box-shadow: 0 0 0 1px #168a35;
+}
+
+.osc-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.osc-radio {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  border: 2px solid #b9c4bc;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s ease;
+}
+
+.osc-selected .osc-radio {
+  border-color: #168a35;
+}
+
+.osc-selected .osc-radio::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #168a35;
+}
+
+.osc-main {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.osc-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #10180f;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.osc-tag {
+  font-style: normal;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #7a4a00;
+  background: #fff4e0;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.osc-desc {
+  font-size: 12.5px;
+  color: #5b6a60;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.osc-meta {
+  font-size: 11.5px;
+  color: #8a968d;
+}
+
+.osc-price {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  padding-top: 2px;
+}
+
+.osc-price small {
+  font-size: 10.5px;
+  color: #8a968d;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.osc-price strong {
+  font-size: 15px;
+  font-weight: 800;
+  color: #10180f;
+  white-space: nowrap;
+}
+
+/* Loading shimmer */
+
+.osc-skeleton {
+  height: 62px;
+  background: linear-gradient(90deg, #eef2ef 25%, #f7faf7 50%, #eef2ef 75%);
+  background-size: 200% 100%;
+  animation: osc-shimmer 1.4s ease infinite;
+  cursor: default;
+}
+
+@keyframes osc-shimmer {
+  to { background-position: -200% 0; }
+}
+
+@media (max-width: 640px) {
+  .osc-row {
+    padding: 13px 12px;
+    min-height: 44px;
+  }
+}

@@ -1,4 +1,4 @@
-﻿import { useRef, useState, useEffect, useCallback } from 'react'
+import { useRef, useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import SectionHeading from './SectionHeading'
 import TourCard from './TourCard'
@@ -14,8 +14,8 @@ export default function DayToursSection() {
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
   const items = [...dayTours].sort((a, b) => {
-    if (a.source === 'travio-ghana' && b.source !== 'travio-ghana') return -1
-    if (a.source !== 'travio-ghana' && b.source === 'travio-ghana') return 1
+    if (a.source === 'travio-africa' && b.source !== 'travio-africa') return -1
+    if (a.source !== 'travio-africa' && b.source === 'travio-africa') return 1
     return 0
   })
 

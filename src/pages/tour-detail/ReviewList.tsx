@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Star, ThumbsUp } from 'lucide-react'
+import { ThumbsUp } from 'lucide-react'
 import { motion } from 'framer-motion'
 import type { Review } from '../../lib/tourTypes'
+import StarRating from '../../components/StarRating'
 import './ReviewList.css'
 
 interface ReviewListProps {
@@ -67,14 +68,13 @@ export default function ReviewList({ reviews }: ReviewListProps) {
                 </div>
               </div>
               <div className="review-stars">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    size={16}
-                    fill={star <= review.rating ? '#179237' : 'none'}
-                    stroke={star <= review.rating ? '#179237' : '#e5e4e7'}
-                  />
-                ))}
+                <StarRating
+                  value={review.rating}
+                  size={16}
+                  gap={2}
+                  filledColor="#179237"
+                  emptyColor="#e5e4e7"
+                />
               </div>
             </div>
 

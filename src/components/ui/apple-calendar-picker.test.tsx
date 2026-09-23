@@ -191,6 +191,23 @@ describe('CalendarPicker requireConfirmation (desktop two-step)', () => {
   })
 })
 
+describe('CalendarPicker year navigation', () => {
+  it('reports the new year to onMonthChange so availability refetches', () => {
+    stubMatchMedia(false)
+    const onMonthChange = vi.fn()
+    renderPicker({ onMonthChange })
+    const monthName = openDate.toLocaleDateString('en-US', { month: 'long' })
+    fireEvent.click(screen.getByText(`${monthName} ${openYear}`))
+    const yearLabel = screen.getByText(String(openYear))
+    const header = yearLabel.parentElement as HTMLElement
+    const [prevYear, nextYear] = Array.from(header.querySelectorAll('button'))
+    fireEvent.click(nextYear)
+    expect(onMonthChange).toHaveBeenCalledWith(openYear + 1, openMonth)
+    fireEvent.click(prevYear)
+    expect(onMonthChange).toHaveBeenLastCalledWith(openYear, openMonth)
+  })
+})
+
 describe('CalendarPicker footer + keep-open', () => {
   it('renders the footer content inside the panel', () => {
     stubMatchMedia(false)

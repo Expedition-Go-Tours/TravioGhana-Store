@@ -1,0 +1,618 @@
+/* ===== TRAVEL AGENTS & RESELLERS PAGE ===== */
+
+.ta-page {
+  min-height: 100vh;
+  background: #f8f9fb;
+  font-family: var(--font-body, 'DM Sans', sans-serif);
+}
+
+/* ---------- Hero ---------- */
+.ta-hero {
+  padding: 100px 0 0;
+  background: #f8f9fb;
+  overflow: hidden;
+}
+
+.ta-hero-inner {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 48px;
+  min-height: 480px;
+}
+
+.ta-hero-title {
+  font-family: var(--font-heading, 'Manrope', sans-serif);
+  font-weight: 700;
+  font-size: clamp(32px, 4vw, 52px);
+  line-height: 1.12;
+  color: #0f172a;
+  margin: 0 0 20px;
+}
+
+.ta-highlight {
+  color: #16a34a;
+}
+
+.ta-hero-subtitle {
+  font-size: 17px;
+  line-height: 1.7;
+  color: #475569;
+  margin: 0 0 32px;
+  max-width: 480px;
+}
+
+/* CTA Buttons */
+.ta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  border-radius: 999px;
+  font-family: var(--font-body, 'DM Sans', sans-serif);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  padding: 14px 32px;
+}
+
+.ta-btn:active {
+  transform: scale(0.97);
+}
+
+.ta-btn-primary {
+  background: #16a34a;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(22, 163, 74, 0.3);
+}
+
+.ta-btn-primary:hover {
+  background: #15803d;
+  box-shadow: 0 4px 18px rgba(22, 163, 74, 0.4);
+  transform: translateY(-1px);
+}
+
+.ta-btn-cta {
+  background: #16a34a;
+  color: #fff;
+  padding: 16px 40px;
+  font-size: 16px;
+  box-shadow: 0 2px 10px rgba(22, 163, 74, 0.3);
+}
+
+.ta-btn-cta:hover {
+  background: #15803d;
+  box-shadow: 0 4px 18px rgba(22, 163, 74, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Hero visual */
+.ta-hero-visual {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 420px;
+}
+
+.ta-hero-circle {
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(15, 36, 24, 0.15);
+}
+
+.ta-hero-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ta-stat-card {
+  position: absolute;
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  z-index: 2;
+}
+
+.ta-stat-card strong {
+  display: block;
+  font-family: var(--font-heading, 'Manrope', sans-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+
+.ta-stat-card span {
+  font-size: 13px;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+.ta-stat-card--right-top {
+  right: -20px;
+  top: 30%;
+}
+
+.ta-stat-card--right-bottom {
+  right: -10px;
+  bottom: 18%;
+}
+
+/* ---------- Stats Banner ---------- */
+.ta-stats-banner {
+  background: #16a34a;
+  padding: 64px 0;
+}
+
+.ta-stats-inner {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.ta-stats-title {
+  font-family: var(--font-heading, 'Manrope', sans-serif);
+  font-weight: 700;
+  font-size: clamp(24px, 3vw, 36px);
+  line-height: 1.25;
+  color: #fff;
+  margin: 0;
+}
+
+.ta-stats-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.ta-stats-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px 20px;
+}
+
+.ta-stats-card:last-child {
+  grid-column: 1 / -1;
+  max-width: 260px;
+}
+
+.ta-stats-value {
+  display: block;
+  font-family: var(--font-heading, 'Manrope', sans-serif);
+  font-weight: 700;
+  font-size: 28px;
+  color: #16a34a;
+  margin-bottom: 4px;
+}
+
+.ta-stats-label {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.4;
+}
+
+/* ---------- Why Join / Features ---------- */
+.ta-features {
+  padding: 80px 0;
+  background: #fff;
+}
+
+.ta-container {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.ta-section-title {
+  font-family: var(--font-heading, 'Manrope', sans-serif);
+  font-weight: 700;
+  font-size: clamp(26px, 3.5vw, 40px);
+  line-height: 1.2;
+  color: #0f172a;
+  margin: 0 0 48px;
+}
+
+.ta-features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+.ta-feature-card {
+  padding: 8px 0;
+}
+
+.ta-feature-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #ecfdf3;
+  color: #16a34a;
+  display: grid;
+  place-items: center;
+  margin-bottom: 20px;
+}
+
+.ta-feature-title {
+  font-family: var(--font-heading, 'Manrope', sans-serif);
+  font-weight: 700;
+  font-size: 20px;
+  color: #0f172a;
+  margin: 0 0 12px;
+  line-height: 1.3;
+}
+
+.ta-feature-desc {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ---------- Getting Started ---------- */
+.ta-getting-started {
+  padding: 80px 0;
+  background: #f8f9fb;
+}
+
+.ta-gs-wrapper {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.ta-gs-dark-card {
+  background: #0f172a;
+  border-radius: 20px;
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ta-gs-eyebrow {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ta-gs-dark-title {
+  font-family: var(--font-heading, 'Manrope', sans-serif);
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1.25;
+  color: #fff;
+  margin: 0 0 16px;
+}
+
+.ta-gs-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.ta-gs-step {
+  display: flex;
+  flex-direction: column;
+}
+
+.ta-gs-step-top {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.ta-gs-step-num {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #16a34a;
+  color: #fff;
+  font-family: var(--font-heading, 'Manrope', sans-serif);
+  font-weight: 700;
+  font-size: 16px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.ta-gs-step-line {
+  flex: 1;
+  height: 2px;
+  background: #e2e8f0;
+  margin-left: 12px;
+}
+
+.ta-gs-step-title {
+  font-family: var(--font-heading, 'Manrope', sans-serif);
+  font-weight: 700;
+  font-size: 18px;
+  color: #0f172a;
+  margin: 0 0 10px;
+  line-height: 1.3;
+}
+
+.ta-gs-step-desc {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ---------- FAQ ---------- */
+.ta-faq {
+  padding: 80px 0;
+  background: #fff;
+}
+
+.ta-faq-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 48px;
+  align-items: start;
+}
+
+.ta-faq-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.ta-faq-item {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.ta-faq-item:first-child {
+  border-top: 1px solid #e2e8f0;
+}
+
+.ta-faq-question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-heading, 'Manrope', sans-serif);
+  font-weight: 700;
+  font-size: 16px;
+  color: #0f172a;
+  line-height: 1.4;
+}
+
+.ta-faq-icon {
+  flex-shrink: 0;
+  color: #64748b;
+  transition: transform 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+.ta-faq-answer {
+  overflow: hidden;
+}
+
+.ta-faq-answer p {
+  padding: 0 0 20px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #64748b;
+  margin: 0;
+}
+
+.ta-faq-sidebar {
+  position: sticky;
+  top: 100px;
+}
+
+.ta-faq-sidebar-card {
+  background: #f8f9fb;
+  border-radius: 16px;
+  padding: 32px 28px;
+  border: 1px solid #e2e8f0;
+}
+
+.ta-faq-sidebar-title {
+  font-family: var(--font-heading, 'Manrope', sans-serif);
+  font-weight: 700;
+  font-size: 18px;
+  color: #0f172a;
+  margin: 0 0 12px;
+}
+
+.ta-faq-sidebar-desc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #64748b;
+  margin: 0 0 20px;
+}
+
+.ta-faq-sidebar-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: #16a34a;
+  text-decoration: none;
+}
+
+.ta-faq-sidebar-link:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Bottom CTA ---------- */
+.ta-cta-banner {
+  padding: 0 0 80px;
+}
+
+.ta-cta-inner {
+  background: #16a34a;
+  border-radius: 24px;
+  padding: 72px 40px;
+  text-align: center;
+}
+
+.ta-cta-title {
+  font-family: var(--font-heading, 'Manrope', sans-serif);
+  font-weight: 700;
+  font-size: clamp(26px, 3.5vw, 40px);
+  line-height: 1.2;
+  color: #fff;
+  margin: 0 0 12px;
+}
+
+.ta-cta-subtitle {
+  font-size: 17px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 32px;
+}
+
+/* ---------- Responsive: Tablet ---------- */
+@media (max-width: 960px) {
+  .ta-hero-inner {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 40px;
+    padding-top: 20px;
+  }
+
+  .ta-hero-subtitle {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .ta-hero-visual {
+    min-height: 360px;
+  }
+
+  .ta-hero-circle {
+    width: 300px;
+    height: 300px;
+  }
+
+  .ta-stats-inner {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .ta-stats-cards {
+    justify-items: center;
+  }
+
+  .ta-gs-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .ta-faq-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .ta-faq-sidebar {
+    position: static;
+  }
+}
+
+/* ---------- Responsive: Mobile ---------- */
+@media (max-width: 640px) {
+  .ta-hero {
+    padding-top: 80px;
+  }
+
+  .ta-hero-inner {
+    padding: 0 20px;
+  }
+
+  .ta-hero-circle {
+    width: 250px;
+    height: 250px;
+  }
+
+  .ta-stat-card {
+    padding: 12px 16px;
+  }
+
+  .ta-stat-card strong {
+    font-size: 15px;
+  }
+
+  .ta-stat-card span {
+    font-size: 12px;
+  }
+
+  .ta-stat-card--right-top {
+    right: -10px;
+    top: 10%;
+  }
+
+  .ta-stat-card--right-bottom {
+    right: -5px;
+    bottom: 10%;
+  }
+
+  .ta-stats-banner {
+    padding: 48px 0;
+  }
+
+  .ta-stats-inner {
+    padding: 0 20px;
+  }
+
+  .ta-features {
+    padding: 56px 0;
+  }
+
+  .ta-container {
+    padding: 0 20px;
+  }
+
+  .ta-features-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .ta-gs-steps {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .ta-gs-step-top {
+    margin-bottom: 12px;
+  }
+
+  .ta-getting-started {
+    padding: 56px 0;
+  }
+
+  .ta-faq {
+    padding: 56px 0;
+  }
+
+  .ta-cta-banner {
+    padding: 0 0 56px;
+  }
+
+  .ta-cta-inner {
+    padding: 48px 24px;
+    border-radius: 18px;
+  }
+}

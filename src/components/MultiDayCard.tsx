@@ -28,6 +28,8 @@ export default function MultiDayCard({ id, title, days, accommodation, highlight
 
   const tourSlug = getTourSlug(title)
 
+  // New tab, like every other tour card — the browser list/scroll position
+  // on the current page is preserved.
   const handleCardClick = () => {
     window.open(`/tour/${tourSlug}`, '_blank', 'noopener')
   }
@@ -42,9 +44,9 @@ export default function MultiDayCard({ id, title, days, accommodation, highlight
   return (
     <div className="multiday-card" onClick={handleCardClick} onKeyDown={handleKeyDown} role="link" tabIndex={0}>
       <div className="multiday-card-image">
-        {source === 'travio-ghana' && (
+        {source === 'travio-africa' && (
           <div className="source-badge">
-            <img src="/travio_logo.png" alt="Travio Ghana" />
+            <img src="/travio_logo.png" alt="Travio Africa" />
           </div>
         )}
         <OptimizedImage src={image} alt={title} width={600} />

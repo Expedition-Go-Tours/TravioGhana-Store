@@ -1,0 +1,250 @@
+/* ============================================================
+   Design system — shared tokens, buttons, chips.
+   Loaded globally via index.css so every page renders on
+   one visual language (bookings, dashboard, settings, etc.).
+   ============================================================ */
+:root {
+  /* Brand — refined emerald/forest scale */
+  --bv-accent: #16a34a;
+  --bv-accent-strong: #15803d;
+  --bv-accent-soft: #ecfdf3;
+  --bv-forest: #065f46;
+  --bv-forest-ink: #0b2e22;
+
+  /* Neutrals — bright, crisp whites (GetYourGuide-style) */
+  --bv-canvas: #ffffff;
+  --bv-surface: #ffffff;
+  --bv-surface-2: #f9fafb;
+  --bv-border: #eceef2;
+  --bv-border-strong: #d8dce3;
+  --bv-ink: #101828;
+  --bv-text: #344054;
+  --bv-muted: #667085;
+  --bv-faint: #98a2b3;
+
+  /* Semantic */
+  --bv-success-bg: #ecfdf3;
+  --bv-success-text: #067647;
+  --bv-success-dot: #12b76a;
+  --bv-warn-bg: #fff4e5;
+  --bv-warn-text: #b54708;
+  --bv-warn-dot: #f79009;
+  --bv-info-bg: #eff8ff;
+  --bv-info-text: #175cd3;
+  --bv-info-dot: #2e90fa;
+  --bv-danger-bg: #fef3f2;
+  --bv-danger-text: #b42318;
+  --bv-danger-dot: #f04438;
+
+  /* Focus + elevation */
+  --bv-focus: rgba(22, 163, 74, 0.35);
+  --bv-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --bv-shadow-md: 0 10px 30px -12px rgba(16, 24, 40, 0.18);
+  --bv-shadow-lg: 0 24px 60px -20px rgba(16, 24, 40, 0.28);
+
+  /* Countdown timer + engagement CTA */
+  --countdown-bg: #ffffff;
+  --countdown-border: var(--bv-border);
+  --countdown-radius: 20px;
+  --countdown-value-size: 16px;
+  --countdown-label-size: 13px;
+  --countdown-label-color: var(--bv-muted);
+  --cta-bg: var(--bv-ink);
+  --cta-radius: 24px;
+  --cta-font-size: 14px;
+
+  /* Dashboard layout tokens — top bar (desktop) */
+  --dash-topbar-height: 100px;
+  --dash-topbar-bg: #ffffff;
+  --dash-topbar-border: rgba(0, 0, 0, 0.06);
+  --dash-topbar-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --dash-topbar-active-color: var(--bv-forest);
+  --dash-topbar-active-underline: var(--bv-accent);
+  --dash-dropdown-bg: #ffffff;
+  --dash-dropdown-border: rgba(0, 0, 0, 0.08);
+  --dash-dropdown-shadow: 0 12px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --dash-dropdown-hover: #f0fdf4;
+  --dash-dropdown-radius: 16px;
+
+  /* Legacy sidebar tokens — kept for backward compat, unused */
+  --dash-sidebar-bg: #166534;
+  --dash-sidebar-border: rgba(255, 255, 255, 0.10);
+  --dash-sidebar-text: rgba(255, 255, 255, 0.65);
+  --dash-sidebar-muted: rgba(255, 255, 255, 0.38);
+  --dash-sidebar-active-bg: rgba(255, 255, 255, 0.18);
+  --dash-sidebar-active-text: #ffffff;
+  --dash-sidebar-active-border: #ffffff;
+
+  --dash-content-bg: #f8f9fb;
+  --dash-card-bg: #ffffff;
+  --dash-card-border: #e5e7eb;
+  --dash-card-radius: 16px;
+  --dash-card-shadow: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --dash-card-shadow-hover: 0 4px 12px rgba(16, 24, 40, 0.08), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --dash-section-gap: 24px;
+  --dash-page-padding: 40px;
+}
+
+/* ---------- Buttons (system-wide) ---------- */
+.bk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 9px 16px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease,
+    box-shadow 0.15s ease, transform 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.bk-btn:focus-visible {
+  outline: 2px solid var(--bv-accent);
+  outline-offset: 2px;
+}
+
+.bk-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.bk-btn-primary {
+  background: var(--bv-accent);
+  color: #fff;
+}
+
+.bk-btn-primary:hover:not(:disabled) {
+  background: var(--bv-accent-strong);
+}
+
+.bk-btn-secondary {
+  background: var(--bv-surface);
+  border-color: var(--bv-border-strong);
+  color: var(--bv-text);
+}
+
+.bk-btn-secondary:hover:not(:disabled) {
+  background: var(--bv-surface-2);
+  border-color: #c2c8d0;
+}
+
+.bk-btn-ghost {
+  background: transparent;
+  color: var(--bv-muted);
+}
+
+.bk-btn-ghost:hover:not(:disabled) {
+  color: var(--bv-ink);
+  background: var(--bv-surface-2);
+}
+
+.bk-btn-sm {
+  min-height: 34px;
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 9px;
+}
+
+/* ---------- Status chips ---------- */
+.bk-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.bk-chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.bk-chip-ok {
+  background: var(--bv-success-bg);
+  color: var(--bv-success-text);
+}
+
+.bk-chip-ok .bk-chip-dot {
+  background: var(--bv-success-dot);
+}
+
+.bk-chip-attention,
+.bk-chip-attention-soft {
+  background: var(--bv-warn-bg);
+  color: var(--bv-warn-text);
+}
+
+.bk-chip-attention .bk-chip-dot,
+.bk-chip-attention-soft .bk-chip-dot {
+  background: var(--bv-warn-dot);
+}
+
+.bk-chip-done {
+  background: var(--bv-info-bg);
+  color: var(--bv-info-text);
+}
+
+.bk-chip-done .bk-chip-dot {
+  background: var(--bv-info-dot);
+}
+
+.bk-chip-cancelled {
+  background: var(--bv-danger-bg);
+  color: var(--bv-danger-text);
+}
+
+.bk-chip-cancelled .bk-chip-dot {
+  background: var(--bv-danger-dot);
+}
+
+.bk-chip-neutral {
+  background: #f2f4f7;
+  color: #475467;
+}
+
+.bk-chip-neutral .bk-chip-dot {
+  background: #98a2b3;
+}
+
+/* ---------- Skeleton ---------- */
+@keyframes bk-shimmer {
+  0% {
+    background-position: -320px 0;
+  }
+  100% {
+    background-position: 320px 0;
+  }
+}
+
+.bk-skel {
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    #eef0f3 25%,
+    #f6f7f9 37%,
+    #eef0f3 63%
+  );
+  background-size: 640px 100%;
+  animation: bk-shimmer 1.3s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bk-skel {
+    animation: none;
+  }
+}

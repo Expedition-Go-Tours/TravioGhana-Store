@@ -151,7 +151,7 @@ function PickupSelectModalContent({
   // must choose from the listed options only.
   const multiplePickups = selectable.length > 1
 
-  // Supplier-set pickup area/zone — drags and searches outside it are rejected.
+  // Supplier-set pickup area/zone — searches/drags outside it are cautioned.
   const zoneAreas = useMemo(
     () =>
       zones.map((z) => ({
@@ -223,25 +223,17 @@ function PickupSelectModalContent({
   // pickup address (committed to the form on Confirm). The search box is
   // cleared — the selection lives in the left-panel "Your location" row.
   const selectSearchResult = (suggestion: LocationSuggestion): void => {
-    // Tours with a supplier-set pickup zone only accept addresses inside it.
-    if (suggestion.latitude != null && suggestion.longitude != null && !isInPickupArea(suggestion.latitude, suggestion.longitude)) {
-      setSearchOutOfRange(true)
-      setSearchInZone(false)
-      setSearchOpen(false)
-      setSearchHighlight(-1)
-      // Still pin the location on the map — as the red × ("not included")
-      // pin — so the traveller sees exactly where it falls.
-      setSearchMarker({ lat: suggestion.latitude, lng: suggestion.longitude })
-      setSelectedId(null)
-      setSearchCommitted(false)
-      setDragPreview(null)
-      setDragAddress('')
-        return
-    }
-    setSearchOutOfRange(false)
+    // A searched address outside the supplier's pickup zone is still allowed —
+    // the traveller is cautioned to pick an in-zone location before the tour
+    // date, but the choice is committed so they can proceed.
+    const outOfZone =
+      suggestion.latitude != null &&
+      suggestion.longitude != null &&
+      !isInPickupArea(suggestion.latitude, suggestion.longitude)
+    setSearchOutOfRange(outOfZone)
     // Only surface the "within the pickup zone" confirmation when the tour
     // actually has a geofenced zone the address could be inside.
-    setSearchInZone(geofenced)
+    setSearchInZone(!outOfZone && geofenced)
     setSelectedId(null)
     setSearchQuery('')
     setSearchOpen(false)
@@ -250,6 +242,8 @@ function PickupSelectModalContent({
     setDragPreview(null)
     setDragAddress('')
     if (suggestion.latitude != null && suggestion.longitude != null) {
+      // Pin the location on the map — the red × ("not included") pin when out
+      // of zone — so the traveller sees exactly where it falls.
       setSearchMarker({ lat: suggestion.latitude, lng: suggestion.longitude })
       setAddressPreview(suggestion.formatted)
     } else {
@@ -354,11 +348,14 @@ function PickupSelectModalContent({
   }
 
   // Blue pin dragged on the map → hold the spot and ask for confirmation.
-  // Drops outside the supplier's pickup zone are rejected with an inline error.
+  // Drops outside the supplier's pickup zone are allowed but cautioned.
   const handleDragEnd = (lat: number, lng: number): void => {
     setDragPreview({ lat, lng })
     setDragAddress('')
     setDragOutOfRange(!isInPickupArea(lat, lng))
+    // A fresh drag supersedes any previous searched-location caution.
+    setSearchOutOfRange(false)
+    setSearchInZone(false)
     void reverseGeocode(lat, lng).then((r) => {
       setDragAddress(r?.formatted ?? `${lat.toFixed(5)}, ${lng.toFixed(5)}`)
     })
@@ -368,13 +365,17 @@ function PickupSelectModalContent({
   // and shows up in the left panel (blue "Your location" row). The search box
   // is cleared — the selection lives in the left panel.
   const confirmDrag = (): void => {
-    if (!dragPreview || dragOutOfRange) return
+    if (!dragPreview) return
     const label = dragAddress || `${dragPreview.lat.toFixed(5)}, ${dragPreview.lng.toFixed(5)}`
     setSearchMarker(dragPreview)
     setSearchCommitted(true)
     setSelectedId(null)
     setSearchQuery('')
     setAddressPreview(label)
+    // Keep the out-of-zone caution visible after confirming — the traveller may
+    // proceed, but is reminded to pick an in-zone location before the tour.
+    setSearchOutOfRange(dragOutOfRange)
+    setSearchInZone(!dragOutOfRange && geofenced)
     setDragPreview(null)
     setDragAddress('')
     setDragOutOfRange(false)
@@ -651,6 +652,7 @@ function PickupSelectModalContent({
                     aria-selected={index === searchHighlight}
                     onClick={() => selectSearchResult(r)}
                     onMouseEnter={() => setSearchHighlight(index)}
+                    onMouseDown={(e) => e.preventDefault()}
                     className={`cursor-pointer px-4 py-2.5 text-sm ${
                       index === searchHighlight ? 'bg-emerald-50 text-emerald-900' : 'text-slate-700 hover:bg-slate-50'
                     }`}
@@ -674,6 +676,7 @@ function PickupSelectModalContent({
                   aria-selected={searchHighlight === results.length}
                   onClick={() => commitSearchManual(searchQuery)}
                   onMouseEnter={() => setSearchHighlight(results.length)}
+                  onMouseDown={(e) => e.preventDefault()}
                   className={`cursor-pointer border-t border-slate-100 px-4 py-3 text-sm ${
                     searchHighlight === results.length ? 'bg-emerald-50 text-emerald-900' : 'text-slate-700 hover:bg-slate-50'
                   }`}
@@ -690,15 +693,13 @@ function PickupSelectModalContent({
             </ul>
           )}
 
-          {/* Out-of-range inline error for the searched address. */}
+          {/* Out-of-zone caution for the searched address — the choice is
+              allowed, but the traveller is reminded to pick an in-zone spot. */}
           {searchOutOfRange && (
-            <div>
-              <p className="mt-2 flex items-start gap-1.5 text-sm font-medium leading-relaxed text-rose-600">
-                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-rose-500" />
-                This location is out of range from the pickup zone — choose a location inside the zone.
-              </p>
-              <p className="mt-1.5 text-xs font-medium leading-relaxed text-amber-700">
-                Kindly choose a pickup area later and ensure you update the pickup location before the tour date.
+            <div className="mt-2 rounded-xl border border-amber-200/70 bg-amber-50/60 px-3.5 py-2.5">
+              <p className="flex items-start gap-1.5 text-sm font-medium leading-relaxed text-amber-800">
+                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-500" />
+                This location is outside the pickup zone. You can still use it, but please remember to choose a pickup location within the pickup zone before your tour date.
               </p>
               <label className="mt-2 flex cursor-pointer items-start gap-2">
                 <input
@@ -706,7 +707,7 @@ function PickupSelectModalContent({
                   onChange={() => handlePickupLater()}
                   className="mt-0.5 size-4 shrink-0 rounded border-slate-300 bg-white text-[#179237] accent-[#179237] [color-scheme:light] focus:ring-[#179237]/20"
                 />
-                <span className="text-sm font-medium text-slate-700">Choose a pickup location later</span>
+                <span className="text-sm font-medium text-slate-700">Choose a pickup location later instead</span>
               </label>
             </div>
           )}
@@ -888,24 +889,21 @@ function PickupSelectModalContent({
               )}
 
               {/* Dragged blue pin → confirm before committing the location.
-                  Drops outside the supplier's pickup zone show an inline
-                  error and cannot be confirmed. */}
+                  Drops outside the supplier's pickup zone show an amber
+                  caution but can still be confirmed. */}
               {dragPreview && (
                 <div className="pointer-events-none absolute inset-x-0 bottom-2 z-40 flex justify-center px-3">
                   <div
                     className={`pointer-events-auto w-full max-w-sm rounded-xl border bg-white/95 p-3 shadow-lg backdrop-blur-sm ${
-                      dragOutOfRange ? 'border-slate-200 shadow-slate-900/5' : 'border-blue-200 shadow-blue-900/10'
+                      dragOutOfRange ? 'border-amber-200 shadow-amber-900/10' : 'border-blue-200 shadow-blue-900/10'
                     }`}
                   >
                     <p className="text-xs font-semibold text-slate-800">Use this as your pickup location?</p>
                     {dragOutOfRange ? (
                       <div>
-                        <p className="mt-1.5 flex items-start gap-1.5 text-sm font-medium leading-relaxed text-rose-600">
-                          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-rose-500" />
-                          This location is out of range from the pickup zone — choose a location inside the zone.
-                        </p>
-                        <p className="mt-1.5 text-xs font-medium leading-relaxed text-amber-700">
-                          Kindly choose a pickup area later and ensure you update the pickup location before the tour date.
+                        <p className="mt-1.5 flex items-start gap-1.5 text-sm font-medium leading-relaxed text-amber-800">
+                          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-500" />
+                          This location is outside the pickup zone. You can still use it, but please remember to choose a pickup location within the pickup zone before your tour date.
                         </p>
                         <label className="mt-2 flex cursor-pointer items-start gap-2">
                           <input
@@ -913,7 +911,7 @@ function PickupSelectModalContent({
                             onChange={() => handlePickupLater()}
                             className="mt-0.5 size-4 shrink-0 rounded border-slate-300 bg-white text-[#179237] accent-[#179237] [color-scheme:light] focus:ring-[#179237]/20"
                           />
-                          <span className="text-sm font-medium text-slate-700">Choose a pickup location later</span>
+                          <span className="text-sm font-medium text-slate-700">Choose a pickup location later instead</span>
                         </label>
                       </div>
                     ) : (
@@ -951,11 +949,10 @@ function PickupSelectModalContent({
                       <button
                         type="button"
                         onClick={confirmDrag}
-                        disabled={dragOutOfRange}
                         aria-label="Confirm dragged location"
                         className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors ${
                           dragOutOfRange
-                            ? 'cursor-not-allowed bg-slate-300'
+                            ? 'bg-amber-500 hover:bg-amber-600'
                             : 'bg-blue-600 hover:bg-blue-700'
                         }`}
                       >

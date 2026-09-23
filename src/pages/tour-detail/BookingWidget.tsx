@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import type { TourDetailData, SpecialOfferData } from '../../hooks/useExpeditionTours'
@@ -7,21 +7,39 @@ import { buildBookingTour } from '../../lib/bookingTour'
 import { Button } from '../../components/ui/button'
 import { CalendarPicker } from '../../components/ui/apple-calendar-picker'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CalendarDays, Users, Minus, Plus, MessageSquare, Clock as ClockIcon, BadgePercent, ShieldCheck, Zap } from 'lucide-react'
+import { Users, Minus, Plus, Clock as ClockIcon, BadgePercent, Info, Zap, ChevronDown } from 'lucide-react'
 import { toast } from 'sonner'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import type { DayAvailability, DayAvailabilityInfo, DayTimeSlot } from '../../lib/tourAvailability'
 import { openingHoursForDay, isSupplierOperatingDay, resolveDayStatus } from '../../lib/tourAvailability'
-import { freeCancellationDateLabel } from '../../lib/cancellationLabel'
+import { cancellationStatus } from '../../lib/cancellationLabel'
 import { categoryKey } from '../../lib/travelerBuckets'
 import { useTravelerSelection } from '../../hooks/useTravelerSelection'
-import { lowestAdultFromTravelerPricing } from '../../lib/startingPrice'
-import { useChat } from '../../chat/ChatContext'
-import SupportChatWidget from '../../components/SupportChatWidget'
-import BookingTransition from '../../components/BookingTransition'
+import { headlineUnitPrice, cardParityUnitPrice } from '../../lib/startingPrice'
+import BookingDeadlineTimer from './BookingDeadlineTimer'
+import { preloadMapEngine } from '../../lib/mapWarmup'
+import { shouldIdlePrefetch } from '../../lib/perfProfile'
 import { fetchWithAuth } from '../../lib/api'
 import { buildPromoValidationPayload, isValidPromoCodeFormat, normalizePromoCode, PROMO_CODE_MIN_LENGTH } from '../../lib/promo'
+import { useQueryClient } from '@tanstack/react-query'
 import './BookingWidget.css'
+
+// Loaded only when the booking transition actually plays (after Book Now) —
+// its dotlottie dependency is ~65 KB and has no business in the route chunk.
+const BookingTransition = lazy(() => import('../../components/BookingTransition'))
+
+// Warm the transition chunk, the dotLottie WASM and the animation while the
+// traveller is still on this page (idle after mount, or on button
+// hover/focus/touch). By the time Book Now is pressed the overlay adopts the
+// already-decoded player — no button spinner, no animation appearing late.
+// The transition module guards repeat calls, so this stays cheap per event.
+function warmBookingTransition() {
+  void import('../../components/BookingTransition')
+    .then((mod) => mod.warmBookingTransition())
+    .catch(() => {
+      /* best-effort: the transition still loads on click */
+    })
+}
 
 interface BookingWidgetProps {
   tour: TourDetailData
@@ -32,8 +50,6 @@ interface BookingWidgetProps {
   /** Reports the traveller's selected date up to the page (e.g. so the
       quick-facts cancellation badge can show the concrete cutoff date). */
   onSelectedDateChange?: (date: Date | null) => void
-  /** Opens the app's auth modal when a signed-out visitor starts a chat. */
-  onOpenAuth?: (mode: 'signin' | 'signup') => void
 }
 
 interface PricingResult {
@@ -62,28 +78,76 @@ const dropdownVariants = {
   exit: { opacity: 0, y: -8, scale: 0.96 },
 }
 
-export default function BookingWidget({ tour, getAvailability: propGetAvailability, getDayInfo, availabilityLoading, onMonthChange, onSelectedDateChange, onOpenAuth }: BookingWidgetProps) {
+/**
+ * Local-calendar date key (YYYY-MM-DD). `toISOString()` is UTC-anchored and
+ * would send the previous day for travellers east of UTC, so every booking
+ * date key uses the traveller's own calendar day — same helper the change
+ * booking modal uses.
+ */
+const toDateKey = (date: Date): string =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+
+/** Transient transport failures — the backend never supplied a message. */
+const NETWORK_ERROR_RE = /failed to fetch|networkerror|load failed|network request failed/i
+
+/**
+ * Camera for the offscreen booking-map warm-up (map convention [lng, lat]):
+ * the supplier's meeting point, else the first located pickup area, else the
+ * centroid of the first drawn zone. Undefined lets mapWarmup use Accra.
+ */
+function bookingMapCenter(tour: TourDetailData): [number, number] | undefined {
+  const { meetingPointLat: lat, meetingPointLng: lng } = tour
+  if (typeof lat === 'number' && typeof lng === 'number' && Number.isFinite(lat) && Number.isFinite(lng)) {
+    return [lng, lat]
+  }
+  for (const area of tour.pickupAreas ?? []) {
+    if (area && typeof area.lat === 'number' && typeof area.lng === 'number' && Number.isFinite(area.lat) && Number.isFinite(area.lng)) {
+      return [area.lng, area.lat]
+    }
+  }
+  const polygon = tour.pickupAreas?.find((a) => Array.isArray(a?.polygon) && a.polygon.length > 0)?.polygon
+  if (polygon?.length) {
+    const sum = polygon.reduce<[number, number]>((acc, [a, b]) => [acc[0] + a, acc[1] + b], [0, 0])
+    return [sum[1] / polygon.length, sum[0] / polygon.length]
+  }
+  return undefined
+}
+
+/**
+ * Starts warming the checkout before the user lands on it: the booking route
+ * chunk (which pulls the map chunks) downloads during the button spinner and
+ * travel transition, while `preloadMapEngine` warms the tile style/worker and
+ * an offscreen map so the pickup map paints almost immediately on arrival.
+ * Fire-and-forget on purpose — nothing here may delay or block navigation.
+ */
+function preloadCheckoutMap(tour: TourDetailData): void {
+  void import('../BookingPage').catch(() => {
+    /* best-effort: the route still loads normally on navigation */
+  })
+  const center = bookingMapCenter(tour)
+  void preloadMapEngine({ center, zoom: center ? 12 : 11 })
+}
+
+export default function BookingWidget({ tour, getAvailability: propGetAvailability, getDayInfo, availabilityLoading, onMonthChange, onSelectedDateChange }: BookingWidgetProps) {
   const { t } = useTranslation()
   const { currency, convertPrice } = useCurrency()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [showGuestSelector, setShowGuestSelector] = useState(false)
   const [showCalendar, setShowCalendar] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
-  const [showChat, setShowChat] = useState(false)
+  // Wall-clock captured on mount for the cut-off urgency + cancellation-window
+  // checks (read lazily so no impure call happens during render).
+  const [nowMs] = useState(() => Date.now())
+  // Headline latch: the "From $X" price matches the tour card until the user
+  // touches the traveler picker; the first +/- tap flips it to the live
+  // headcount-aware unit price (and it stays live from then on).
+  const [travelerTouched, setTravelerTouched] = useState(false)
 
-  // Unread indicator for the supplier's chat: a red dot on "Start a Chat"
-  // when that supplier has sent messages the traveler hasn't opened yet.
-  const chatCtx = useChat()
-  const supplierId = tour.supplierProfile?.id ?? null
-  const supplierConv = chatCtx.conversations.find(
-    (c) => c.type === 'SUPPLIER_CUSTOMER' && !!supplierId &&
-      c.participants?.some((p) => p.userId === supplierId),
-  )
-  const hasSupplierUnread = (supplierConv?.unreadCount ?? 0) > 0
   const [isBooking, setIsBooking] = useState(false)
   const [showTransition, setShowTransition] = useState(false)
-  const [transitVehicle, setTransitVehicle] = useState(0)
+
   const pendingNavState = useRef<unknown>(null)
   const [promoCode, setPromoCode] = useState('')
   const [promoApplied, setPromoApplied] = useState(false)
@@ -95,8 +159,22 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
   // state for a newer code / date (the user can edit the code or change the
   // date while a validation request is in flight).
   const promoCheckRef = useRef(0)
+
+  // Monotonic token so a stale CHECKOUT quote (older traveler mix / date) can
+  // never overwrite a newer one, plus the key of the quote currently in state
+  // so the summary only shows server figures while they match the selection.
+  const pricingSeqRef = useRef(0)
+  const [lastQuoteKey, setLastQuoteKey] = useState<string | null>(null)
   const [pricingResult, setPricingResult] = useState<PricingResult | null>(null)
+  // Whether the last refresh produced a different total (shown as an inline
+  // "price updated" note); reset when a new refresh starts.
+  const [priceUpdated, setPriceUpdated] = useState(false)
   const [pricingLoading, setPricingLoading] = useState(false)
+  // Live-headline strike-through: the previously displayed live total (kept
+  // across traveler changes) so the widget can show "old price struck
+  // through next to the new price" while the picker is being adjusted.
+  const [previousLiveTotal, setPreviousLiveTotal] = useState<number | null>(null)
+  const [lastLiveShown, setLastLiveShown] = useState<number | null>(null)
   const guestRef = useRef<HTMLDivElement>(null)
   const calendarRef = useRef<HTMLDivElement>(null)
 
@@ -131,7 +209,6 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
     formatPrice,
     travelerOptions,
     adultGroup,
-    unitPriceFor,
   } = useTravelerSelection(tour)
 
   const doFetchPricing = useCallback(async (date: string, time?: string | null, forceCode?: string) => {
@@ -140,7 +217,11 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
     // A validated promo code (or the code currently applied) is threaded into
     // the checkout engine so the quoted total matches what will be charged.
     const code = forceCode ?? (promoApplied ? promoCode.trim() : undefined)
+    const seq = ++pricingSeqRef.current
     setPricingLoading(true)
+    // A fresh refresh starts — hide the previous "price updated" note until
+    // this quote lands with a new total.
+    setPriceUpdated(false)
     try {
       const res = await fetchWithAuth('/travioghana/checkout/calculate', {
         method: 'POST',
@@ -162,6 +243,9 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
       if (!res.ok) {
         throw new Error(payload.message || `Checkout API error (${res.status})`)
       }
+      // Only the latest issued request may update state — a slower response
+      // for an older traveler mix / date must never overwrite a newer quote.
+      if (seq !== pricingSeqRef.current) return
       const data = payload.data ?? payload
       if (data.pricing) {
         setPricingResult({
@@ -171,41 +255,59 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
           discounts: Number(data.pricing.discounts) || 0,
           total: Number(data.pricing.total) || 0,
         })
+        // Remember exactly what this quote was for, so the summary only shows
+        // server figures while they still match the current selection.
+        setLastQuoteKey(`${date}|${time ?? ''}|${JSON.stringify(travelersPayload)}|${code ?? ''}`)
       }
-    } catch {
+    } catch (err) {
+      if (seq !== pricingSeqRef.current) return
       setPricingResult(null)
-      toast.error('Could not load pricing. Please try again.')
+      // Surface the backend's own reason (e.g. "Tour is not available on this
+      // date") — the old generic message hid real availability rejections
+      // behind "Could not load pricing".
+      const serverMessage =
+        err instanceof Error && err.message && !NETWORK_ERROR_RE.test(err.message) ? err.message : null
+      toast.error(serverMessage || 'Could not load pricing. Please try again.')
+      // A server rejection means the calendar is out of sync (stale or missing
+      // data let an unbookable date render as selectable). Refetch availability
+      // so the date grays out; the Book-now guard then blocks it.
+      if (serverMessage) {
+        queryClient.invalidateQueries({
+          predicate: (q) =>
+            q.queryKey[0] === 'expedition' &&
+            q.queryKey[1] === 'tours' &&
+            q.queryKey[3] === 'availability',
+        })
+      }
     } finally {
-      setPricingLoading(false)
+      if (seq === pricingSeqRef.current) setPricingLoading(false)
     }
-  }, [tour.id, travelersPayload, promoApplied, promoCode])
+  }, [tour.id, travelersPayload, promoApplied, promoCode, queryClient])
 
-  const pricingFetched = useRef(false)
+  // Warm the Book Now transition in the background so the click lands on an
+  // already-decoded Lottie (skipped on save-data/2G-3G connections).
   useEffect(() => {
-    if (!tour.id || pricingFetched.current) return
-    pricingFetched.current = true
-    const tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    // The initial quote uses the next day — skip it when that day is outside
-    // the tour's operating window (the checkout engine rejects those days with
-    // "No pricing available for selected date/time"); the user quotes when
-    // they pick a valid date instead. Deferred a tick so the pricing call
-    // (which sets loading state) is never invoked synchronously from the
-    // effect body.
-    if (!isSupplierOperatingDay(tour, tomorrow)) return
-    const timer = window.setTimeout(() => doFetchPricing(tomorrow.toISOString().slice(0, 10)), 0)
-    return () => window.clearTimeout(timer)
-  }, [tour.id, tour, doFetchPricing])
+    if (!shouldIdlePrefetch()) return
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number
+      cancelIdleCallback?: (id: number) => void
+    }
+    if (typeof idleWindow.requestIdleCallback === 'function') {
+      const id = idleWindow.requestIdleCallback(warmBookingTransition, { timeout: 2500 })
+      return () => idleWindow.cancelIdleCallback?.(id)
+    }
+    const id = window.setTimeout(warmBookingTransition, 1200)
+    return () => window.clearTimeout(id)
+  }, [])
 
   // Auto-refresh the real-time price when the date or traveler mix changes
   // (Viator re-checks on date+pax selection). Debounced so +/- taps don't
-  // hammer the API; the manual Update button still forces an immediate check.
-  const [priceUpdated, setPriceUpdated] = useState(false)
+  // hammer the API.
   const lastShownTotal = useRef<number | null>(null)
   useEffect(() => {
     if (!selectedDate) return
     const timer = setTimeout(() => {
-      doFetchPricing(selectedDate.toISOString().slice(0, 10), selectedTime)
+      doFetchPricing(toDateKey(selectedDate), selectedTime)
     }, 400)
     return () => clearTimeout(timer)
   }, [selectedDate, selectedTime, travelersPayload, doFetchPricing])
@@ -263,6 +365,13 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
     return m ? `${hour12}:${String(m).padStart(2, '0')} ${period}` : `${hour12} ${period}`
   }
 
+  const formatCutoffTime = (iso?: string | null): string => {
+    if (!iso) return ''
+    const d = new Date(iso)
+    if (Number.isNaN(d.getTime())) return ''
+    return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  }
+
   const handleBookNow = useCallback(() => {
     if (!selectedDate) {
       toast.error(t('booking.selectDateFirst'))
@@ -302,7 +411,18 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
       weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
     })
 
-    const dateISO = selectedDate.toISOString().slice(0, 10)
+    const dateISO = toDateKey(selectedDate)
+
+    // Booking is valid and about to start: preload the checkout route + map
+    // stack during the spinner/transition below.
+    preloadCheckoutMap(tour)
+
+    // Only hand the server-confirmed total to the booking page while it
+    // matches the current selection; otherwise the live estimate is sent.
+    const quoteIsCurrent =
+      pricingResult != null &&
+      lastQuoteKey ===
+        `${dateISO}|${selectedTime ?? ''}|${JSON.stringify(travelersPayload)}|${promoApplied ? promoCode.trim() : ''}`
 
     // Stash the navigation payload, then play spinner → transition → booking.
     pendingNavState.current = {
@@ -315,43 +435,48 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
         adults: travelersPayload.adults || 0,
         children: travelersPayload.children || 0,
         infants: travelersPayload.infants || 0,
-        price: isPerGroup ? (matchingGroupBand?.price ?? clientSubtotal) : (pricingResult ? totalPrice : clientSubtotal),
+        price: isPerGroup ? (matchingGroupBand?.price ?? clientSubtotal) : (quoteIsCurrent ? totalPrice : clientSubtotal),
         selectedTime,
         promoCode: promoApplied ? promoCode.trim() : null,
         appliedPromo: appliedPromo ? { name: appliedPromo.name, discountAmount: appliedPromo.discountAmount } : null,
       }),
     }
 
-    // Pick the vehicle for this booking, cycling helicopter → tram → truck
-    // across successive bookings (persisted so it advances each time).
-    let bookingCount = 0
-    try {
-      bookingCount = parseInt(localStorage.getItem('eg_booking_count') || '0', 10) || 0
-      localStorage.setItem('eg_booking_count', String(bookingCount + 1))
-    } catch {
-      /* ignore */
-    }
-    setTransitVehicle(bookingCount % 3)
-
     setIsBooking(true)
-    // Spinner on the button for a moment, then reveal the travel transition.
-    setTimeout(() => setShowTransition(true), 1100)
-  }, [selectedDate, selectedTime, t, tour, isPerGroup, groupHeadcount, travelerGroups, categoryCounts, travelersPayload, matchingGroupBand, totalPrice, clientSubtotal, pricingResult, getSelectedDayInfo, openingHoursLabel, promoApplied, promoCode, appliedPromo, totalTravelers])
+    // No button spinner: the transition overlay takes over immediately with the
+    // pre-decoded Lottie. The warm call is a no-op when idle/hover already did
+    // it, and is the fallback for a cold click.
+    warmBookingTransition()
+    setShowTransition(true)
+  }, [selectedDate, selectedTime, t, tour, isPerGroup, groupHeadcount, travelerGroups, categoryCounts, travelersPayload, matchingGroupBand, totalPrice, clientSubtotal, pricingResult, lastQuoteKey, getSelectedDayInfo, openingHoursLabel, promoApplied, promoCode, appliedPromo, totalTravelers])
 
-  const handleTransitionDone = useCallback(() => {
+  // A transition can only ever commit the booking once — the transition's own
+  // timer and the watchdog below both funnel through this guard.
+  const bookingCommittedRef = useRef(false)
+  const finishBookingNavigation = useCallback(() => {
+    if (bookingCommittedRef.current) return
+    bookingCommittedRef.current = true
     navigate(`/${encodeURIComponent(tour.id)}/booking`, { state: pendingNavState.current })
   }, [navigate, tour.id])
+
+  // Safety net: if the lazy transition chunk or its animation ever stalls,
+  // finish the flow instead of stranding the user on a spinner.
+  useEffect(() => {
+    if (!showTransition) return
+    const watchdog = window.setTimeout(finishBookingNavigation, 6000)
+    return () => window.clearTimeout(watchdog)
+  }, [showTransition, finishBookingNavigation])
 
   const handleUpdatePricing = useCallback(() => {
     // Close the picker so the recalculated price/total is visible.
     setShowGuestSelector(false)
-    setPriceUpdated(false)
     if (!selectedDate) {
-      // No date chosen yet — refresh the client-side estimate for the current
-      // traveler selection (the checkout quote API requires a travel date).
+      // No date chosen yet — the live client-side estimate already reflects
+      // the current traveler selection (the checkout quote API requires a
+      // travel date), so there is nothing to re-quote.
       return
     }
-    doFetchPricing(selectedDate.toISOString().slice(0, 10), selectedTime)
+    doFetchPricing(toDateKey(selectedDate), selectedTime)
   }, [selectedDate, selectedTime, doFetchPricing])
 
   // Validates the current promo code against the backend's special-offer
@@ -388,7 +513,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
         body: JSON.stringify(buildPromoValidationPayload({
           code,
           tourId: tour.id,
-          dateISO: date.toISOString().slice(0, 10),
+          dateISO: toDateKey(date),
           quantity: totalTravelers,
           ...(basePrice != null ? { basePrice } : {}),
         })),
@@ -424,7 +549,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
       })
       if (!quiet) toast.success(t('booking.promoApplied'))
       // Re-price with the code so the total reflects the validated discount.
-      doFetchPricing(date.toISOString().slice(0, 10), time, code)
+      doFetchPricing(toDateKey(date), time, code)
     } catch (err) {
       if (token !== promoCheckRef.current) return
       setPromoApplied(false)
@@ -462,41 +587,67 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
     setPromoError('')
     setPromoCode('')
     if (selectedDate) {
-      doFetchPricing(selectedDate.toISOString().slice(0, 10), selectedTime, '')
+      doFetchPricing(toDateKey(selectedDate), selectedTime, '')
     }
   }, [selectedDate, selectedTime, doFetchPricing])
 
   const selectedDateLabel = selectedDate
-    ? selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+    ? selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
     : t('tourDetail.selectDate')
 
-  // Same date-specific cancellation label the Quick facts section shows
-  // (e.g. "Free Cancellation before Aug 22nd (local time)") — surfaced under
-  // the Book now button so the traveller sees the exact cutoff at purchase.
-  const cancellationNote = freeCancellationDateLabel(
+  // Date-aware cancellation status: a selected date inside the policy's
+  // free-cancellation window (or a non-refundable policy) reads
+  // "Non-refundable" — Viator's rule. Surfaced under the Book now button.
+  const cancellation = cancellationStatus(
     tour.cancellationPolicy || t('tourDetail.cancellationDefault'),
-    selectedDate ? selectedDate.toISOString().slice(0, 10) : '',
+    selectedDate ? toDateKey(selectedDate) : '',
+    selectedTime,
+    nowMs,
   )
+  const cancellationNote = cancellation?.label || ''
   // Once a slot is picked (or opening hours shown) inside the calendar, surface
   // the chosen time on the date field so it stays visible after the panel closes.
   const selectedTimeLabel = selectedTime
-    ? `${t('booking.timeSlot', 'Time slot')}: ${formatSlotTime(selectedTime)}`
-    : (openingHoursLabel ? `${t('booking.openingHours', 'Opening hours')}: ${openingHoursLabel}` : '')
+    ? formatSlotTime(selectedTime)
+    : (openingHoursLabel || '')
 
   const selectedDayInfo = getSelectedDayInfo(selectedDate)
-  // Time slots for the selected date come from the availability calendar; when
-  // the backend returns none (some tours only carry the schedule's static
-  // slots), fall back to the supplier's configured time slots so the traveller
-  // can still see and pick the actual start times.
-  const selectedDaySlots: DayTimeSlot[] = (() => {
-    if (selectedDayInfo?.timeSlots?.length) return selectedDayInfo.timeSlots
+  // Time slots for a given date come from the availability calendar; when the
+  // backend returns none (some tours only carry the schedule's static slots),
+  // fall back to the supplier's configured time slots so the traveller can
+  // still see and pick the actual start times. Exposed as a helper so the date
+  // picker can look up the NEXT date's slots before the state commits.
+  const slotsForDate = (date: Date | null): DayTimeSlot[] => {
+    const info = getSelectedDayInfo(date)
+    if (info?.timeSlots?.length) return info.timeSlots
     if (tour.scheduleType === 'fixedTimeSlot' && Array.isArray(tour.timeSlots) && tour.timeSlots.length > 0) {
       return tour.timeSlots
-        .slice()
+        .filter((s): s is { startTime: string; endTime?: string } => !!s?.startTime)
         .sort((a, b) => a.startTime.localeCompare(b.startTime))
         .map((s) => ({ time: s.startTime, capacity: 0, booked: 0, remaining: null }))
     }
     return []
+  }
+  const selectedDaySlots: DayTimeSlot[] = slotsForDate(selectedDate)
+
+  // Booking deadline for the "X hours left to book" countdown: the earliest
+  // upcoming cutoff for the selected date — the soonest non-closed slot's
+  // closesAt (fixed-slot / per-slot cut-off tours), or the whole-day closesAt
+  // for flexible/operating-hours tours. Null when nothing is pending.
+  const bookingDeadlineIso = (() => {
+    if (!selectedDate) return null
+    const candidates: number[] = []
+    for (const slot of selectedDaySlots) {
+      if (slot.closed || !slot.closesAt) continue
+      const t = new Date(slot.closesAt).getTime()
+      if (Number.isFinite(t) && t > nowMs) candidates.push(t)
+    }
+    if (candidates.length === 0 && selectedDayInfo?.closesAt && selectedDayInfo.closedCutoff !== true) {
+      const t = new Date(selectedDayInfo.closesAt).getTime()
+      if (Number.isFinite(t) && t > nowMs) candidates.push(t)
+    }
+    if (candidates.length === 0) return null
+    return new Date(Math.min(...candidates)).toISOString()
   })()
 
   // Warn when the chosen traveler count exceeds what's left on the selected day.
@@ -508,26 +659,43 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
     return t('booking.tooManyTravelers', 'Only {{count}} spot(s) left on this date', { count: Math.max(0, remaining) })
   })()
 
-  // Authoritative figure from the API when available; client mirror before that.
-  // The backend quote (pricingResult) is only fetched for a concrete date, and
-  // the auto-refresh re-quotes on traveler changes only once a date is picked.
-  // Before that the frozen quote reflects the initial mount-time selection, so
-  // a changed traveler mix would otherwise show a stale subtotal/total — the
-  // live client mirror (identical math to the checkout engine) stays accurate.
-  const hasLiveQuote = !!selectedDate && pricingResult != null
-  const displayTotal = hasLiveQuote ? pricingResult!.total : clientSubtotal
+  // The server quote is only authoritative while it matches the CURRENT
+  // selection (date / time / traveler mix / promo). The moment the selection
+  // changes — e.g. the traveler +/- steppers before the debounced re-quote
+  // lands — the totals fall back to the live client-side estimate so the
+  // price always tracks what the traveler sees in the picker.
+  const currentQuoteKey = (() => {
+    if (!selectedDate) return null
+    const code = promoApplied ? promoCode.trim() : ''
+    return `${toDateKey(selectedDate)}|${selectedTime ?? ''}|${JSON.stringify(travelersPayload)}|${code}`
+  })()
+  const quoteMatchesSelection = currentQuoteKey != null && lastQuoteKey === currentQuoteKey && pricingResult != null
+
+  // Authoritative figure from the API when it matches the selection; live
+  // client-side estimate otherwise.
+  const displayTotal = quoteMatchesSelection && pricingResult ? pricingResult.total : clientSubtotal
+  // Server-side offer/promo figures only apply alongside a matching quote.
+  const savedAmount = quoteMatchesSelection && pricingResult ? pricingResult.discounts : 0
+  const subtotalAmount = quoteMatchesSelection && pricingResult ? pricingResult.subtotal : clientSubtotal
+
+  // Keep the previously displayed live total so the headline can strike it
+  // through next to the new price whenever the traveler selection changes the
+  // figure. React-recommended "adjust state during render" pattern — both
+  // branches settle after one pass (the conditions they flip become false).
+  const liveTracked = travelerTouched && !pricingLoading && totalTravelers > 0 && displayTotal > 0
+  if (!travelerTouched && lastLiveShown != null) {
+    setLastLiveShown(null)
+    setPreviousLiveTotal(null)
+  } else if (liveTracked && lastLiveShown !== displayTotal) {
+    setPreviousLiveTotal(lastLiveShown)
+    setLastLiveShown(displayTotal)
+  }
 
   // Special offers a supplier applied to this tour on the supplier platform.
   // The backend projection (GET /tours/:id) already filters to ACTIVE offers
   // whose date window includes today. The checkout engine auto-applies the
   // best one — `discounts` is the ground truth of what was actually applied.
-  // Offer figures only render once a live quote exists for the chosen date;
-  // pre-date the summary shows the accurate mirror without a discount.
   const activeOffers: SpecialOfferData[] = Array.isArray(tour.specialOffers) ? tour.specialOffers : []
-  const savedAmount = hasLiveQuote ? (pricingResult?.discounts ?? 0) : 0
-  const subtotalAmount = hasLiveQuote
-    ? (pricingResult?.subtotal ?? 0)
-    : (clientSubtotal > 0 ? clientSubtotal : 0)
   // Round like the tour cards (FormattedPrice) so the widget's headline and
   // totals show the same rounded figures as the card on the homepage.
   const formatMoney = (n: number) => `${currency.symbol}${Math.round(convertPrice(n)).toLocaleString()}`
@@ -538,21 +706,25 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
   // price), so the widget and the card never disagree. The checkout-confirmed
   // discount (which reflects the real tier for the selected date/headcount)
   // is shown in the price summary below, not in the headline.
-  // The headline unit price tracks the traveler selector:
-  // - per-person: the adult category's tier-resolved per-person price for the
-  //   CURRENT total headcount (falls back to the "From" minimum while nothing
-  //   is selected or when the tour has no adult category).
-  // - per-group: the band that matches the current group size (falls back to
-  //   the lowest band when no selection maps to one).
-  const perPersonHeadline = adultGroup
-    ? (totalTravelers > 0
-        ? unitPriceFor(adultGroup)
-        : (lowestAdultFromTravelerPricing(travelerGroups) ?? tour.price))
-    : (lowestAdultFromTravelerPricing(travelerGroups) ?? tour.price)
-  const headlineGroupBand = matchingGroupBand ?? lowestGroupBand
-  const originalUnitPrice = isPerGroup
-    ? (headlineGroupBand?.price ?? 0)
-    : perPersonHeadline
+  // Headline "From $X" unit price: card parity (lowest adult tier / cheapest
+  // group band) until the traveler picker is touched, then the live
+  // headcount-aware rate so it stays in sync with the picker's prices.
+  const originalUnitPrice = travelerTouched
+    ? headlineUnitPrice({
+        isPerGroup,
+        matchingGroupBand,
+        lowestGroupBand,
+        adultGroup,
+        totalTravelers,
+        travelerGroups,
+        tourPrice: tour.price,
+      })
+    : cardParityUnitPrice({
+        isPerGroup,
+        lowestGroupBand,
+        travelerGroups,
+        tourPrice: tour.price,
+      })
   const offerPerUnitDiscount =
     activeOffers.length > 0 && originalUnitPrice > 0
       ? bestOfferDiscountAmount(activeOffers, originalUnitPrice)
@@ -560,6 +732,16 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
   const promoUnitPrice = offerPerUnitDiscount > 0 ? originalUnitPrice - offerPerUnitDiscount : null
   const showPromoPrice =
     promoUnitPrice != null && promoUnitPrice > 0 && promoUnitPrice < originalUnitPrice
+
+  // Once the traveler picker has been touched, the headline switches from the
+  // static "From $X per person/group" unit to the LIVE total for the selected
+  // travelers (same figure the summary shows: server-confirmed total when a
+  // matching date quote exists, the client-side estimate otherwise). This is
+  // what makes the first price move with every +/- tap.
+  const showLiveTotal =
+    travelerTouched &&
+    totalTravelers > 0 &&
+    (isPerGroup ? matchingGroupBand != null : tour.price > 0)
 
   // An applied promo must always produce a real discount: if the re-quoted
   // pricing comes back with zero discount (the code no longer applies to the
@@ -582,8 +764,26 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
       <div className="booking-widget-card">
           <div className="booking-price-section">
           <div className="booking-price-main">
-            {isPerGroup ? (
-              headlineGroupBand ? (
+            {showLiveTotal ? (
+              <>
+                <span className="booking-price-from">{t('common.from')}</span>
+                {!pricingLoading && previousLiveTotal != null && previousLiveTotal !== displayTotal && showPromoPrice && (
+                  <span className="booking-price-amount booking-price-amount--strike">
+                    {formatMoney(previousLiveTotal)}
+                  </span>
+                )}
+                <span className="booking-price-amount booking-price-amount--live">
+                  {pricingLoading ? (
+                    <span className="booking-price-spinner">
+                      <svg className="booking-spinner" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <circle cx="12" cy="12" r="10" strokeDasharray="31.4 31.4" strokeLinecap="round" />
+                      </svg>
+                    </span>
+                  ) : formatMoney(displayTotal)}
+                </span>
+              </>
+            ) : isPerGroup ? (
+              lowestGroupBand ? (
                 <>
                   <span className="booking-price-from">{t('common.from')}</span>
                   {showPromoPrice ? (
@@ -593,7 +793,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                     </>
                   ) : (
                     <span className="booking-price-amount">
-                      {formatMoney(headlineGroupBand.price)}
+                      {formatMoney(originalUnitPrice)}
                     </span>
                   )}
                   <span className="booking-price-per">{t('booking.perGroup', 'per group')}</span>
@@ -635,26 +835,24 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
         </div>
 
         <div className="booking-form">
-          {/* Date selector */}
-          <div className="booking-field" ref={calendarRef}>
-            <label className="booking-label">
-              <CalendarDays size={18} />
-              {t('tourDetail.selectDate')}
-            </label>
-            <button
-              type="button"
-              className="booking-input"
-              onClick={() => { setShowCalendar((v) => !v); setShowGuestSelector(false) }}
-              aria-expanded={showCalendar}
-            >
-              <span className="booking-input-main">
-                <span className="booking-input-date">{selectedDateLabel}</span>
-                {selectedTimeLabel && <span className="booking-selected-time">{selectedTimeLabel}</span>}
-              </span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
+          {/* ── Viator-style inline date + traveler bar ── */}
+          <div className="booking-inline-picker">
+            {/* Date section */}
+            <div className="booking-inline-section booking-inline-date" ref={calendarRef}>
+              <button
+                type="button"
+                className="booking-inline-trigger"
+                onClick={() => { setShowCalendar((v) => !v); setShowGuestSelector(false) }}
+                aria-expanded={showCalendar}
+                aria-haspopup="dialog"
+              >
+                <span className="booking-inline-label">{t('tourDetail.selectDate')}</span>
+                <span className="booking-inline-value">
+                  <span className="booking-inline-date-text">{selectedDateLabel}</span>
+                  {selectedTimeLabel && <span className="booking-selected-time">{selectedTimeLabel}</span>}
+                </span>
+                <ChevronDown size={16} className="booking-inline-chevron" />
+              </button>
             <AnimatePresence>
               {showCalendar && (
                 <motion.div
@@ -664,7 +862,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                   animate="animate"
                   exit="exit"
                   transition={{ duration: 0.2, ease: 'easeOut' }}
-                  style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 50 }}
+                  style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 50 }}
                 >
                   <CalendarPicker
                     isOpen={showCalendar}
@@ -672,7 +870,24 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                     onDateSelect={(date) => {
                       setSelectedDate(date)
                       onSelectedDateChange?.(date)
-                      setSelectedTime(null)
+                      // Smart time carry-over (Viator-style): when the traveller
+                      // changes the date after picking a time, keep that time if
+                      // it is still an open slot on the new date, otherwise
+                      // auto-select the first open slot — never make them re-pick
+                      // a time just because the date changed. On a first pick
+                      // (no prior time) the slot list is left for them to choose.
+                      if (selectedTime) {
+                        const nextSlots = slotsForDate(date)
+                        const isOpen = (s: DayTimeSlot) => !s.closed && (s.remaining == null || s.remaining > 0)
+                        const kept = nextSlots.find((s) => s.time === selectedTime && isOpen(s))
+                        if (kept) {
+                          setShowCalendar(false)
+                        } else {
+                          const firstOpen = nextSlots.find(isOpen)
+                          setSelectedTime(firstOpen ? firstOpen.time : null)
+                          if (firstOpen) setShowCalendar(false)
+                        }
+                      }
                       // If the chosen date's weekday falls outside any
                       // specific-weekday offer, note it as informational —
                       // the date is still fully bookable at the standard
@@ -739,20 +954,27 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                             <div className="booking-slot-grid booking-slot-grid-compact">
                               {selectedDaySlots.map((slot) => {
                                 const slotFull = slot.remaining != null && slot.remaining <= 0
+                                const slotClosed = slot.closed === true
                                 const isSelectedSlot = selectedTime === slot.time
                                 return (
                                   <button
                                     key={slot.time}
                                     type="button"
-                                    disabled={slotFull}
+                                    disabled={slotFull || slotClosed}
                                     onClick={() => {
                                       setSelectedTime(slot.time)
                                       setShowCalendar(false)
                                     }}
-                                    className={`booking-slot-chip${isSelectedSlot ? ' booking-slot-chip-active' : ''}`}
+                                    className={`booking-slot-chip${isSelectedSlot ? ' booking-slot-chip-active' : ''}${slotClosed ? ' booking-slot-chip-closed' : ''}`}
                                   >
                                     <span className="booking-slot-time">{formatSlotTime(slot.time)}</span>
-                                    {slot.remaining != null && (
+                                    {slotClosed ? (
+                                      <span className="booking-slot-cap">
+                                        {slot.closesAt
+                                          ? t('booking.bookingsCloseAt', 'Bookings close {{time}}', { time: formatCutoffTime(slot.closesAt) })
+                                          : t('booking.bookingsClosed', 'Bookings closed')}
+                                      </span>
+                                    ) : slot.remaining != null ? (
                                       <span className="booking-slot-cap">
                                         {slotFull
                                           ? t('booking.soldOut', 'Sold out')
@@ -760,7 +982,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                                             ? `${Math.max(0, slot.groupsRemaining ?? 0)} ${t('booking.groupSlots', 'group slots')}`
                                             : `${Math.max(0, slot.remaining)} ${t('booking.spotsLeft', 'spots left')}`}
                                       </span>
-                                    )}
+                                    ) : null}
                                   </button>
                                 )
                               })}
@@ -793,32 +1015,31 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
+            </div>
 
-          {/* Guest selector */}
-          <div className="booking-field" ref={guestRef}>
-            <label className="booking-label">
-              <Users size={18} />
-              {t('booking.travelers')}
-            </label>
-            <button
-              type="button"
-              className="booking-input"
-              onClick={() => { setShowGuestSelector((v) => !v); setShowCalendar(false) }}
-              aria-expanded={showGuestSelector}
-            >
-              <span>
-                {totalTravelers} {t('booking.traveler', { count: totalTravelers })}
-                {isPerGroup && activeGroupBandLabel && (
-                  <span className="booking-active-band">
-                    {' '}· {t('booking.groupOf', 'Group of {{range}}', { range: activeGroupBandLabel })}
-                  </span>
-                )}
-              </span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
+            <div className="booking-inline-divider" />
+
+            {/* Traveler section */}
+            <div className="booking-inline-section booking-inline-traveler" ref={guestRef}>
+              <button
+                type="button"
+                className="booking-inline-trigger"
+                onClick={() => { setShowGuestSelector((v) => !v); setShowCalendar(false) }}
+                aria-expanded={showGuestSelector}
+                aria-haspopup="dialog"
+              >
+                <span className="booking-inline-label">{t('booking.travelers')}</span>
+                <span className="booking-inline-value">
+                  <Users size={16} className="booking-inline-icon" />
+                  <span>{totalTravelers} {t('booking.traveler', { count: totalTravelers })}</span>
+                  {isPerGroup && totalTravelers > 1 && activeGroupBandLabel && (
+                    <span className="booking-active-band">
+                      {' '}· {t('booking.groupOf', 'Group of {{range}}', { range: activeGroupBandLabel })}
+                    </span>
+                  )}
+                </span>
+                <ChevronDown size={16} className="booking-inline-chevron" />
+              </button>
             <AnimatePresence>
               {showGuestSelector && (
                 <motion.div
@@ -829,6 +1050,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                   exit="exit"
                   transition={{ duration: 0.2, ease: 'easeOut' }}
                   className="guest-selector-dropdown"
+                  style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 50 }}
                 >
                   {isPerGroup && groupSizeBands.length > 0 && (
                     <div className="group-size-bands">
@@ -879,7 +1101,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                         <div className="guest-type-controls">
                           <button
                             className="guest-btn"
-                            onClick={() => decrement(opt.key)}
+                            onClick={() => { setTravelerTouched(true); decrement(opt.key) }}
                             disabled={!canDecrement}
                             aria-label={`Remove one ${opt.label}`}
                           >
@@ -888,7 +1110,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                           <span className="guest-count">{opt.count}</span>
                           <button
                             className="guest-btn"
-                            onClick={() => increment(opt.key)}
+                            onClick={() => { setTravelerTouched(true); increment(opt.key) }}
                             disabled={!canIncrement}
                             aria-label={`Add one ${opt.label}`}
                           >
@@ -939,7 +1161,15 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                 </motion.div>
               )}
             </AnimatePresence>
+            </div>
           </div>
+
+          {/* Booking deadline countdown — shows hours left when the supplier
+              has set a near-term cutoff for the selected date. Uses the soonest
+              slot deadline on fixed-slot tours, else the whole-day deadline. */}
+          {selectedDate && bookingDeadlineIso && (
+            <BookingDeadlineTimer closesAt={bookingDeadlineIso} />
+          )}
 
           {/* Transparent price summary — always visible so the spinner is easy to see */}
           {(isPerGroup ? matchingGroupBand != null : tour.price > 0) && totalTravelers > 0 && (
@@ -1072,59 +1302,39 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
             </p>
           )}
 
-          {/* Submit */}
+          {/* Submit — no spinner state: the Book Now transition overlay is the
+              only feedback, shown the instant the button is pressed. */}
           <Button
             className="booking-submit-btn"
             onClick={handleBookNow}
+            onPointerEnter={warmBookingTransition}
+            onFocus={warmBookingTransition}
+            onTouchStart={warmBookingTransition}
             disabled={isBooking || (!!selectedDate && selectedDaySlots.length > 0 && !selectedTime) || (!isPerGroup && mixIssues.length > 0)}
           >
-            {isBooking ? (
-              <span className="booking-btn-loader">
-                <svg className="booking-spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <circle cx="12" cy="12" r="10" strokeDasharray="31.4 31.4" strokeLinecap="round" />
-                </svg>
-                {t('booking.checking')}
-              </span>
-            ) : (
-              t('tourDetail.bookNow')
-            )}
+            {t('tourDetail.bookNow')}
           </Button>
 
           {/* Date-specific cancellation cutoff — matches the Quick facts
-              label, shown right after Book now. */}
+              label, shown right after Book now. Turns red ("Non-refundable")
+              once the selected date is inside the cancellation window. */}
           {cancellationNote && (
-            <p className="booking-cancel-note">
-              <ShieldCheck size={14} />
-              {cancellationNote}
+            <p className={`booking-cancel-note${cancellation && !cancellation.refundable ? ' booking-cancel-note--none' : ''}`}>
+              <Info size={14} />
+              <span>
+                <strong>{cancellationNote}</strong>
+                {cancellation?.sublabel && <> — {cancellation.sublabel}</>}
+              </span>
             </p>
           )}
-
-          {/* Assistance */}
-          <div className="booking-assistance">
-            <p className="booking-assistance-title">{t('tourDetail.needFurtherAssistance')}</p>
-            <button type="button" className="booking-assistance-btn" onClick={() => setShowChat(true)}>
-              <MessageSquare size={16} />
-              {t('tourDetail.startChat')}
-              {hasSupplierUnread && <span className="booking-assistance-unread" aria-label="Unread messages" />}
-            </button>
-          </div>
         </div>
       </div>
-      {showChat && (
-        <SupportChatWidget
-          initialOpen
-          initialRecipient={
-            tour.supplierProfile?.id
-              ? { id: tour.supplierProfile.id, name: tour.supplierProfile.name, photoURL: tour.supplierProfile.photoURL }
-              : null
-          }
-          onOpenAuth={onOpenAuth}
-        />
-      )}
 
       <AnimatePresence>
         {showTransition && (
-          <BookingTransition onDone={handleTransitionDone} vehicleIndex={transitVehicle} />
+          <Suspense fallback={null}>
+            <BookingTransition onDone={finishBookingNavigation} />
+          </Suspense>
         )}
       </AnimatePresence>
     </div>

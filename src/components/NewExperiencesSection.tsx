@@ -1,9 +1,9 @@
-import { useRef, useState, useEffect, useCallback } from 'react'
+import { useRef, useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import SectionHeading from './SectionHeading'
 import TourCard from './TourCard'
 import TourCardSkeleton from './TourCardSkeleton'
-import { useNewExperiences, mapToTourCard } from '../hooks/useHomepageSections'
+import { useNewExperiences, mapToTourCard, type HomepageBackfill } from '../hooks/useHomepageSections'
 import './NewExperiencesSection.css'
 
 const CARD_WIDTH = 295
@@ -13,25 +13,29 @@ interface Props {
   isLoading?: boolean
   title?: string
   location?: string
+  backfill?: HomepageBackfill | null
 }
 
-export default function NewExperiencesSection({ isLoading, title, location }: Props) {
+export default function NewExperiencesSection({ isLoading, title, location, backfill }: Props) {
   const { t } = useTranslation()
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
   const { data: liveTours } = useNewExperiences(30)
 
-  const items = liveTours?.length
-    ? liveTours.map(t => {
-        const card = mapToTourCard(t)
-        // Carousel slides: the supplier-chosen cover photo leads, followed by
-        // the remaining unique photos — so cards get the same image carousel
-        // as every other section while the best-quality cover stays first.
-        const rest = (card.photos ?? []).filter(p => typeof p === 'string' && p.length > 0 && p !== card.image)
-        return { ...card, photos: card.image ? [card.image, ...rest] : card.photos }
-      })
+  const localItems = liveTours?.length
+    ? liveTours.map(t => mapToTourCard(t))
     : null
+
+  const backfillTours = useMemo(() => {
+    if (!backfill?.tours?.length) return []
+    return backfill.tours.map(t => mapToTourCard(t))
+  }, [backfill])
+
+  const items = useMemo(() => {
+    if (!localItems) return null
+    return backfillTours.length > 0 ? [...localItems, ...backfillTours] : localItems
+  }, [localItems, backfillTours])
 
   const updateArrows = useCallback(() => {
     const el = scrollRef.current

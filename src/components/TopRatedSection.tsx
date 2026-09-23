@@ -1,9 +1,9 @@
-import { useRef, useState, useEffect, useCallback } from 'react'
+import { useRef, useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import SectionHeading from './SectionHeading'
 import TourCard from './TourCard'
 import TourCardSkeleton from './TourCardSkeleton'
-import { useTopRated, mapToTourCard, type HomepageTour } from '../hooks/useHomepageSections'
+import { useTopRated, mapToTourCard, type HomepageTour, type HomepageBackfill } from '../hooks/useHomepageSections'
 import './TopRatedSection.css'
 
 const CARD_WIDTH = 295
@@ -14,17 +14,29 @@ interface Props {
   isLoading?: boolean
   title?: string
   location?: string
+  backfill?: HomepageBackfill | null
 }
 
-export default function TopRatedSection({ preloaded, isLoading, title, location }: Props) {
+export default function TopRatedSection({ preloaded, isLoading, title, location, backfill }: Props) {
   const { t } = useTranslation()
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
   const { data: liveData } = useTopRated(12, !preloaded)
-  const items = (preloaded ?? liveData)?.length
+
+  const localItems = (preloaded ?? liveData)?.length
     ? (preloaded ?? liveData)!.map(mapToTourCard)
     : null
+
+  const backfillTours = useMemo(() => {
+    if (!backfill?.tours?.length) return []
+    return backfill.tours.map(mapToTourCard)
+  }, [backfill])
+
+  const items = useMemo(() => {
+    if (!localItems) return null
+    return backfillTours.length > 0 ? [...localItems, ...backfillTours] : localItems
+  }, [localItems, backfillTours])
 
   const updateArrows = useCallback(() => {
     const el = scrollRef.current

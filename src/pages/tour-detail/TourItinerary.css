@@ -269,3 +269,81 @@
   background: #0f172a;
   flex-shrink: 0;
 }
+
+/* ───────────── Mobile responsive (< 640px) ───────────── */
+
+@media (max-width: 639px) {
+  .itinerary-stop-simple {
+    gap: 12px;
+  }
+
+  .itinerary-stop-simple-marker {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+  }
+
+  .itinerary-stop-simple-marker-col {
+    width: 32px;
+  }
+
+  .itinerary-stop-simple-line {
+    min-height: 16px;
+  }
+
+  .itinerary-stop-simple-content {
+    padding-bottom: 20px;
+  }
+
+  .itinerary-stop-simple-title {
+    font-size: 16px;
+    margin: 2px 0 4px;
+  }
+
+  .itinerary-stop-simple-desc {
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .itinerary-stop-simple-loc {
+    font-size: 13px;
+  }
+
+  .itinerary-stop-simple-meta-pill {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+
+  .itinerary-day-label {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+
+  .itinerary-day-logistics {
+    font-size: 12px;
+    gap: 8px 16px;
+  }
+
+  .itinerary-day-logistics-indent {
+    padding-left: 0;
+  }
+
+  .itinerary-day-logistics-item {
+    font-size: 12px;
+    padding: 4px 10px;
+    gap: 5px;
+  }
+
+  .itinerary-stop-simple-node-title {
+    font-size: 11px;
+  }
+
+  .itinerary-day-stop .itinerary-stop-simple-marker-col {
+    width: 32px;
+  }
+
+  .itinerary-day-stop-dot {
+    width: 12px;
+    height: 12px;
+  }
+}

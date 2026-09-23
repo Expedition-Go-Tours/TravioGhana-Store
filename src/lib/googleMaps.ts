@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Promise-based loader for the Google Maps JavaScript API.
  *
  * The booking-area pickup map renders with Google Maps when a valid
@@ -28,9 +28,9 @@ export class GoogleMapsLoadError extends Error {
 
 const API_URL = 'https://maps.googleapis.com/maps/api/js'
 const LOAD_TIMEOUT_MS = 10000
-const CALLBACK_KEY = '__travioGhanaMapsCallback'
+const CALLBACK_KEY = '__expeditionGoMapsCallback'
 /** localStorage key remembering the last Google Maps load outcome. */
-export const GOOGLE_MAPS_OUTCOME_KEY = 'travioGhana:googleMapsOutcome'
+export const GOOGLE_MAPS_OUTCOME_KEY = 'expeditionGo:googleMapsOutcome'
 /**
  * After a failed attempt (e.g. billing not enabled), stop re-injecting the
  * Google script for this long so the console doesn't re-log the API error on

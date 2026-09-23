@@ -1,0 +1,189 @@
+.ext-reviews-section {
+  padding: 45px 0;
+  background: #fff;
+}
+
+.ext-reviews-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 32px;
+  position: relative;
+}
+
+.ext-reviews-viewport {
+  max-width: calc(295px * 5 + 16px * 4);
+  margin: 0 auto;
+}
+
+.ext-reviews-clip {
+  overflow: hidden;
+}
+
+.ext-reviews-carousel {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  align-items: stretch;
+  padding: 4px 0 8px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  width: 100%;
+}
+
+.ext-reviews-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.ext-reviews-card-wrap {
+  width: 295px;
+  min-width: 295px;
+  flex-shrink: 0;
+  display: flex;
+  align-self: stretch;
+  scroll-snap-align: start;
+}
+
+.ext-reviews-card-wrap > * {
+  width: 100%;
+}
+
+/* ─── Stats bar ─── */
+.ext-reviews-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.ext-reviews-stats__rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ext-reviews-stats__number {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  color: #1a1a1a;
+  line-height: 1;
+}
+
+.ext-reviews-stats__stars {
+  display: flex;
+  gap: 1px;
+}
+
+.ext-reviews-stats__divider {
+  width: 1px;
+  height: 20px;
+  background: #e5e7eb;
+  flex-shrink: 0;
+}
+
+.ext-reviews-stats__text {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.ext-reviews-stats__text strong {
+  color: #374151;
+  font-weight: 700;
+}
+
+.ext-reviews-stats__platforms {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ext-reviews-stats__platform {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px 3px 3px;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+}
+
+.ext-reviews-stats__platform-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.ext-reviews-stats__platform--ta {
+  color: #000;
+  background: #fff;
+  border-color: #e5e7eb;
+}
+
+.ext-reviews-stats__platform--gyg {
+  color: #fff;
+  background: #E63C2F;
+  border-color: #E63C2F;
+}
+
+.ext-reviews-stats__platform--google {
+  color: #333;
+  background: #fff;
+  border-color: #e5e7eb;
+}
+
+@media (max-width: 768px) {
+  .ext-reviews-section {
+    padding: 30px 0;
+  }
+
+  .ext-reviews-container {
+    padding: 0 16px;
+  }
+
+  .ext-reviews-viewport {
+    max-width: 100%;
+  }
+
+  .ext-reviews-clip {
+    max-width: 100%;
+  }
+
+  .ext-reviews-carousel {
+    gap: 12px;
+  }
+
+  .ext-reviews-card-wrap {
+    width: 280px;
+    min-width: 280px;
+  }
+
+  .ext-reviews-stats {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .ext-reviews-stats__number {
+    font-size: 18px;
+  }
+
+  .ext-reviews-stats__text {
+    font-size: 13px;
+  }
+
+  .ext-reviews-stats__platform {
+    font-size: 11px;
+    padding: 2px 8px;
+  }
+
+  .ext-reviews-stats__platform-icon {
+    width: 12px;
+    height: 12px;
+  }
+}

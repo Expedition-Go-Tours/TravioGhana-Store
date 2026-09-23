@@ -1,7 +1,8 @@
 /* ===== FOOTER - DESKTOP FIRST ===== */
 
 .footer {
-  background: #01311a;
+  /* Dark green match the CTA / partner-pages design language. */
+  background: #075634;
   padding: 48px 0 0;
 }
 
@@ -51,7 +52,7 @@
 }
 
 .footer-accordion-title {
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 15px;
   font-weight: 700;
   color: #ffffff;
@@ -85,7 +86,7 @@
 }
 
 .footer-link {
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   font-weight: 400;
   color: rgba(255, 255, 255, 0.72);
@@ -117,7 +118,7 @@
   border: 1px solid #e0e0e0;
   border-radius: 10px;
   padding: 10px 12px;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   font-weight: 500;
   color: #222;
@@ -279,11 +280,16 @@
 }
 
 .footer-copyright {
-  font-family: 'Raleway', sans-serif;
-  font-size: 12px;
-  font-weight: 400;
+  font-family: 'DM Sans', sans-serif;
+  /* Scales with viewport width (and drops the global 0.18px letter-spacing)
+     so the full "… | Travio Ghana LTD | Accra-Ghana" line fits on ONE
+     line on every screen size without the last letter clipping. */
+  font-size: clamp(7.5px, 2.4vw, 12px);
+  font-weight: 700;
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
+  letter-spacing: 0;
+  text-align: center;
   white-space: nowrap;
 }
 
@@ -295,7 +301,7 @@
 }
 
 .footer-bottom-link {
-  font-family: 'Raleway', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.72);
@@ -308,6 +314,23 @@
   color: #ffffff;
 }
 
+/* "Cookie Settings" is a button (it opens the consent panel rather than
+   navigating), so strip the browser chrome and match the links beside it. */
+.footer-bottom-button {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.footer-bottom-button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 .footer-bottom-divider {
   width: 1px;
   height: 12px;
@@ -318,8 +341,11 @@
 /* ===== TABLET (769px - 1023px) ===== */
 @media (max-width: 1023px) {
   .footer-grid {
-    grid-template-columns: repeat(6, 1fr);
-    gap: 20px;
+    /* Six 1fr columns at ~108px each wrap text into 3-4 stacked lines and
+       hard-ellipsize the Language/Currency selector values. Collapse to two
+       wider columns instead. */
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px 24px;
   }
 
   .footer-container {
@@ -424,11 +450,5 @@
     justify-content: center;
     flex-wrap: wrap;
     gap: 8px;
-  }
-
-  /* Reserve space for the fixed chat bubble (56px + 16px offset ≈ 72px) so it
-     never covers the footer's bottom text on phones. */
-  .footer-bottom {
-    padding-bottom: 88px;
   }
 }

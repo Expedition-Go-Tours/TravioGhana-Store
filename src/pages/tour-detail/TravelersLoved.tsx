@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Star, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { SAMPLE_TRAVELERS_LOVED } from '../../data/sampleTravelersLoved'
+import StarRating from '../../components/StarRating'
 import './TravelersLoved.css'
 
 export interface TravelerLovedReview {
@@ -115,15 +116,14 @@ export default function TravelersLoved({ reviews, onViewAllReviews }: TravelersL
                     <span className="travelers-loved-verified">· {t('tourDetail.verifiedBooking')}</span>
                   </div>
                 </div>
-                <div className="travelers-loved-stars" aria-label={`${review.rating} out of 5 stars`}>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      size={15}
-                      fill={star <= review.rating ? '#179237' : 'none'}
-                      stroke={star <= review.rating ? '#179237' : '#d6d3d1'}
-                    />
-                  ))}
+                <div className="travelers-loved-stars">
+                  <StarRating
+                    value={review.rating}
+                    size={15}
+                    gap={2}
+                    filledColor="#179237"
+                    emptyColor="#d6d3d1"
+                  />
                 </div>
               </div>
 
@@ -186,15 +186,14 @@ export default function TravelersLoved({ reviews, onViewAllReviews }: TravelersL
                     <span className="travelers-loved-verified">· {t('tourDetail.verifiedBooking')}</span>
                   </div>
                 </div>
-                <div className="travelers-loved-stars" aria-label={`${modalReview.rating} out of 5 stars`}>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      size={16}
-                      fill={star <= modalReview.rating ? '#179237' : 'none'}
-                      stroke={star <= modalReview.rating ? '#179237' : '#d6d3d1'}
-                    />
-                  ))}
+                <div className="travelers-loved-stars">
+                  <StarRating
+                    value={modalReview.rating}
+                    size={16}
+                    gap={2}
+                    filledColor="#179237"
+                    emptyColor="#d6d3d1"
+                  />
                 </div>
               </div>
 

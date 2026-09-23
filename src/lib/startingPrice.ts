@@ -1,4 +1,4 @@
-﻿/**
+/**
  * "From $X" price helpers shared by tour cards and the booking widget.
  *
  * The card and the widget must quote the SAME price: the lowest price of the
@@ -8,6 +8,7 @@
  * delegate to as well, so every surface agrees on the same number.
  */
 import type { TravelerPricing } from './tourTypes'
+import { resolveTierPrice } from './tierPricing'
 
 function toFinite(v: unknown): number | null {
   const n = typeof v === 'number' ? v : typeof v === 'string' ? Number(v) : NaN
@@ -111,4 +112,59 @@ export function lowestAdultFromTravelerPricing(travelerPricing: TravelerPricing[
     }
   }
   return candidates.length > 0 ? Math.min(...candidates) : null
+}
+
+export interface HeadlineUnitPriceOptions {
+  isPerGroup: boolean
+  /** The group-size band matching the current headcount (per-group tours). */
+  matchingGroupBand?: { price: number } | null
+  /** The cheapest group-size band (fallback when no band matches). */
+  lowestGroupBand?: { price: number } | null
+  /** The tour's adult pricing category, when one exists. */
+  adultGroup?: TravelerPricing | null
+  /** Total selected travelers — determines the active tier. */
+  totalTravelers: number
+  travelerGroups?: TravelerPricing[]
+  /** Legacy fallback price (tour.price). */
+  tourPrice?: number
+}
+
+/**
+ * The headline "From $X" unit price for the booking widget, resolved against
+ * the CURRENT traveler selection so it stays in sync with the traveler picker:
+ * per-group tours quote the band matching the selected headcount (cheapest
+ * band as fallback), per-person tours quote the adult category's price for the
+ * current headcount (active tier when tiers are defined — the exact same
+ * resolution the picker uses), falling back to the lowest adult rate then the
+ * legacy tour price.
+ */
+export function headlineUnitPrice(opts: HeadlineUnitPriceOptions): number {
+  if (opts.isPerGroup) {
+    return opts.matchingGroupBand?.price ?? opts.lowestGroupBand?.price ?? 0
+  }
+  if (opts.adultGroup) {
+    return resolveTierPrice(opts.adultGroup, opts.totalTravelers, opts.adultGroup.price ?? 0)
+  }
+  return lowestAdultFromTravelerPricing(opts.travelerGroups) ?? opts.tourPrice ?? 0
+}
+
+/**
+ * The card-parity "From $X" unit price — what the tour cards quote on the
+ * homepage/listing surfaces (backend `cheapestRetailPrice` semantics): the
+ * lowest adult rate across all tiers for per-person tours, the cheapest
+ * group-size band for per-group tours. The booking widget shows this price on
+ * landing so it never disagrees with the card; it switches to
+ * `headlineUnitPrice` (the headcount-aware rate) once the traveler picker is
+ * touched.
+ */
+export function cardParityUnitPrice(opts: {
+  isPerGroup: boolean
+  lowestGroupBand?: { price: number } | null
+  travelerGroups?: TravelerPricing[]
+  tourPrice?: number
+}): number {
+  if (opts.isPerGroup) {
+    return opts.lowestGroupBand?.price ?? 0
+  }
+  return lowestAdultFromTravelerPricing(opts.travelerGroups) ?? opts.tourPrice ?? 0
 }

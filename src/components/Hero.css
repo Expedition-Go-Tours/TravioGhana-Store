@@ -1,36 +1,42 @@
 .hero {
   position: relative;
-  min-height: 48vh;
-  background: linear-gradient(180deg, rgba(201, 150, 33, 0.16) 0%, rgba(23, 146, 55, 0.06) 40%, #ffffff 100%);
+  min-height: 33vh;
+  /* Reserve space for the fixed navbar (64px) so the headline/tagline can
+     never slide under it and appear cut off. */
+  padding-top: 64px;
+  background: linear-gradient(180deg, rgba(23, 146, 55, 0.08) 0%, rgba(23, 146, 55, 0.03) 40%, #ffffff 100%);
 }
 
 .hero-content {
   position: relative;
-  z-index: 2;
+  z-index: 10;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
-  min-height: 48vh;
+  min-height: 33vh;
   text-align: center;
   color: #1a1a1a;
   padding: 0.15vh 20px 0;
 }
 
 .hero-headline {
-  font-family: 'GT Esti Pro Display', sans-serif;
-  font-weight: 700;
-  font-size: clamp(22px, 2.8vw, 38px);
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  /* Floor matches the 24px phone size so the headline never gets smaller at
+     ~769-800px than it is on a phone (clamp would dip to 22px there). */
+  font-size: clamp(24px, 2.8vw, 38px);
   line-height: 1.15;
-  letter-spacing: -1px;
+  letter-spacing: -0.03em;
   margin: 0;
   color: #0f172a;
+  text-wrap: balance;
 }
 
 .hero-tagline {
-  font-family: 'GT Esti Pro Display', sans-serif;
-  font-weight: 300;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 400;
   font-size: clamp(16px, 2vw, 20px);
   line-height: 1.5;
   margin-top: 8px;
@@ -51,9 +57,14 @@
 }
 
 @media (max-width: 768px) {
+  .hero,
+  .hero-content {
+    min-height: 35vh;
+  }
+
   .hero-headline {
     font-size: 24px;
-    letter-spacing: -0.5px;
+    letter-spacing: -0.03em;
   }
 
   .hero-tagline {

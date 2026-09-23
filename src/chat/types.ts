@@ -52,5 +52,7 @@ export interface ChatRecipient {
 /** Delivery status of one of the current user's own messages. */
 export type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read'
 
-export const SUPPORT_CONVERSATION_TYPE: ConversationType = 'EXPEDITION_CUSTOMER'
+/** Support conversations go to the shared ADMIN support inbox (answered in the
+ *  TravioAfrica admin console under "Customer Support"). */
+export const SUPPORT_CONVERSATION_TYPE: ConversationType = 'USER_SUPPORT'
 export const SUPPLIER_CONVERSATION_TYPE: ConversationType = 'SUPPLIER_CUSTOMER'

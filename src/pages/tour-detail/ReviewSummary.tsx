@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Star } from 'lucide-react'
+import StarRating from '../../components/StarRating'
 import type { ReviewStats } from '../../lib/tourTypes'
 import './ReviewSummary.css'
 
@@ -28,14 +28,13 @@ export default function ReviewSummary({ stats }: ReviewSummaryProps) {
       <div className="review-summary-score">
         <div className="review-score-number">{average.toFixed(1)}</div>
         <div className="review-score-stars">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <Star
-              key={star}
-              size={20}
-              fill={star <= Math.round(average) ? '#179237' : 'none'}
-              stroke={star <= Math.round(average) ? '#179237' : '#e5e4e7'}
-            />
-          ))}
+          <StarRating
+            value={average}
+            size={20}
+            gap={4}
+            filledColor="#179237"
+            emptyColor="#e5e4e7"
+          />
         </div>
         <div className="review-score-label">
           {t('reviews.totalCount', { count: total })}

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Check, MapPin, X, Loader2, AlertCircle, Info, ExternalLink } from 'lucide-react'
 import type { PickupAreaShape } from '@/lib/pickupZone'
 import { findPickupAreaForAddress, distanceMeters, hasLocationOnlyAreas, pickupZoneStatus, type PickupZoneStatus } from '@/lib/pickupZone'
@@ -84,8 +84,10 @@ export default function PickupLocationSection({
   onOpenMap,
 }: PickupLocationSectionProps) {
   // ── Mode detection ──
-  const pickupLocations = tour.pickupLocations || []
-  const pickupAreas = tour.pickupAreas || []
+  // Stabilised with useMemo so the fallback `[]` never creates a new array
+  // identity on every render (which would churn the memos/effect below).
+  const pickupLocations = useMemo(() => tour.pickupLocations || [], [tour.pickupLocations])
+  const pickupAreas = useMemo(() => tour.pickupAreas || [], [tour.pickupAreas])
   // Area-based pickup supersedes leftover specific pickup locations — the
   // multi-point flow only applies when there are several locations AND no areas.
   const hasMultiplePoints = pickupLocations.length > 1 && pickupAreas.length === 0
@@ -96,6 +98,10 @@ export default function PickupLocationSection({
   const hasPointAreas = useMemo(() => hasLocationOnlyAreas(pickupAreas), [pickupAreas])
   // Multi-point: show radio buttons when there are multiple named pickup locations
   const isMultiPoint = hasMultiplePoints
+  // Single point: exactly one designated pickup location and no areas. The
+  // traveller cannot choose — this is the only place pickup happens — so the
+  // section renders it read-only and auto-fills it into the booking.
+  const isSinglePoint = pickupLocations.length === 1 && pickupAreas.length === 0
 
   // ── Radio selection (null = no selection yet) — used by multi-point AND
   //     zone tours: "Yes, I can add it now" reveals the search bar + map;
@@ -135,6 +141,27 @@ export default function PickupLocationSection({
     () => pickupAreas.filter((a): a is PickupAreaShape & { name: string } => !!a && !!a.name),
     [pickupAreas],
   )
+
+  // ── Single point: auto-set the one designated pickup spot ──
+  // There is nothing for the traveller to choose — pickup only happens at
+  // this one point — so it is written into the booking automatically (the
+  // read-only card just shows it). Prefer the resolved point (its coordinates
+  // may have been geocoded from a name-only entry); fall back to the raw
+  // pickupLocations entry so a draft is filled even before resolution.
+  useEffect(() => {
+    if (!isSinglePoint) return
+    const raw = pickupLocations[0]
+    const resolved = resolvedPoints.find((p) => p.kind === 'point' && p.lat != null && p.lng != null)
+    const lat = resolved?.lat ?? raw?.lat ?? null
+    const lng = resolved?.lng ?? raw?.lng ?? null
+    if (lat == null || lng == null) return
+    const label = resolved?.name || resolved?.address || raw?.name || raw?.address || ''
+    if (contact.pickupLat === lat && contact.pickupLng === lng && contact.location === label) return
+    onContactChange('pickupArea', '')
+    onContactChange('location', label)
+    onContactChange('pickupLat', lat)
+    onContactChange('pickupLng', lng)
+  }, [isSinglePoint, pickupLocations, resolvedPoints, contact.pickupLat, contact.pickupLng, contact.location, onContactChange])
 
   // ── Zone status feedback ──
   const zoneStatus: PickupZoneStatus = useMemo(
@@ -283,6 +310,20 @@ export default function PickupLocationSection({
     [resolvedPoints],
   )
 
+  // The one designated pickup point for single-point tours (resolved first,
+  // raw entry as the pre-geocode fallback).
+  const singlePointInfo = useMemo(() => {
+    if (!isSinglePoint) return null
+    const resolved = resolvedPoints.find((p) => p.kind === 'point')
+    const raw = pickupLocations[0]
+    return {
+      name: resolved?.name || raw?.name || '',
+      address: resolved?.address || raw?.address || '',
+      lat: resolved?.lat ?? raw?.lat ?? null,
+      lng: resolved?.lng ?? raw?.lng ?? null,
+    }
+  }, [isSinglePoint, resolvedPoints, pickupLocations])
+
   // ── No zones or locations configured yet — show a graceful fallback ──
   if (pickupAreas.length === 0 && pickupLocations.length === 0) {
     return (
@@ -297,6 +338,86 @@ export default function PickupLocationSection({
     )
   }
 
+  // ── Single point — read-only. There is only one place pickup happens, so
+  //    the traveller has nothing to choose; the point is auto-filled into the
+  //    booking (see the effect above) and simply shown here. ──
+  if (isSinglePoint) {
+    const pointLabel = singlePointInfo?.name || singlePointInfo?.address || 'the designated pickup point'
+    const lat = singlePointInfo?.lat ?? null
+    const lng = singlePointInfo?.lng ?? null
+    return (
+      <div className="space-y-5">
+        <h3 className="text-xl font-bold tracking-tight text-slate-900">
+          Your pickup point
+        </h3>
+
+        <div className="flex items-start gap-2.5 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3">
+          <Info className="mt-0.5 size-4 shrink-0 text-sky-600" />
+          <p className="text-sm font-medium text-sky-800">
+            This tour has a single designated pickup point, so there's nothing to choose — pickup is only available here.
+          </p>
+        </div>
+
+        <div className="flex items-start gap-2.5 rounded-xl border border-emerald-200/60 bg-emerald-50/60 px-3.5 py-2.5">
+          <MapPin className="mt-0.5 size-4 shrink-0 text-[#179237]" />
+          <div className="min-w-0 flex-1 text-sm text-emerald-900">
+            <p className="font-semibold">
+              Your pickup point: <span className="underline underline-offset-2">{pointLabel}</span>
+            </p>
+            {singlePointInfo?.address && singlePointInfo.address !== pointLabel && (
+              <p className="mt-0.5 text-xs text-emerald-700">{singlePointInfo.address}</p>
+            )}
+            {referenceStartLabel(tour.referenceStartTime) && (
+              <p className="mt-0.5 text-xs text-emerald-700">{referenceStartLabel(tour.referenceStartTime)}</p>
+            )}
+            {lat != null && lng != null && (
+              <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                <span className="font-semibold text-emerald-700">Directions:</span>
+                <a
+                  href={googleMapsDirectionsUrl(null, { lat, lng }, 'drive')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 font-semibold text-emerald-700 underline underline-offset-2 transition-colors hover:text-emerald-900"
+                >
+                  Open in Google Maps <ExternalLink size={11} />
+                </a>
+                <span className="text-emerald-300">·</span>
+                <a
+                  href={appleMapsDirectionsUrl(null, { lat, lng })}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 font-semibold text-emerald-700 underline underline-offset-2 transition-colors hover:text-emerald-900"
+                >
+                  Apple Maps <ExternalLink size={11} />
+                </a>
+              </p>
+            )}
+          </div>
+        </div>
+
+        {showZoneMap && (
+          <div className="space-y-1">
+            {resolvingPoints && (
+              <p className="flex items-center gap-1.5 px-1 text-[11px] font-medium text-slate-400">
+                <Loader2 className="size-3 animate-spin" />
+                Locating pickup point…
+              </p>
+            )}
+            <MapErrorBoundary resetKey={mapTour || tour}>
+              <LocationMap
+                tour={(mapTour || tour) as PickupZoneMapTour}
+                userMarker={null}
+                suppressDraggablePin
+                selectedPin={lat != null && lng != null ? { lat, lng, label: pointLabel } : null}
+                selectedPinLabel={pointLabel}
+              />
+            </MapErrorBoundary>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   // ── Render ──
   return (
     <div className="space-y-5">
@@ -304,12 +425,33 @@ export default function PickupLocationSection({
           other single-location tours use a direct label. */}
       {isMultiPoint || geofenced ? (
         <h3 className="text-xl font-bold tracking-tight text-slate-900">
-          Would you like to choose your pickup point?
+          {isMultiPoint ? 'Would you like to choose your pickup point?' : 'Would you like to choose your pickup location?'}
         </h3>
       ) : (
         <h3 className="text-xl font-bold tracking-tight text-slate-900">
           Choose your pickup location
         </h3>
+      )}
+
+      {/* How-to-choose guidance — tells the traveller the selection rule up
+          front (zone: address must fall inside the shaded area; multi-point:
+          choose one of the listed points). Shown for both modes before the
+          Yes/No radios so the rule is known before they act. */}
+      {isMultiPoint && (
+        <div className="flex items-start gap-2.5 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3">
+          <Info className="mt-0.5 size-4 shrink-0 text-sky-600" />
+          <p className="text-sm font-medium text-sky-800">
+            This tour has {pickupLocations.length} pickup points. Choose the point closest to you from the list or map — pickup is only available at these points.
+          </p>
+        </div>
+      )}
+      {!isMultiPoint && geofenced && (
+        <div className="flex items-start gap-2.5 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3">
+          <Info className="mt-0.5 size-4 shrink-0 text-sky-600" />
+          <p className="text-sm font-medium text-sky-800">
+            This tour picks up within a specific zone. Type your hotel or address and we'll check if it's inside the pickup area shown on the map.
+          </p>
+        </div>
       )}
 
       {/* Multi-point: Radio selection with inline content */}
@@ -519,12 +661,14 @@ export default function PickupLocationSection({
                     </div>
                   </div>
                 )}
-                {/* Out-of-range: distance & travel time to every pickup zone */}
+                {/* Out-of-zone: the choice is allowed, so this is an amber
+                    caution (not a block) with the distance to each zone. */}
                 {!contact.pickupArea && zoneStatus === 'outside' && geofenced && contact.pickupLat != null && contact.pickupLng != null && (
                   <OutOfRangeDistance
                     from={{ lat: contact.pickupLat, lng: contact.pickupLng }}
                     points={designatedPoints}
-                    message="This address isn't inside any of the pickup zones — available pickup zones:"
+                    tone="warning"
+                    message="This location is outside the pickup zone. You can still use it, but please remember to choose a pickup location within the pickup zone before your tour date. Nearby pickup zones:"
                   />
                 )}
                 {!contact.pickupArea && zoneStatus === 'excluded' && matchedArea && (

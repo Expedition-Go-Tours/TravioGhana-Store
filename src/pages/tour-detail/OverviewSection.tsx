@@ -2,9 +2,12 @@ import { useState, useRef, useCallback, useEffect, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import {
-  Star, Check, ChevronLeft, ChevronRight,
+  Check, ChevronLeft, ChevronRight,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import StarRating from '../../components/StarRating'
+import SourceBadge from '../../components/SourceBadge'
+import '../../components/SourceBadge.css'
 import './OverviewSection.css'
 
 interface OverviewSectionProps {
@@ -18,6 +21,10 @@ interface OverviewSectionProps {
     rating: number
     text: string
     country?: string
+    /** Present on external (TripAdvisor / GetYourGuide / Google) reviews. */
+    source?: 'TRIPADVISOR' | 'GETYOURGUIDE' | 'GOOGLE'
+    /** Platform listing URL for the source badge (external reviews only). */
+    externalUrl?: string
   }[]
   onTabChange: (tab: string) => void
   onReviewReadMore: (review: any) => void
@@ -41,6 +48,14 @@ export default function OverviewSection({
   const [activeDot, setActiveDot] = useState(0)
 
   const displayReviews = reviews.slice(0, 8)
+
+  // Reset the indicator when the review set changes (render-phase adjustment —
+  // the linter-approved way to sync state to a derived change).
+  const [prevReviewCount, setPrevReviewCount] = useState(displayReviews.length)
+  if (displayReviews.length !== prevReviewCount) {
+    setPrevReviewCount(displayReviews.length)
+    setActiveDot(0)
+  }
 
   const handleTravellersScroll = useCallback(() => {
     const el = travellersLovedRef.current
@@ -79,10 +94,8 @@ export default function OverviewSection({
     })
   }, [displayReviews.length])
 
-  // Reset the indicator when the review set changes and re-measure after
-  // layout settles (mount, fonts, orientation change).
+  // Re-measure after layout settles (mount, fonts, orientation change).
   useEffect(() => {
-    setActiveDot(0)
     const raf = requestAnimationFrame(() => handleTravellersScroll())
     const wrap = travellersLovedRef.current?.parentElement
     let ro: ResizeObserver | null = null
@@ -150,21 +163,30 @@ export default function OverviewSection({
                         <p className="overview-traveller-name">{review.name}</p>
                         <div className="overview-traveller-meta">
                           <span>{review.date}</span>
-                          <span className="overview-traveller-verified">
-                            <Check size={10} strokeWidth={3} />
-                            {t('tourDetail.verifiedBooking')}
-                          </span>
+                          {review.source ? (
+                            <span className="overview-traveller-source">
+                              <SourceBadge
+                                source={review.source}
+                                url={review.source === 'GOOGLE' ? undefined : review.externalUrl}
+                              />
+                            </span>
+                          ) : (
+                            <span className="overview-traveller-verified">
+                              <Check size={10} strokeWidth={3} />
+                              {t('tourDetail.verifiedBooking')}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
                     <div className="overview-traveller-stars">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          size={14}
-                          className={i < review.rating ? 'star-filled' : 'star-empty'}
-                        />
-                      ))}
+                      <StarRating
+                        value={review.rating}
+                        size={14}
+                        gap={2}
+                        filledColor="#179237"
+                        emptyColor="#e2e8f0"
+                      />
                     </div>
                     <p className="overview-traveller-text">{review.text}</p>
                     <button

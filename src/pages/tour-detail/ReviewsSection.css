@@ -97,11 +97,6 @@
   margin-top: 8px;
 }
 
-.reviews-star-filled {
-  color: #16a34a;
-  fill: currentColor;
-}
-
 .reviews-rating-label {
   margin-top: 8px;
   font-size: 13px;
@@ -255,15 +250,6 @@
   gap: 2px;
 }
 
-.review-star-filled-sm {
-  color: #16a34a;
-  fill: currentColor;
-}
-
-.review-star-empty-sm {
-  color: #e2e8f0;
-}
-
 /* Author header (avatar + name/meta) */
 .review-card-head {
   display: flex;
@@ -297,6 +283,22 @@
 
 .review-card-head-text {
   min-width: 0;
+}
+
+/* Source badge for external (platform) reviews — keeps the internal card look */
+.review-card-source {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.review-card-source .ext-source-badge {
+  font-size: 9px;
+  padding: 2px 7px 2px 2px;
+}
+
+.review-card-source .ext-source-badge__icon {
+  width: 18px;
+  height: 18px;
 }
 
 .review-card-author {

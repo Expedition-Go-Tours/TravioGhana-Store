@@ -10,9 +10,10 @@ import {
 import { useTranslation } from 'react-i18next'
 import { useAuthUser } from '../hooks/useAuthUser'
 import { getAuthToken, refreshAuthToken } from '../lib/auth'
+import { queryClient } from '../lib/queryClient'
 import * as api from './chatApi'
+import type { ChatStartContext } from './chatApi'
 import { connectChatSocket, disconnectChatSocket, getChatSocket } from './chatSocket'
-import { mergeConfirmedMessage } from './mergeMessage'
 import type {
   ChatConversation, ChatMessage, ChatRecipient, ConversationType, MessageStatus,
 } from './types'
@@ -27,10 +28,16 @@ interface ChatContextValue {
   messageStatuses: Record<string, MessageStatus>
   unreadCount: number
   openConversation: (conversationId: string) => void
-  openSupplierChat: (supplier: ChatRecipient) => Promise<void>
+  startChat: (
+    recipient: ChatRecipient,
+    type: ConversationType,
+    context?: ChatStartContext,
+  ) => Promise<ChatConversation>
+  openSupplierChat: (supplier: ChatRecipient, context?: ChatStartContext) => Promise<void>
   openSupportChat: () => Promise<void>
   closeConversation: () => void
   sendMessage: (content: string, attachment?: { url: string; type: string }) => void
+  hideMessageForMe: (conversationId: string, messageId: string) => Promise<void>
   loadMore: (conversationId: string) => void
   setTyping: (conversationId: string, isTyping: boolean) => void
   refreshConversations: () => Promise<void>
@@ -56,6 +63,14 @@ function tempMessageId(): string {
   return `tmp-${Date.now()}-${optimisticSeq}`
 }
 
+/** Chronological (oldest → newest) ordering for a thread, regardless of the
+ *  order the backend returns — keeps the newest message at the bottom. */
+function sortByCreatedAtAsc(list: ChatMessage[]): ChatMessage[] {
+  return [...list].sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+  )
+}
+
 export function ChatProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
   const user = useAuthUser()
@@ -76,11 +91,16 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   // open instead of leaving the thread permanently empty.
   const messageLoadsInFlight = useRef<Record<string, boolean>>({})
   const messagesRef = useRef<Record<string, ChatMessage[]>>({})
-  // Tracks socket-sent messages awaiting confirmation (emit ack or room echo)
-  // so a lost ack triggers the REST fallback exactly once.
-  const pendingSendsRef = useRef<
-    Record<string, { timer: ReturnType<typeof setTimeout> | null; conversationId: string; content: string; attachmentUrl: string | null; sentAt: number }>
-  >({})
+  // Throttle "mark read": socket receipt + REST ack can otherwise fire rapid
+  // duplicate PATCHes to /chat/conversations/:id/read while a thread is open.
+  const lastMarkedAtRef = useRef<Record<string, number>>({})
+  const markConversationRead = useCallback((conversationId: string) => {
+    const now = Date.now()
+    if (now - (lastMarkedAtRef.current[conversationId] ?? 0) < 1500) return
+    lastMarkedAtRef.current[conversationId] = now
+    getChatSocket()?.emit('chat:mark-read', { conversationId })
+    api.markConversationAsRead(conversationId).catch(() => {})
+  }, [])
 
   useEffect(() => {
     activeRef.current = activeConversationId
@@ -124,54 +144,34 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       const mine = message.senderId === userIdRef.current
       const active = activeRef.current === conversationId
 
-      if (mine) {
-        // Own messages are confirmed through the emit ack; never append the
-        // room echo or the message would show twice. The echo does confirm the
-        // server persisted the message, so cancel the REST fallback timer to
-        // stop a lost ack from double-sending.
-        const now = Date.now()
-        for (const [tmpId, pending] of Object.entries(pendingSendsRef.current)) {
-          if (
-            pending.conversationId === conversationId &&
-            pending.content === message.content &&
-            pending.attachmentUrl === message.attachmentUrl &&
-            now - pending.sentAt < 15000
-          ) {
-            if (pending.timer) clearTimeout(pending.timer)
-            delete pendingSendsRef.current[tmpId]
-            break
-          }
-        }
-        return
-      }
-
       setMessages((prev) => {
         const list = prev[conversationId] ?? []
         if (list.some((m) => m.id === message.id)) return prev
         return { ...prev, [conversationId]: [...list, message] }
       })
-      setConversations((prev) => {
-        const existing = prev.find((c) => c.id === conversationId)
-        if (existing) {
-          return prev.map((c) => {
-            if (c.id !== conversationId) return c
-            const delta = active ? -Math.min(c.unreadCount ?? 0, 1) : 1
-            return { ...c, unreadCount: Math.max(0, (c.unreadCount ?? 0) + delta), updatedAt: message.createdAt }
-          })
+      if (!mine) {
+        setConversations((prev) => {
+          const existing = prev.find((c) => c.id === conversationId)
+          if (existing) {
+            return prev.map((c) => {
+              if (c.id !== conversationId) return c
+              const delta = active ? -Math.min(c.unreadCount ?? 0, 1) : 1
+              return { ...c, unreadCount: Math.max(0, (c.unreadCount ?? 0) + delta), updatedAt: message.createdAt }
+            })
+          }
+          refreshConversations()
+          return prev
+        })
+        setUnreadCount((prev) => (active ? prev : prev + 1))
+        if (active) {
+          // Auto mark-read while the conversation is open (throttled).
+          markConversationRead(conversationId)
+        } else {
+          refreshConversations()
         }
-        refreshConversations()
-        return prev
-      })
-      setUnreadCount((prev) => (active ? prev : prev + 1))
-      if (active) {
-        // Auto mark-read while the conversation is open.
-        getChatSocket()?.emit('chat:mark-read', { conversationId })
-        api.markConversationAsRead(conversationId).catch(() => {})
-      } else {
-        refreshConversations()
       }
     },
-    [refreshConversations],
+    [refreshConversations, markConversationRead],
   )
 
   const handleSocketTyping = useCallback(
@@ -282,6 +282,18 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         socket.on('chat:delivered', handleSocketDelivered)
         socket.on('chat:message-edited', handleSocketEdited)
         socket.on('chat:message-deleted', handleSocketDeleted)
+        socket.on('chat:message-deleted-for-me', handleSocketDeleted)
+
+        // Real-time badge: the backend pushes user notifications (Socket.IO
+        // room `user:{id}`) when a booking is confirmed. Refreshing the
+        // bookings queries here makes the navbar badge appear instantly on any
+        // open tab/device; the count query's 60s poll is the fallback.
+        socket.on('notification', (payload: { type?: string } | undefined) => {
+          const type = payload?.type
+          if (type === 'BOOKING_CONFIRMED' || type === 'BOOKING_AWAITING_CONFIRMATION') {
+            queryClient.invalidateQueries({ queryKey: ['expedition', 'bookings'] })
+          }
+        })
 
         await refreshConversations()
       } catch {
@@ -295,6 +307,53 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     user, refreshConversations, handleSocketMessage, handleSocketTyping,
     handleSocketMarkRead, handleSocketDelivered, handleSocketEdited, handleSocketDeleted,
   ])
+
+  // ── Realtime fallback: lightweight polling so supplier replies appear
+  //    without a page refresh even when socket pushes are missed ────────
+  const threadPollInFlightRef = useRef(false)
+
+  const pollActiveThread = useCallback(async () => {
+    const convId = activeRef.current
+    if (!convId || threadPollInFlightRef.current) return
+    threadPollInFlightRef.current = true
+    try {
+      const page = await api.getMessages(convId)
+      setMessages((prev) => {
+        const existing = prev[convId] ?? []
+        const known = new Set(existing.map((m) => m.id))
+        const fresh = page.messages.filter((m) => !known.has(m.id))
+        if (fresh.length === 0) return prev
+        return { ...prev, [convId]: sortByCreatedAtAsc([...existing, ...fresh]) }
+      })
+      setHasMore((prev) => ({ ...prev, [convId]: page.hasMore }))
+    } catch {
+      /* transient */
+    } finally {
+      threadPollInFlightRef.current = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!user) return
+    const listTimer = setInterval(() => {
+      if (!document.hidden) refreshConversations()
+    }, 15000)
+    const threadTimer = setInterval(() => {
+      if (!document.hidden) void pollActiveThread()
+    }, 8000)
+    const refetch = () => {
+      refreshConversations()
+      void pollActiveThread()
+    }
+    window.addEventListener('focus', refetch)
+    document.addEventListener('visibilitychange', refetch)
+    return () => {
+      clearInterval(listTimer)
+      clearInterval(threadTimer)
+      window.removeEventListener('focus', refetch)
+      document.removeEventListener('visibilitychange', refetch)
+    }
+  }, [user, refreshConversations, pollActiveThread])
 
   // ── Conversation actions ─────────────────────────────────────────────
   const openConversation = useCallback(
@@ -319,7 +378,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         api
           .getMessages(conversationId)
           .then((page) => {
-            setMessages((prev) => ({ ...prev, [conversationId]: page.messages }))
+            setMessages((prev) => ({ ...prev, [conversationId]: sortByCreatedAtAsc(page.messages) }))
             setHasMore((prev) => ({ ...prev, [conversationId]: page.hasMore }))
           })
           .catch(() => {})
@@ -327,33 +386,36 @@ export function ChatProvider({ children }: { children: ReactNode }) {
             delete messageLoadsInFlight.current[conversationId]
           })
       }
-      getChatSocket()?.emit('chat:mark-read', { conversationId })
-      api.markConversationAsRead(conversationId).catch(() => {})
+      markConversationRead(conversationId)
     },
-    [conversations, messages],
+    [conversations, messages, markConversationRead],
   )
 
-  const openRecipientChat = useCallback(
-    async (recipient: ChatRecipient, type: ConversationType) => {
-      try {
-        const conv = await api.getOrCreateConversation(recipient.id, type)
-        setConversations((prev) => {
-          if (prev.some((c) => c.id === conv.id)) return prev
-          return [conv, ...prev]
-        })
-        openConversation(conv.id)
-      } catch {
-        /* surface via caller toast */
-      }
+  /** Finds-or-creates a conversation with a recipient and opens it. Throws on
+   *  failure so callers can surface/fall back. `context` attaches the booking a
+   *  booking-originated chat is about (used by messaging emails). */
+  const startChat = useCallback(
+    async (
+      recipient: ChatRecipient,
+      type: ConversationType,
+      context?: ChatStartContext,
+    ): Promise<ChatConversation> => {
+      const conv = await api.getOrCreateConversation(recipient.id, type, context)
+      setConversations((prev) => {
+        if (prev.some((c) => c.id === conv.id)) return prev
+        return [conv, ...prev]
+      })
+      openConversation(conv.id)
+      return conv
     },
     [openConversation],
   )
 
   const openSupplierChat = useCallback(
-    async (supplier: ChatRecipient) => {
-      await openRecipientChat(supplier, SUPPLIER_CONVERSATION_TYPE)
+    async (supplier: ChatRecipient, context?: ChatStartContext) => {
+      await startChat(supplier, SUPPLIER_CONVERSATION_TYPE, context)
     },
-    [openRecipientChat],
+    [startChat],
   )
 
   const openSupportChat = useCallback(async () => {
@@ -361,11 +423,30 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     if (!supportId) {
       throw new Error('support_unavailable')
     }
-    await openRecipientChat(
-      { id: supportId, name: t('supportChat.expeditionSupport') },
+    // Reuse an existing admin Customer Support (USER_SUPPORT) thread so support
+    // never spawns a duplicate; fall back to the most recently updated thread
+    // with this identity if a legacy one exists. Prefer the thread with history.
+    const existing = conversations
+      .filter((c) => {
+        const isSupport = c.type === SUPPORT_CONVERSATION_TYPE
+        const hasSupportParticipant = c.participants?.some((p) => p.userId === supportId)
+        return isSupport || (hasSupportParticipant && c.type === 'EXPEDITION_CUSTOMER')
+      })
+      .sort((a, b) => {
+        const aHas = (a.messages?.length ?? 0) > 0 ? 1 : 0
+        const bHas = (b.messages?.length ?? 0) > 0 ? 1 : 0
+        if (aHas !== bHas) return bHas - aHas
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      })[0]
+    if (existing) {
+      openConversation(existing.id)
+      return
+    }
+    await startChat(
+      { id: supportId, name: t('supportChat.customerSupport') },
       SUPPORT_CONVERSATION_TYPE,
     )
-  }, [openRecipientChat, t])
+  }, [conversations, openConversation, startChat, t])
 
   const closeConversation = useCallback(() => {
     if (activeRef.current) {
@@ -394,51 +475,59 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       }))
       setMessageStatuses((prev) => ({ ...prev, [optimisticId]: 'sending' }))
 
-      const confirm = (serverMessage: ChatMessage) => {
-        setMessages((prev) => ({
-          ...prev,
-          [conversationId]: mergeConfirmedMessage(prev[conversationId] ?? [], optimisticId, serverMessage),
-        }))
+      const replaceOptimistic = (serverMessage: ChatMessage) => {
+        setMessages((prev) => {
+          const list = prev[conversationId] ?? []
+          // Idempotent: drop the temp AND any copy of the server message the
+          // socket echo may have inserted before the ack arrived, then append
+          // the server message exactly once — otherwise the echo+ack race
+          // renders the same message twice.
+          const rest = list.filter(
+            (m) => m.id !== optimisticId && m.id !== serverMessage.id,
+          )
+          return { ...prev, [conversationId]: [...rest, serverMessage] }
+        })
         setMessageStatuses((prev) => {
           const next = { ...prev }
           delete next[optimisticId]
           return next
         })
-        setMessageStatuses((prev) => ({ ...prev, [serverMessage.id]: 'sent' }))
-      }
-
-      const clearPending = () => {
-        const pending = pendingSendsRef.current[optimisticId]
-        if (pending?.timer) clearTimeout(pending.timer)
-        delete pendingSendsRef.current[optimisticId]
       }
 
       const socket = getChatSocket()
       const sendViaSocket = socket && socket.connected
-      const fallbackRest = () =>
+      const fallbackRest = () => {
+        // The socket send may have landed even though the ack was lost — the
+        // server broadcasts the sender's own message back, so if an identical
+        // message from me just arrived, reuse it instead of POSTing again.
+        const list = messagesRef.current[conversationId] ?? []
+        const echoed = list.find(
+          (m) =>
+            m.id !== optimisticId &&
+            m.senderId === userIdRef.current &&
+            m.content === content &&
+            (m.attachmentUrl ?? null) === (attachment?.url ?? null) &&
+            Date.now() - new Date(m.createdAt).getTime() < 15000,
+        )
+        if (echoed) {
+          replaceOptimistic(echoed)
+          return
+        }
         api
           .sendMessageRest(conversationId, content, attachment)
           .then((serverMessage) => {
-            confirm(serverMessage)
+            replaceOptimistic(serverMessage)
+            setMessageStatuses((prev) => ({ ...prev, [serverMessage.id]: 'sent' }))
           })
           .catch(() => {
             setMessageStatuses((prev) => ({ ...prev, [optimisticId]: 'sent' }))
           })
+      }
       if (sendViaSocket) {
         const timer = setTimeout(() => {
-          // No ack/echo confirmed delivery — fall back to REST so the message
-          // is never dropped. The pending entry is cleared first so a late ack
-          // can't trigger a second fallback.
-          delete pendingSendsRef.current[optimisticId]
+          // Ack lost — fall back to REST so the message is never dropped.
           fallbackRest()
         }, 8000)
-        pendingSendsRef.current[optimisticId] = {
-          timer,
-          conversationId,
-          content,
-          attachmentUrl: attachment?.url ?? null,
-          sentAt: Date.now(),
-        }
         socket.emit(
           'chat:message',
           {
@@ -447,9 +536,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
             ...(attachment ? { attachmentUrl: attachment.url, attachmentType: attachment.type } : {}),
           },
           (ack?: { status: string; data?: { message?: ChatMessage } }) => {
-            clearPending()
+            clearTimeout(timer)
             if (ack?.status === 'success' && ack.data?.message) {
-              confirm(ack.data.message)
+              replaceOptimistic(ack.data.message)
+              setMessageStatuses((prev) => ({ ...prev, [ack.data!.message!.id]: 'sent' }))
             } else if (ack?.status === 'error') {
               fallbackRest()
             }
@@ -457,6 +547,41 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         )
       } else {
         fallbackRest()
+      }
+    },
+    [],
+  )
+
+  /**
+   * "Delete for me": hide a message the current user sent from their own view
+   * only. Optimistic local removal, rolled back if the server call fails. The
+   * other participant keeps the message (no conversation-room broadcast).
+   */
+  const hideMessageForMe = useCallback(
+    async (conversationId: string, messageId: string) => {
+      const list = messagesRef.current[conversationId] ?? []
+      if (!list.some((m) => m.id === messageId)) return
+      // Optimistic removal — restore on failure.
+      setMessages((prev) => ({
+        ...prev,
+        [conversationId]: (prev[conversationId] ?? []).filter((m) => m.id !== messageId),
+      }))
+      setMessageStatuses((prev) => {
+        const next = { ...prev }
+        delete next[messageId]
+        return next
+      })
+      try {
+        await api.hideMessageForMe(conversationId, messageId)
+      } catch {
+        // Server said no (or it failed) — bring the message back.
+        setMessages((prev) => {
+          const existing = prev[conversationId] ?? []
+          if (existing.some((m) => m.id === messageId)) return prev
+          const original = list.find((m) => m.id === messageId)
+          if (!original) return prev
+          return { ...prev, [conversationId]: sortByCreatedAtAsc([...existing, original]) }
+        })
       }
     },
     [],
@@ -473,7 +598,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           const existing = prev[conversationId] ?? []
           const known = new Set(existing.map((m) => m.id))
           const fresh = page.messages.filter((m) => !known.has(m.id))
-          return { ...prev, [conversationId]: [...fresh, ...existing] }
+          return { ...prev, [conversationId]: sortByCreatedAtAsc([...fresh, ...existing]) }
         })
         setHasMore((prev) => ({ ...prev, [conversationId]: page.hasMore }))
       })
@@ -500,18 +625,20 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       messageStatuses,
       unreadCount,
       openConversation,
+      startChat,
       openSupplierChat,
       openSupportChat,
       closeConversation,
       sendMessage,
+      hideMessageForMe,
       loadMore,
       setTyping,
       refreshConversations,
     }),
     [
       conversations, activeConversationId, messages, hasMore, typingUserId,
-      messageStatuses, unreadCount, openConversation, openSupplierChat, openSupportChat,
-      closeConversation, sendMessage, loadMore, setTyping, refreshConversations,
+      messageStatuses, unreadCount, openConversation, startChat, openSupplierChat, openSupportChat,
+      closeConversation, sendMessage, hideMessageForMe, loadMore, setTyping, refreshConversations,
     ],
   )
 

@@ -5,7 +5,6 @@ import { transformImage } from '@/lib/image'
 import { useMoodKeywords, type MoodKeyword } from '../hooks/useHomepageSections'
 import { trackMoodClick } from '../lib/analytics'
 import { useLocationSearch } from '../context/LocationSearchContext'
-import CategorySkeleton from './CategorySkeleton'
 import './MoodSection.css'
 
 const CARD_WIDTH = 295
@@ -125,7 +124,9 @@ export default function MoodSection({ preloaded, isLoading, title }: Props) {
                 {isLoading && !items
                   ? Array.from({ length: 8 }).map((_, i) => (
                       <div key={`skeleton-${i}`} className="mood-card-wrap">
-                        <CategorySkeleton />
+                        <div className="mood-skeleton" role="status" aria-label="Loading">
+                          <span className="mood-skeleton-title" />
+                        </div>
                       </div>
                     ))
                   : items?.map((cat, i) => (

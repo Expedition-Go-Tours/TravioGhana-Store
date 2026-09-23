@@ -1,4 +1,4 @@
-﻿const AUTH_STORAGE_KEY = 'travio_ghana_auth'
+const AUTH_STORAGE_KEY = 'expedition_go_auth'
 const AUTH_RETURN_TO_KEY = 'eg_auth_return_to'
 
 const rawBase = import.meta.env.VITE_AUTH_API_BASE_URL || import.meta.env.VITE_API_URL || '/api'
@@ -124,36 +124,6 @@ export function clearAuthReturnTo() {
   }
 }
 
-// "Return to the chat" intent: set when the support-chat widget sends the user
-// to sign in, so that after a successful login (email or the Google OAuth
-// full-page redirect, which reloads the tab) the widget reopens in the chat
-// area where the user left off. sessionStorage survives the same-tab redirect.
-const AUTH_CHAT_RETURN_KEY = 'eg_auth_chat_return'
-
-export function setChatAuthReturn() {
-  try {
-    sessionStorage.setItem(AUTH_CHAT_RETURN_KEY, '1')
-  } catch {
-    /* ignore */
-  }
-}
-
-export function getChatAuthReturn(): boolean {
-  try {
-    return sessionStorage.getItem(AUTH_CHAT_RETURN_KEY) === '1'
-  } catch {
-    return false
-  }
-}
-
-export function clearChatAuthReturn() {
-  try {
-    sessionStorage.removeItem(AUTH_CHAT_RETURN_KEY)
-  } catch {
-    /* ignore */
-  }
-}
-
 export function getAuthUserId(user: AuthUser | null): string | null {
   return user?.id || user?._id || user?.uid || user?.firebaseUid || null
 }
@@ -175,13 +145,22 @@ export function getStoredAuthUser(): AuthUser | null {
   return user
 }
 
+/** Merge a partial update into the locally stored user and notify listeners. */
+export function updateStoredAuthUser(patch: Partial<AuthUser>): void {
+  const auth = getStoredAuth()
+  if (!auth.user) return
+  const updated = { ...auth.user, ...patch }
+  storeAuth({ ...auth, user: updated })
+  notifyAuthStateChange(updated)
+}
+
 export async function getAuthToken(): Promise<string | null> {
   const { accessToken } = getStoredAuth()
   return accessToken || null
 }
 
 /** Access + refresh tokens for the current stored session (used to hand a
- *  session over to the Travio Ghana-Supplier platform via SSO). */
+ *  session over to the TravioAfrica-Supplier platform via SSO). */
 export function getStoredAuthTokens(): { accessToken: string | null; refreshToken: string | null } {
   const { accessToken, refreshToken } = getStoredAuth()
   return { accessToken: accessToken || null, refreshToken: refreshToken || null }
@@ -463,7 +442,7 @@ export async function refreshStoredUserFromBackend(): Promise<AuthUser | null> {
   return null
 }
 
-function decodeJwtPayload(token: string): Record<string, unknown> | null {
+export function decodeJwtPayload(token: string): Record<string, unknown> | null {
   try {
     const parts = token.split('.')
     if (parts.length !== 3) return null
@@ -473,6 +452,34 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
   } catch {
     return null
   }
+}
+
+/** Decode the current access token to extract exp (epoch seconds) and userId. */
+export function decodeAccessToken(): { exp: number; userId: string } | null {
+  const { accessToken } = getStoredAuth()
+  if (!accessToken) return null
+  const payload = decodeJwtPayload(accessToken)
+  if (!payload) return null
+  return {
+    exp: typeof payload.exp === 'number' ? payload.exp : 0,
+    userId: String(payload.userId || payload.sub || ''),
+  }
+}
+
+/** Access token expiry as epoch milliseconds, or null if no session. */
+export function getAccessTokenExpiryMs(): number | null {
+  const decoded = decodeAccessToken()
+  if (!decoded || !decoded.exp) return null
+  return decoded.exp * 1000
+}
+
+/** True if a stored access token exists and has not yet expired. */
+export function isSessionValid(): boolean {
+  const { accessToken } = getStoredAuth()
+  if (!accessToken) return false
+  const decoded = decodeAccessToken()
+  if (!decoded) return false
+  return decoded.exp * 1000 > Date.now()
 }
 
 export async function handleGoogleCallback(): Promise<boolean> {

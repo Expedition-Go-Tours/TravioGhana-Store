@@ -8,6 +8,7 @@ import { mapRawTourToListing, type TourCardData } from '../hooks/useExpeditionTo
 import { mergeOffersIntoTours } from '../hooks/useHomepageSections'
 import { usePlaceResolve } from '../hooks/usePlaceResolve'
 import TourCard from '../components/TourCard'
+import SearchContextChip from '../components/SearchContextChip'
 import NoToursEmptyState from '../components/NoToursEmptyState'
 import Footer from '../components/Footer'
 import './SearchResultsPage.css'
@@ -21,12 +22,6 @@ async function fetchSearchResults(query: string): Promise<TourCardData[]> {
   return mergeOffersIntoTours(tours.map(mapRawTourToListing))
 }
 
-/**
- * Place-scoped listing — the GYG behaviour. When the query resolves to a city
- * or attraction, the backend orders every tour around it (in the place ->
- * near it -> the rest, popularity within each band) and never filters, so a
- * location search can't dead-end.
- */
 async function fetchPlaceResults(place: string): Promise<TourCardData[]> {
   const params = new URLSearchParams({ place, limit: '50' })
   const res = await fetchWithAuth(`/tours?${params.toString()}`)
@@ -36,26 +31,48 @@ async function fetchPlaceResults(place: string): Promise<TourCardData[]> {
   return mergeOffersIntoTours(tours.map(mapRawTourToListing))
 }
 
+async function fetchAttractionResults(attraction: string, place: string): Promise<TourCardData[]> {
+  // Use search-fallback for attraction queries
+  const params = new URLSearchParams({ q: attraction, attraction, limit: '50' })
+  if (place) params.set('place', place)
+  const res = await fetchWithAuth(`/tours/search-fallback?${params.toString()}`)
+  if (!res.ok) return []
+  const payload = await res.json().catch(() => ({}))
+  const recommended: any[] = payload.data?.recommended ?? []
+  return mergeOffersIntoTours(recommended.map(mapRawTourToListing))
+}
+
 export default function SearchResultsPage() {
   const { t } = useTranslation()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const query = searchParams.get('q')?.trim() ?? ''
+  const query = searchParams.get('q')?.trim() ?? searchParams.get('place')?.trim() ?? ''
+  const attractionParam = searchParams.get('attraction')?.trim() ?? ''
+  const placeParam = searchParams.get('place')?.trim() ?? ''
 
-  // Resolve the query to a place first: if it is one (city / attraction), scope
-  // the listing to it; otherwise keep the plain text-relevance search.
+  // Resolve the query to a place first
   const { data: place, isFetching: isResolvingPlace } = usePlaceResolve(query, 'expedition')
   const isPlace = !!place
 
+  const isAttractionSearch = !!attractionParam
+
   const { data: tours = [], isLoading } = useQuery({
-    queryKey: ['search-results', query, isPlace ? place?.name ?? '' : 'text'],
-    queryFn: () => (isPlace ? fetchPlaceResults(place!.name) : fetchSearchResults(query)),
-    enabled: query.length >= 2 && !isResolvingPlace,
+    queryKey: ['search-results', query, isAttractionSearch ? `attraction:${attractionParam}` : isPlace ? place?.name ?? '' : 'text'],
+    queryFn: () => {
+      if (isAttractionSearch) return fetchAttractionResults(attractionParam, placeParam)
+      if (isPlace) return fetchPlaceResults(place!.name)
+      return fetchSearchResults(query)
+    },
+    enabled: (query.length >= 2 || isAttractionSearch) && !isResolvingPlace,
     staleTime: 30_000,
   })
 
   const placeLabel = place?.displayName || place?.name || query
   const showLoading = isLoading || (isResolvingPlace && query.length >= 2)
+
+  const resolvedName = isAttractionSearch
+    ? attractionParam
+    : place?.displayName || place?.name || query
 
   return (
     <div className="search-results-page">
@@ -64,7 +81,12 @@ export default function SearchResultsPage() {
           <ArrowLeft size={20} />
         </button>
         <h1 className="search-results-title">
-          {query ? (
+          {isAttractionSearch ? (
+            t('search.toursVisiting', {
+              attraction: attractionParam,
+              defaultValue: 'Tours visiting {{attraction}}',
+            })
+          ) : query ? (
             isPlace ? (
               t('search.resultsIn', { location: placeLabel, defaultValue: 'Experiences in {{location}}' })
             ) : (
@@ -83,6 +105,20 @@ export default function SearchResultsPage() {
           </span>
         )}
       </div>
+
+      <SearchContextChip
+        suggestion={resolvedName && !showLoading && tours.length > 0 ? {
+          id: isAttractionSearch ? `attr-${attractionParam}` : `place-${resolvedName}`,
+          kind: isAttractionSearch ? 'attraction' : 'place',
+          name: resolvedName,
+          subtitle: '',
+          meta: '',
+          icon: isAttractionSearch ? '📍' : '🏙️',
+          badge: isAttractionSearch ? 'Attraction' : 'Destination',
+          score: 985,
+          region: placeParam || undefined,
+        } : null}
+      />
 
       <div className="search-results-body">
         {showLoading ? (
@@ -111,7 +147,12 @@ export default function SearchResultsPage() {
             ))}
           </div>
         ) : (
-          <NoToursEmptyState location={query} onBrowseAll={() => navigate('/tours')} />
+          <NoToursEmptyState
+            location={isAttractionSearch ? attractionParam : query}
+            attraction={attractionParam}
+            region={placeParam}
+            onBrowseAll={() => navigate('/tours')}
+          />
         )}
       </div>
       <Footer />

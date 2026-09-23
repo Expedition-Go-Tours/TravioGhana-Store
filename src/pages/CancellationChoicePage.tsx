@@ -1,20 +1,23 @@
-import { useState, type FormEvent } from 'react'
+import { useState, useEffect, useRef, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
+import confetti from 'canvas-confetti'
 import { AlertTriangle, ArrowLeft, CalendarDays, CheckCircle2, CreditCard, Loader2 } from 'lucide-react'
-import { Button } from '../components/ui/button'
+import SEO from '../components/SEO'
+import Footer from '../components/Footer'
 import { useCancellationChoicePreview, useSubmitCancellationChoice } from '../hooks/useCancellationChoice'
 import {
   choiceErrorMessage,
   formatChoiceAmount,
   formatChoiceDate,
-  formatChoiceDeadline,
   hoursLeftLabel,
   isChoiceDeadlineOpen,
   minRescheduleDate,
   refundStatusText,
 } from '../lib/cancellationChoice'
 import type { CancellationChoiceSuccess } from '../lib/cancellationChoice'
+import { formatDeadlineLabel } from '../lib/bookingUi'
+import '../components/booking/bookingTheme.css'
 import './CancellationChoicePage.css'
 
 type Outcome =
@@ -37,6 +40,28 @@ export default function CancellationChoicePage() {
   const [newDate, setNewDate] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [outcome, setOutcome] = useState<Outcome | null>(null)
+
+  // Celebration for the reschedule success state (mirrors BookingConfirmationPage).
+  const confettiFiredRef = useRef(false)
+  useEffect(() => {
+    if (confettiFiredRef.current) return
+    if (outcome?.choice !== 'RESCHEDULE') return
+    confettiFiredRef.current = true
+
+    const defaults = { startVelocity: 30, spread: 360, ticks: 80, zIndex: 99999 }
+    const end = Date.now() + 3000
+
+    const frame = () => {
+      confetti({
+        ...defaults,
+        particleCount: 3,
+        origin: { x: Math.random(), y: 0 },
+        colors: ['#166534', '#22c55e', '#facc15', '#60a5fa', '#f472b6'],
+      })
+      if (Date.now() < end) requestAnimationFrame(frame)
+    }
+    frame()
+  }, [outcome])
 
   const booking = preview.data
 
@@ -85,6 +110,7 @@ export default function CancellationChoicePage() {
   if (!token) {
     return (
       <div className="cc-page">
+        <SEO title="Choose a new date or refund" robots="noindex, nofollow" />
         <div className="cc-card cc-card-message">
           <div className="cc-message-icon cc-message-icon-warn">
             <AlertTriangle size={22} />
@@ -94,10 +120,11 @@ export default function CancellationChoicePage() {
             The cancellation choice link is missing its token. Open the link from your email or
             from the banner on your booking, or head to your bookings to see its current status.
           </p>
-          <Button asChild className="cc-primary-btn">
-            <Link to="/dashboard/bookings">Go to my bookings</Link>
-          </Button>
+          <Link className="bk-btn bk-btn-primary" to="/dashboard/bookings">
+            Go to my bookings
+          </Link>
         </div>
+        <Footer />
       </div>
     )
   }
@@ -105,10 +132,12 @@ export default function CancellationChoicePage() {
   if (preview.isLoading) {
     return (
       <div className="cc-page">
+        <SEO title="Choose a new date or refund" robots="noindex, nofollow" />
         <div className="cc-card cc-card-message" role="status" aria-live="polite">
           <div className="cc-spinner" />
           <p className="cc-text">Loading your options…</p>
         </div>
+        <Footer />
       </div>
     )
   }
@@ -116,6 +145,7 @@ export default function CancellationChoicePage() {
   if (preview.isError || !booking) {
     return (
       <div className="cc-page">
+        <SEO title="Choose a new date or refund" robots="noindex, nofollow" />
         <div className="cc-card cc-card-message">
           <div className="cc-message-icon cc-message-icon-warn">
             <AlertTriangle size={22} />
@@ -125,14 +155,15 @@ export default function CancellationChoicePage() {
             {choiceErrorMessage(preview.error)}
           </p>
           <div className="cc-message-actions">
-            <Button onClick={() => preview.refetch()} className="cc-primary-btn">
+            <button type="button" className="bk-btn bk-btn-primary" onClick={() => preview.refetch()}>
               Try Again
-            </Button>
-            <Button asChild variant="outline" className="cc-secondary-btn">
-              <Link to="/dashboard/bookings">Go to my bookings</Link>
-            </Button>
+            </button>
+            <Link className="bk-btn bk-btn-secondary" to="/dashboard/bookings">
+              Go to my bookings
+            </Link>
           </div>
         </div>
+        <Footer />
       </div>
     )
   }
@@ -146,20 +177,18 @@ export default function CancellationChoicePage() {
   const amount = formatChoiceAmount(booking.refundAmount, booking.currency)
 
   if (answeredChoice) {
-    const rescheduledOn =
-      outcome?.choice === 'RESCHEDULE' ? outcome.newDate : booking.travelDate
+    const rescheduledOn = outcome?.choice === 'RESCHEDULE' ? outcome.newDate : booking.travelDate
     const dateLabel = formatChoiceDate(rescheduledOn) || 'your new date'
     return (
       <div className="cc-page">
+        <SEO title="Your cancellation choice" robots="noindex, nofollow" />
         <div className="cc-card cc-card-outcome">
           <div className="cc-message-icon cc-message-icon-ok">
             <CheckCircle2 size={22} />
           </div>
           {answeredChoice === 'RESCHEDULE' ? (
             <>
-              <h1 className="cc-title">
-                Your booking is confirmed again on {dateLabel}
-              </h1>
+              <h1 className="cc-title">Your booking is confirmed again on {dateLabel}</h1>
               <p className="cc-text">
                 You chose a new date — nothing else to do. We&rsquo;ll see you there.
               </p>
@@ -174,10 +203,11 @@ export default function CancellationChoicePage() {
             <span>{booking.tourTitle || 'Your booking'}</span>
             {booking.bookingNumber && <span className="cc-summary-ref">{booking.bookingNumber}</span>}
           </div>
-          <Button asChild className="cc-primary-btn">
-            <Link to="/dashboard/bookings">Go to my bookings</Link>
-          </Button>
+          <Link className="bk-btn bk-btn-primary" to="/dashboard/bookings">
+            Go to my bookings
+          </Link>
         </div>
+        <Footer />
       </div>
     )
   }
@@ -186,15 +216,18 @@ export default function CancellationChoicePage() {
 
   return (
     <div className="cc-page">
+      <SEO
+        title="Choose a new date or refund"
+        description="Your booking was cancelled by the supplier. Choose a new date or take a full refund."
+        robots="noindex, nofollow"
+      />
       <div className="cc-card">
         <Link className="cc-back" to="/dashboard/bookings">
           <ArrowLeft size={15} /> My bookings
         </Link>
 
         <div className="cc-head">
-          {booking.coverPhoto && (
-            <img className="cc-cover" src={booking.coverPhoto} alt="" />
-          )}
+          {booking.coverPhoto && <img className="cc-cover" src={booking.coverPhoto} alt="" />}
           <div className="cc-head-text">
             <p className="cc-kicker">Cancelled by supplier — your decision is needed</p>
             <h1 className="cc-title">{booking.tourTitle || 'Your booking was cancelled'}</h1>
@@ -208,7 +241,7 @@ export default function CancellationChoicePage() {
             </div>
             {booking.choiceDeadline && (
               <p className={`cc-deadline${deadlinePassed ? ' is-passed' : ''}`}>
-                Decide by {formatChoiceDeadline(booking.choiceDeadline)}
+                Decide by {formatDeadlineLabel(booking.choiceDeadline)}
                 {!deadlinePassed && hoursLeft && <span className="cc-deadline-chip">{hoursLeft}</span>}
                 {deadlinePassed && <span className="cc-deadline-chip">Deadline passed</span>}
               </p>
@@ -236,15 +269,16 @@ export default function CancellationChoicePage() {
             <h2 className="cc-option-title" id="cc-refund-title">
               Get a full refund
             </h2>
-            {amount ? <p className="cc-option-amount">{amount}</p> : <p className="cc-option-amount">Full refund</p>}
+            <p className="cc-option-amount">{amount || 'Full refund'}</p>
             <p className="cc-option-text">{refundStatusText(booking)}</p>
-            <Button
-              className="cc-primary-btn"
+            <button
+              type="button"
+              className="bk-btn bk-btn-primary"
               onClick={() => setConfirmOpen(true)}
               disabled={submit.isPending}
             >
               Get a full refund
-            </Button>
+            </button>
           </section>
 
           {/* Option 2 — reschedule */}
@@ -271,7 +305,11 @@ export default function CancellationChoicePage() {
                 onChange={(e) => setNewDate(e.target.value)}
                 required
               />
-              <Button type="submit" className="cc-primary-btn" disabled={!newDate || submit.isPending}>
+              <button
+                type="submit"
+                className="bk-btn bk-btn-primary"
+                disabled={!newDate || submit.isPending}
+              >
                 {submit.isPending && submit.variables?.choice === 'RESCHEDULE' ? (
                   <>
                     <Loader2 size={15} className="cc-btn-spin" /> Confirming…
@@ -279,7 +317,7 @@ export default function CancellationChoicePage() {
                 ) : (
                   'Confirm new date'
                 )}
-              </Button>
+              </button>
             </form>
           </section>
         </div>
@@ -304,8 +342,9 @@ export default function CancellationChoicePage() {
               {refundStatusText(booking)} This can&rsquo;t be undone from here.
             </p>
             <div className="cc-dialog-actions">
-              <Button
-                className="cc-primary-btn"
+              <button
+                type="button"
+                className="bk-btn bk-btn-primary"
                 onClick={requestRefund}
                 disabled={submit.isPending}
               >
@@ -316,19 +355,21 @@ export default function CancellationChoicePage() {
                 ) : (
                   'Yes, refund me'
                 )}
-              </Button>
-              <Button
-                variant="outline"
-                className="cc-secondary-btn"
+              </button>
+              <button
+                type="button"
+                className="bk-btn bk-btn-secondary"
                 onClick={() => setConfirmOpen(false)}
                 disabled={submit.isPending}
               >
                 Keep my options open
-              </Button>
+              </button>
             </div>
           </div>
         </div>
       )}
+
+      <Footer />
     </div>
   )
 }

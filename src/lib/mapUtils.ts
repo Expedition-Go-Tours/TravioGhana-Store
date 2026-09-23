@@ -1,4 +1,5 @@
 import * as maplibregl from 'maplibre-gl'
+import { DEFAULT_CENTER, MAP_WORKER_URL } from './mapWarmup'
 
 // maplibre resolves its render worker from `import.meta.url` at runtime
 // (new URL('./maplibre-gl-worker.mjs', import.meta.url)), which bundlers
@@ -7,7 +8,7 @@ import * as maplibregl from 'maplibre-gl'
 // copied verbatim to `public/maplibre-gl/` by the `copy-maplibre-worker` Vite
 // plugin; pinning that same-origin URL here (before any map is created) makes
 // both environments load the same worker file.
-maplibregl.setWorkerUrl('/maplibre-gl/maplibre-gl-worker.mjs')
+maplibregl.setWorkerUrl(MAP_WORKER_URL)
 
 /**
  * Shared helpers for the storefront maps (booking-page pickup map, pickup
@@ -17,41 +18,11 @@ maplibregl.setWorkerUrl('/maplibre-gl/maplibre-gl-worker.mjs')
  * The Mapbox GL map remains available as a token-gated fallback layer.
  */
 
-/** OpenFreeMap "Liberty" vector style (keyless OSM tiles). */
-export const TILE_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
-
-const TILE_ORIGIN = 'https://tiles.openfreemap.org'
-
-/** Default camera fallback — Accra, the platform's origin market. */
-export const DEFAULT_CENTER: [number, number] = [-0.187, 5.6037]
-
-let warmResourcesStarted = false
-
-/**
- * Idempotent warm-up for the tile style: a preconnect hint to the tile host
- * plus a force-cached style fetch so the first map opens fast instead of
- * cold-starting against the CDN. Runs once per page load; best-effort.
- */
-export function warmMapResources(): void {
-  if (warmResourcesStarted || typeof document === 'undefined') return
-  warmResourcesStarted = true
-  try {
-    const link = document.createElement('link')
-    link.rel = 'preconnect'
-    link.href = TILE_ORIGIN
-    link.crossOrigin = 'anonymous'
-    document.head.appendChild(link)
-  } catch {
-    /* warm-up is best-effort */
-  }
-  if (typeof window !== 'undefined') {
-    window
-      .fetch(TILE_STYLE, { cache: 'force-cache', mode: 'cors' })
-      .catch(() => {
-        /* best-effort warm-up; a failed prefetch must never break the app */
-      })
-  }
-}
+// The style/camera constants and the resource warm-up live in the
+// maplibre-free `mapWarmup` module, so the app entry can warm the tile style
+// and worker without importing the map engine. Re-exported here to keep the
+// existing `@/lib/mapUtils` imports unchanged.
+export { DEFAULT_CENTER, TILE_STYLE, warmMapResources } from './mapWarmup'
 
 /** Supplier's default pin colour (green) for pickup / meeting points. */
 export const TOUR_PIN_COLOR = '#047857'
@@ -79,6 +50,7 @@ export interface MapPoint {
 export interface PickupMapSource {
   meetingMode?: 'meeting_point' | 'pickup' | 'none'
   meetingPoint?: string
+  meetingPointAddress?: string
   meetingPointLat?: number | null
   meetingPointLng?: number | null
   pickupAreas?: { name?: string; address?: string; lat?: number | null; lng?: number | null }[]
@@ -100,7 +72,7 @@ export function buildTourPoints(tour: PickupMapSource): MapPoint[] {
   const pts: MapPoint[] = []
 
   // Infer the effective meeting mode when the backend doesn't set it.
-  const hasMeetingData = !!(tour.meetingPoint || tour.meetingPointLat != null)
+  const hasMeetingData = !!(tour.meetingPoint || tour.meetingPointAddress || tour.meetingPointLat != null)
   const hasPickupData =
     (tour.pickupAreas?.length ?? 0) > 0 || (tour.pickupLocations?.length ?? 0) > 0
   const effectiveMode = tour.meetingMode

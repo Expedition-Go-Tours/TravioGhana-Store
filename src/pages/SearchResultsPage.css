@@ -62,23 +62,29 @@
 
 .search-results-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 24px;
-  /* Uniform card heights: cards vary in content (1-vs-2 line titles, differing
-     badge rows) so each row would otherwise size to its own card. `1fr` gives
-     every row the tallest card's height; .tour-card's height:100% fills it. */
+  /* Uniform card heights at every column count. Cards vary in content — 1-vs-2
+     line titles and differing badge rows — and .tour-card has no intrinsic
+     height, so each row otherwise sizes to its own card (measured spreads of
+     19-79px across 2/3/4-column layouts). `1fr` gives every row the tallest
+     card's height; .tour-card's height:100% fills it. No badges are clipped. */
   grid-auto-rows: 1fr;
+}
+
+.search-results-grid > * {
+  min-width: 0;
 }
 
 @media (max-width: 1200px) {
   .search-results-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 900px) {
   .search-results-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -92,7 +98,7 @@
   }
 
   .search-results-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
   }
 

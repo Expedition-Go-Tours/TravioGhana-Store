@@ -1,11 +1,11 @@
-﻿import { useMemo, useEffect, useState } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion'
 import { ArrowLeft, Calendar, Clock, Share2, ChevronRight, Sparkles } from 'lucide-react'
 import { travelStories, storySlug } from '../components/data'
 import type { TravelStory } from '../components/data'
-import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import SEO, { buildArticleSchema, buildBreadcrumbSchema } from '../components/SEO'
 import './StoryDetailPage.css'
 import OptimizedImage from '@/components/shared/OptimizedImage'
 
@@ -122,7 +122,6 @@ function StoryDetailPage() {
   if (!story || !content) {
     return (
       <div className="story-detail">
-        <Navbar />
         <div className="story-notfound">
           <Sparkles size={40} />
           <h1>Story not found</h1>
@@ -138,10 +137,32 @@ function StoryDetailPage() {
 
   return (
     <div className="story-detail">
+      <SEO
+        title={story.title}
+        description={`${story.title} - ${content.category} travel story from Ghana. Discover authentic experiences, local insights, and travel tips for your Ghana adventure.`}
+        keywords={`${story.title}, Ghana travel story, ${content.category.toLowerCase()} Ghana, Ghana travel guide, things to do in Ghana, Ghana experiences`}
+        image={story.image}
+        type="article"
+        publishedTime={story.date}
+        jsonLd={[
+          buildArticleSchema({
+            title: story.title,
+            description: `${story.title} - ${content.category} travel story from Ghana.`,
+            image: story.image,
+            url: `https://www.travioghana.com/stories/${storySlug(story.title)}`,
+            publishedTime: story.date || new Date().toISOString(),
+            author: 'Travio Ghana',
+          }),
+          buildBreadcrumbSchema([
+            { name: 'Home', url: 'https://www.travioghana.com/' },
+            { name: 'Stories', url: 'https://www.travioghana.com/stories' },
+            { name: story.title, url: `https://www.travioghana.com/stories/${storySlug(story.title)}` },
+          ]),
+        ]}
+      />
       {/* Reading progress bar */}
       <motion.div className="story-progress" style={{ scaleX: progress }} />
 
-      <Navbar />
 
       <AnimatePresence mode="wait">
         <motion.div

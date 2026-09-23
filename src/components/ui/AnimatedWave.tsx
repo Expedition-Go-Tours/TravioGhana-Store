@@ -98,7 +98,7 @@ export const AnimatedWave: React.FC<AnimatedWaveProps> = ({
         precision: "mediump",
       });
       renderer.setSize(width, height);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
       renderer.setClearColor(0x000000, 0);
       container.appendChild(renderer.domElement);
     } catch (e) {
@@ -212,7 +212,11 @@ export const AnimatedWave: React.FC<AnimatedWaveProps> = ({
       mouse.y = -(mouseY / rect.height) * 2 + 1;
     };
 
-    if (mouseInteraction) {
+    // Touch / coarse pointers have no hover to track — skip the per-frame
+    // mouse ripple and parallax work entirely on those devices.
+    const enableMouseInteraction = mouseInteraction && !window.matchMedia("(pointer: coarse)").matches;
+
+    if (enableMouseInteraction) {
       container.addEventListener("mousemove", onMouseMove);
     }
 
@@ -230,13 +234,16 @@ export const AnimatedWave: React.FC<AnimatedWaveProps> = ({
     // Camera Sway Interpolations
     const targetCamera = new THREE.Vector3(cameraX, cameraY, cameraZ);
 
-    // Animation Loop
-    let animationFrameId: number;
-    const animate = () => {
+    // Animation Loop — paused while the hero is scrolled out of view or the
+    // tab is hidden so the GPU/main-thread work only runs when it's visible.
+    let running = false;
+    let animationFrameId: number | undefined;
+
+    const renderFrame = () => {
       const time = clock.getElapsedTime() * speed;
 
       // Project Mouse to XZ Plane
-      if (mouseInteraction) {
+      if (enableMouseInteraction) {
         raycaster.setFromCamera(mouse, camera);
         raycaster.ray.intersectPlane(planeXZ, targetMouse);
 
@@ -262,7 +269,7 @@ export const AnimatedWave: React.FC<AnimatedWaveProps> = ({
           let height = n1 + n2;
 
           // Mouse distortion ripple
-          if (mouseInteraction) {
+          if (enableMouseInteraction) {
             const dx = posX - targetMouse.x;
             const dz = posZ - targetMouse.z;
             const dist = Math.sqrt(dx * dx + dz * dz);
@@ -280,16 +287,53 @@ export const AnimatedWave: React.FC<AnimatedWaveProps> = ({
       geometry.attributes.position.needsUpdate = true;
 
       renderer.render(scene, camera);
-      animationFrameId = requestAnimationFrame(animate);
     };
 
-    animate();
+    const loop = () => {
+      if (!running) return;
+      renderFrame();
+      animationFrameId = requestAnimationFrame(loop);
+    };
+
+    const start = () => {
+      if (running || document.hidden) return;
+      running = true;
+      clock.getDelta(); // discard the time spent paused so the wave doesn't jump
+      loop();
+    };
+
+    const stop = () => {
+      running = false;
+      if (animationFrameId !== undefined) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = undefined;
+      }
+    };
+
+    const onVisibilityChange = () => {
+      if (document.hidden) stop();
+      else start();
+    };
+
+    const onIntersect = (entries: IntersectionObserverEntry[]) => {
+      const visible = entries.some((entry) => entry.isIntersecting);
+      if (visible) start();
+      else stop();
+    };
+
+    const intersectionObserver = new IntersectionObserver(onIntersect);
+    intersectionObserver.observe(container);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    start();
 
     // Cleanup on unmount
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      stop();
+      intersectionObserver.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       resizeObserver.disconnect();
-      if (mouseInteraction) {
+      if (enableMouseInteraction) {
         container.removeEventListener("mousemove", onMouseMove);
       }
 

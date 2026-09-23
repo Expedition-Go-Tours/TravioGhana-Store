@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Geographic helpers for pickup geoshapes (GetYourGuide-style service zones).
  *
  * A pickup geoshape is a closed polygon (ordered [lat, lng] vertices) that
@@ -265,7 +265,11 @@ export interface PickupLocationInputState {
 export function isPickupLocationSatisfied(state: PickupLocationInputState): boolean {
   if (state.pickupLater) return true
   if (state.pickedArea.trim().length > 0) return true
-  if (state.status === 'in_area') return true
+  // A resolved address that falls outside every pickup zone is allowed — the
+  // traveller is cautioned to choose an in-zone location before the tour date,
+  // but the booking is not blocked. Explicit exclusion (no-pickup) zones stay
+  // blocked: the server rejects them even when validation is skipped.
+  if (state.status === 'in_area' || state.status === 'outside') return true
   if (!state.zonesDrawn && !state.hasLocationOnlyAreas && state.typed.trim().length >= 3) return true
   return false
 }
