@@ -50,8 +50,8 @@ export default {
         sm: 'calc(0.5rem - 4px)',
       },
       fontFamily: {
-        sans: ['Raleway', 'sans-serif'],
-        heading: ['GT Esti Pro Display', 'sans-serif'],
+        sans: ['DM Sans', 'sans-serif'],
+        heading: ['Manrope', 'sans-serif'],
       },
     },
   },
