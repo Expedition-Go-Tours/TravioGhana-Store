@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/generate-sitemap.cjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
     "preview": "vite preview",
     "generate-favicons": "node generate-favicons.js",
+    "sitemap": "node scripts/generate-sitemap.cjs",
     "extract": "i18next-parser"
   },
   "dependencies": {

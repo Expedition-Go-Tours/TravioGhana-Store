@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /booking/
+Disallow: /auth/
+Disallow: /login
+Disallow: /api/
+Disallow: /payment-methods
+Disallow: /supplier/register
+Disallow: /supplier/list-experience
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+Sitemap: https://www.travioghana.com/sitemap.xml
