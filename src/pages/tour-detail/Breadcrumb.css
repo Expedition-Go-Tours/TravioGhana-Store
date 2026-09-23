@@ -3,11 +3,25 @@
 .breadcrumb {
   background: #fff;
   border-bottom: 1px solid var(--border);
-  padding: 12px 16px;
+  padding: 8px 16px;
+  /* `:root` declares `line-height: 145%`, which resolves to a fixed 26.1px and
+     then *inherits as that length* — every child kept a 26.1px line box no matter
+     how small its font was, which is what fixed the row at 26px tall. A ratio
+     here lets the row follow the 13px text (~18px). */
+  line-height: 1.4;
+  /* Mobile/tablet: hidden — the navbar already shows where you are, and the
+     title deserves the space. Matches the navbar's own mobile breakpoint. */
+  display: none;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+@media (min-width: 1025px) {
+  .breadcrumb {
+    display: block;
+  }
 }
 
 .breadcrumb::-webkit-scrollbar {
@@ -57,28 +71,20 @@
 /* ===== TABLET VIEW (768px+) ===== */
 @media (min-width: 768px) {
   .breadcrumb {
-    padding: 16px 24px;
-  }
-
-  .breadcrumb-item {
-    font-size: 14px;
+    padding: 8px 24px;
   }
 }
 
 /* ===== DESKTOP VIEW (1024px+) ===== */
 @media (min-width: 1024px) {
   .breadcrumb {
-    padding: 20px 40px;
-  }
-
-  .breadcrumb-item {
-    font-size: 15px;
+    padding: 8px 40px;
   }
 }
 
 /* ===== LARGE DESKTOP (1400px+) ===== */
 @media (min-width: 1400px) {
   .breadcrumb {
-    padding: 20px 60px;
+    padding: 8px 60px;
   }
 }

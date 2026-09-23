@@ -43,6 +43,7 @@ import DetailsSection, {
 import TourItineraryPreview from './TourItineraryPreview'
 import ReviewsSection from './ReviewsSection'
 import SupplierSection from './SupplierSection'
+import Breadcrumb from './Breadcrumb'
 
 import './TourDetailPage.css'
 
@@ -910,6 +911,9 @@ export default function TourDetailPage({ onOpenAuth }: TourDetailPageProps = {})
     <>
       <StickyNavHeader show={showStickyTitle} title={selectedTourTitle} onWriteReview={handleWriteReview} />
       <div className="tour-detail-page">
+        {/* Inside the page wrapper so the wrapper's 64px navbar clearance puts
+            it *below* the fixed navbar instead of underneath it. */}
+        <Breadcrumb tour={tour} />
         <div className="tour-detail-container">
           <div className="tour-detail-header-row">
             <TourHeader
