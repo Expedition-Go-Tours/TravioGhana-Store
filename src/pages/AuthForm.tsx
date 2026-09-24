@@ -3,7 +3,7 @@ import { flushSync } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import logoSrc from "../assets/TravioG.png";
+import logoSrc from "../assets/TravioGhana_Logo.svg";
 import authHero from "../assets/auth-hero.webp";
 import { useComingSoon } from "../hooks/useComingSoon";
 import {
@@ -550,7 +550,7 @@ export default function AuthForm({ initialMode = "signin", onBack, onAuthSuccess
               </button>
             )}
             <div className="content">
-              <img className="brand" src={logoSrc} alt="Travio Ghana" width={1103} height={226} />
+              <img className="brand" src={logoSrc} alt="Travio Ghana" width={2076} height={450} />
               <div className="auth-view" key={mode}>
                 {mode === "signin" ? (
                   <SignInView onSwitchToSignUp={() => setMode("signup")} onAuthSuccess={onAuthSuccess} />

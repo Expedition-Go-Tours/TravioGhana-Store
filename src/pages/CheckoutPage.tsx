@@ -8,7 +8,7 @@ import CheckoutElements, { type CheckoutElementsHandle } from '../components/boo
 import BookingTransition from '../components/BookingTransition'
 import { currencySymbol } from '../lib/currencySymbol'
 import OptimizedImage from '@/components/shared/OptimizedImage'
-import logoSrc from '../assets/TravioG.png'
+import logoSrc from '../assets/TravioGhana_Logo.svg'
 import { formatHeadingDate, partyLabel } from '../lib/bookingUi'
 import { formatPhoneDisplay } from '../lib/phone'
 import { formatDuration } from '../hooks/useExpeditionTours'

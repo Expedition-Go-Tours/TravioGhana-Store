@@ -9,7 +9,7 @@ import {
   Phone, ShieldCheck, Clock, Globe, Loader2,
   Car, CreditCard, Ticket, ExternalLink, Layers,
 } from 'lucide-react'
-import logoSrc from '../assets/TravioG.png'
+import logoSrc from '../assets/TravioGhana_Logo.svg'
 import Footer from '../components/Footer'
 import StarRating from '../components/StarRating'
 import StepBadge from '../components/booking/StepBadge'

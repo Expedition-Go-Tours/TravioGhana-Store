@@ -69,9 +69,10 @@
   outline-offset: 2px;
 }
 .co-logo {
-  /* Wide wordmark (1103×226 ≈ 4.9:1) — sized by height so it sits in the
-     checkout header row instead of rendering ~586px wide (Lite's 120px was
-     tuned for its 300×200 mark). */
+  /* Wide wordmark — TravioGhana_Logo.svg crops to 2076×450 (≈4.61:1), so it is
+     sized by height (38px ≈ 175px wide) to sit in the checkout header row
+     instead of rendering ~586px wide (Lite's 120px was tuned for its 300×200
+     mark). */
   height: 38px;
   width: auto;
   object-fit: contain;

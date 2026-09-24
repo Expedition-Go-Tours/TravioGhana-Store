@@ -6,7 +6,7 @@ import productsImg from '../../assets/phone-screens/products.png'
 import activityImg from '../../assets/phone-screens/activity.webp'
 import dashboardImg from '../../assets/phone-screens/dashboard.png'
 import nkrumahImg from '../../assets/phone-screens/nkrumah.jpg'
-import travioGImg from '../../assets/phone-screens/TravioG.png'
+import travioGImg from '../../assets/TravioGhana_Logo.svg'
 import './PhoneShowcaseSection.css'
 
 interface PhoneShowcaseSectionProps {
