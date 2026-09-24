@@ -149,7 +149,7 @@ export default function SupplierRegisterPage({ onOpenAuth, showApplicationForm =
   }
 
   return (
-    <main>
+    <main className="le-page">
       {/* ── Topline banner ──────────────────────────────── */}
       <div className="le-topline">
         <div className="wrap le-topline-inner">

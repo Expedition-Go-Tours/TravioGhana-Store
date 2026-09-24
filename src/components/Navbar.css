@@ -41,11 +41,21 @@
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
 }
 
+/* "List Your Experience" page (/supplier/list-experience): its content column is
+   `.wrap` — min(1200px, 100% - 40px) — while the navbar's default bounds are the
+   homepage's 1539px grid. On a 1600px screen that put the logo at 32px and the
+   page copy at 200px, so the logo/actions looked inset from the content. Match
+   the navbar gutters to this page's column so the logo and the profile icon sit
+   on the same edges as everything below. */
+body:has(.le-page) .navbar {
+  padding-left: max(20px, calc((100vw - 1200px) / 2));
+  padding-right: max(20px, calc((100vw - 1200px) / 2));
+}
+
 /* Hamburger - hidden on desktop */
 .nav-hamburger {
   display: none;
 }
-
 /* Mobile wishlist + bookings - hidden on desktop (desktop uses .nav-icons) */
 .nav-wishlist-mobile,
 .nav-bookings-mobile {

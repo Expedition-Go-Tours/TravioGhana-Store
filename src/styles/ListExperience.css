@@ -3,6 +3,13 @@
    ============================================================ */
 
 /* ── Topline banner ────────────────────────────────────────── */
+.le-page {
+  /* This page was ported from a standalone template that had no fixed navbar,
+     so nothing cleared the 64px bar — the 34px topline banner was sitting
+     behind it. Every other page in the app offsets by the same 64px. */
+  padding-top: 64px;
+}
+
 .le-topline {
   height: 34px;
   display: flex;
