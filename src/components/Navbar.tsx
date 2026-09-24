@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { tourPath } from '../lib/tourPath'
 import { AnimatePresence, motion, type Variants } from 'framer-motion'
 import { toast } from 'sonner'
 import { Globe, Megaphone, ChevronRight, LogIn, LogOut, DollarSign, Bell, Settings } from 'lucide-react'
@@ -180,7 +181,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
 
   const navigateToSuggestion = useCallback((suggestion: SearchSuggestion) => {
     if (suggestion.kind === 'tour' && suggestion.slug) {
-      addSearch({ slug: suggestion.slug, title: suggestion.name, type: 'tour', image: suggestion.image, city: suggestion.city })
+      addSearch({ id: suggestion.tourId, slug: suggestion.slug, title: suggestion.name, type: 'tour', image: suggestion.image, city: suggestion.city })
     }
     setShowNavDropdown(false)
     setNavSearchValue('')
@@ -204,9 +205,9 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
       setLocation(rawRegion)
       navigate(`/tours?place=${encodeURIComponent(suggestion.name)}`)
     } else if (suggestion.kind === 'tour' && suggestion.slug) {
-      addSearch({ slug: suggestion.slug, title: suggestion.name, type: 'tour', image: suggestion.image, city: suggestion.city, region: suggestion.region })
+      addSearch({ id: suggestion.tourId, slug: suggestion.slug, title: suggestion.name, type: 'tour', image: suggestion.image, city: suggestion.city, region: suggestion.region })
       if (suggestion.region) setLocation(suggestion.region)
-      navigate(`/tour/${suggestion.slug}`)
+      navigate(tourPath(suggestion.tourId, suggestion.slug))
     }
   }, [navigate, addSearch, setLocation])
 
@@ -226,7 +227,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
       // same). Navigating to '/' threw the user out of the listing they were on.
       navigate(`/tours?place=${encodeURIComponent(item.title)}`)
     } else if (item.type === 'tour' && item.slug) {
-      navigate(`/tour/${item.slug}`)
+      navigate(tourPath(item.id, item.slug))
     }
   }, [navigate, setLocation])
 

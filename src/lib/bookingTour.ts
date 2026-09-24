@@ -174,7 +174,8 @@ export function buildBookingTour(tour: TourDetailData, opts: BuildBookingTourOpt
     location: tour.location,
     pickupIncluded: !!tour.pickupIncluded,
     image: tour.images?.[0] || '',
-    provider: 'Expedition-Go Tours Ltd',
+    // The tour's own supplier when we have it; the brand only as a fallback.
+    provider: tour.supplierName || 'Expedition-Go Tours Ltd',
     rating: tour.rating,
     reviews: tour.reviewCount,
     date: dateLabel,

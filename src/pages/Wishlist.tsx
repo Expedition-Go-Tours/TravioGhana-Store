@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button'
 import { useWishlist, type WishlistItem } from '../context/WishlistContext'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+import { tourPath } from '../lib/tourPath'
 import { useCurrency } from '../contexts/CurrencyContext'
 import './Wishlist.css'
 import OptimizedImage from '@/components/shared/OptimizedImage'
@@ -27,8 +28,10 @@ export default function Wishlist() {
   }
 
   const handleBookNow = (item: WishlistItem) => {
-    const slug = item.tourId || item.id
-    navigate(`/tour/${encodeURIComponent(slug)}`)
+    // Canonical /tour/{id}/{slug} — id first so a retitled tour's saved item
+    // keeps working; items stored before slugs were captured fall back to the
+    // id-only form the route still resolves.
+    navigate(tourPath(item.tourId || item.id, item.slug))
   }
 
   return (

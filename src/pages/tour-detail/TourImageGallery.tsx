@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
-import { Images } from 'lucide-react'
+import { Images, ArrowLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import GalleryDialog from './GalleryDialog'
 import './TourImageGallery.css'
@@ -10,6 +10,10 @@ interface TourImageGalleryProps {
   images: string[]
   title: string
   fallbackImage?: string
+  /** History-aware back handler. Rendered as an overlay on the hero. */
+  onBack?: () => void
+  /** Hide the overlay back button (e.g. once the sticky bar has taken over). */
+  hideBack?: boolean
 }
 
 type Size = { w: number; h: number }
@@ -61,7 +65,7 @@ function buildColumns(count: number): Column[] {
   ]
 }
 
-export default function TourImageGallery({ images, title, fallbackImage }: TourImageGalleryProps) {
+export default function TourImageGallery({ images, title, fallbackImage, onBack, hideBack }: TourImageGalleryProps) {
   const { t } = useTranslation()
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [mobileIndex, setMobileIndex] = useState(0)
@@ -274,6 +278,21 @@ export default function TourImageGallery({ images, title, fallbackImage }: TourI
             </div>
           )}
         </div>
+
+        {/* Back button overlaid on the hero. Desktop (≥1025px) gets one in the
+            breadcrumb strip instead; below that the breadcrumb is hidden, so
+            this is the only back affordance until the sticky bar slides in —
+            at which point `hideBack` retires it so two never show at once. */}
+        {onBack && !hideBack && (
+          <button
+            type="button"
+            className="tour-gallery-back"
+            onClick={onBack}
+            aria-label={t('common.goBack', 'Go back')}
+          >
+            <ArrowLeft size={20} strokeWidth={2.4} aria-hidden="true" />
+          </button>
+        )}
 
         {/* GetYourGuide "Show all photos" — absolute, 24px inset */}
         {images.length > 0 && (

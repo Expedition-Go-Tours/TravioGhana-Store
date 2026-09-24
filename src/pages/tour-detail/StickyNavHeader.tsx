@@ -1,16 +1,16 @@
 import { ArrowLeft } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import './StickyNavHeader.css'
 
 interface StickyNavHeaderProps {
   show: boolean
   title: string
+  /** History-aware back handler (see hooks/useBackNavigation). */
+  onBack: () => void
   onWriteReview?: () => void
 }
 
-export default function StickyNavHeader({ show, title, onWriteReview }: StickyNavHeaderProps) {
-  const navigate = useNavigate()
+export default function StickyNavHeader({ show, title, onBack, onWriteReview }: StickyNavHeaderProps) {
   const { t } = useTranslation()
 
   return (
@@ -18,9 +18,9 @@ export default function StickyNavHeader({ show, title, onWriteReview }: StickyNa
       <div className="sticky-nav-header-inner">
         <button
           type="button"
-          onClick={() => navigate(-1)}
+          onClick={onBack}
           className="sticky-nav-back"
-          aria-label="Go back"
+          aria-label={t('common.goBack', 'Go back')}
         >
           <ArrowLeft className="sticky-nav-back-icon" />
         </button>

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { AnimatePresence, MotionConfig, motion, type Variants } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { tourPath } from '../lib/tourPath'
 import { useTranslation } from 'react-i18next'
 import { useSearchAutocomplete, type SearchSuggestion } from '../hooks/useSearchAutocomplete'
 import { useRecentSearches, type RecentSearch } from '../hooks/useRecentSearches'
@@ -59,9 +60,9 @@ export default function SearchBar() {
 
     // Tour: go to product page, set region for homepage personalization
     if (suggestion.kind === 'tour' && suggestion.slug) {
-      addSearch({ slug: suggestion.slug, title: suggestion.name, type: 'tour', image: suggestion.image, city: suggestion.city, region: suggestion.region })
+      addSearch({ id: suggestion.tourId, slug: suggestion.slug, title: suggestion.name, type: 'tour', image: suggestion.image, city: suggestion.city, region: suggestion.region })
       if (suggestion.region) setLocation(suggestion.region)
-      navigate(`/tour/${suggestion.slug}`)
+      navigate(tourPath(suggestion.tourId, suggestion.slug))
       return
     }
 
@@ -114,7 +115,7 @@ export default function SearchBar() {
       setIsPersonalizing(true)
       navigate(`/tours?place=${encodeURIComponent(item.title)}`)
     } else if (item.type === 'tour' && item.slug) {
-      navigate(`/tour/${item.slug}`)
+      navigate(tourPath(item.id, item.slug))
     }
   }, [navigate, setLocation, setInputValue])
 

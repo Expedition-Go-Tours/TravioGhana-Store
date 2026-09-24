@@ -38,6 +38,7 @@ import TourQuickFacts from './TourQuickFacts'
 import BookingWidget from './BookingWidget'
 import RelatedTours from './RelatedTours'
 import StickyNavHeader from './StickyNavHeader'
+import { useBackNavigation } from '../../hooks/useBackNavigation'
 
 import TourDetailTabs from './TourDetailTabs'
 import OverviewSection from './OverviewSection'
@@ -248,33 +249,52 @@ export default function TourDetailPage() {
   // tour title sticks to the top (below the navbar); when the detail tabs reach
   // the top they stick instead, so the title bar steps aside.
   const [showStickyTitle, setShowStickyTitle] = useState(false)
+  // True once the section tabs bar has reached its sticky position and is
+  // holding the top of the viewport. The tabs bar is `position: sticky` at every
+  // breakpoint, so this is not mobile-gated.
+  const [tabsStuck, setTabsStuck] = useState(false)
+
+  // One history-aware "back" for the whole page: the hero overlay, the desktop
+  // breadcrumb, the mobile title bar and the sticky tabs bar all use it, so they
+  // behave identically. Falls back to the tours index when there is no in-app
+  // history (direct link, share, new tab) rather than dumping the user out of
+  // the site.
+  const handleBack = useBackNavigation('/tours')
   useEffect(() => {
     // Synchronous (not rAF-throttled): iOS Safari pauses rAF during momentum
     // scrolling, which would delay the sticky title until the scroll stops.
-    // Writes only happen when the boolean actually changes.
+    // Writes only happen when a boolean actually changes.
+    const STICKY_TOP = 64
     let lastShow = false
-    const computeStickyTitle = () => {
+    let lastStuck = false
+    const computeStickyState = () => {
+      const tabs = document.querySelector<HTMLElement>('.tour-detail-tabs')
+      const tabsReached = tabs ? tabs.getBoundingClientRect().top <= STICKY_TOP + 1 : false
+      if (tabsReached !== lastStuck) {
+        lastStuck = tabsReached
+        setTabsStuck(tabsReached)
+      }
+
+      // The title bar exists only below 1024px, and only while the title is
+      // off-screen but the tabs haven't taken over yet.
       let next = false
       if (window.innerWidth < 1024) {
         const header = document.querySelector<HTMLElement>('.tour-header-new')
-        const tabs = document.querySelector<HTMLElement>('.tour-detail-tabs')
-        if (header && tabs) {
-          const STICKY_TOP = 64
-          const headerGone = header.getBoundingClientRect().bottom <= STICKY_TOP + 1
-          const tabsReached = tabs.getBoundingClientRect().top <= STICKY_TOP + 1
-          next = headerGone && !tabsReached
+        if (header) {
+          next = header.getBoundingClientRect().bottom <= STICKY_TOP + 1 && !tabsReached
         }
       }
-      if (next === lastShow) return
-      lastShow = next
-      setShowStickyTitle(next)
+      if (next !== lastShow) {
+        lastShow = next
+        setShowStickyTitle(next)
+      }
     }
-    computeStickyTitle()
-    window.addEventListener('scroll', computeStickyTitle, { passive: true })
-    window.addEventListener('resize', computeStickyTitle)
+    computeStickyState()
+    window.addEventListener('scroll', computeStickyState, { passive: true })
+    window.addEventListener('resize', computeStickyState)
     return () => {
-      window.removeEventListener('scroll', computeStickyTitle)
-      window.removeEventListener('resize', computeStickyTitle)
+      window.removeEventListener('scroll', computeStickyState)
+      window.removeEventListener('resize', computeStickyState)
     }
   }, [])
 
@@ -329,7 +349,15 @@ export default function TourDetailPage() {
   const localTourReviews = tour?.reviewCount || 0
   const selectedTourRating = combinedTourStats.rating
   const selectedTourReviews = combinedTourStats.reviewCount
-  const slug = tourId || tour?.slug || ''
+  // The URL param may be an id, a slug, or /{id}/{slug} — the id is the
+  // identity and the slug decorative, so a stale-slug link still resolves.
+  // Links that want the readable form use the fetched tour's own slug.
+  const slug = tour?.slug || tourId || ''
+  // Canonical path for this tour: current id + current slug, so a visit via an
+  // out-of-date slug canonicalises to the authoritative URL.
+  const tourPath = tour?.id && tour?.slug
+    ? `/tour/${encodeURIComponent(tour.id)}/${encodeURIComponent(tour.slug)}`
+    : `/tour/${encodeURIComponent(tour?.id || tour?.slug || tourId || '')}`
 
   const wishlistItemId = tour?.id || selectedTourTitle
   const isFavorited = isInWishlist(wishlistItemId)
@@ -376,7 +404,7 @@ export default function TourDetailPage() {
     }
     navigate(`/review/${encodeURIComponent(slug)}`, {
       state: {
-        returnTo: `/tour/${slug}#reviews`,
+        returnTo: `${tourPath}#reviews`,
         bookingId: reviewableBookingId,
         tour: {
           title: selectedTourTitle,
@@ -1020,6 +1048,7 @@ export default function TourDetailPage() {
         keywords={`${tour.title}, ${tour.location} tours, ${tour.category || 'tours'} in ${tour.location?.split(',')[0] || 'Ghana'}, Ghana tours, book ${tour.title}`}
         image={mergedImages[0] || undefined}
         type="product"
+        canonical={`https://www.travioghana.com${tourPath}`}
         price={{ amount: String(tour.price), currency: 'USD' }}
         jsonLd={[
           buildProductSchema({
@@ -1038,15 +1067,15 @@ export default function TourDetailPage() {
             { name: 'Home', url: 'https://www.travioghana.com/' },
             { name: tour.location?.split(',')[1]?.trim() || 'Ghana', url: 'https://www.travioghana.com/tours' },
             { name: tour.location?.split(',')[0] || 'Tours', url: `https://www.travioghana.com/tours?place=${encodeURIComponent(tour.location?.split(',')[0] || '')}` },
-            { name: tour.title, url: `https://www.travioghana.com/tour/${slug}` },
+            { name: tour.title, url: `https://www.travioghana.com${tourPath}` },
           ]),
         ]}
       />
-      <StickyNavHeader show={showStickyTitle} title={selectedTourTitle} onWriteReview={handleWriteReview} />
+      <StickyNavHeader show={showStickyTitle} title={selectedTourTitle} onBack={handleBack} onWriteReview={handleWriteReview} />
       <div className="tour-detail-page">
         {/* Inside the page wrapper so the wrapper's 64px navbar clearance puts
             it *below* the fixed navbar instead of underneath it. */}
-        <Breadcrumb tour={tour} />
+        <Breadcrumb tour={tour} onBack={handleBack} />
         <div className="tour-detail-container">
           <div className="tour-detail-header-row">
             <TourHeader
@@ -1093,6 +1122,8 @@ export default function TourDetailPage() {
                 images={mergedImages}
                 title={selectedTourTitle}
                 fallbackImage={mergedImages[0]}
+                onBack={handleBack}
+                hideBack={showStickyTitle || tabsStuck}
               />
             </div>
 
@@ -1145,6 +1176,8 @@ export default function TourDetailPage() {
                 tabs={tourDetailTabs}
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
+                onBack={handleBack}
+                showBack={tabsStuck}
               />
 
               <div className="tour-detail-tab-content">

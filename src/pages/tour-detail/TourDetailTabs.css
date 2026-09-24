@@ -23,6 +23,17 @@
     margin-left: 0;
     margin-right: 0;
   }
+
+  /* Keep the tab row optically centred: take the back button out of flow and
+     pin it to the bar's own left edge instead of letting it push the tabs
+     across. (`position: sticky` above already makes the bar a containing
+     block.) */
+  .tour-detail-tabs-back {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
 }
 
 .tour-detail-tabs::-webkit-scrollbar {
@@ -41,6 +52,34 @@
     gap: 20px;
     padding: 0 24px;
   }
+}
+
+/* Back button that rides along on the sticky tabs bar once it has taken the top
+   of the viewport. In flow here so the mobile tabs (which stretch to share the
+   full width) automatically make room for it. */
+.tour-detail-tabs-back {
+  flex-shrink: 0;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #166534;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.tour-detail-tabs-back:hover {
+  background: rgba(22, 101, 52, 0.08);
+}
+
+.tour-detail-tabs-back:focus-visible {
+  outline: 2px solid #166534;
+  outline-offset: 2px;
 }
 
 .tour-detail-tab {

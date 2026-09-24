@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { tourPath } from '../lib/tourPath'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import { Car, Languages as LanguagesIcon, ShieldCheck, Ban, TrendingUp, BedDouble, Compass } from 'lucide-react'
@@ -75,7 +76,7 @@ export default function TourCard({ id, title, duration, features, price, rating,
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist()
   const { isLikelyToSellOut } = useSellOutContext()
   const showSellOutTag = likelyToSellOut || isLikelyToSellOut({ id, title })
-  const item = toWishlistItem({ id, title, duration, features, price, rating: String(rating), reviews, location, image, source, externalUrl } as Tour)
+  const item = toWishlistItem({ id, title, duration, features, price, rating: String(rating), reviews, location, image, source, externalUrl, slug } as Tour & { slug?: string })
   const inWishlist = isInWishlist(item.id)
   // Headline stats include the scraped TripAdvisor/GetYourGuide reviews matched
   // to this product, so the card agrees with the tour detail page. The stored
@@ -207,7 +208,9 @@ export default function TourCard({ id, title, duration, features, price, rating,
       swipeJustHappened.current = false
       return
     }
-    const url = `/tour/${tourSlug}`
+    // Canonical /tour/{id}/{slug} — see lib/tourPath. Static/mock cards have no
+    // id, so they keep the slug-only form the route still resolves.
+    const url = tourPath(id, tourSlug)
     // Modifier/middle clicks keep their browser meaning: open a new tab.
     const wantsNewTab = openInNewTab
       || (event != null && (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button === 1))

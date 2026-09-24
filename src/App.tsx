@@ -308,6 +308,13 @@ function AppContent() {
           <Route path="/tour/:tourId" element={
             <TourDetailPage />
           } />
+          {/* Canonical tour form: /tour/{id}/{slug}. The id is the identity (so a
+              title change can never break an existing link) and the slug is
+              decorative/readable. The single-segment route above stays for the
+              links already out in the wild. */}
+          <Route path="/tour/:tourId/:tourSlug" element={
+            <TourDetailPage />
+          } />
           <Route path="/tours" element={
             <AllToursPage />
           } />
@@ -358,6 +365,7 @@ function AppContent() {
           } />
           <Route path="/booking" element={<BookingPage />} />
           <Route path="/:tourId/booking" element={<BookingPage />} />
+          <Route path="/:tourId/:tourSlug/booking" element={<BookingPage />} />
           <Route path="/booking/checkout" element={<CheckoutPage />} />
           <Route path="/booking/confirmation/:bookingId" element={<BookingConfirmationPage />} />
           <Route path="/booking/confirmation" element={<BookingConfirmationPage />} />
