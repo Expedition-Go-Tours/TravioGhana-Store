@@ -1,4 +1,7 @@
 import { useTranslation } from 'react-i18next'
+import partner1 from '@/assets/partners/partners1.avif'
+import partner3 from '@/assets/partners/partners3.avif'
+import partner4 from '@/assets/partners/partners4.avif'
 import { MotionConfig, motion } from 'framer-motion'
 import {
   Route,
@@ -95,17 +98,17 @@ const PROMISE_STEPS = [
 
 const GALLERY_IMAGES = [
   {
-    src: 'https://www.travioghana.com/assets/partners1-aplmmi_U.avif',
+    src: partner1,
     alt: 'Travio Ghana colleague welcoming travellers',
     label: 'Operations',
   },
   {
-    src: 'https://www.travioghana.com/assets/partners3-DhhKYnja.avif',
+    src: partner3,
     alt: 'Travio Ghana colleagues planning together',
     label: 'Technology',
   },
   {
-    src: 'https://www.travioghana.com/assets/partners4-_-FBo1BJ.avif',
+    src: partner4,
     alt: 'Tourism professionals collaborating',
     label: 'Teamwork',
   },
@@ -113,17 +116,17 @@ const GALLERY_IMAGES = [
 
 const GALLERY_IMAGES_2 = [
   {
-    src: 'https://www.travioghana.com/assets/partners4-_-FBo1BJ.avif',
+    src: partner4,
     alt: 'Travio Ghana team supporting travel partners',
     label: 'Customer care',
   },
   {
-    src: 'https://www.travioghana.com/assets/partners1-aplmmi_U.avif',
+    src: partner1,
     alt: 'Welcoming guests to Ghana',
     label: 'On the road',
   },
   {
-    src: 'https://www.travioghana.com/assets/partners3-DhhKYnja.avif',
+    src: partner3,
     alt: 'Creating travel ideas together',
     label: 'Marketing',
   },

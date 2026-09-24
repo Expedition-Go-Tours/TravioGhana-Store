@@ -29,6 +29,9 @@ import tour5 from '@/assets/tours/tour5.avif'
 import tour6 from '@/assets/tours/tour6.avif'
 import tour7 from '@/assets/tours/tour7.avif'
 import tour8 from '@/assets/tours/tour8.avif'
+import phoneLogin from '@/assets/phone-screens/login.png'
+import phoneDashboard from '@/assets/phone-screens/dashboard.png'
+import phoneProducts from '@/assets/phone-screens/products.png'
 
 interface SupplierRegisterPageProps {
   onOpenAuth?: (mode: 'signin' | 'signup') => void
@@ -41,9 +44,12 @@ interface SupplierRegisterPageProps {
 }
 
 const HERO_IMAGES = [
-  { src: 'https://www.travioghana.com/assets/login-CVCOiS3v.png', alt: 'Supplier login screen', cls: 'le-phone-a' },
-  { src: 'https://www.travioghana.com/assets/dashboard-gdPjqAgj.png', alt: 'Supplier dashboard with bookings and earnings', cls: 'le-phone-b' },
-  { src: 'https://www.travioghana.com/assets/products-BQ2_Qx8G.png', alt: 'Tour products management screen', cls: 'le-phone-c' },
+  // Bundled screenshots — the previous srcs were absolute hashed URLs from an
+  // older deployment (/assets/login-CVCOiS3v.png …), which 404 on every new
+  // build, so the phone wall rendered empty frames.
+  { src: phoneLogin, alt: 'Supplier login screen', cls: 'le-phone-a' },
+  { src: phoneDashboard, alt: 'Supplier dashboard with bookings and earnings', cls: 'le-phone-b' },
+  { src: phoneProducts, alt: 'Tour products management screen', cls: 'le-phone-c' },
 ]
 
 const PROOF = [
