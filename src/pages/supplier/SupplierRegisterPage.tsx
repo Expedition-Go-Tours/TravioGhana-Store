@@ -297,7 +297,7 @@ export default function SupplierRegisterPage({ onOpenAuth, showApplicationForm =
               <span className="le-label">Supplier FAQ</span>
               <h2 className="le-title">Know before you list.</h2>
               <p>Clear answers about eligibility, pricing, payments and how the platform helps your business grow.</p>
-              <a className="le-btn le-btn-primary" href="https://www.travioghana.com/help-centre">Visit Help Centre</a>
+              <Link className="le-btn le-btn-primary" to="/help-centre">Visit Help Centre</Link>
             </div>
             <RevealOnScroll>
               <FAQAccordion items={FAQ_ITEMS} />

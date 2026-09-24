@@ -105,8 +105,8 @@ export default function HelpCentrePage() {
           description="Get help with your Ghana tour booking. Find answers about payments, cancellations, pickup, refunds, and more. Contact our support team for assistance."
           keywords="Ghana tours help, booking support, customer service, tour booking help, cancellation help, payment help"
           jsonLd={buildBreadcrumbSchema([
-            { name: 'Home', url: 'https://www.expeditiongotours.com/' },
-            { name: 'Help Centre', url: 'https://www.expeditiongotours.com/help-centre' },
+            { name: 'Home', url: 'https://www.travioghana.com/' },
+            { name: 'Help Centre', url: 'https://www.travioghana.com/help-centre' },
           ])}
         />
 
