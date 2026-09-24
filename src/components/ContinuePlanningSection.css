@@ -77,6 +77,11 @@
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
+/* No height: as a flex item of the card row this stretches to the card's
+   content height, so the photo fills the card edge to edge and no blank strip
+   is left under it. `min-height` only sets the floor for very short content.
+   Making it a definite `height` instead looks like it works, but then the photo
+   stops filling taller cards. */
 .cp-card-media {
   position: relative;
   width: 150px;
@@ -149,7 +154,14 @@
   background: rgba(55, 65, 81, 0.85);
 }
 
+/* Absolute so the photo can never drive the box height. An in-flow image with
+   `height: 100%` resolves against an indefinite parent and falls back to its own
+   aspect ratio — which is what let a portrait upload (720x1280) stretch the
+   whole row to 285px. Out of flow, the box is sized purely by the card's content
+   and the image simply fills whatever height that turns out to be. */
 .cp-card-media img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -441,6 +453,7 @@
   .cp-card-media {
     width: 128px;
     min-width: 128px;
+    /* Floor only — see the note on the desktop rule. */
     min-height: 96px;
   }
 
