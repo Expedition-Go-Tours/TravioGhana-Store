@@ -17,7 +17,7 @@ const routePrefetchers: Record<string, () => Promise<unknown>> = {
   '/foundation': () => import('../pages/FoundationPage'),
   '/supplier-terms': () => import('../pages/SupplierTermsPage'),
   '/content-creators': () => import('../pages/ContentCreatorsPage'),
-  '/supplier/list-experience': () => import('../pages/supplier/SupplierLandingPage'),
+  '/supplier/list-experience': () => import('../pages/supplier/SupplierRegisterPage'),
   '/supplier/register': () => import('../pages/supplier/SupplierRegisterPage'),
   '/hotels': () => import('../pages/HotelsProviderPage'),
   '/travel-agents': () => import('../pages/TravelAgentsPage'),

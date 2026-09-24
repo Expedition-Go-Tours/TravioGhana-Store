@@ -19,10 +19,8 @@ import { onSessionInvalidated } from '../auth/sessionManager'
 import { authSyncSubscribe } from '../auth/authSync'
 
 // ── Protected page detection ───────────────────────────────────────────
-// NOTE: /supplier/list-experience is NOT here — it renders the public
-// "become a supplier" landing page. Only /supplier/register (the application
-// form/status) needs a session.
-const PROTECTED_PREFIXES = ['/dashboard', '/booking', '/supplier/register', '/review']
+
+const PROTECTED_PREFIXES = ['/dashboard', '/booking', '/supplier/register', '/supplier/list-experience', '/review']
 
 function isProtectedPage(pathname: string): boolean {
   return PROTECTED_PREFIXES.some((p) => pathname.startsWith(p))
