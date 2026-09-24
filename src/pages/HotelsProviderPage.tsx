@@ -34,7 +34,7 @@ const FAQ_ITEMS = [
   { question: 'Can I manage several properties?', answer: 'The dashboard concept supports a portfolio view, allowing accommodation businesses to organise multiple properties and room types.' },
   { question: 'Can I control my room rates and availability?', answer: 'Yes. Partners can set their room rates and keep their available inventory current so travellers see accurate options.' },
   { question: 'Can guests also discover tours and activities?', answer: 'Yes. The partnership can help guests connect their stay with curated local experiences, creating added value throughout their trip.' },
-  { question: 'How do I contact the partnerships team?', answer: 'For programme enquiries, contact partners@expedition-go.com or use the Travio Ghana Contact Us page.' },
+  { question: 'How do I contact the partnerships team?', answer: 'For programme enquiries, contact info@expeditiongotours.com or use the Travio Ghana Contact Us page.' },
 ]
 
 export default function HotelsProviderPage({ onOpenAuth }: HotelsProviderPageProps) {

@@ -230,7 +230,7 @@ export default function TransportPage({ onOpenAuth }: TransportPageProps) {
             transition={{ duration: 0.5, delay: 0.1 }}
           >
             <p className="transport-about-card-text">
-              For inquiries, contact <strong>partners@expedition-go.com</strong>
+              For inquiries, contact <strong>info@expeditiongotours.com</strong>
             </p>
             <a href="/contact-us" className="transport-btn transport-btn-contact">
               Contact Us

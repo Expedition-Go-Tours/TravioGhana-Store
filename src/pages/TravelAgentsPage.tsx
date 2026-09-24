@@ -34,7 +34,7 @@ const FAQ_ITEMS = [
   { question: 'Can I manage client bookings from a dashboard?', answer: 'Yes. Your reseller dashboard shows all bookings placed through your link, including guest details, tour information and booking status.' },
   { question: 'How do I share experiences with clients?', answer: 'You receive a personal booking link that tracks referrals. Share it directly with clients or embed it in your marketing to attribute bookings.' },
   { question: 'How are agent commissions paid?', answer: 'Commissions are calculated monthly on confirmed bookings and paid through secure payout channels. Payout details are provided during onboarding.' },
-  { question: 'Who can I contact about the programme?', answer: 'Contact the partnerships team at partners@expedition-go.com or use the Travio Ghana Contact Us page.' },
+  { question: 'Who can I contact about the programme?', answer: 'Contact the partnerships team at info@expeditiongotours.com or use the Travio Ghana Contact Us page.' },
 ]
 
 export default function TravelAgentsPage({ onOpenAuth }: TravelAgentsPageProps) {

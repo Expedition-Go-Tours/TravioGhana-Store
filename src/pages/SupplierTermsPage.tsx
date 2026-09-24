@@ -106,7 +106,7 @@ export default function SupplierTermsPage() {
         We may suspend or terminate your supplier account at our sole discretion, with or without notice, in the event of a breach of these Terms, a serious guest complaint, safety concerns, suspected fraud or extended inactivity.
       </p>
       <p>
-        You may terminate your supplier relationship by contacting us at <a href="mailto:partners@expedition-go.com">partners@expedition-go.com</a>. Outstanding confirmed bookings must be honoured or transferred with our assistance.
+        You may terminate your supplier relationship by contacting us at <a href="mailto:info@expeditiongotours.com">info@expeditiongotours.com</a>. Outstanding confirmed bookings must be honoured or transferred with our assistance.
       </p>
 
       <h2 id="9-liability-and-indemnity">9. Liability and indemnity</h2>
@@ -125,7 +125,7 @@ export default function SupplierTermsPage() {
         If any provision of these Terms is held unenforceable, the remaining provisions shall continue in full force and effect. Our failure to enforce any provision shall not constitute a waiver.
       </p>
       <p>
-        For questions about these Terms, contact <a href="mailto:partners@expedition-go.com">partners@expedition-go.com</a>.
+        For questions about these Terms, contact <a href="mailto:info@expeditiongotours.com">info@expeditiongotours.com</a>.
       </p>
     </LegalPageShell>
   )

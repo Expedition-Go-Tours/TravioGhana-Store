@@ -42,7 +42,7 @@ const FAQ_ITEMS = [
   { question: 'Can I choose my own prices?', answer: 'Yes. Transport partners set their own rates and decide which suitable booking requests to accept.' },
   { question: 'How will I manage my fleet?', answer: 'The partner experience is designed to let you manage vehicles, availability and booking requests in one straightforward place.' },
   { question: 'How are partner payments handled?', answer: 'Payments are processed securely for completed bookings. Full payout and onboarding information is provided during partner setup.' },
-  { question: 'Who can I contact about the programme?', answer: 'Contact the partnerships team at partners@expedition-go.com or use the Travio Ghana Contact Us page.' },
+  { question: 'Who can I contact about the programme?', answer: 'Contact the partnerships team at info@expeditiongotours.com or use the Travio Ghana Contact Us page.' },
 ]
 
 export default function TransportProviderPage({ onOpenAuth }: TransportProviderPageProps) {
