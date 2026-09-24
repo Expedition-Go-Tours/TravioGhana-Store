@@ -282,7 +282,10 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
         return
       }
     }
-    navigate('/supplier/register')
+    // Send the CTA to the public marketing page (navbar visible, no form).
+    // Applying is a deliberate second step from there: its CTAs go to
+    // /supplier/register, which keeps the focused no-navbar application flow.
+    navigate('/supplier/list-experience')
   }, [isApproved, supplierProfile, navigate])
 
   // Warm the supplier application chunk so the CTA opens instantly — fired on
