@@ -104,9 +104,10 @@
 }
 
 .dash-topbar-logo-img {
-  /* TravioG.png is a wide wordmark (1103×226 ≈ 4.9:1); Lite's mark is 300×200
-     and Lite sizes this at 120px, which on the wordmark rendered ~586px wide
-     inside the 100px topbar. Fit by height instead (≈195px wide). */
+  /* TravioGhana_Logo.svg is a wide wordmark (2076×450 ≈ 4.61:1); Lite's mark is
+     300×200 and Lite sizes this at 120px, which on the wordmark would render
+     ~586px wide inside the 100px topbar. Fit by height instead (40px ≈ 184px
+     wide). */
   height: 40px;
   width: auto;
   object-fit: contain;

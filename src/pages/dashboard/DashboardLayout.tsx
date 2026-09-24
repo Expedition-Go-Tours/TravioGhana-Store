@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { signOutUser, setAuthReturnTo } from "@/lib/auth";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { useChat } from "@/chat/ChatContext";
-import logoSrc from "../../assets/TravioG.png";
+import logoSrc from "../../assets/TravioGhana_Logo.svg";
 import "../../components/booking/bookingTheme.css";
 import "./DashboardLayout.css";
 
