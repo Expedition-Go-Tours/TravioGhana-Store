@@ -7,7 +7,7 @@ import { Globe, Megaphone, ChevronRight, LogIn, LogOut, DollarSign, Bell, Settin
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n/config'
 import { useCurrency } from '../contexts/CurrencyContext'
-import logoSrc from '../assets/TravioG.png'
+import logoSrc from '../assets/TravioGhana_Logo.svg'
 import userSrc from '../assets/icons/User Circle.png'
 import { subscribeToAuthState, signOutUser, getStoredAuthUser, type AuthUser } from '../lib/auth'
 import { readBookingsSeen, writeBookingsSeen } from '../lib/bookingsBadge'

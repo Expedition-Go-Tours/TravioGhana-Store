@@ -99,11 +99,14 @@ body:has(.le-page) .navbar {
 }
 
 .nav-logo-img {
-  /* Sized for THIS storefront's wordmark: TravioG.png is 1103×226 (≈4.9:1),
-     whereas Lite's mark is 300×200 (1.5:1) and Lite sizes it at 120px tall.
-     On a wide wordmark that height rendered ~586px wide inside the 64px bar
-     and pushed the search/actions around. Fit by height instead — 38px renders
-     ≈185px wide, which reads as a wordmark and still fits the 64px bar. */
+  /* Sized for THIS storefront's wordmark: TravioGhana_Logo.svg crops to
+     2096×449 (≈4.67:1) — the green/gold wordmark with the Expedition-Go Tours
+     tagline and the Ghana flag pin. (The previous mark, TravioG.png, was
+     1103×226 ≈ 4.9:1.) Fit by height, not width: 38px renders ≈177px wide,
+     which reads as a wordmark and still fits the 64px bar.
+     Lite's mark is 300×200 (1.5:1) and Lite sizes it at 120px tall — on a wide
+     wordmark that height would render ~586px wide and push the search/actions
+     around, hence the height-driven fit. */
   height: 38px;
   width: auto;
   display: block;
@@ -1281,7 +1284,7 @@ body:has(.story-detail) .navbar-compact-search {
   }
 
   .nav-logo-img {
-    /* Same wordmark fit on phones (≈146px wide) so it leaves room for the
+    /* Same wordmark fit on phones (≈140px wide) so it leaves room for the
        menu button and search. */
     height: 30px;
   }
