@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { tourPath } from '../lib/tourPath'
 import { AnimatePresence, motion, type Variants } from 'framer-motion'
 import { toast } from 'sonner'
-import { Globe, Megaphone, ChevronRight, LogIn, LogOut, DollarSign, Bell, Settings } from 'lucide-react'
+import { Globe, Megaphone, LayoutDashboard, ChevronRight, LogIn, LogOut, DollarSign, Bell, Settings } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n/config'
 import { useCurrency } from '../contexts/CurrencyContext'
@@ -285,7 +285,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
     }
     // Send the CTA to the public marketing page (navbar visible, no form).
     // Applying is a deliberate second step from there: its CTAs go to
-    // /supplier/register, which keeps the focused no-navbar application flow.
+    // /supplier/register, the focused application page (navbar stays visible).
     navigate('/supplier/list-experience')
   }, [isApproved, supplierProfile, navigate])
 
@@ -636,7 +636,12 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
       <div className="nav-right">
         <a href="#" className="nav-list-experience" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleListExperience() }} onPointerEnter={prefetchSupplierRoutes} onFocus={prefetchSupplierRoutes}>
           <span className="nav-list-experience-icon">
-            <Megaphone size={15} strokeWidth={2.1} />
+            {/* Approved suppliers open their own portal, not the marketing page —
+                the icon switches with the label instead of reusing the
+                "List an Experience" megaphone. */}
+            {isApproved
+              ? <LayoutDashboard size={15} strokeWidth={2.1} />
+              : <Megaphone size={15} strokeWidth={2.1} />}
           </span>
           <span className="nav-list-experience-label">{isApproved ? t('nav.supplierDashboard') : t('nav.listAnExperience', 'List an Experience')}</span>
         </a>
@@ -904,7 +909,9 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
 
             <a href="#" className="nav-mobile-list-experience" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMobileListExperience() }} onPointerEnter={prefetchSupplierRoutes} onFocus={prefetchSupplierRoutes}>
               <span className="nav-mobile-list-experience-icon">
-                <Megaphone size={19} strokeWidth={2} />
+                {isApproved
+                  ? <LayoutDashboard size={19} strokeWidth={2} />
+                  : <Megaphone size={19} strokeWidth={2} />}
               </span>
               <span className="nav-mobile-list-experience-text">
                 <span className="nav-mobile-list-experience-title">{isApproved ? t('nav.supplierDashboard') : t('nav.listAnExperience', 'List an Experience')}</span>
