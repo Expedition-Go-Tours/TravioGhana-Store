@@ -38,6 +38,7 @@ import TourQuickFacts from './TourQuickFacts'
 import BookingWidget from './BookingWidget'
 import RelatedTours from './RelatedTours'
 import StickyNavHeader from './StickyNavHeader'
+import { useBackNavigation } from '../../hooks/useBackNavigation'
 
 import TourDetailTabs from './TourDetailTabs'
 import OverviewSection from './OverviewSection'
@@ -248,33 +249,52 @@ export default function TourDetailPage() {
   // tour title sticks to the top (below the navbar); when the detail tabs reach
   // the top they stick instead, so the title bar steps aside.
   const [showStickyTitle, setShowStickyTitle] = useState(false)
+  // True once the section tabs bar has reached its sticky position and is
+  // holding the top of the viewport. The tabs bar is `position: sticky` at every
+  // breakpoint, so this is not mobile-gated.
+  const [tabsStuck, setTabsStuck] = useState(false)
+
+  // One history-aware "back" for the whole page: the hero overlay, the desktop
+  // breadcrumb, the mobile title bar and the sticky tabs bar all use it, so they
+  // behave identically. Falls back to the tours index when there is no in-app
+  // history (direct link, share, new tab) rather than dumping the user out of
+  // the site.
+  const handleBack = useBackNavigation('/tours')
   useEffect(() => {
     // Synchronous (not rAF-throttled): iOS Safari pauses rAF during momentum
     // scrolling, which would delay the sticky title until the scroll stops.
-    // Writes only happen when the boolean actually changes.
+    // Writes only happen when a boolean actually changes.
+    const STICKY_TOP = 64
     let lastShow = false
-    const computeStickyTitle = () => {
+    let lastStuck = false
+    const computeStickyState = () => {
+      const tabs = document.querySelector<HTMLElement>('.tour-detail-tabs')
+      const tabsReached = tabs ? tabs.getBoundingClientRect().top <= STICKY_TOP + 1 : false
+      if (tabsReached !== lastStuck) {
+        lastStuck = tabsReached
+        setTabsStuck(tabsReached)
+      }
+
+      // The title bar exists only below 1024px, and only while the title is
+      // off-screen but the tabs haven't taken over yet.
       let next = false
       if (window.innerWidth < 1024) {
         const header = document.querySelector<HTMLElement>('.tour-header-new')
-        const tabs = document.querySelector<HTMLElement>('.tour-detail-tabs')
-        if (header && tabs) {
-          const STICKY_TOP = 64
-          const headerGone = header.getBoundingClientRect().bottom <= STICKY_TOP + 1
-          const tabsReached = tabs.getBoundingClientRect().top <= STICKY_TOP + 1
-          next = headerGone && !tabsReached
+        if (header) {
+          next = header.getBoundingClientRect().bottom <= STICKY_TOP + 1 && !tabsReached
         }
       }
-      if (next === lastShow) return
-      lastShow = next
-      setShowStickyTitle(next)
+      if (next !== lastShow) {
+        lastShow = next
+        setShowStickyTitle(next)
+      }
     }
-    computeStickyTitle()
-    window.addEventListener('scroll', computeStickyTitle, { passive: true })
-    window.addEventListener('resize', computeStickyTitle)
+    computeStickyState()
+    window.addEventListener('scroll', computeStickyState, { passive: true })
+    window.addEventListener('resize', computeStickyState)
     return () => {
-      window.removeEventListener('scroll', computeStickyTitle)
-      window.removeEventListener('resize', computeStickyTitle)
+      window.removeEventListener('scroll', computeStickyState)
+      window.removeEventListener('resize', computeStickyState)
     }
   }, [])
 
@@ -1042,11 +1062,11 @@ export default function TourDetailPage() {
           ]),
         ]}
       />
-      <StickyNavHeader show={showStickyTitle} title={selectedTourTitle} onWriteReview={handleWriteReview} />
+      <StickyNavHeader show={showStickyTitle} title={selectedTourTitle} onBack={handleBack} onWriteReview={handleWriteReview} />
       <div className="tour-detail-page">
         {/* Inside the page wrapper so the wrapper's 64px navbar clearance puts
             it *below* the fixed navbar instead of underneath it. */}
-        <Breadcrumb tour={tour} />
+        <Breadcrumb tour={tour} onBack={handleBack} />
         <div className="tour-detail-container">
           <div className="tour-detail-header-row">
             <TourHeader
@@ -1093,6 +1113,8 @@ export default function TourDetailPage() {
                 images={mergedImages}
                 title={selectedTourTitle}
                 fallbackImage={mergedImages[0]}
+                onBack={handleBack}
+                hideBack={showStickyTitle || tabsStuck}
               />
             </div>
 
@@ -1145,6 +1167,8 @@ export default function TourDetailPage() {
                 tabs={tourDetailTabs}
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
+                onBack={handleBack}
+                showBack={tabsStuck}
               />
 
               <div className="tour-detail-tab-content">

@@ -9,13 +9,16 @@
      how small its font was, which is what fixed the row at 26px tall. A ratio
      here lets the row follow the 13px text (~18px). */
   line-height: 1.4;
-  /* Mobile/tablet: hidden — the navbar already shows where you are, and the
-     title deserves the space. Matches the navbar's own mobile breakpoint. */
+  /* Mobile/tablet: hidden — the navbar already shows where you are, the title
+     deserves the space, and the hero carries the back button instead.
+     Matches the navbar's own mobile breakpoint. */
   display: none;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  /* Anchors .breadcrumb-back without joining the centred crumb list. */
+  position: relative;
 }
 
 @media (min-width: 1025px) {
@@ -68,6 +71,47 @@
   font-weight: 600;
 }
 
+/* Back button — pinned to the strip's left padding so the crumb trail stays
+   optically centred (the list is `justify-content: center`). Desktop only,
+   because the whole strip is desktop only. */
+.breadcrumb-back {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  color: #374151;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.breadcrumb-back:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(23, 146, 55, 0.04);
+}
+
+.breadcrumb-back:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.breadcrumb-back-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
 /* ===== TABLET VIEW (768px+) ===== */
 @media (min-width: 768px) {
   .breadcrumb {
@@ -87,4 +131,17 @@
   .breadcrumb {
     padding: 8px 60px;
   }
+}
+
+/* Keep the back button aligned with the strip's own padding at each step. */
+@media (min-width: 768px) {
+  .breadcrumb-back { left: 24px; }
+}
+
+@media (min-width: 1024px) {
+  .breadcrumb-back { left: 40px; }
+}
+
+@media (min-width: 1400px) {
+  .breadcrumb-back { left: 60px; }
 }
