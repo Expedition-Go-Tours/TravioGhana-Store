@@ -70,7 +70,7 @@ interface TourCardProps extends Tour {
   openInNewTab?: boolean
 }
 
-export default function TourCard({ id, title, duration, features, price, rating, reviews, location, image, photos, discount, difficulty, cancellationPolicy, pickupIncluded, accommodationIncluded, meetingMode, category, languages, source, externalUrl, slug, isNew, hideSourceBadge, hideFeatures, imageClean, priceValue, specialOffers, likelyToSellOut, hideOfferBadge, compactDurationOnMobile, bodyOfferBadgesOnMobile, priority, openInNewTab = true }: TourCardProps) {
+export default function TourCard({ id, title, duration, features, price, rating, reviews, location, image, photos, discount, difficulty, cancellationPolicy, pickupIncluded, accommodationIncluded, meetingMode, category, languages, source, externalUrl, slug, supplierName, isNew, hideSourceBadge, hideFeatures, imageClean, priceValue, specialOffers, likelyToSellOut, hideOfferBadge, compactDurationOnMobile, bodyOfferBadgesOnMobile, priority, openInNewTab = true }: TourCardProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist()
@@ -81,7 +81,7 @@ export default function TourCard({ id, title, duration, features, price, rating,
   // Headline stats include the scraped TripAdvisor/GetYourGuide reviews matched
   // to this product, so the card agrees with the tour detail page. The stored
   // wishlist item above keeps the raw in-app stats (re-combined on display).
-  const combinedStats = useCombinedTourStats({ title, location, rating, reviewCount: reviews })
+  const combinedStats = useCombinedTourStats({ title, location, supplierName, rating, reviewCount: reviews })
   const displayRating = combinedStats.reviewCount > 0 ? combinedStats.rating.toFixed(1) : (rating || '0')
   const displayReviewCount = combinedStats.reviewCount > 0 ? combinedStats.reviewCount : reviews
   const [isMobile, setIsMobile] = useState(

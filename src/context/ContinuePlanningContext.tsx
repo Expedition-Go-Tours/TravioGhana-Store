@@ -18,6 +18,8 @@ export interface ContinuePlanningItem {
   viewedAt: string
   /** Tour-card fields so the Continue Planning carousel can render full cards. */
   category?: string
+  /** Operator of the tour — scopes scraped TripAdvisor / GetYourGuide stats. */
+  supplierName?: string | null
   languages?: string[]
   difficulty?: string
   cancellationPolicy?: string
@@ -75,6 +77,7 @@ export function toContinuePlanningItem(tour: Tour | (MultiDayTour & { days?: str
     meetingMode: (tour as Tour).meetingMode,
     source: (tour as Tour).source,
     externalUrl: (tour as Tour).externalUrl,
+    supplierName: (tour as Tour).supplierName,
     slug: (tour as Tour & { slug?: string }).slug,
     discount: (tour as Tour).discount,
     specialOffers: (tour as Tour & { specialOffers?: SpecialOfferData[] }).specialOffers,

@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { matchTourForTitle, type MatchableTour } from '../lib/reviewTourLink'
+import { isScrapedReviewSupplier } from '../lib/supplierIdentity'
 
 export interface ExternalReview {
   id: string
@@ -270,7 +271,7 @@ interface MatchedTourReviews {
 const matchCache = new Map<string, MatchedTourReviews>()
 
 function matchKey(tour: MatchableTour): string {
-  return `${tour.title}|${tour.location ?? ''}`
+  return `${tour.title}|${tour.location ?? ''}|${tour.supplierName ?? ''}`
 }
 
 function sortReviews(reviews: ExternalReview[]): ExternalReview[] {
@@ -280,6 +281,23 @@ function sortReviews(reviews: ExternalReview[]): ExternalReview[] {
     const db = b.originalDate ? new Date(b.originalDate).getTime() : 0
     return db - da
   })
+}
+
+/**
+ * Scraped products matched to a tour.
+ *
+ * Returns nothing for any tour not operated by the scraped supplier — that is
+ * what stops one operator's TripAdvisor / GetYourGuide totals appearing on
+ * another operator's identically-titled tour. Fails closed when the supplier is
+ * unknown, and title matching itself stays unchanged.
+ */
+export function selectMatchedProducts<T extends { tourTitle: string }>(
+  products: T[],
+  tour: MatchableTour | null | undefined,
+): T[] {
+  if (!tour?.title) return []
+  if (!isScrapedReviewSupplier(tour.supplierName)) return []
+  return products.filter((product) => matchTourForTitle(product.tourTitle, [tour]) !== null)
 }
 
 /** Scraped products (with official totals) + review rows matched to a tour. */
@@ -293,9 +311,7 @@ export function getMatchedTourReviews(
   const cached = matchCache.get(key)
   if (cached && cached.index === index) return cached
 
-  const products = data.products.filter(
-    (product) => matchTourForTitle(product.tourTitle, [tour]) !== null,
-  )
+  const products = selectMatchedProducts(data.products, tour)
   const productIds = new Set(products.map((product) => product.id))
 
   const rows = data.reviews.filter((review) => {
@@ -319,11 +335,12 @@ export function useTourExternalReviews(tour: MatchableTour | null | undefined, e
   const { data, isLoading } = useExternalReviewData(enabled)
   const title = tour?.title
   const location = tour?.location
+  const supplierName = tour?.supplierName
 
   const reviews = useMemo(() => {
     if (!data || !title) return [] as ExternalReview[]
-    return getMatchedTourReviews(data, { title, location }).rows
-  }, [data, title, location])
+    return getMatchedTourReviews(data, { title, location, supplierName }).rows
+  }, [data, title, location, supplierName])
 
   return { reviews, isLoading }
 }
@@ -336,13 +353,12 @@ export function useTourExternalProducts(tour: MatchableTour | null | undefined) 
   const { data, isLoading } = useExternalReviewStatsData()
   const title = tour?.title
   const location = tour?.location
+  const supplierName = tour?.supplierName
 
   const products = useMemo(() => {
     if (!data || !title) return [] as ExternalReviewStatsProduct[]
-    return data.products.filter(
-      (product) => matchTourForTitle(product.tourTitle, [{ title, location }]) !== null,
-    )
-  }, [data, title, location])
+    return selectMatchedProducts(data.products, { title, location, supplierName })
+  }, [data, title, location, supplierName])
 
   return { products, isLoading }
 }
@@ -569,14 +585,18 @@ export function useCombinedTourStats(tour: CombinedStatsTour | null | undefined)
   const { data } = useExternalReviewStatsData()
   const title = tour?.title
   const location = tour?.location
+  const supplierName = tour?.supplierName
   const rating = tour?.rating
   const reviewCount = tour?.reviewCount
 
   return useMemo(() => {
     if (!data || !title) return combineReviewStats({ rating, reviewCount }, [])
-    const matched = data.products.filter(
-      (product) => matchTourForTitle(product.tourTitle, [{ title, location }]) !== null,
-    )
+    // Scraped social proof is scoped to the scraped operator's own tours;
+    // everyone else shows their in-app numbers only.
+    if (!isScrapedReviewSupplier(supplierName)) {
+      return combineReviewStats({ rating, reviewCount }, [])
+    }
+    const matched = selectMatchedProducts(data.products, { title, location, supplierName })
     const aggregate = aggregateProducts(matched)
     if (aggregate) return combineReviewStats({ rating, reviewCount }, [], aggregate)
 
@@ -592,5 +612,5 @@ export function useCombinedTourStats(tour: CombinedStatsTour | null | undefined)
     }
     const fallback = count > 0 ? { rating: roundOne(sum / count), reviewCount: count } : null
     return combineReviewStats({ rating, reviewCount }, [], fallback)
-  }, [data, title, location, rating, reviewCount])
+  }, [data, title, location, supplierName, rating, reviewCount])
 }

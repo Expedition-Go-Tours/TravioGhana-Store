@@ -21,6 +21,12 @@ export interface Tour {
   meetingMode?: 'meeting_point' | 'pickup' | 'none'
   source?: 'expedition-go' | 'travio-africa'
   externalUrl?: string
+  /**
+   * Operator of the tour (API `supplierName`). Drives whether scraped
+   * TripAdvisor / GetYourGuide social proof may be shown — only tours from
+   * `SCRAPED_REVIEW_SUPPLIER` qualify (see lib/supplierIdentity).
+   */
+  supplierName?: string | null
   /** Real backend tour ID, present only for tours fetched from the API (not the static mock lists below). Enables wishlist backend sync. */
   id?: string
 }

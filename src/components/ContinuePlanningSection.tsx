@@ -52,6 +52,7 @@ function toTourCardProps(item: ContinuePlanningItem, likelyToSellOut: boolean) {
     source: item.source,
     externalUrl: item.externalUrl,
     slug: item.slug,
+    supplierName: item.supplierName,
     discount: item.discount,
     specialOffers: item.specialOffers,
     likelyToSellOut,
@@ -82,6 +83,7 @@ function ContinuePlanningCard({ item, likelyToSellOut }: { item: ContinuePlannin
   const combinedStats = useCombinedTourStats({
     title: item.title,
     location: item.location,
+    supplierName: item.supplierName,
     rating: item.rating,
     reviewCount: item.reviewCount,
   })

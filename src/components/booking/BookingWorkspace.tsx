@@ -393,6 +393,7 @@ function toRecommendedCardData(tour: RecommendedTour): TourCardData {
     image: tour.coverPhoto || (tour.photos && tour.photos[0]) || '',
     photos: tour.photos,
     source: 'expedition-go',
+    supplierName: tour.supplierName ?? null,
     specialOffers: (tour.specialOffers ?? []) as unknown as TourCardData['specialOffers'],
     isNew: tour.isNew,
     likelyToSellOut: tour.likelyToSellOut,

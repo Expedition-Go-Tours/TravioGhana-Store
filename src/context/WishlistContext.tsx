@@ -26,6 +26,8 @@ export interface WishlistItem {
   rating: number
   reviewCount: number
   addedDate: string
+  /** Operator of the tour — scopes scraped TripAdvisor / GetYourGuide stats. */
+  supplierName?: string | null
   source?: 'expedition-go' | 'travio-africa'
   externalUrl?: string
 }
@@ -68,6 +70,7 @@ export function toWishlistItem(
     source: tour.source,
     externalUrl: tour.externalUrl,
     slug: (tour as Tour & { slug?: string }).slug,
+    supplierName: (tour as Tour).supplierName,
   }
 }
 

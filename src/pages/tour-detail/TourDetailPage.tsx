@@ -136,13 +136,13 @@ export default function TourDetailPage() {
   // in-app reviews with the same card layouts. The 1.6 MB row dataset is only
   // fetched once the reviews tab is actually opened.
   const { reviews: externalMatchedReviews } = useTourExternalReviews(
-    tour ? { title: tour.title, location: tour.location } : null,
+    tour ? { title: tour.title, location: tour.location, supplierName: tour.supplierName } : null,
     activeTab === 'reviews',
   )
   // Official product totals (e.g. TripAdvisor "4.9 (595 reviews)") for the
   // matched scraped listings — used for the headline rating/count.
   const { products: externalMatchedProducts } = useTourExternalProducts(
-    tour ? { title: tour.title, location: tour.location } : null,
+    tour ? { title: tour.title, location: tour.location, supplierName: tour.supplierName } : null,
   )
   // Headline review stats = in-app reviews + the matched scraped TripAdvisor /
   // GetYourGuide product totals (falling back to counted rows when a product

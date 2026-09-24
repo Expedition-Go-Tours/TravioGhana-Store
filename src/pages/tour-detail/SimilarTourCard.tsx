@@ -32,13 +32,14 @@ export default function SimilarTourCard({
   meetingMode,
   source,
   externalUrl,
+  supplierName,
 }: SimilarTourCardProps) {
   const { t } = useTranslation()
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist()
-  const item = toWishlistItem({ id, title, duration, features, price, rating: String(rating), reviews, location, image, source, externalUrl } as Tour)
+  const item = toWishlistItem({ id, title, duration, features, price, rating: String(rating), reviews, location, image, source, externalUrl, supplierName } as Tour)
   const inWishlist = isInWishlist(item.id)
   // Include matched scraped reviews in the displayed stats (wishlist stays raw).
-  const combinedStats = useCombinedTourStats({ title, location, rating, reviewCount: reviews })
+  const combinedStats = useCombinedTourStats({ title, location, supplierName, rating, reviewCount: reviews })
   const displayRating = combinedStats.reviewCount > 0 ? combinedStats.rating.toFixed(1) : String(rating)
   const displayReviewCount = combinedStats.reviewCount > 0 ? combinedStats.reviewCount : reviews
 

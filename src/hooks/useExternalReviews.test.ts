@@ -6,6 +6,7 @@ import {
   computeExternalReviewStats,
   isVisibleExternalReview,
   scaleDistribution,
+  selectMatchedProducts,
   type ExternalReview,
   type ExternalReviewProduct,
 } from './useExternalReviews'
@@ -33,6 +34,12 @@ function review(
     ...partial,
   }
 }
+
+/**
+ * The committed scraped dataset (JSON imports widen `source` to string, hence
+ * the cast — the same pattern the row tests below use).
+ */
+const scrapedProducts = data.products as unknown as ExternalReviewProduct[]
 
 describe('computeExternalReviewStats', () => {
   it('counts only the scraped TripAdvisor and GetYourGuide reviews', () => {
@@ -352,5 +359,67 @@ describe('isVisibleExternalReview', () => {
     expect(isVisibleExternalReview(review({ id: 'gyg1', source: 'GETYOURGUIDE', rating: 5, text: '   ' }))).toBe(false)
     expect(isVisibleExternalReview(review({ id: 'gyg2', source: 'GETYOURGUIDE', rating: 5, text: '' }))).toBe(false)
     expect(isVisibleExternalReview(review({ id: 'ta2', source: 'TRIPADVISOR', rating: 5, text: 'Great tour!' }))).toBe(true)
+  })
+})
+
+/**
+ * Regression: the scraped dataset is one company's TripAdvisor / GetYourGuide
+ * listings (it carries no operator field), while matching is title-based. A
+ * competitor publishing the same itinerary must never inherit that social proof
+ * — reported as a Kadelo Travels tour showing "500+ reviews" with zero in-app
+ * reviews of its own.
+ */
+describe('scraped review supplier scope', () => {
+  const ENTITY = 'Expedition-Go Tours LTD'
+  const capeCoastTitle = 'Cape Coast Castle and Kakum National Park Day Tour'
+
+  const kadeloTour = { title: capeCoastTitle, location: 'Accra, Ghana', supplierName: 'Kadelo Travels' }
+  const entityTour = { title: capeCoastTitle, location: 'Accra, Ghana', supplierName: ENTITY }
+
+  it("matches the scraped Cape Coast products for the operator's own tour", () => {
+    const matched = selectMatchedProducts(scrapedProducts, entityTour)
+    expect(matched.length).toBeGreaterThan(0)
+    const total = matched.reduce((sum, p) => sum + (Number(p.reviewCount) || 0), 0)
+    expect(total).toBeGreaterThan(500)
+  })
+
+  it("gives another operator's identically-titled tour nothing", () => {
+    expect(selectMatchedProducts(scrapedProducts, kadeloTour)).toEqual([])
+  })
+
+  it('fails closed when a tour carries no supplier at all', () => {
+    expect(selectMatchedProducts(scrapedProducts, { title: capeCoastTitle, location: 'Accra, Ghana' })).toEqual([])
+    expect(
+      selectMatchedProducts(scrapedProducts, { title: capeCoastTitle, location: 'Accra, Ghana', supplierName: null }),
+    ).toEqual([])
+  })
+
+  it('still matches the same product list when the supplier fields match loosely', () => {
+    const looselyNamed = { ...entityTour, supplierName: 'Expedition Go Tours Ltd' }
+    expect(selectMatchedProducts(scrapedProducts, looselyNamed).length).toBeGreaterThan(0)
+  })
+})
+
+describe('scraped headline numbers with the real dataset', () => {
+  const ENTITY = 'Expedition-Go Tours LTD'
+  const title = 'Cape Coast Castle and Kakum National Park Day Tour'
+  const local = { title, location: 'Accra, Ghana' }
+
+  function headline(supplierName: string, inApp: { rating: number; reviewCount: number }) {
+    const products = selectMatchedProducts(scrapedProducts, { ...local, supplierName })
+    return combineReviewStats(inApp, [], aggregateProducts(products))
+  }
+
+  it("keeps the operator's own 588 + 208 scraped reviews on its tour", () => {
+    // Real in-app numbers for the storefront's Cape Coast tour (4 reviews).
+    const stats = headline(ENTITY, { rating: 5, reviewCount: 4 })
+    expect(stats.externalCount).toBeGreaterThan(500)
+    expect(stats.reviewCount).toBe(stats.externalCount + 4)
+  })
+
+  it('leaves another operator with its in-app numbers only (none yet)', () => {
+    const stats = headline('Kadelo Travels', { rating: 0, reviewCount: 0 })
+    expect(stats.externalCount).toBe(0)
+    expect(stats.reviewCount).toBe(0)
   })
 })

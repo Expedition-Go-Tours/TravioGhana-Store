@@ -61,6 +61,12 @@ export function buildTourLink(destination: string | null): string {
 export interface MatchableTour {
   title: string
   location?: string | null
+  /**
+   * Operator of the tour. Title matching itself ignores it, but scraped
+   * TripAdvisor / GetYourGuide reviews are only ever attributed to the supplier
+   * whose listings were scraped — see `isScrapedReviewSupplier`.
+   */
+  supplierName?: string | null
 }
 
 /**

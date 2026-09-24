@@ -190,6 +190,12 @@ export interface TourCardData {
   source: 'expedition-go' | 'travio-africa'
   externalUrl?: string
   slug: string
+  /**
+   * Operator of the tour (API `supplierName`). Scraped TripAdvisor /
+   * GetYourGuide reviews are only attributed to the supplier whose listings
+   * were scraped — see lib/supplierIdentity.
+   */
+  supplierName?: string | null
   languages?: string[]
   difficulty?: string
   cancellationPolicy?: string
@@ -1133,6 +1139,7 @@ function mapToListing(tour: ExpeditionTourRecord['tour']): TourCardData {
     source: isExternal ? 'travio-africa' : 'expedition-go',
     externalUrl: isExternal ? (tour.externalUrl || undefined) : undefined,
     slug: tour.slug,
+    supplierName: tour.supplierName ?? null,
     languages: languages.length ? languages : undefined,
     difficulty: extractDifficultyFromTour(tour) || undefined,
     cancellationPolicy: extractCancellationFromTour(tour) || undefined,
@@ -2068,6 +2075,7 @@ export function mapRawTourToListing(t: any): TourCardData {
     source: 'expedition-go',
     externalUrl: undefined,
     slug: t.slug,
+    supplierName: t.supplierName ?? t.supplier?.name ?? null,
     specialOffers: mapSpecialOffers(t),
     languages: languages.length ? languages : undefined,
     difficulty: extractDifficultyFromTour(t) || undefined,

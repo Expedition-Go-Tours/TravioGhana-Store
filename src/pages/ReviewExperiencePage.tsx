@@ -151,7 +151,7 @@ export default function ReviewExperiencePage() {
   // Sidebar card stats include the scraped TripAdvisor/GetYourGuide reviews
   // matched to this product, matching the tour detail page.
   const combinedTourStats = useCombinedTourStats(
-    tour ? { title: tour.title, location: tour.location, rating: tour.rating, reviewCount: tour.reviews } : null,
+    tour ? { title: tour.title, location: tour.location, supplierName: tour.supplierName, rating: tour.rating, reviewCount: tour.reviews } : null,
   )
   const displayTourRating = combinedTourStats.reviewCount > 0 ? combinedTourStats.rating : tour.rating
 

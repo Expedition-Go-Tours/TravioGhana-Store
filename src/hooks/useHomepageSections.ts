@@ -460,6 +460,7 @@ export function mapToTourCard(t: HomepageTour): TourCardData {
     id: t.id,
     title: t.title,
     slug: t.slug,
+    supplierName: t.supplier?.name ?? null,
     category: t.category || '',
     duration: durationStr,
     features: t.tags?.join(', ') || '',
