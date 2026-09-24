@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { tourPath } from '../lib/tourPath'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Star, Heart, Car, Compass, Languages as LanguagesIcon, ShieldCheck, Ban, TrendingUp } from 'lucide-react'
@@ -89,7 +90,7 @@ function ContinuePlanningCard({ item, likelyToSellOut }: { item: ContinuePlannin
 
   const openTour = () => {
     const slug = item.slug || item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-    navigate(`/tour/${slug}`)
+    navigate(tourPath(item.id, slug))
   }
 
   const handleWishlist = (e: React.MouseEvent) => {
@@ -108,6 +109,7 @@ function ContinuePlanningCard({ item, likelyToSellOut }: { item: ContinuePlannin
       reviews: item.reviewCount,
       source: item.source,
       externalUrl: item.externalUrl,
+      slug: item.slug,
     })
     if (inWishlist) {
       removeFromWishlist(item.id)

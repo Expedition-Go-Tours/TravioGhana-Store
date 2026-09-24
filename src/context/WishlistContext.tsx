@@ -16,6 +16,8 @@ export interface WishlistItem {
    * Used to sync adds/removes with the account wishlist on the backend.
    */
   tourId?: string
+  /** Tour slug — the decorative, readable half of /tour/{id}/{slug}. */
+  slug?: string
   title: string
   location: string
   price: number
@@ -44,7 +46,9 @@ function generateId(title: string, location: string): string {
   return btoa(`${title}|${location}`).replace(/=/g, '')
 }
 
-export function toWishlistItem(tour: (Tour | MultiDayTour & { days?: string }) & { id?: string }): WishlistItem {
+export function toWishlistItem(
+  tour: (Tour | MultiDayTour & { days?: string }) & { id?: string; slug?: string },
+): WishlistItem {
   const m = tour as MultiDayTour & { days?: string }
   const hasDuration = 'duration' in tour && typeof tour.duration === 'string'
   const hasDays = 'days' in m && typeof m.days === 'string'
@@ -63,6 +67,7 @@ export function toWishlistItem(tour: (Tour | MultiDayTour & { days?: string }) &
     addedDate: new Date().toISOString(),
     source: tour.source,
     externalUrl: tour.externalUrl,
+    slug: (tour as Tour & { slug?: string }).slug,
   }
 }
 

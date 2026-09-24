@@ -514,7 +514,7 @@ export default function AllToursPage() {
           ...(filteredTours.length > 0 ? [buildItemListSchema(
             filteredTours.slice(0, 20).map((t: TourCardData) => ({
               name: t.title,
-              url: `https://www.travioghana.com/tour/${t.slug}`,
+              url: `https://www.travioghana.com/tour/${encodeURIComponent(t.id)}/${encodeURIComponent(t.slug)}`,
               image: t.image || undefined,
             }))
           )] : []),

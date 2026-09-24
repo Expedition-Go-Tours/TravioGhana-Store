@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+import { bookingPath } from '../../lib/tourPath'
 import type { TourDetailData, SpecialOfferData } from '../../hooks/useExpeditionTours'
 import { bestOfferDiscountAmount } from '../../hooks/useExpeditionTours'
 import { buildBookingTour } from '../../lib/bookingTour'
@@ -456,8 +457,9 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
   const finishBookingNavigation = useCallback(() => {
     if (bookingCommittedRef.current) return
     bookingCommittedRef.current = true
-    navigate(`/${encodeURIComponent(tour.id)}/booking`, { state: pendingNavState.current })
-  }, [navigate, tour.id])
+    // Canonical /{id}/{slug}/booking — see lib/tourPath.
+    navigate(bookingPath(tour.id, tour.slug), { state: pendingNavState.current })
+  }, [navigate, tour.id, tour.slug])
 
   // Safety net: if the lazy transition chunk or its animation ever stalls,
   // finish the flow instead of stranding the user on a spinner.

@@ -3,6 +3,8 @@ import { readGated, writeGated } from '../lib/consentGatedStorage'
 
 export interface RecentSearch {
   slug: string
+  /** Real tour id when known — the stable half of /tour/{id}/{slug}. */
+  id?: string
   title: string
   type: 'destination' | 'tour'
   image?: string
