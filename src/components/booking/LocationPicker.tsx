@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { Search, MapPin, Loader2, AlertTriangle, RefreshCw, Check, X, Pencil, LocateFixed } from 'lucide-react'
 import { toast } from 'sonner'
 import { useLocationAutocomplete, type LocationSuggestion } from '../../hooks/useLocationAutocomplete'
+import { useLocationSharing } from '../../hooks/useLocationSharing'
 import { reverseGeocode } from '../../lib/locations'
 
 interface LocationPickerProps {
@@ -45,6 +46,7 @@ export default function LocationPicker({
   confirmed,
 }: LocationPickerProps) {
   const { search, retry, clear, results, loading, error: searchError } = useLocationAutocomplete()
+  const { enable: enableLocationSharing } = useLocationSharing()
 
   const [query, setQuery] = useState(value)
   const [open, setOpen] = useState(false)
@@ -91,39 +93,42 @@ export default function LocationPicker({
     onCoordsChangeRef.current?.(suggestion.latitude ?? null, suggestion.longitude ?? null)
   }, [])
 
-  // "Use my current location": geolocation → coords; the address is
-  // reverse-geocoded through the backend location service (Geoapify-first).
+  // "Use my current location": a user gesture that turns location sharing on
+  // (persisted) and resolves the device position — the only path that can
+  // raise the browser prompt. The address is reverse-geocoded through the
+  // backend location service (Geoapify-first).
   const handleUseMyLocation = useCallback(() => {
-    if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      toast.error('Geolocation is not supported on this device.')
-      return
-    }
     setLocating(true)
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude, longitude } = pos.coords
-        const r = await reverseGeocode(latitude, longitude)
+    void enableLocationSharing()
+      .then(async (result) => {
+        if (!result.ok) {
+          setLocating(false)
+          toast.error(
+            result.reason === 'unsupported'
+              ? 'Geolocation is not supported on this device.'
+              : result.reason === 'denied'
+                ? 'Location permission denied — enable location access to use your current position.'
+                : 'Could not get your current location. Please try again.',
+          )
+          return
+        }
+        const { lat, lng } = result.coords
+        const r = await reverseGeocode(lat, lng)
         const address = r?.formatted ?? ''
-        const label = address || `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`
-        setSelected({ formatted: label, latitude, longitude, city: '', country: '', region: '' })
+        const label = address || `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+        setSelected({ formatted: label, latitude: lat, longitude: lng, city: '', country: '', region: '' })
         setQuery(label)
         setOpen(false)
         setHighlightedIndex(-1)
         onChangeRef.current(label)
-        onCoordsChangeRef.current?.(latitude, longitude)
+        onCoordsChangeRef.current?.(lat, lng)
         setLocating(false)
-      },
-      (err) => {
+      })
+      .catch(() => {
         setLocating(false)
-        toast.error(
-          err.code === err.PERMISSION_DENIED
-            ? 'Location permission denied — enable location access to use your current position.'
-            : 'Could not get your current location. Please try again.',
-        )
-      },
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 },
-    )
-  }, [])
+        toast.error('Could not get your current location. Please try again.')
+      })
+  }, [enableLocationSharing])
 
   // Manual fallback: when the location isn't in the suggestion list, the user
   // can commit exactly what they typed as their pickup location.

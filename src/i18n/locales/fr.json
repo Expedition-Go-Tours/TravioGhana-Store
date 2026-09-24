@@ -1291,6 +1291,7 @@
         "wishlist": "Enregistre les expériences que vous mettez de côté",
         "continuePlanning": "Alimente la ligne « continuer à planifier » avec les expériences consultées",
         "approximateLocation": "Mémorise votre localisation approximative pour les résultats à proximité",
+        "locationSharing": "Mémorise que vous avez activé le partage de localisation, pour que les itinéraires partent de votre position actuelle",
         "onetapDismissal": "Mémorise que vous avez fermé l'invite de connexion Google",
         "maps": "Affiche les cartes des points de prise en charge et des lieux de rendez-vous",
         "analyticsEvents": "Mesure les pages vues, les recherches et les clics pour améliorer le site"

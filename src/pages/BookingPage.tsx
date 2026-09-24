@@ -34,6 +34,7 @@ import type { TourOption } from '../lib/tourTypes'
 import { hasLocationOnlyAreas, isPickupLocationSatisfied, pickupZoneStatus, distanceMeters, type PickupAreaShape } from '../lib/pickupZone'
 import LocationMap from '../components/booking/LocationMap'
 import MapErrorBoundary from '../components/booking/MapErrorBoundary'
+import MeetingDirections from '../components/booking/MeetingDirections'
 import PickupSelectModal from '../components/booking/PickupSelectModal'
 import PickupLocationSection from '../components/booking/PickupLocationSection'
 import TravelTimeChip from '../components/booking/TravelTimeChip'
@@ -55,7 +56,7 @@ import {
   type TourScheduleInfo,
 } from '../lib/tourAvailability'
 import { cancellationStatus } from '../lib/cancellationLabel'
-import { requestLocation } from '../lib/analytics'
+import { getGeolocationPermission, isLocationSharingEnabled, requestCurrentCoordinates } from '../lib/locationSharing'
 import { reverseGeocode } from '../lib/locations'
 
 /* --- Tour data from location state --- */
@@ -264,19 +265,17 @@ function referenceStartLabel(value?: string): string {
 // Drop-off is appended when the supplier configured one.
 // `embedded` renders it as a sub-section (no outer card border/background) so
 // it can sit inside the tour summary card without a nested box.
-function MeetingPickupCard({ tour, embedded = false, onOpenMap, showMapLink = true, showDirections = false, capturedLocation, isCapturingLocation }: {
+function MeetingPickupCard({ tour, embedded = false, onOpenMap, showMapLink = true, showDirections = false, onLocationResolved }: {
   tour: typeof FALLBACK_TOUR
   embedded?: boolean
   /** Opens the map modal (a pin per pickup spot). */
   onOpenMap?: () => void
   /** Whether the "Select on Map" link is shown (hidden in the collapsed summary). */
   showMapLink?: boolean
-  /** Whether the Google/Apple Maps directions links (meeting-point tours) are shown. */
+  /** Whether the location-gated Google/Apple Maps directions are shown. */
   showDirections?: boolean
-  /** User's captured location address for meeting point tours. */
-  capturedLocation?: string
-  /** Whether location is still being captured. */
-  isCapturingLocation?: boolean
+  /** Reports the traveller's opted-in location once resolved (fills travellers.location). */
+  onLocationResolved?: (location: { lat: number; lng: number; address?: string }) => void
 }) {
   const mode = tour.meetingMode
 
@@ -289,41 +288,6 @@ function MeetingPickupCard({ tour, embedded = false, onOpenMap, showMapLink = tr
       ? { lat, lng, label: tour.meetingPoint || tour.meetingPointAddress || 'the meeting point' }
       : null
   }, [tour.meetingPointLat, tour.meetingPointLng, tour.meetingPoint, tour.meetingPointAddress])
-
-  // The directions links route from the traveller's CURRENT location to the
-  // meeting point — the device location is resolved when the links render so
-  // the origin is baked into the deep-links before they are clicked.
-  const geolocationSupported =
-    typeof navigator !== 'undefined' &&
-    !!navigator.geolocation &&
-    typeof navigator.geolocation.getCurrentPosition === 'function'
-  const [origin, setOrigin] = useState<{ lat: number; lng: number } | null>(null)
-  const [originStatus, setOriginStatus] = useState<'locating' | 'located' | 'error'>('locating')
-
-  useEffect(() => {
-    if (!showDirections || !meetingPointDest || !geolocationSupported) return
-    let active = true
-    const geo = navigator.geolocation
-    if (!geo) return
-    geo.getCurrentPosition(
-      (pos) => {
-        if (!active) return
-        setOrigin({ lat: pos.coords.latitude, lng: pos.coords.longitude })
-        setOriginStatus('located')
-      },
-      () => {
-        if (active) setOriginStatus('error')
-      },
-      { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 },
-    )
-    return () => {
-      active = false
-    }
-  }, [showDirections, meetingPointDest, geolocationSupported])
-
-  // True while the device location is still being resolved (the links are held
-  // back so they always carry the correct origin when clicked).
-  const locating = geolocationSupported && originStatus === 'locating' && origin == null
 
   const arrivalLabel = () => {
     if (mode !== 'meeting_point') return ''
@@ -384,53 +348,10 @@ function MeetingPickupCard({ tour, embedded = false, onOpenMap, showMapLink = tr
               </div>
             )}
             {showDirections && meetingPointDest && (
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pl-[22px] text-xs">
-                <span className="font-semibold text-slate-600">Directions:</span>
-                {locating ? (
-                  <span className="inline-flex items-center gap-1 font-medium text-slate-500">
-                    <Loader2 size={11} className="animate-spin" />
-                    Locating your current location…
-                  </span>
-                ) : (
-                  <>
-                    <a
-                      href={googleMapsDirectionsUrl(origin, { lat: meetingPointDest.lat, lng: meetingPointDest.lng }, 'drive')}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 font-semibold text-emerald-700 underline underline-offset-2 transition-colors hover:text-emerald-900"
-                    >
-                      Open in Google Maps <ExternalLink size={11} />
-                    </a>
-                    <span className="text-slate-300">·</span>
-                    <a
-                      href={appleMapsDirectionsUrl(origin, { lat: meetingPointDest.lat, lng: meetingPointDest.lng })}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 font-semibold text-emerald-700 underline underline-offset-2 transition-colors hover:text-emerald-900"
-                    >
-                      Apple Maps <ExternalLink size={11} />
-                    </a>
-                    {origin && (
-                      <span className="text-slate-400">from your current location</span>
-                    )}
-                  </>
-                )}
-              </div>
+              <MeetingDirections destination={meetingPointDest} onLocationResolved={onLocationResolved} />
             )}
             {tour.meetingPointDescription && (
               <p className="pl-[22px] leading-relaxed text-slate-500">{tour.meetingPointDescription}</p>
-            )}
-            {isCapturingLocation && (
-              <p className="flex items-center gap-2 pl-[22px] text-sm text-slate-500">
-                <Loader2 size={13} className="animate-spin" />
-                Detecting your location…
-              </p>
-            )}
-            {capturedLocation && !isCapturingLocation && (
-              <p className="flex items-center gap-2 pl-[22px] text-sm text-slate-600">
-                <MapPin className="size-3.5 shrink-0 text-emerald-600" />
-                Your location: {capturedLocation}
-              </p>
             )}
             </div>
         )}
@@ -707,7 +628,7 @@ function ContactDetailsStep({
 function ActivityDetailsStep({
   tour, onNext, step, onNavigate, hasError, disabled,
   contact, onContactChange, showPickupLocation, locationValid,
-  isCapturingLocation,
+  onLocationResolved,
   options, optionValue, onOptionChange, optionQuoting, optionError,
   staticInfo = false,
 }: {
@@ -721,7 +642,8 @@ function ActivityDetailsStep({
   onContactChange: (key: string, value: string | boolean | number | null) => void
   showPickupLocation: boolean
   locationValid: boolean
-  isCapturingLocation: boolean
+  /** Meeting-point tours: reports the traveller's opted-in location once resolved. */
+  onLocationResolved?: (location: { lat: number; lng: number; address?: string }) => void
   /** Multi-option tours: sellable (non-private) options for the GYG-style
       "Choose your option" picker shown at the top of step 1. */
   options?: TourOption[]
@@ -832,8 +754,7 @@ function ActivityDetailsStep({
         embedded
         onOpenMap={handleOpenMap}
         showDirections
-        capturedLocation={contact.location}
-        isCapturingLocation={isCapturingLocation}
+        onLocationResolved={onLocationResolved}
       />
     </div>
   )
@@ -1959,7 +1880,6 @@ export default function BookingPage() {
   const [isExpired, setIsExpired] = useState(false)
   const [showExpiredModal, setShowExpiredModal] = useState(false)
   const [showSignInPrompt, setShowSignInPrompt] = useState(false)
-  const [isCapturingLocation, setIsCapturingLocation] = useState(false)
   const lastActivityAt = useRef(0)
 
   // Refresh / direct-URL / partial-stub arrival: once the by-URL-id fetch
@@ -2165,45 +2085,45 @@ export default function BookingPage() {
     trackActivity()
     setContact((prev) => ({ ...prev, [key]: value }))
   }
+  // The traveller turned location on from the meeting-point directions control:
+  // reuse the resolved position for travellers.location unless the form already
+  // has a location.
+  const handleMeetingLocationResolved = useCallback((loc: { lat: number; lng: number; address?: string }) => {
+    setContact((prev) => (
+      prev.location.trim()
+        ? prev
+        : { ...prev, location: loc.address || `${loc.lat}, ${loc.lng}`, pickupLat: loc.lat, pickupLng: loc.lng }
+    ))
+  }, [])
   const handlePaymentChange = (key: string, value: string) => {
     trackActivity()
     setPayment((prev) => ({ ...prev, [key]: value }))
   }
 
-  // Auto-capture user location for meeting point tours so the backend
-  // receives travellers.location (required for all tours).
+  // Meeting-point tours: quietly reuse a location the traveller has already
+  // opted into (preference on AND the browser already granted access) so the
+  // backend still receives travellers.location. This never prompts — visitors
+  // who haven't opted in are asked only from the directions control on step 1.
   useEffect(() => {
     if (tour.meetingMode !== 'meeting_point' || contact.location) return
 
     let active = true
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsCapturingLocation(true)
-
-    requestLocation().then((loc) => {
-      if (!active || !loc) {
-        if (active) setIsCapturingLocation(false)
-        return
-      }
-
-      reverseGeocode(loc.lat, loc.lng).then((result) => {
-        if (active) {
-          const address = result?.formatted || `${loc.lat}, ${loc.lng}`
-          handleContactChange('location', address)
-          handleContactChange('pickupLat', loc.lat)
-          handleContactChange('pickupLng', loc.lng)
-          setIsCapturingLocation(false)
-        }
-      }).catch(() => {
-        if (active) {
-          handleContactChange('location', `${loc.lat}, ${loc.lng}`)
-          handleContactChange('pickupLat', loc.lat)
-          handleContactChange('pickupLng', loc.lng)
-          setIsCapturingLocation(false)
-        }
-      })
-    }).catch(() => {
-      if (active) setIsCapturingLocation(false)
-    })
+    void (async () => {
+      if (!isLocationSharingEnabled()) return
+      const permission = await getGeolocationPermission()
+      if (permission !== 'granted' || !active) return
+      const result = await requestCurrentCoordinates({ timeout: 8000, maximumAge: 300000 })
+      if (!active || !result.ok) return
+      const { lat, lng } = result.coords
+      const geo = await reverseGeocode(lat, lng).catch(() => null)
+      if (!active) return
+      const address = geo?.formatted || `${lat}, ${lng}`
+      setContact((prev) => (
+        prev.location.trim()
+          ? prev
+          : { ...prev, location: address, pickupLat: lat, pickupLng: lng }
+      ))
+    })()
 
     return () => { active = false }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -2609,7 +2529,7 @@ export default function BookingPage() {
                   onContactChange={handleContactChange}
                   showPickupLocation={showPickupLocation}
                   locationValid={locationValid}
-                  isCapturingLocation={isCapturingLocation}
+                  onLocationResolved={handleMeetingLocationResolved}
                   options={hasMultipleOptions ? selectableOptions : undefined}
                   optionValue={selectedOptionId}
                   onOptionChange={handleOptionChange}

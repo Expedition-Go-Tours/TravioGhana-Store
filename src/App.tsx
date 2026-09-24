@@ -32,7 +32,7 @@ import GoogleOneTapPrompt from './components/GoogleOneTapPrompt'
 import { subscribeToAuthState, handleGoogleCallback, getAuthReturnTo, clearAuthReturnTo } from './lib/auth'
 import { AuthProvider } from './context/AuthContext'
 import { startSessionWatchdog, stopSessionWatchdog } from './auth/sessionManager'
-import { trackPageView, requestLocation } from './lib/analytics'
+import { trackPageView } from './lib/analytics'
 import { useHomepage, useHomepageByCity } from './hooks/useHomepageSections'
 
 // Route-level code splitting
@@ -272,11 +272,6 @@ function AppContent() {
         .trim()
     }
   }, [location.pathname])
-
-  // Request location once on mount for personalized recommendations
-  useEffect(() => {
-    requestLocation()
-  }, [])
 
   const isBookingConfirmation = location.pathname.startsWith('/booking/confirmation')
   // The confirmation receipt is a normal page (keeps the navbar + footer). The

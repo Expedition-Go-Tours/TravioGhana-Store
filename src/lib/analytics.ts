@@ -18,7 +18,7 @@
 
 import { getApiBaseUrl, getAuthToken } from './auth'
 import { hasConsent, subscribeConsent } from './cookieConsent'
-import { readGated, writeGated } from './consentGatedStorage'
+import { readGated, removeGated, writeGated } from './consentGatedStorage'
 
 // ─── Event queue (batched sends) ──────────────────────────────────────
 interface PendingEvent {
@@ -166,71 +166,12 @@ export function storeLocation(lat: number, lng: number): void {
   }
 }
 
-export function requestLocation(): Promise<UserLocation | null> {
-  return new Promise((resolve) => {
-    // Approximate location is optional personalisation: we must not touch the
-    // browser's location API, the IP lookup, or store the result until the
-    // visitor has agreed to functional cookies.
-    if (!hasConsent('functional')) {
-      resolve(null)
-      return
-    }
-
-    const stored = getStoredLocation()
-    if (stored) {
-      resolve(stored)
-      return
-    }
-
-    if (!navigator.geolocation) {
-      // No browser geolocation — try IP fallback
-      resolve(fetchIPLocation())
-      return
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const loc: UserLocation = {
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-          timestamp: Date.now(),
-        }
-        storeLocation(loc.lat, loc.lng)
-        trackLocationShared(loc.lat, loc.lng)
-        resolve(loc)
-      },
-      () => {
-        // Browser geolocation denied — try IP fallback
-        resolve(fetchIPLocation())
-      },
-      { timeout: 5000, maximumAge: 300000 }
-    )
-  })
-}
-
 /**
- * Fetch approximate location from the backend using IP geolocation.
- * City-level accuracy (~25km), no permission required.
+ * Forget the stored location. Called when the traveller turns location
+ * sharing off, so nearby sorting immediately stops using it.
  */
-async function fetchIPLocation(): Promise<UserLocation | null> {
-  try {
-    const base = getApiBaseUrl()
-    const res = await fetch(`${base}/locations/my-location`)
-    const payload = await res.json().catch(() => ({}))
-    const loc = payload?.data?.location
-    if (loc?.lat && loc?.lng) {
-      const userLoc: UserLocation = {
-        lat: loc.lat,
-        lng: loc.lng,
-        timestamp: Date.now(),
-      }
-      storeLocation(userLoc.lat, userLoc.lng)
-      return userLoc
-    }
-  } catch {
-    // Silently fail — IP geolocation is best-effort
-  }
-  return null
+export function clearStoredLocation(): void {
+  removeGated(LOCATION_KEY)
 }
 
 // ─── Tracking Functions ───────────────────────────────────────────────

@@ -1343,6 +1343,7 @@
         "wishlist": "Saves the experiences you shortlist",
         "continuePlanning": "Powers the “continue planning” row of experiences you viewed",
         "approximateLocation": "Remembers your approximate location for nearby results",
+        "locationSharing": "Remembers that you turned location sharing on, so directions can start from your current location",
         "onetapDismissal": "Remembers that you dismissed the Google sign-in prompt",
         "maps": "Displays maps for pick-up points and meeting locations",
         "analyticsEvents": "Measures pages viewed, searches and clicks so we can improve the site"

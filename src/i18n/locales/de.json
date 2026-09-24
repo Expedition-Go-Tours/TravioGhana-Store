@@ -1285,6 +1285,7 @@
         "wishlist": "Speichert die von Ihnen vorgemerkten Erlebnisse",
         "continuePlanning": "Speist die Zeile „Planung fortsetzen“ mit den von Ihnen angesehenen Erlebnissen",
         "approximateLocation": "Merkt sich Ihren ungefähren Standort für Ergebnisse in der Nähe",
+        "locationSharing": "Merkt sich, dass Sie die Standortfreigabe aktiviert haben, damit Routen von Ihrem aktuellen Standort starten",
         "onetapDismissal": "Merkt sich, dass Sie den Google-Anmeldehinweis geschlossen haben",
         "maps": "Zeigt Karten für Abholpunkte und Treffpunkte",
         "analyticsEvents": "Misst Seitenaufrufe, Suchen und Klicks, um die Website zu verbessern"
