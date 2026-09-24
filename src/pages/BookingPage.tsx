@@ -27,7 +27,7 @@ import { setAuthReturnTo } from '../lib/auth'
 import type { CardElementHandle } from '../components/booking/CardField'
 import { fetchWithAuth } from '../lib/api'
 import { useCreateBooking, useCalculateCheckout } from '../hooks/useExpeditionBookings'
-import { buildE164Phone, isValidPhoneInput, splitE164Phone, COUNTRY_CODES } from '../lib/phone'
+import { buildE164Phone, isValidPhoneInput, splitE164Phone, COUNTRY_CODES, formatPhoneDisplay } from '../lib/phone'
 import { SUPPORT_PHONE, SUPPORT_PHONE_DIGITS } from '../lib/support'
 import { getAccount } from '../features/account/api'
 import type { TourOption } from '../lib/tourTypes'
@@ -1728,7 +1728,7 @@ function BookingSidebar({
         <p className="text-sm font-bold text-slate-900">Need help?</p>
         <div className="mt-3 flex items-center gap-4 text-sm">
           <a href={`tel:${SUPPORT_PHONE_DIGITS}`} className="inline-flex items-center gap-1.5 font-medium text-slate-500 hover:text-emerald-600 transition-colors">
-            <Phone className="size-4" /> {SUPPORT_PHONE}
+            <Phone className="size-4" /> {formatPhoneDisplay(SUPPORT_PHONE)}
           </a>
         </div>
       </motion.div>
