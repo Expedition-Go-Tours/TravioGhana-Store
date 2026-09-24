@@ -2566,7 +2566,7 @@ export default function BookingPage() {
           <ArrowLeft className="size-4" />
         </motion.button>
         <a href="/" className="inline-flex items-center gap-2">
-          <img src={logoSrc} alt="Travio Ghana" className="h-[140px] w-auto sm:h-[110px]" />
+          <img src={logoSrc} alt="Travio Ghana" className="h-[30px] w-auto sm:h-[38px]" />
         </a>
       </div>
 
