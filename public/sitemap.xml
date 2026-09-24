@@ -39,7 +39,7 @@
   <priority>0.4</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/the-shia-hills-safari-quad-bike-tour</loc>
+  <loc>https://www.travioghana.com/tour/accra-guided-city-tour-cultural-and-historical-experience</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
@@ -47,6 +47,12 @@
 <url>
   <loc>https://www.travioghana.com/tour/accra-shai-hills-safari-akosombo-boat-cruise-day-tour</loc>
   <lastmod>2026-09-22</lastmod>
+  <changefreq>weekly</changefreq>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/tour/the-shia-hills-safari-quad-bike-tour</loc>
+  <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
@@ -75,13 +81,13 @@
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/accra-night-live-experience</loc>
+  <loc>https://www.travioghana.com/tour/accra-culture-walk-fantasy-coffins-art-gallery-beaches</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/accra-culture-walk-fantasy-coffins-art-gallery-beaches</loc>
+  <loc>https://www.travioghana.com/tour/accra-night-live-experience</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
@@ -117,12 +123,6 @@
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/accra-2-day-trip-to-aqua-safari-resort-and-treasure-island</loc>
-  <lastmod>2026-08-29</lastmod>
-  <changefreq>weekly</changefreq>
-  <priority>0.8</priority>
-</url>
-<url>
   <loc>https://www.travioghana.com/tour/the-agbogbloshie-accra-e-waste-recycling-experience</loc>
   <lastmod>2026-09-17</lastmod>
   <changefreq>weekly</changefreq>
@@ -130,6 +130,18 @@
 </url>
 <url>
   <loc>https://www.travioghana.com/tour/from-accra-waterfalls-aburi-gardens-cocoa-farm-tour</loc>
+  <lastmod>2026-08-29</lastmod>
+  <changefreq>weekly</changefreq>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/tour/accra-2-day-trip-to-aqua-safari-resort-and-treasure-island</loc>
+  <lastmod>2026-08-29</lastmod>
+  <changefreq>weekly</changefreq>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/tour/the-kumasi-cultural-and-heritage-day-tour</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
@@ -183,18 +195,6 @@
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/accra-guided-city-tour-cultural-and-historical-experience</loc>
-  <lastmod>2026-08-29</lastmod>
-  <changefreq>weekly</changefreq>
-  <priority>0.8</priority>
-</url>
-<url>
-  <loc>https://www.travioghana.com/tour/the-kumasi-cultural-and-heritage-day-tour</loc>
-  <lastmod>2026-08-29</lastmod>
-  <changefreq>weekly</changefreq>
-  <priority>0.8</priority>
-</url>
-<url>
   <loc>https://www.travioghana.com/tour/waterfalls-massage-with-aburi-gardens-cocoa-farm-activity</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
@@ -231,7 +231,7 @@
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tours?place=Dedenya</loc>
+  <loc>https://www.travioghana.com/tours?place=Accra</loc>
   <changefreq>weekly</changefreq>
   <priority>0.7</priority>
 </url>
@@ -241,12 +241,12 @@
   <priority>0.7</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tours?place=La-Dade-Kotopon%20Municipal%20District</loc>
+  <loc>https://www.travioghana.com/tours?place=Dedenya</loc>
   <changefreq>weekly</changefreq>
   <priority>0.7</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tours?place=Accra</loc>
+  <loc>https://www.travioghana.com/tours?place=La-Dade-Kotopon%20Municipal%20District</loc>
   <changefreq>weekly</changefreq>
   <priority>0.7</priority>
 </url>
@@ -271,12 +271,17 @@
   <priority>0.7</priority>
 </url>
 <url>
+  <loc>https://www.travioghana.com/tours?place=Boti</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.7</priority>
+</url>
+<url>
   <loc>https://www.travioghana.com/tours?place=Ada%20Foah</loc>
   <changefreq>weekly</changefreq>
   <priority>0.7</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tours?place=Boti</loc>
+  <loc>https://www.travioghana.com/tours?place=Bonwire</loc>
   <changefreq>weekly</changefreq>
   <priority>0.7</priority>
 </url>
@@ -292,11 +297,6 @@
 </url>
 <url>
   <loc>https://www.travioghana.com/tours?place=Nyankumasi%20Ahenkro</loc>
-  <changefreq>weekly</changefreq>
-  <priority>0.7</priority>
-</url>
-<url>
-  <loc>https://www.travioghana.com/tours?place=Bonwire</loc>
   <changefreq>weekly</changefreq>
   <priority>0.7</priority>
 </url>
