@@ -1,17 +1,18 @@
 import { useState, type FormEvent } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Mail } from 'lucide-react'
-import { useComingSoon } from '../hooks/useComingSoon'
 import newsletterImg from '../assets/newsletter-square.jpg'
 import './NewsletterSection.css'
 
 export default function NewsletterSection() {
   const [email, setEmail] = useState('')
-  const comingSoon = useComingSoon()
   const reduce = useReducedMotion()
 
-  // The mailing-list API is not wired up yet: the button is marked
-  // "coming soon" and submission is deliberately a no-op.
+  // The mailing-list API isn't wired up yet, so submitting is deliberately a
+  // no-op. The button is NOT marked `.is-coming-soon`: that dims it to 55%
+  // opacity and shows a not-allowed cursor, which reads as broken on a
+  // marketing section. It looks and behaves like a normal button that simply
+  // does nothing yet.
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
   }
@@ -63,9 +64,8 @@ export default function NewsletterSection() {
                 <Mail className="newsletter-input-icon" size={20} />
                 <button
                   type="submit"
-                  className="newsletter-btn is-coming-soon"
+                  className="newsletter-btn"
                   aria-label="Sign up"
-                  {...comingSoon}
                 >
                   Sign up
                 </button>

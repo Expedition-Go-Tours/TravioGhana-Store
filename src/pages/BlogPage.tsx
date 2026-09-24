@@ -2,7 +2,6 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { MotionConfig, motion, useReducedMotion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import { useComingSoon } from '../hooks/useComingSoon'
 import {
   ArrowRight,
   ArrowUpRight,
@@ -94,7 +93,6 @@ export default function BlogPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState<CategoryKey>('all')
   const [email, setEmail] = useState('')
-  const comingSoon = useComingSoon()
 
   const filteredStories = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
@@ -146,6 +144,8 @@ export default function BlogPage() {
 
   // The mailing-list API is not wired up yet: the button is marked
   // "coming soon" and submission is deliberately a no-op.
+  // Mailing-list API not wired yet — submitting is a no-op. Deliberately not
+  // marked `.is-coming-soon` (that dims the button and reads as broken).
   const handleSubscribe = (event: FormEvent) => {
     event.preventDefault()
   }
@@ -500,7 +500,7 @@ export default function BlogPage() {
                   placeholder={t('blog.emailPlaceholder')}
                   aria-label={t('blog.emailPlaceholder')}
                 />
-                <button type="submit" className="blog-newsletter-btn is-coming-soon" {...comingSoon}>
+                <button type="submit" className="blog-newsletter-btn">
                   <Mail size={16} aria-hidden="true" />
                   {t('blog.subscribe')}
                 </button>
