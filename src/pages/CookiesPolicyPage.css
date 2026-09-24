@@ -535,7 +535,8 @@ html:has(.cookies-page) {
 
 @media (max-width: 560px) {
   .cp-wrap {
-    width: calc(100% - 28px);
+    /* Phones keep the 20px gutter the navbar's column padding uses. */
+    width: calc(100% - 40px);
   }
 
   .cp-hero {

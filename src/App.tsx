@@ -172,8 +172,11 @@ function HomePage() {
         <MountOnView><Suspense fallback={<HomeSectionSkeleton />}><TopAttractionsNearbySection preloaded={data?.attractions} title={locationTitle?.('Top Attractions Nearby')} location={locationFilter} /></Suspense></MountOnView>
         <MountOnView><ExternalReviewsSection /></MountOnView>
         <MountOnView><PreviousSearchSections /></MountOnView>
-        <MountOnView><NewsletterSection /></MountOnView>
       </div>
+      {/* Always rendered: no MountOnView and no `.home-deferred`
+          content-visibility, so the newsletter is in the page from first
+          paint and its card never pops in with a blank image. */}
+      <NewsletterSection />
       <Footer />
     </SellOutProvider>
   )
@@ -230,9 +233,10 @@ function AppContent() {
     trackPageView(location.pathname + location.search)
   }, [location.pathname, location.search])
 
-  // Set a body class based on the current route so the navbar CSS
-  // (body:has(.page-*)) can align padding before lazy components load.
-  // useLayoutEffect (not useEffect) ensures the class is set before the
+  // Set body classes based on the current route so the navbar CSS can align
+  // padding before lazy components load. A route may carry several
+  // space-separated classes (a page marker plus a column-alignment class).
+  // useLayoutEffect (not useEffect) ensures the classes are set before the
   // browser paints — no visible flash of the wrong padding.
   useLayoutEffect(() => {
     const path = location.pathname
@@ -240,31 +244,33 @@ function AppContent() {
       ['/hotels', 'page-hotel'],
       ['/travel-agents', 'page-travel-agents'],
       ['/transport-providers', 'page-transport-providers'],
-      ['/foundation', 'page-foundation'],
-      ['/blog', 'page-blog'],
-      ['/about-us', 'page-about'],
+      // The `page-support-*` classes set the navbar's column alignment to the
+      // content width those routes use (see Navbar.css).
+      ['/foundation', 'page-foundation page-support-1180'],
+      ['/blog', 'page-blog page-support-1200'],
+      ['/about-us', 'page-about page-support-1200'],
       ['/content-creators', 'page-content-creators'],
-      ['/help-centre', 'page-support'],
-      ['/contact-us', 'page-support'],
-      ['/faq', 'page-support'],
-      ['/careers', 'page-support'],
-      ['/partnerships', 'page-support'],
-      ['/supplier-terms', 'page-support'],
-      ['/terms-and-conditions', 'page-support'],
-      ['/privacy-policy', 'page-support'],
-      ['/refund-policy', 'page-support'],
-      ['/cookies-policy', 'page-support'],
+      ['/help-centre', 'page-support page-support-1180'],
+      ['/contact-us', 'page-support page-support-1180'],
+      ['/faq', 'page-support page-support-1180'],
+      ['/careers', 'page-support page-support-1180'],
+      ['/partnerships', 'page-support page-support-1280'],
+      ['/supplier-terms', 'page-support page-support-1200'],
+      ['/terms-and-conditions', 'page-support page-support-1200'],
+      ['/privacy-policy', 'page-support page-support-1200'],
+      ['/refund-policy', 'page-support page-support-1180'],
+      ['/cookies-policy', 'page-support page-support-1200'],
       ['/tours', 'page-all-tours'],
       ['/search', 'page-search'],
       ['/booking/confirmation', 'page-confirmation'],
     ]
     const match = classMap.find(([prefix]) => path.startsWith(prefix))
-    const cls = match?.[1] ?? ''
+    const classes = (match?.[1] ?? '').split(' ').filter(Boolean)
 
     document.body.className = document.body.className
       .replace(/page-\S+/g, '')
       .trim()
-    if (cls) document.body.classList.add(cls)
+    for (const cls of classes) document.body.classList.add(cls)
 
     return () => {
       document.body.className = document.body.className
@@ -282,7 +288,6 @@ function AppContent() {
     location.pathname.startsWith('/dashboard') ||
     (location.pathname.startsWith('/booking') && !isBookingConfirmation) ||
     location.pathname.endsWith('/booking') ||
-    location.pathname.startsWith('/supplier/register') ||
     location.pathname.startsWith('/login') ||
     location.pathname.startsWith('/auth/callback')
 

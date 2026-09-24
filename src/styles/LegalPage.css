@@ -110,7 +110,8 @@
   .leg-content h2{scroll-margin-top:190px}
 }
 @media(max-width:560px){
-  .leg-wrap{width:calc(100% - 26px)}
+  /* Phones keep the 20px gutter the navbar's column padding uses. */
+  .leg-wrap{width:calc(100% - 40px)}
   .leg-hero{border-radius:19px;padding:35px 23px}
   .leg-hero h1{font-size:45px}
   .leg-hero p{font-size:15px}

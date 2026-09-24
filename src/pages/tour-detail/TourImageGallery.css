@@ -105,14 +105,15 @@
 
 /* ≥1024 the booking card sits beside the gallery. `--tour-hero-height` is set
    from the card's measured height (see TourDetailPage) so both columns finish on
-   the same line. Clamped: a very tall card (many options / long notes) can't
-   stretch the photos into a billboard. The tiles re-crop at the CDN to whatever
-   height they end up with. */
+   the same line — at any height. `min/max-height` here are the base mosaic
+   caps from the ≥768 block; they must be reset or a tall card leaves the
+   gallery short. The tiles re-crop at the CDN to whatever height they end up
+   with. */
 @media (min-width: 1024px) {
   .tour-gallery-mosaic {
     height: var(--tour-hero-height, 400px);
-    min-height: 380px;
-    max-height: 560px;
+    min-height: 0;
+    max-height: none;
   }
 }
 
@@ -162,11 +163,11 @@
   outline-offset: -2px;
 }
 
-/* ---------- "Show all photos" (GYG top-left, 24px inset) ---------- */
+/* ---------- "View all photos" — bottom-right of the gallery ---------- */
 .tour-gallery-show-all {
   position: absolute;
-  top: 24px;
-  left: 24px;
+  bottom: 24px;
+  right: 24px;
   z-index: 5;
   display: inline-flex;
   align-items: center;
@@ -189,9 +190,11 @@
   background: #f8fafc;
 }
 
-/* ---------- Hero back button (<1025px) ----------
-   The breadcrumb carries a back control from 1025px up; below that it is
-   hidden, so the hero owns it. Translucent so it reads over any photo. */
+/* ---------- Gallery back button ----------
+   The page's primary back affordance (the breadcrumb no longer carries one):
+   a bare left arrow on a round white button, top-left of the gallery — the
+   slot the "View all photos" pill used to occupy. `hideBack` retires it once
+   the sticky title/tabs take over, so two backs never show at once. */
 .tour-gallery-back {
   position: absolute;
   top: 12px;
@@ -204,17 +207,15 @@
   padding: 0;
   border: none;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.92);
+  background: #fff;
   color: #0f172a;
   cursor: pointer;
   box-shadow: 0 2px 10px rgba(15, 23, 42, 0.22);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
   transition: background 0.15s;
 }
 
 .tour-gallery-back:hover {
-  background: #fff;
+  background: #f8fafc;
 }
 
 .tour-gallery-back:focus-visible {
@@ -222,22 +223,19 @@
   outline-offset: 2px;
 }
 
-/* From 1025px the breadcrumb strip takes over (it has the same breakpoint),
-   so the overlay would be a duplicate. */
-@media (min-width: 1025px) {
+/* ≥768px: match the mosaic's 24px inset (the former "View all" slot). */
+@media (min-width: 768px) {
   .tour-gallery-back {
-    display: none;
+    top: 24px;
+    left: 24px;
   }
 }
 
-/* Below 1025px the hero's top-left belongs to the back button, so "View all
-   photos" moves to the bottom-left (GetYourGuide's own mobile placement).
-   `bottom: 30px` clears the pagination dots, which sit at `bottom: 12px` and
-   are 8px tall. */
-@media (max-width: 1024px) {
+/* Phones: the square carousel's bottom edge belongs to the pagination dots
+   (bottom: 12px, centred), so "View all" sits above them. */
+@media (max-width: 767px) {
   .tour-gallery-show-all {
-    top: auto;
+    right: 16px;
     bottom: 30px;
-    left: 16px;
   }
 }

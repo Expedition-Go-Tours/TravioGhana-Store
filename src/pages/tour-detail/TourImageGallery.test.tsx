@@ -94,8 +94,22 @@ describe('TourImageGallery — GetYourGuide mosaic', () => {
     expect(await screen.findByText('1 / 5')).toBeTruthy()
   })
 
-  it('no longer renders the overlay back button (GYG has none)', async () => {
-    render(<TourImageGallery images={IMAGES} title="Accra City Tour" />)
+  it('renders the round arrow-only back button and fires onBack', () => {
+    const onBack = vi.fn()
+    render(<TourImageGallery images={IMAGES} title="Accra City Tour" onBack={onBack} />)
+
+    const back = screen.getByLabelText(/go back/i)
+    expect(back.className).toContain('tour-gallery-back')
+    // Round white icon button: an SVG arrow, no label text.
+    expect(back.textContent).toBe('')
+    expect(back.querySelector('svg')).toBeTruthy()
+
+    fireEvent.click(back)
+    expect(onBack).toHaveBeenCalledTimes(1)
+  })
+
+  it('retires the gallery back button when hideBack is set', () => {
+    render(<TourImageGallery images={IMAGES} title="Accra City Tour" onBack={vi.fn()} hideBack />)
 
     expect(screen.queryByLabelText(/go back/i)).toBeNull()
   })

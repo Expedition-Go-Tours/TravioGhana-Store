@@ -1,454 +1,675 @@
-/* ===== FOOTER - DESKTOP FIRST ===== */
+/* ============================================================================
+   FOOTER — "Travio Ghana" light-on-green design
+   ----------------------------------------------------------------------------
+   Layout mirrors the reviewed mock (brand row → 4 link columns → payments /
+   socials → oversized watermark + legal row), rendered on the site's dark
+   green footer so the white chips and the faded wordmark pop on it.
+   The content column is the homepage grid: 1539px (295×5 + 16×4) with 32px
+   gutters (16px on phones), so the footer edges line up with the navbar and
+   every section above it.
+   ========================================================================== */
 
 .footer {
-  /* Dark green match the CTA / partner-pages design language. */
+  position: relative;
+  overflow: hidden; /* clips the oversized watermark at the page edge */
+  padding-top: 34px;
   background: #075634;
-  padding: 48px 0 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-family: var(--font-body);
 }
 
 .footer-container {
-  max-width: 1280px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: calc(295px * 5 + 16px * 4 + 64px); /* 1539px column + 2×32px */
+  margin-inline: auto;
   padding: 0 32px;
 }
 
-.footer-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 24px;
+/* Pages whose content column differs from the homepage grid: the footer
+   follows that page's own column — the same math as the matching navbar
+   rules in Navbar.css — so its edges line up with the content above it.
+   Pages without a rule (All Stories, Content Creators, supplier landing…)
+   keep the homepage column their navbar uses. */
+.page-support-1180 .footer-container {
+  max-width: none;
+  padding-inline: max(20px, calc((100vw - 1180px) / 2));
 }
 
-.footer-col {
+.page-support-1200 .footer-container {
+  max-width: none;
+  padding-inline: max(20px, calc((100vw - 1200px) / 2));
+}
+
+.page-support-1280 .footer-container {
+  max-width: none;
+  padding-inline: max(24px, calc((100vw - 1280px) / 2));
+}
+
+.page-hotel .footer-container,
+.page-travel-agents .footer-container,
+.page-transport-providers .footer-container {
+  max-width: none;
+  padding-inline: max(20px, calc((100vw - 1200px) / 2));
+}
+
+.page-search .footer-container {
+  max-width: none;
+  padding-inline: max(40px, calc((100vw - 1400px) / 2 + 40px));
+}
+
+.page-confirmation .footer-container {
+  max-width: none;
+  padding-inline: max(32px, calc((100vw - 1280px) / 2 + 32px));
+}
+
+/* Tour detail: `.tour-detail-container` is 1520px including 32px gutters
+   (24px at 640–1023px; below 640 the base 16px already matches). */
+@media (min-width: 1024px) {
+  body:has(.tour-detail-page) .footer-container {
+    max-width: none;
+    padding-inline: max(32px, calc((100vw - 1520px) / 2 + 32px));
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  body:has(.tour-detail-page) .footer-container {
+    max-width: none;
+    padding-inline: 24px;
+  }
+}
+
+/* Phones where the page's own gutter is tighter than the formula's floor. */
+@media (max-width: 600px) {
+  .page-search .footer-container {
+    padding-inline: 16px;
+  }
+}
+
+@media (max-width: 980px) {
+  .page-confirmation .footer-container {
+    padding-inline: 16px;
+  }
+}
+
+/* ===== Brand + language / currency ======================================= */
+
+.footer-topline {
   display: flex;
-  flex-direction: column;
-  gap: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 71px 0 48px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
 }
 
-/* ===== ACCORDION ===== */
-
-.footer-accordion {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+.footer-brand-block {
+  min-width: 0;
 }
 
-.footer-accordion:last-child {
-  border-bottom: none;
-}
-
-.footer-accordion-header {
+.footer-brand {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 14px 0;
-  background: transparent;
-  border: none;
-  cursor: default;
-  text-align: left;
-  transition: opacity 0.2s;
-}
-
-.footer-accordion-header:disabled {
-  cursor: default;
-}
-
-.footer-accordion-title {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.footer-accordion-chevron {
-  color: rgba(255, 255, 255, 0.6);
-  flex-shrink: 0;
-  transition: color 0.2s;
-  display: none;
-}
-
-.footer-accordion-header:hover .footer-accordion-chevron {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.footer-accordion-content {
-  overflow: hidden;
-}
-
-.footer-accordion-inner {
-  padding: 0 0 14px;
-}
-
-/* ===== LINKS ===== */
-
-.footer-links {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.footer-link {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.72);
+  gap: 11px;
+  width: fit-content;
+  color: #fff;
   text-decoration: none;
-  transition: color 0.2s;
-  line-height: 1.5;
 }
 
-.footer-link:hover {
-  color: #ffffff;
+.footer-brand-mark {
+  display: block;
+  flex: none;
+  width: 46px;
+  height: 46px;
 }
 
-/* ===== LANGUAGE & CURRENCY SELECTORS ===== */
-
-.footer-selector {
+.footer-brand-name {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 34px;
+  font-weight: 850;
+  line-height: 0.75;
+  letter-spacing: -0.075em;
+  color: #fff;
 }
 
-/* Premium Radix dropdown trigger */
-.footer-selector-trigger {
-  width: 100%;
+.footer-brand-name small {
+  margin-top: 10px;
+  padding-left: 3px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.46em;
+}
+
+.footer-brand-copy {
+  max-width: 360px;
+  margin: 23px 0 0;
+  font-size: 15px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.footer-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 15px;
+  padding-top: 2px;
+}
+
+.footer-control {
+  min-width: 0;
+}
+
+.footer-control-label {
+  display: block;
+  margin: 0 0 9px;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.footer-select {
+  position: relative;
+}
+
+.footer-select-trigger {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  background: #fff;
-  border: 1px solid #e0e0e0;
+  gap: 12px;
+  min-width: 192px;
+  height: 48px;
+  padding: 0 15px;
+  border: 1px solid #d8e4db;
   border-radius: 10px;
-  padding: 10px 12px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  color: #222;
-  cursor: pointer;
+  background: #fff;
+  color: #20382c;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 650;
   text-align: left;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  line-height: 1.4;
+  cursor: pointer;
+  transition: border-color 0.25s, box-shadow 0.25s;
 }
 
-.footer-selector-trigger:hover {
-  border-color: #179237;
-  box-shadow: 0 2px 8px rgba(23, 146, 55, 0.12);
+.footer-select-trigger:hover {
+  border-color: #8fbda0;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.18);
 }
 
-.footer-selector-trigger:focus-visible {
-  outline: none;
-  border-color: #179237;
-  /* Inset ring so the control never appears to move/shift on focus. */
-  box-shadow: inset 0 0 0 2px rgba(23, 146, 55, 0.18);
-}
-
-.footer-selector-trigger-value {
+.footer-select-value {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.footer-selector-chevron {
+.footer-select-chevron {
   flex-shrink: 0;
-  color: #888;
+  color: #718474;
 }
 
-/* Radix dropdown panel: thin, light scrollbar + reserved gutter so the item
-   labels don't shift when the scrollbar appears on open. */
-.footer-selector-content {
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
-}
+/* ===== Link columns ====================================================== */
 
-.footer-selector-content::-webkit-scrollbar {
-  width: 6px;
-}
-
-.footer-selector-content::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.footer-selector-content::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 999px;
-}
-
-.footer-selector-content::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-/* ===== PAYMENT ICONS ===== */
-
-.footer-payments-grid {
+.footer-nav {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 36px;
+  padding: 48px 0 64px;
 }
 
-.footer-payment-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.footer-nav-title {
+  margin: 0 0 21px;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.012em;
+  color: #fff;
 }
 
-.footer-payment-icon img {
-  height: 40px;
-  width: auto;
-  max-width: 100%;
-  object-fit: contain;
+.footer-nav-group ul {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.footer-payment-icon img.footer-payment-icon-img--master {
-  height: 48px;
-}
-
-.footer-payment-icon img.footer-payment-icon-img--visa {
-  height: 48px;
-}
-
-.footer-payment-icon img.footer-payment-icon-img--gpay {
-  height: 48px;
-}
-
-.footer-payment-icon img.footer-payment-icon-img--apple {
-  height: 48px;
-}
-
-.footer-payment-icon img.footer-payment-icon-img--amex {
-  height: 48px;
-}
-
-/* ===== SOCIALS ===== */
-
-.footer-socials {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.footer-social {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.footer-nav-link {
+  position: relative;
+  display: inline-block;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.72);
   text-decoration: none;
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+  transition: color 0.24s cubic-bezier(0.22, 1, 0.36, 1), transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.footer-social:hover {
-  transform: translateY(-2px) scale(1.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.footer-social:active {
-  transform: translateY(-1px) scale(1.04);
-}
-
-.footer-social--instagram { background: #e4405f; }
-.footer-social--facebook { background: #1877f2; }
-.footer-social--tiktok { background: #000; }
-.footer-social--youtube { background: #ff0000; }
-
-/* ===== DIVIDER ===== */
-
-.footer-divider {
+.footer-nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
   height: 1px;
-  background: rgba(255, 255, 255, 0.15);
-  margin: 24px 0 16px;
+  background: #d9f0b2;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* ===== BOTTOM BAR ===== */
+.footer-nav-link:hover {
+  color: #d9f0b2;
+  transform: translateX(3px);
+}
 
-.footer-bottom {
+.footer-nav-link:hover::after {
+  transform: scaleX(1);
+}
+
+.footer-nav-link--strong {
+  color: #d9f0b2;
+  font-weight: 720;
+}
+
+.footer-nav-link--strong svg {
+  width: 14px;
+  height: 14px;
+  margin-left: 3px;
+  vertical-align: -2px;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.footer-nav-link--strong:hover svg {
+  transform: translate(3px, -3px);
+}
+
+/* ===== Payments + socials ================================================ */
+
+.footer-meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 24px;
-  gap: 16px;
-  flex-wrap: wrap;
+  gap: 32px;
+  padding: 29px 0 34px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
 }
 
-.footer-bottom-left {
+.footer-meta-title {
+  display: block;
+  margin-bottom: 12px;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.footer-payments {
   display: flex;
-  align-items: center;
-  gap: 16px;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+/* White chips hold the real brand marks — the same contrast trick the old
+   footer's payment icons used against the green. */
+.footer-pay {
+  display: inline-grid;
+  place-items: center;
+  min-width: 58px;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid #dce6df;
+  border-radius: 7px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.footer-pay:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 7px 13px rgba(0, 0, 0, 0.28);
+}
+
+.footer-pay img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: 26px;
+  object-fit: contain;
+}
+
+/* Per-brand optical sizing. The source marks are square canvases with lots of
+   transparent padding (Visa's wordmark is only a third of its canvas height),
+   so each image is sized to the mark's actual ink rather than the canvas. */
+.footer-pay--visa img { height: 42px; }
+.footer-pay--mastercard img { height: 30px; }
+.footer-pay--amex img { height: 30px; }
+.footer-pay--paypal img { height: 24px; }
+.footer-pay--gpay img { height: 32px; }
+.footer-pay--apple img { height: 32px; }
+
+.footer-socials {
+  display: flex;
+  gap: 9px;
+}
+
+.footer-social {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  background: #fff;
+  color: #075634;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), color 0.25s, background 0.25s,
+    box-shadow 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.footer-social:hover {
+  transform: translateY(-4px) rotate(-4deg);
+  background: #d9f0b2;
+  color: #075634;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+}
+
+.footer-social svg {
+  width: 17px;
+  height: 17px;
+  fill: currentColor;
+}
+
+/* ===== Bottom: faded wordmark + legal line =============================== */
+
+.footer-bottom {
+  position: relative;
+  overflow: hidden;
+  min-height: 248px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.footer-watermark {
+  position: absolute;
+  left: 50%;
+  bottom: -0.38em;
+  transform: translateX(-50%);
+  font-family: var(--font-body);
+  font-size: clamp(130px, 20vw, 320px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.09em;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+  /* Faded light-lime: brightest at the top, dissolving into the green. */
+  background: linear-gradient(180deg, rgba(217, 240, 178, 0.22), rgba(217, 240, 178, 0.02) 78%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.footer-container.footer-bottom-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 30px;
+  padding-top: 35px;
+  padding-bottom: 24px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .footer-copyright {
-  font-family: 'DM Sans', sans-serif;
-  /* Scales with viewport width (and drops the global 0.18px letter-spacing)
-     so the full "… | Travio Ghana LTD | Accra-Ghana" line fits on ONE
-     line on every screen size without the last letter clipping. */
-  font-size: clamp(7.5px, 2.4vw, 12px);
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.6);
   margin: 0;
-  letter-spacing: 0;
-  text-align: center;
-  white-space: nowrap;
 }
 
-.footer-bottom-links {
+.footer-copyright strong {
+  color: #fff;
+}
+
+.footer-legal-links {
   display: flex;
-  align-items: center;
-  gap: 8px;
   flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px 22px;
 }
 
-.footer-bottom-link {
-  font-family: 'DM Sans', sans-serif;
+.footer-legal-link {
+  font-family: inherit;
   font-size: 12px;
-  font-weight: 500;
   color: rgba(255, 255, 255, 0.72);
   text-decoration: none;
-  transition: color 0.2s;
-  white-space: nowrap;
+  transition: color 0.25s;
 }
 
-.footer-bottom-link:hover {
-  color: #ffffff;
+.footer-legal-link:hover {
+  color: #d9f0b2;
+  text-decoration: underline;
 }
 
 /* "Cookie Settings" is a button (it opens the consent panel rather than
    navigating), so strip the browser chrome and match the links beside it. */
-.footer-bottom-button {
-  appearance: none;
-  background: none;
-  border: 0;
+.footer-legal-button {
   padding: 0;
+  border: 0;
+  background: none;
   cursor: pointer;
   text-align: left;
 }
 
-.footer-bottom-button:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.7);
-  outline-offset: 2px;
-  border-radius: 2px;
+/* ===== Focus ============================================================= */
+
+.footer a:focus-visible,
+.footer button:focus-visible {
+  outline: 3px solid #b6d869;
+  outline-offset: 4px;
+  border-radius: 4px;
 }
 
-.footer-bottom-divider {
-  width: 1px;
-  height: 12px;
-  background: rgba(255, 255, 255, 0.3);
-  flex-shrink: 0;
-}
+/* ===== Responsive ======================================================== */
 
-/* ===== TABLET (769px - 1023px) ===== */
-@media (max-width: 1023px) {
-  .footer-grid {
-    /* Six 1fr columns at ~108px each wrap text into 3-4 stacked lines and
-       hard-ellipsize the Language/Currency selector values. Collapse to two
-       wider columns instead. */
-    grid-template-columns: repeat(2, 1fr);
-    gap: 28px 24px;
+@media (max-width: 1060px) {
+  .footer-topline {
+    padding-top: 56px;
   }
 
-  .footer-container {
-    padding: 0 24px;
+  .footer-controls {
+    gap: 8px;
+  }
+
+  .footer-select-trigger {
+    min-width: 160px;
+  }
+
+  .footer-nav {
+    gap: 20px;
   }
 }
 
-/* ===== MOBILE (<=768px) ===== */
 @media (max-width: 768px) {
   .footer {
-    padding: 30px 0 0;
+    padding-top: 18px;
   }
 
   .footer-container {
-    padding: 0 16px;
+    padding-left: 16px;
+    padding-right: 16px;
   }
 
-  .footer-grid {
+  .footer-topline {
+    display: block;
+    padding: 46px 0 34px;
+  }
+
+  .footer-brand-copy {
+    margin-top: 18px;
+  }
+
+  .footer-controls {
+    align-items: stretch;
+    margin-top: 28px;
+  }
+
+  .footer-control {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .footer-select-trigger {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .footer-nav {
+    /* Phones: one column of accordion rows instead of the 4-up grid. */
     grid-template-columns: 1fr;
     gap: 0;
+    padding: 26px 0 32px;
   }
 
-  .footer-accordion-header {
+  .footer-nav-group {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  }
+
+  /* The meta row below already has its own top border. */
+  .footer-nav-group:last-child {
+    border-bottom: 0;
+  }
+
+  .footer-nav-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
     padding: 16px 0;
+    border: 0;
+    background: none;
+    color: #fff;
+    text-align: left;
     cursor: pointer;
   }
 
-  .footer-accordion-header:not(:disabled):hover {
-    opacity: 0.8;
+  .footer-nav-head .footer-nav-title {
+    margin: 0;
   }
 
-  .footer-accordion-header:disabled {
-    cursor: default;
+  .footer-nav-chevron {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    color: rgba(255, 255, 255, 0.7);
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  .footer-accordion-chevron {
-    display: block;
+  .footer-nav-head[aria-expanded='true'] .footer-nav-chevron {
+    transform: rotate(180deg);
   }
 
-  .footer-accordion-title {
-    font-size: 15px;
+  .footer-nav-panel {
+    overflow: hidden;
   }
 
-  .footer-accordion-inner {
-    padding: 0 0 12px;
+  .footer-nav-panel ul {
+    padding-bottom: 18px;
   }
 
-  .footer-links {
-    gap: 10px;
-  }
-
-  .footer-link {
-    font-size: 14px;
-  }
-
-  .footer-payments-grid {
-    grid-template-columns: repeat(6, 1fr);
-    gap: 8px;
+  .footer-meta {
+    /* Stacked: let the blocks fill the row so the payments grid can spread
+       (their contents are still left-aligned). */
+    align-items: stretch;
+    flex-direction: column;
+    gap: 25px;
   }
 
   .footer-bottom {
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
+    /* The 3-row legal grid needs room above the watermark band. */
+    min-height: 240px;
   }
 
-  .footer-bottom-left {
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
+  .footer-container.footer-bottom-inner {
+    display: block;
+    padding-top: 27px;
   }
 
-  .footer-bottom-links {
-    gap: 6px;
-    justify-content: center;
+  .footer-legal-links {
+    justify-content: flex-start;
+    margin-top: 15px;
   }
 
-  .footer-socials {
-    flex-wrap: nowrap;
-  }
-
-  .footer-social {
-    width: 28px;
-    height: 28px;
-  }
-
-  .footer-selector-trigger {
-    font-size: 14px;
-    padding: 12px 14px;
+  .footer-watermark {
+    /* Fit the whole wordmark on screen: the mark is ~4.6× the font-size wide,
+       so 19vw leaves a small gutter on every phone width (320px included).
+       Lift it off the band edge so the full word reads instead of bleeding. */
+    bottom: 10px;
+    font-size: 19vw;
   }
 }
 
-/* ===== SMALL MOBILE (<=480px) ===== */
 @media (max-width: 480px) {
-  .footer-payments-grid {
-    grid-template-columns: repeat(6, 1fr);
+  /* Six pills + gaps don't fit one row on phones; fixed 76px columns give a
+     tight 3 × 2 grid whose 8px gaps sit on the content's left edge, in line
+     with the section title and the socials below. */
+  .footer-payments {
+    display: grid;
+    grid-template-columns: repeat(3, 76px);
+    justify-content: start;
+    gap: 8px;
   }
 
-  .footer-bottom-links {
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px;
+  .footer-pay {
+    width: 100%;
+  }
+
+  .footer-pay--visa img { height: 50px; }
+  .footer-pay--mastercard img { height: 36px; }
+  .footer-pay--amex img { height: 36px; }
+  .footer-pay--paypal img { height: 30px; }
+  .footer-pay--gpay img { height: 38px; }
+  .footer-pay--apple img { height: 38px; }
+}
+
+/* Below ~563px the five legal links no longer fit on one row and used to wrap
+   into staggered columns; a two-column grid keeps them aligned on phones. */
+@media (max-width: 560px) {
+  .footer-legal-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: start;
+    gap: 10px 16px;
+  }
+}
+
+@media (max-width: 440px) {
+  .footer-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+  }
+
+  .footer-select-trigger {
+    height: 46px;
+    padding-left: 10px;
+    padding-right: 10px;
+    font-size: 12px;
+  }
+
+  .footer-nav-title {
+    margin-bottom: 15px;
+  }
+
+  .footer-nav-group ul {
+    gap: 11px;
+  }
+
+  .footer-nav-link {
+    font-size: 13px;
   }
 }

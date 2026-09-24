@@ -148,7 +148,8 @@
   .wrap { width: min(100% - 40px, 1200px); }
 }
 @media (max-width: 700px) {
-  .wrap { width: calc(100% - 26px); }
+  /* 20px gutters, matching the navbar's column padding on the partner pages. */
+  .wrap { width: calc(100% - 40px); }
   .eg-section-title { font-size: 38px; }
 }
 @media (max-width: 900px) {
@@ -161,7 +162,6 @@
 @media (max-width: 380px) {
   .eg-cta { padding: 36px 18px; border-radius: 20px; }
   .eg-cta h2 { font-size: 38px; }
-  .wrap { width: calc(100% - 28px); }
 }
 @media (prefers-reduced-motion: reduce) {
   .eg-reveal { opacity: 1; transform: none; transition: none; }

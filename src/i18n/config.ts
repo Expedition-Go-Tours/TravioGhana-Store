@@ -46,6 +46,13 @@ i18n
     interpolation: {
       escapeValue: false,
     },
+    react: {
+      // Non-English bundles are fetched after `languageChanged` fires (see
+      // loadLocaleBundle). Without this, react-i18next only re-renders on the
+      // language change itself and the UI keeps the English fallback until the
+      // next unrelated render — i.e. switching language appeared to do nothing.
+      bindI18nStore: 'added',
+    },
   })
   .then(() => loadLocaleBundle(i18n.language))
 

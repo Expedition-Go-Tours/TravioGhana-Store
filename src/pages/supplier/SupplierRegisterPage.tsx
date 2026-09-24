@@ -3,11 +3,11 @@
  * Marketing body ported verbatim from the HTML template, with the existing
  * SupplierApplicationForm appended at the end.
  */
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { LoaderCircle, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, LoaderCircle, ShieldCheck } from 'lucide-react'
 
 import { SupplierApplicationForm } from '@/components/supplier/SupplierApplicationForm'
 import { useAuthUser } from '@/hooks/useAuthUser'
@@ -108,7 +108,6 @@ export default function SupplierRegisterPage({ onOpenAuth, showApplicationForm =
   const user = useAuthUser()
   const { profile, isLoading } = useSupplierStatus({ forceEnabled: true })
   const [redirecting, setRedirecting] = useState(false)
-  const formRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
   const userId = getAuthUserId(user)
 
@@ -136,28 +135,93 @@ export default function SupplierRegisterPage({ onOpenAuth, showApplicationForm =
     }
     onOpenAuth?.('signin')
   }
-  const scrollToForm = () => { formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }
 
-  // The apply CTAs live on this page too when the form is hidden, so send them
-  // to the real application page instead of scrolling to nothing.
+  // Marketing CTAs (hero + bottom) route straight to the focused registration
+  // page. The application form itself no longer lives on the marketing page.
   const handleApplyCta = () => {
-    if (showApplicationForm) {
-      scrollToForm()
-      return
-    }
     navigate('/supplier/register')
+  }
+
+  // Focused registration view (/supplier/register): the application is the
+  // page — nothing above it but the navbar. The marketing story stays on
+  // /supplier/list-experience.
+  const applicationSection = (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+      className="relative bg-white px-4 py-10 sm:py-16"
+    >
+      <div className="mx-auto w-full max-w-[720px]">
+        <Link
+          to="/supplier/list-experience"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-primary"
+        >
+          <ArrowLeft size={16} />
+          {t('supplierAuth.learnAboutListing', 'Learn about listing on Travio Ghana')}
+        </Link>
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+            {t('supplierAuth.registerTitle', 'Join as a Supplier')}
+          </h1>
+          <p className="mt-2 text-sm text-slate-500 sm:text-base">
+            {t('supplierAuth.registerDesc', 'Complete your supplier application to list tours, reach travellers across Ghana, and manage bookings from one dashboard.')}
+          </p>
+        </div>
+
+        {(isLoading || redirecting) && !application ? (
+          <div className="flex items-center justify-center py-24">
+            <LoaderCircle className="size-6 animate-spin text-primary" />
+            {redirecting && <span className="ml-3 text-sm text-slate-500">{t('supplierAuth.redirectingToPortal', 'Taking you to your supplier dashboard…')}</span>}
+          </div>
+        ) : !user ? (
+          <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-8 text-center">
+            <ShieldCheck className="mx-auto mb-3 size-10 text-primary" />
+            <h2 className="text-lg font-bold text-slate-900">{t('supplierAuth.signUpToApply', 'Sign up to apply')}</h2>
+            <p className="mt-2 text-sm text-slate-500">{t('supplierAuth.signUpToApplyDesc', 'You need to be signed up to submit a supplier application.')}</p>
+            <Button type="button" onClick={() => onOpenAuth?.('signup')} className="mt-6 h-12 px-8">
+              {t('supplierAuth.signUpButton', 'Sign Up')}
+            </Button>
+          </div>
+        ) : application ? (
+          <div className="rounded-[1.4rem] border border-emerald-100 bg-emerald-50 p-8 text-center">
+            <ShieldCheck className="mx-auto mb-3 size-10 text-emerald-600" />
+            <h2 className="text-lg font-bold text-slate-900">{t('supplierAuth.applicationSubmitted', 'Application Submitted')}</h2>
+            <p className="mt-2 text-sm text-slate-600">{t('supplierAuth.applicationSubmittedDesc', 'Your supplier application is currently under review. Our team will get back to you within 3-5 business days.')}</p>
+            <p className="mt-3 inline-block rounded-full bg-white px-4 py-1 text-xs font-semibold text-emerald-700 shadow-sm">
+              {t('supplierAuth.applicationStatus', 'Status')}: {application?.status ?? 'PENDING'}
+            </p>
+          </div>
+        ) : (
+          <SupplierApplicationForm onSubmitted={refreshStatus} />
+        )}
+
+        <p className="mt-10 text-center text-sm text-slate-500">
+          {t('supplierAuth.alreadyHaveAccount', 'Already have a supplier account?')}{' '}
+          <button type="button" onClick={handleSignInHere} className="bg-transparent p-0 font-semibold text-primary hover:underline">
+            {t('supplierAuth.signInHere', 'Sign in here')}
+          </button>
+        </p>
+        <p className="mt-4 text-center text-xs text-slate-400">
+          By submitting this application, you agree to our{' '}
+          <Link to="/supplier-terms" className="underline hover:text-slate-600">Supplier Terms</Link> and{' '}
+          <Link to="/privacy-policy" className="underline hover:text-slate-600">Privacy Policy</Link>.
+        </p>
+      </div>
+    </motion.div>
+  )
+
+  if (showApplicationForm) {
+    return (
+      <main className="le-page">
+        {applicationSection}
+        <Footer />
+      </main>
+    )
   }
 
   return (
     <main className="le-page">
-      {/* ── Topline banner ──────────────────────────────── */}
-      <div className="le-topline">
-        <div className="wrap le-topline-inner">
-          <span><strong>Built for Ghana's experience operators.</strong></span>
-          <span>No listing fee • Global traveller reach • Supplier support</span>
-        </div>
-      </div>
-
       {/* ── Hero ─────────────────────────────────────────── */}
       <section className="le-hero">
         <div className="wrap le-hero-grid">
@@ -318,71 +382,6 @@ export default function SupplierRegisterPage({ onOpenAuth, showApplicationForm =
         </div>
       </section>
 
-      {/* ── Registration form (anchor) ──────────────────────
-          Only rendered on /supplier/register. The list-experience marketing
-          page passes showApplicationForm={false} so the "Join as a Supplier"
-          wizard is not part of that page. */}
-      {showApplicationForm && (
-        <>
-          <div id="apply" ref={formRef} />
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="relative bg-white px-4 py-10 sm:py-16"
-          >
-            <div className="mx-auto w-full max-w-[720px]">
-              <div className="mb-8 text-center">
-                <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-                  {t('supplierAuth.registerTitle', 'Join as a Supplier')}
-                </h1>
-                <p className="mt-2 text-sm text-slate-500 sm:text-base">
-                  {t('supplierAuth.registerDesc', 'Complete your supplier application to list tours, reach travellers across Ghana, and manage bookings from one dashboard.')}
-                </p>
-              </div>
-
-              {(isLoading || redirecting) && !application ? (
-                <div className="flex items-center justify-center py-24">
-                  <LoaderCircle className="size-6 animate-spin text-primary" />
-                  {redirecting && <span className="ml-3 text-sm text-slate-500">{t('supplierAuth.redirectingToPortal', 'Taking you to your supplier dashboard…')}</span>}
-                </div>
-              ) : !user ? (
-                <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-8 text-center">
-                  <ShieldCheck className="mx-auto mb-3 size-10 text-primary" />
-                  <h2 className="text-lg font-bold text-slate-900">{t('supplierAuth.signUpToApply', 'Sign up to apply')}</h2>
-                  <p className="mt-2 text-sm text-slate-500">{t('supplierAuth.signUpToApplyDesc', 'You need to be signed up to submit a supplier application.')}</p>
-                  <Button type="button" onClick={() => onOpenAuth?.('signup')} className="mt-6 h-12 px-8">
-                    {t('supplierAuth.signUpButton', 'Sign Up')}
-                  </Button>
-                </div>
-              ) : application ? (
-                <div className="rounded-[1.4rem] border border-emerald-100 bg-emerald-50 p-8 text-center">
-                  <ShieldCheck className="mx-auto mb-3 size-10 text-emerald-600" />
-                  <h2 className="text-lg font-bold text-slate-900">{t('supplierAuth.applicationSubmitted', 'Application Submitted')}</h2>
-                  <p className="mt-2 text-sm text-slate-600">{t('supplierAuth.applicationSubmittedDesc', 'Your supplier application is currently under review. Our team will get back to you within 3-5 business days.')}</p>
-                  <p className="mt-3 inline-block rounded-full bg-white px-4 py-1 text-xs font-semibold text-emerald-700 shadow-sm">
-                    {t('supplierAuth.applicationStatus', 'Status')}: {application?.status ?? 'PENDING'}
-                  </p>
-                </div>
-              ) : (
-                <SupplierApplicationForm onSubmitted={refreshStatus} />
-              )}
-
-              <p className="mt-10 text-center text-sm text-slate-500">
-                {t('supplierAuth.alreadyHaveAccount', 'Already have a supplier account?')}{' '}
-                <button type="button" onClick={handleSignInHere} className="bg-transparent p-0 font-semibold text-primary hover:underline">
-                  {t('supplierAuth.signInHere', 'Sign in here')}
-                </button>
-              </p>
-              <p className="mt-4 text-center text-xs text-slate-400">
-                By submitting this application, you agree to our{' '}
-                <Link to="/supplier-terms" className="underline hover:text-slate-600">Supplier Terms</Link> and{' '}
-                <Link to="/privacy-policy" className="underline hover:text-slate-600">Privacy Policy</Link>.
-              </p>
-            </div>
-          </motion.div>
-        </>
-      )}
       <Footer />
     </main>
   )

@@ -1553,20 +1553,33 @@ body:has(.story-detail) .navbar-compact-search {
   color: #94a3b8;
 }
 
-/* Support pages (Help Centre / Contact Us / FAQ & shared .support-page shell):
-   center the navbar content on the support container's inner content edges
-   (max-width 1280px + 24px gutters) so the logo (left) and profile icon
-   (right) line up with the page grid instead of the homepage column. */
-.page-support .navbar {
-  padding-left: max(24px, calc((100vw - 1280px) / 2 + 24px));
-  padding-right: max(24px, calc((100vw - 1280px) / 2 + 24px));
+/* Support-family pages (Help Centre / Contact Us / FAQ from the footer's
+   Support column, plus Careers, Refund Policy, Foundation, Partnerships, the
+   legal/policy pages, Blog and About Us): each route's content column is
+   applied as a body class in App.tsx, and the navbar's content box is centered
+   on that column so the logo (left) and the action cluster (right) sit on the
+   same edges as the page content — instead of the homepage grid.
+   `max(...)` keeps the gutter once the viewport is narrower than the column,
+   so phones and tablets stay aligned too. */
+
+/* 1180px column + 20px gutters — .sh-main / .support-container
+   (Help Centre, Contact Us, FAQ, Careers, Refund Policy, Foundation) */
+.page-support-1180 .navbar {
+  padding-left: max(20px, calc((100vw - 1180px) / 2));
+  padding-right: max(20px, calc((100vw - 1180px) / 2));
 }
 
-@media (max-width: 768px) {
-  .page-support .navbar {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
+/* 1280px column + 24px gutters — .pp-container (Partnerships) */
+.page-support-1280 .navbar {
+  padding-left: max(24px, calc((100vw - 1280px) / 2));
+  padding-right: max(24px, calc((100vw - 1280px) / 2));
+}
+
+/* 1200px column + 20px gutters — .leg-wrap (Terms, Privacy, Supplier Terms),
+   .cp-wrap (Cookies Policy), .about-container, .blog-container */
+.page-support-1200 .navbar {
+  padding-left: max(20px, calc((100vw - 1200px) / 2));
+  padding-right: max(20px, calc((100vw - 1200px) / 2));
 }
 
 /* All Tours (/tours — homepage "View all", mood/location/attraction filters)
@@ -1599,34 +1612,35 @@ body:has(.story-detail) .navbar-compact-search {
 }
 
 /* Footer-linked pages: align the navbar (logo + icons) with each page's
-   content grid on desktop. Grouped by container max-width + gutter. */
+   content grid. Blog, Foundation, About Us and the support/legal pages are
+   handled above by their `page-support-*` column classes. */
 
-/* 1140px container + 32px gutters: Blog */
-/* 1140px container + 32px gutters: Hotels, Travel Agents, Transport */
-@media (min-width: 1025px) {
-  .page-hotel .navbar,
-  .page-travel-agents .navbar,
-  .page-transport-providers .navbar,
-  .page-blog .navbar {
-    padding-left: max(32px, calc((100vw - 1140px) / 2 + 32px));
-    padding-right: max(32px, calc((100vw - 1140px) / 2 + 32px));
+/* Partner landing pages (Hotels & Stays, Travel Agents, Transport Partners —
+   the footer's "Work with us" column): all their content sits in `.wrap`
+   (min(1200px, 100% - 40px) in styles/partner-pages.css), so the navbar's
+   content box takes the same centered bounds. */
+.page-hotel .navbar,
+.page-travel-agents .navbar,
+.page-transport-providers .navbar {
+  padding-left: max(20px, calc((100vw - 1200px) / 2));
+  padding-right: max(20px, calc((100vw - 1200px) / 2));
+}
+
+/* Tour detail (/tour/:id/:slug): the content column is
+   `.tour-detail-container` — max-width 1520px with 32px gutters, 24px at
+   640–1023px, 16px below 640 (below that the base navbar already matches).
+   `navbar--tour-detail` is set by the Navbar itself on /tour* routes. */
+@media (min-width: 1024px) {
+  .navbar.navbar--tour-detail {
+    padding-left: max(32px, calc((100vw - 1520px) / 2 + 32px));
+    padding-right: max(32px, calc((100vw - 1520px) / 2 + 32px));
   }
 }
 
-/* 1200px container + 32px gutters: Foundation, Blog */
-@media (min-width: 1025px) {
-  .page-foundation .navbar,
-  .page-blog .navbar {
-    padding-left: max(32px, calc((100vw - 1200px) / 2 + 32px));
-    padding-right: max(32px, calc((100vw - 1200px) / 2 + 32px));
-  }
-}
-
-/* 1100px container + 24px gutters: About Us */
-@media (min-width: 1025px) {
-  .page-about .navbar {
-    padding-left: max(24px, calc((100vw - 1100px) / 2 + 24px));
-    padding-right: max(24px, calc((100vw - 1100px) / 2 + 24px));
+@media (min-width: 640px) and (max-width: 1023px) {
+  .navbar.navbar--tour-detail {
+    padding-left: 24px;
+    padding-right: 24px;
   }
 }
 

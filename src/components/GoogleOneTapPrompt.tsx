@@ -15,6 +15,12 @@ const GoogleOneTapLazy = lazy(() => import('./GoogleOneTapLazy'))
 /**
  * Homepage Google One Tap for signed-out visitors.
  *
+ * **The single owner of One Tap.** The auth page (`/login`, and the auth
+ * overlay on `/`) deliberately does not run One Tap: its own prompt had no
+ * frequency caps and a silent browser-issued credential (`select_by: 'auto'`)
+ * would sign the visitor in and close the form out from under them. Here the
+ * prompt is delayed, capped and never navigates on its own.
+ *
  * Google's One Tap is powerful but intrusive — production sites cap how often
  * it can appear so it never nags. Rules enforced here:
  *   - only for signed-out visitors (and only when backend auth + client id

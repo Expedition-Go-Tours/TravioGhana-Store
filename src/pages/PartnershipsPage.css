@@ -1590,7 +1590,9 @@
 
 @media (max-width: 650px) {
   .pp-container {
-    width: min(calc(100% - 28px), 1280px);
+    /* Phones keep the desktop 24px gutter (not 14px) so the navbar's
+       column-alignment padding stays on the content edges. */
+    width: min(calc(100% - 48px), 1280px);
   }
 
   .pp-hero {

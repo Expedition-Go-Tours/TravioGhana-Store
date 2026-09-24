@@ -279,10 +279,9 @@ export default function TourImageGallery({ images, title, fallbackImage, onBack,
           )}
         </div>
 
-        {/* Back button overlaid on the hero. Desktop (≥1025px) gets one in the
-            breadcrumb strip instead; below that the breadcrumb is hidden, so
-            this is the only back affordance until the sticky bar slides in —
-            at which point `hideBack` retires it so two never show at once. */}
+        {/* The page's primary back affordance: a bare left arrow on a round
+            white button, top-left of the gallery. Once the sticky title/tabs
+            slide in, `hideBack` retires it so two backs never show at once. */}
         {onBack && !hideBack && (
           <button
             type="button"
@@ -294,7 +293,8 @@ export default function TourImageGallery({ images, title, fallbackImage, onBack,
           </button>
         )}
 
-        {/* GetYourGuide "Show all photos" — absolute, 24px inset */}
+        {/* "View all photos" — bottom-right of the gallery (above the mobile
+            pagination dots). */}
         {images.length > 0 && (
           <button
             type="button"

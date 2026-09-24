@@ -947,7 +947,9 @@ a.support-contact-value:hover {
   }
 
   .support-container {
-    width: min(var(--max), calc(100% - 24px));
+    /* 20px gutters on phones, matching the hub main column (.sh-main) and the
+       navbar's column-alignment padding — one column for the whole page. */
+    width: min(var(--max), calc(100% - 40px));
   }
 
   .support-article {

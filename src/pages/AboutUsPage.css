@@ -1041,7 +1041,8 @@
 
 @media (max-width: 560px) {
   .about-container {
-    width: min(calc(100% - 28px), var(--ab-max));
+    /* Phones keep the 20px gutter the navbar's column padding uses. */
+    width: min(calc(100% - 40px), var(--ab-max));
   }
 
   .about-hero-grid {

@@ -1,15 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
 import './Breadcrumb.css'
 
 interface BreadcrumbProps {
   tour: { title: string; location?: string }
-  /** History-aware back handler (see hooks/useBackNavigation). */
-  onBack: () => void
 }
 
-export default function Breadcrumb({ tour, onBack }: BreadcrumbProps) {
+export default function Breadcrumb({ tour }: BreadcrumbProps) {
   const { t } = useTranslation()
 
   // `location` is "<City>, <Country>" — the city is the crumb we want (and the
@@ -27,17 +24,6 @@ export default function Breadcrumb({ tour, onBack }: BreadcrumbProps) {
 
   return (
     <nav className="breadcrumb" aria-label="Breadcrumb">
-      {/* Kept out of the crumb list so the trail stays optically centred — the
-          list is `justify-content: center` across a full-bleed strip. */}
-      <button
-        type="button"
-        className="breadcrumb-back"
-        onClick={onBack}
-        aria-label={t('common.goBack', 'Go back')}
-      >
-        <ArrowLeft className="breadcrumb-back-icon" aria-hidden="true" />
-        <span>{t('common.back', 'Back')}</span>
-      </button>
       <ol className="breadcrumb-list">
         {breadcrumbs.map((crumb, index) => (
           <li key={index} className="breadcrumb-item">

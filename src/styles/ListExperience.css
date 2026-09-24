@@ -2,28 +2,12 @@
    List Your Experience — ported verbatim from the HTML template.
    ============================================================ */
 
-/* ── Topline banner ────────────────────────────────────────── */
 .le-page {
   /* This page was ported from a standalone template that had no fixed navbar,
-     so nothing cleared the 64px bar — the 34px topline banner was sitting
-     behind it. Every other page in the app offsets by the same 64px. */
+     so nothing cleared the 64px bar. Every other page in the app offsets by
+     the same 64px. */
   padding-top: 64px;
 }
-
-.le-topline {
-  height: 34px;
-  display: flex;
-  align-items: center;
-  background: #092b22;
-  color: #dcefe4;
-  font-size: .78rem;
-}
-.le-topline-inner {
-  display: flex;
-  justify-content: space-between;
-  gap: 18px;
-}
-.le-topline strong { color: #fff; }
 
 /* ── Hero ─────────────────────────────────────────────────── */
 .le-hero {

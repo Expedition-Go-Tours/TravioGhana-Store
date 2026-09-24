@@ -303,14 +303,17 @@ export default function TourDetailPage() {
 
   // Height of the booking card, published as `--tour-hero-height` so the photo
   // mosaic beside it can match it and the two columns finish on the same line.
+  // Measured, never clamped: a tall card (options, offers, long notes) must
+  // still end the gallery exactly where the card ends.
   const [heroHeight, setHeroHeight] = useState<number | null>(null)
   useEffect(() => {
     const el = pricingRef.current
     if (!el || typeof ResizeObserver === 'undefined') return
     const observer = new ResizeObserver(() => {
       const measured = Math.round(el.getBoundingClientRect().height)
-      const next = Math.min(560, Math.max(380, measured))
-      setHeroHeight((prev) => (prev === next ? prev : next))
+      // Ignore zero/negative measurements while the card is still mounting.
+      if (measured <= 0) return
+      setHeroHeight((prev) => (prev === measured ? prev : measured))
     })
     observer.observe(el)
     return () => observer.disconnect()
@@ -1075,7 +1078,7 @@ export default function TourDetailPage() {
       <div className="tour-detail-page">
         {/* Inside the page wrapper so the wrapper's 64px navbar clearance puts
             it *below* the fixed navbar instead of underneath it. */}
-        <Breadcrumb tour={tour} onBack={handleBack} />
+        <Breadcrumb tour={tour} />
         <div className="tour-detail-container">
           <div className="tour-detail-header-row">
             <TourHeader
