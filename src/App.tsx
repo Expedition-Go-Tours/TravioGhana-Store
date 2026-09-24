@@ -359,7 +359,7 @@ function AppContent() {
             <SupplierRegisterPage onOpenAuth={handleOpenAuth} />
           } />
           <Route path="/supplier/list-experience" element={
-            <SupplierRegisterPage onOpenAuth={handleOpenAuth} />
+            <SupplierRegisterPage onOpenAuth={handleOpenAuth} showApplicationForm={false} />
           } />
           <Route path="/booking" element={<BookingPage />} />
           <Route path="/:tourId/booking" element={<BookingPage />} />
