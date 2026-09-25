@@ -16,7 +16,7 @@
   --acc-shadow: 0 16px 38px rgba(15, 23, 42, 0.07);
 
   position: relative;
-  padding: 30px 32px 44px;
+  padding: 34px 36px 48px;
   border-radius: 20px;
   color: var(--acc-ink);
   background:
@@ -38,7 +38,7 @@
   margin-bottom: 10px;
 }
 .account-settings__title {
-  font-size: clamp(34px, 4vw, 52px);
+  font-size: 52px;
   line-height: 1.04;
   margin: 0 0 8px;
   font-weight: 800;
@@ -69,7 +69,10 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 34px;
+  margin-top: 38px;
+  /* Breathing room between the tab pills and the panel below — the source
+     template leaves this at 0, which reads as the tabs glued to the card. */
+  margin-bottom: 26px;
   position: relative;
   z-index: 2;
 }
@@ -121,7 +124,7 @@
   overflow: hidden;
 }
 .account-panel + .account-panel {
-  margin-top: 22px;
+  margin-top: 26px;
 }
 .account-panel--split {
   display: grid;
@@ -179,7 +182,7 @@
   padding: 18px 36px 34px;
 }
 .account-section__body--location {
-  padding: 26px 30px 24px;
+  padding: 26px 30px 20px;
 }
 
 /* ── Form grid ──────────────────────────────────────────────────────── */
@@ -223,7 +226,9 @@
   border-radius: 10px;
   background: #fff;
   padding: 0 14px;
-  font-size: 15px;
+  /* 16px at every breakpoint: anything smaller makes iOS/iPadOS Safari
+     auto-zoom the viewport the moment a field is focused. */
+  font-size: 16px;
   color: #172033;
   box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.015);
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -259,10 +264,12 @@
   gap: 14px;
 }
 
-/* DOB: Day | Month | Year */
+/* DOB: Day | Month | Year — auto-fit so the three selects stay side by side
+   only while month names fit, then collapse to one column instead of
+   clipping "September" on narrow screens. */
 .dob-selects {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 14px;
 }
 .dob-selects select {
@@ -404,6 +411,10 @@
   color: #dc2626;
   padding: 0;
   height: auto;
+  /* Keep the visual weight of a text link but give it a 40px hit area. */
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
   font-weight: 600;
   font-size: 13px;
   text-decoration: underline;
@@ -546,6 +557,10 @@
   stroke: var(--acc-muted);
   fill: none;
   stroke-width: 1.8;
+  flex-shrink: 0;
+}
+.account-secure span {
+  text-align: center;
 }
 
 /* ── Card list ──────────────────────────────────────────────────────── */
@@ -841,7 +856,7 @@
     max-width: 300px;
   }
   .account-settings__tabs {
-    margin-top: 30px;
+    margin-top: 34px;
     gap: 8px;
   }
   .account-settings__tab {
@@ -853,19 +868,12 @@
 
   .account-form-row,
   .account-form-row--triple,
-  .account-phone-grid,
-  .dob-selects {
+  .account-phone-grid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
-  /* DOB: Day | Month on the first row, Year spanning full width below */
-  .dob-selects {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-  .dob-selects select:last-child {
-    grid-column: 1 / -1;
-  }
+  /* .dob-selects keeps its auto-fit tracks: it drops to a single column on
+     its own once there isn't room for a readable month name. */
 
   .account-section__header {
     padding: 20px;
@@ -949,16 +957,53 @@
     font-size: 16px;
   }
 
-  /* Prevent iOS Safari from auto-zooming when a field gains focus */
-  .account-field input,
-  .account-field select {
-    font-size: 16px;
-  }
-
   /* Comfortable touch targets (WCAG recommends ~44px) */
   .card-menu-btn,
   .account-modal__close {
     width: 40px;
     height: 40px;
+  }
+}
+
+/* ── Responsive: very small phones ────────────────────────────────────
+   Below ~470px the two pill tabs can no longer sit side by side, so they
+   become full-width stacked pills instead of wrapping into a ragged pair. */
+@media (max-width: 470px) {
+  .account-settings__tab {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+}
+
+/* Below ~410px the avatar + identity row can't share a line without the
+   "Change photo" button spilling out of its box, so the profile head
+   becomes a centred block: avatar, then name / email / button. */
+@media (max-width: 410px) {
+  .account-profile-head {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .account-profile-head > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+/* Below ~400px the logo + expiry + menu can't share one row without the
+   info column collapsing, so the card info moves to its own full-width
+   line underneath. */
+@media (max-width: 400px) {
+  .card-row {
+    flex-wrap: wrap;
+  }
+  .card-menu-wrap {
+    order: 2;
+    margin-left: auto;
+  }
+  .card-info {
+    order: 3;
+    flex: 1 0 100%;
   }
 }
