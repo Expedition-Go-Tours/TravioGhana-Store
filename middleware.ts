@@ -53,10 +53,20 @@ export default function middleware(request) {
   if (request.method === 'GET' && isBot(ua) && !shouldSkip(pathname)) {
     const target = `${pathname}${url.search}`
 
-    // Story pages are client-side data the backend cannot read, so the
-    // prerenderer would only ever answer them with 404/noindex. They are rendered to
-    // static HTML at build time (scripts/generate-story-pages.cjs) and served
-    // straight from the filesystem instead.
+    // Stories are client-side data the backend cannot read, so the prerenderer
+    // can only answer them with a hub that links to none of them (detail pages
+    // with 404/noindex). They are rendered to static HTML at build time
+    // (scripts/generate-story-pages.cjs) and served straight from the
+    // filesystem instead: /stories for the hub, /stories/<slug> for the page.
+    if (pathname === '/stories' || pathname === '/stories/') {
+      return new Response(null, {
+        status: 200,
+        headers: {
+          'x-middleware-rewrite': '/stories/index.html',
+          'X-Prerender-Bot': 'true',
+        },
+      })
+    }
     const storySlug = pathname.match(/^\/stories\/([^/]+)\/?$/)?.[1]
     // Already-suffixed paths (/stories/x.html) must fall through to the
     // prerenderer, which answers them with a real 404 instead of x.html.html.

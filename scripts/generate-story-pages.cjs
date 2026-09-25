@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 /**
- * Renders every travel story to static HTML at public/stories/<slug>.html.
+ * Renders every travel story to static HTML at public/stories/<slug>.html, plus
+ * a linked index at public/stories/index.html.
  *
  * Stories live in the client bundle, so the backend prerenderer has no way to
  * read them — before this, a crawler asking for a story detail page was
  * answered404/noindex. middleware.ts now routes crawler requests for
- * /stories/<slug> straight to the matching file here, while browsers still get
- * the React app.
+ * /stories and /stories/<slug> straight to the files here, while browsers
+ * still get the React app. The index matters as much as the pages: the
+ * crawler-facing /stories used to be a hub that linked to none of its own
+ * stories, leaving them reachable only through the sitemap.
  *
  * Reads src/components/travelStories.json — the same file the app renders from
  * — so the sitemap, the crawler copy and the page can never disagree.
@@ -199,6 +202,126 @@ ${FOOTER_LINKS.map(([href, label]) => `        <a href="${href}">${escapeHtml(la
 `
 }
 
+/**
+ * The crawler-facing /stories hub: the same copy the backend prerenderer
+ * serves, but with a link to every story (which it cannot render — the data
+ * only exists in the client bundle).
+ */
+function renderIndex(stories) {
+  const url = `${SITE_URL}/stories`
+  const title = 'Travel Stories from Ghana'
+  const description =
+    'Read inspiring travel stories from Ghana. Discover hidden gems, local culture, food, and adventure experiences.'
+  const keywords = 'Ghana travel stories, Ghana blog, travel experiences Ghana'
+  const image = `${SITE_URL}/og-default.png`
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Stories', item: url },
+    ],
+  }
+
+  const itemListSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    numberOfItems: stories.length,
+    itemListElement: stories.map((story, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: story.title,
+      url: storyUrl(story),
+    })),
+  }
+
+  const cards = stories.map((story) => `
+      <li class="card">
+        <a class="card-link" href="/stories/${encodeURIComponent(story.slug)}">
+          <img src="${escapeHtml(story.image)}" alt="${escapeHtml(story.title)}" width="600" height="400" loading="lazy" />
+          <h2>${escapeHtml(story.title)}</h2>
+        </a>
+        <p class="meta">${escapeHtml(story.content.category)} &middot; ${escapeHtml(story.date || '')}</p>
+        <p>${escapeHtml(story.excerpt)}</p>
+        <p><a href="/stories/${encodeURIComponent(story.slug)}">Read ${escapeHtml(story.title)}</a></p>
+      </li>`).join('')
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/favicon-64.png" />
+    <title>${escapeHtml(title)} | ${escapeHtml(SITE_NAME)}</title>
+    <meta name="description" content="${escapeHtml(description)}" />
+    <meta name="keywords" content="${escapeHtml(keywords)}" />
+    <link rel="canonical" href="${escapeHtml(url)}" />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="${escapeHtml(title)}" />
+    <meta property="og:description" content="${escapeHtml(description)}" />
+    <meta property="og:image" content="${escapeHtml(image)}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:url" content="${escapeHtml(url)}" />
+    <meta property="og:site_name" content="${escapeHtml(SITE_NAME)}" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${escapeHtml(title)}" />
+    <meta name="twitter:description" content="${escapeHtml(description)}" />
+    <meta name="twitter:image" content="${escapeHtml(image)}" />
+    <script type="application/ld+json">${JSON.stringify(breadcrumbSchema)}</script>
+    <script type="application/ld+json">${JSON.stringify(itemListSchema)}</script>
+    <style>
+      body { margin: 0; font: 17px/1.65 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #101828; background: #fff; }
+      .wrap { max-width: 960px; margin: 0 auto; padding: 0 24px 64px; }
+      header { background: #065f46; color: #fff; padding: 20px 0; }
+      header .wrap { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; padding-bottom: 0; }
+      header a { color: #fff; text-decoration: none; font-weight: 600; }
+      .crumbs { color: #6b7280; font-size: 14px; margin: 24px 0 8px; }
+      .crumbs a { color: #16a34a; text-decoration: none; }
+      h1 { font-size: 40px; line-height: 1.15; margin: 8px 0 12px; }
+      .intro { color: #4b5563; max-width: 640px; }
+      ul.cards { list-style: none; padding: 0; margin: 32px 0 0; display: grid; gap: 32px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+      .card img { width: 100%; height: auto; border-radius: 14px; display: block; margin-bottom: 12px; }
+      .card h2 { font-size: 21px; line-height: 1.3; margin: 0 0 6px; }
+      .card a { color: #065f46; text-decoration: none; }
+      .card a:hover { text-decoration: underline; }
+      .card .meta { color: #6b7280; font-size: 14px; margin: 0 0 8px; }
+      .card p { margin: 0 0 8px; }
+      footer { background: #f3f4f6; padding: 28px 0; color: #6b7280; font-size: 14px; }
+      footer a { color: #374151; text-decoration: none; margin-right: 16px; display: inline-block; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav class="wrap" aria-label="Main">
+${NAV_LINKS.map(([href, label]) => `        <a href="${href}">${escapeHtml(label)}</a>`).join('\n')}
+      </nav>
+    </header>
+    <main class="wrap">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a> &rsaquo; <span>Stories</span>
+      </nav>
+      <h1>${escapeHtml(title)}</h1>
+      <p class="intro">${escapeHtml(description)}</p>
+      <ul class="cards">
+${cards}
+      </ul>
+      <p><a href="/tours">Browse all Ghana tours</a></p>
+    </main>
+    <footer>
+      <nav class="wrap" aria-label="Footer">
+${FOOTER_LINKS.map(([href, label]) => `        <a href="${href}">${escapeHtml(label)}</a>`).join('\n')}
+      </nav>
+      <p class="wrap">&copy; ${YEAR} ${escapeHtml(SITE_NAME)}. All rights reserved.</p>
+    </footer>
+  </body>
+</html>
+`
+}
+
 function main() {
   const stories = JSON.parse(fs.readFileSync(SOURCE, 'utf8'))
   if (!Array.isArray(stories) || stories.length === 0) {
@@ -218,7 +341,10 @@ function main() {
     fs.writeFileSync(path.join(OUT_DIR, `${story.slug}.html`), renderStory(story, related))
   }
 
-  console.log(`story pages: wrote ${stories.length} files to public/stories/`)
+  // The hub itself, so /stories links to everything it is supposed to surface.
+  fs.writeFileSync(path.join(OUT_DIR, 'index.html'), renderIndex(stories))
+
+  console.log(`story pages: wrote ${stories.length} pages + index to public/stories/`)
 }
 
 main()
