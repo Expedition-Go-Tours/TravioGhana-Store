@@ -415,11 +415,14 @@ export default function DashboardLayout() {
           ) : activeRoute ? (
             <>
               <div className="flex items-center justify-center lg:justify-start mb-4 relative">
-                {location.pathname !== "/dashboard/notifications" && (
-                  <h1 className="text-[clamp(24px,2.4vw,32px)] font-heading font-bold text-[var(--bv-ink)] text-center lg:text-left">
-                    {activeRoute.title}
-                  </h1>
-                )}
+                {/* Settings renders its own template hero heading, so the shared
+                    page title is skipped there to avoid a duplicate H1. */}
+                {location.pathname !== "/dashboard/notifications" &&
+                  location.pathname !== "/dashboard/settings" && (
+                    <h1 className="text-[clamp(24px,2.4vw,32px)] font-heading font-bold text-[var(--bv-ink)] text-center lg:text-left">
+                      {activeRoute.title}
+                    </h1>
+                  )}
 
                 {location.pathname === "/dashboard/settings" && (
                   <button

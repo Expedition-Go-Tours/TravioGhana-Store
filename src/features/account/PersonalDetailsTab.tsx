@@ -3,7 +3,6 @@ import { User, MapPin, Lock, Camera, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthUser } from '../../hooks/useAuthUser'
 import { getStoredAuthUser, updateStoredAuthUser } from '../../lib/auth'
-import { SelectInput, TextInput } from '../../components/booking/FormFields'
 import { COUNTRY_CODES, DEFAULT_COUNTRY_CODE, buildE164Phone, splitE164Phone } from '../../lib/phone'
 import {
   getAccount,
@@ -22,6 +21,41 @@ const YEARS = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i
 function splitName(full: string): { first: string; last: string } {
   const parts = (full || '').trim().split(/\s+/)
   return { first: parts[0] || '', last: parts.slice(1).join(' ') }
+}
+
+/** Snapshot of every profile field — captured on load so Cancel can restore it. */
+type Profile = {
+  firstName: string
+  lastName: string
+  email: string
+  countryCode: string
+  phone: string
+  dobDay: string
+  dobMonth: string
+  dobYear: string
+  address: string
+  city: string
+  state: string
+  zipCode: string
+  country: string
+  homeAirport: string
+}
+
+const EMPTY_PROFILE: Profile = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  countryCode: DEFAULT_COUNTRY_CODE,
+  phone: '',
+  dobDay: '',
+  dobMonth: '',
+  dobYear: '',
+  address: '',
+  city: '',
+  state: '',
+  zipCode: '',
+  country: '',
+  homeAirport: '',
 }
 
 export default function PersonalDetailsTab() {
@@ -60,6 +94,26 @@ export default function PersonalDetailsTab() {
   // Delete account
   const [showDelete, setShowDelete] = useState(false)
 
+  // Last-loaded values — Cancel restores these.
+  const snapshotRef = useRef<Profile>(EMPTY_PROFILE)
+
+  const applyProfile = (p: Profile) => {
+    setFirstName(p.firstName)
+    setLastName(p.lastName)
+    setEmail(p.email)
+    setCountryCode(p.countryCode)
+    setPhone(p.phone)
+    setDobDay(p.dobDay)
+    setDobMonth(p.dobMonth)
+    setDobYear(p.dobYear)
+    setAddress(p.address)
+    setCity(p.city)
+    setState(p.state)
+    setZipCode(p.zipCode)
+    setCountry(p.country)
+    setHomeAirport(p.homeAirport)
+  }
+
   // Load profile from API
   useEffect(() => {
     let cancelled = false
@@ -67,36 +121,46 @@ export default function PersonalDetailsTab() {
       .then((p) => {
         if (cancelled) return
         const { first, last } = splitName(p.name || '')
-        setFirstName(first)
-        setLastName(last)
-        setEmail(p.email || '')
         const split = splitE164Phone(p.phone || '')
-        if (split) {
-          setCountryCode(split.countryCode)
-          setPhone(split.nationalNumber)
-        } else {
-          setPhone(p.phone || '')
+
+        const profile: Profile = {
+          firstName: first,
+          lastName: last,
+          email: p.email || '',
+          countryCode: split?.countryCode || DEFAULT_COUNTRY_CODE,
+          phone: split ? split.nationalNumber : p.phone || '',
+          dobDay: '',
+          dobMonth: '',
+          dobYear: '',
+          address: p.address || '',
+          city: p.city || '',
+          state: p.state || '',
+          zipCode: p.zipCode || '',
+          country: p.country || '',
+          homeAirport: p.homeAirport || '',
         }
-        setAddress(p.address || '')
-        setCity(p.city || '')
-        setState(p.state || '')
-        setZipCode(p.zipCode || '')
-        setCountry(p.country || '')
-        setHomeAirport(p.homeAirport || '')
 
         if (p.dateOfBirth) {
           const d = new Date(p.dateOfBirth)
-          setDobDay(String(d.getDate()))
-          setDobMonth(String(d.getMonth()))
-          setDobYear(String(d.getFullYear()))
+          profile.dobDay = String(d.getDate())
+          profile.dobMonth = String(d.getMonth())
+          profile.dobYear = String(d.getFullYear())
         }
+
+        snapshotRef.current = profile
+        applyProfile(profile)
       })
       .catch(() => {
         // Fallback to stored user
         const { first, last } = splitName(stored?.name || user?.name || '')
-        setFirstName(first)
-        setLastName(last)
-        setEmail(stored?.email || user?.email || '')
+        const profile: Profile = {
+          ...EMPTY_PROFILE,
+          firstName: first,
+          lastName: last,
+          email: stored?.email || user?.email || '',
+        }
+        snapshotRef.current = profile
+        applyProfile(profile)
       })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
@@ -111,6 +175,16 @@ export default function PersonalDetailsTab() {
     setAvatarFile(file)
     setAvatarPreview(URL.createObjectURL(file))
     markDirty()
+  }
+
+  // Cancel — roll every field back to the last-loaded snapshot
+  const handleCancel = () => {
+    applyProfile(snapshotRef.current)
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview)
+    setAvatarPreview(null)
+    setAvatarFile(null)
+    if (fileRef.current) fileRef.current.value = ''
+    setDirty(false)
   }
 
   // Save profile
@@ -162,6 +236,24 @@ export default function PersonalDetailsTab() {
         photoURL: updated.photoURL,
       })
 
+      const { first, last } = splitName(updated.name || name)
+      snapshotRef.current = {
+        firstName: first,
+        lastName: last,
+        email: updated.email || email,
+        countryCode,
+        phone,
+        dobDay,
+        dobMonth,
+        dobYear,
+        address,
+        city,
+        state,
+        zipCode,
+        country,
+        homeAirport,
+      }
+
       setDirty(false)
       setAvatarFile(null)
       toast.success('Profile saved')
@@ -211,12 +303,12 @@ export default function PersonalDetailsTab() {
   if (loading) {
     return (
       <>
-        <div className="account-section"><div className="account-section__body">
+        <div className="account-panel"><div className="account-section__body">
           <div className="skeleton-row" style={{ marginBottom: 12 }} />
           <div className="skeleton-row" style={{ marginBottom: 12 }} />
           <div className="skeleton-row" />
         </div></div>
-        <div className="account-section"><div className="account-section__body">
+        <div className="account-panel"><div className="account-section__body">
           <div className="skeleton-row" />
         </div></div>
       </>
@@ -225,210 +317,244 @@ export default function PersonalDetailsTab() {
 
   return (
     <form onSubmit={handleSave}>
-      {/* ── Avatar + Name ────────────────────────────────────────────── */}
-      <div className="account-section">
-        <div className="account-section__header">
-          <User size={16} className="text-[var(--bv-accent)]" />
-          <h3>Personal Information</h3>
-        </div>
-
-        <div className="account-section__body">
-          {/* Avatar */}
-          <div className="account-profile-head">
-            <div className="account-avatar-wrap" onClick={() => fileRef.current?.click()}>
-              <img
-                src={avatarSrc}
-                alt="Avatar"
-                onError={(e) => { (e.target as HTMLImageElement).src = userFallback }}
-              />
-              <div className="account-avatar-overlay">
-                <Camera size={16} />
-              </div>
-            </div>
+      {/* ── Personal details + Location (template's split panel) ─────── */}
+      <div className="account-panel account-panel--split">
+        <div className="account-panel__left">
+          <div className="account-section__header">
+            <User size={26} />
             <div>
-              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--bv-ink, #101828)', margin: 0 }}>
-                {user?.name || stored?.name || 'User'}
+              <h3>Personal Information</h3>
+              <p className="account-section__copy">
+                Update your personal details and how we can reach you.
               </p>
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                style={{ fontSize: 13, color: 'var(--bv-accent, #16a34a)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: 4, fontWeight: 600 }}
-              >
-                Change photo
-              </button>
-            </div>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={onAvatarPick}
-            />
-          </div>
-
-          {/* Name */}
-          <div className="account-form-row">
-            <div className="account-field">
-              <label htmlFor="acc-first">First name</label>
-              <input
-                id="acc-first"
-                value={firstName}
-                onChange={(e) => { setFirstName(e.target.value); markDirty() }}
-                placeholder="First name"
-              />
-            </div>
-            <div className="account-field">
-              <label htmlFor="acc-last">Last name</label>
-              <input
-                id="acc-last"
-                value={lastName}
-                onChange={(e) => { setLastName(e.target.value); markDirty() }}
-                placeholder="Last name"
-              />
             </div>
           </div>
 
-          {/* Email */}
-          <div className="account-form-row account-form-row--single">
-            <div className="account-field">
-              <label htmlFor="acc-email">Email</label>
-              <input id="acc-email" value={email} readOnly />
-            </div>
-          </div>
-
-          {/* Phone */}
-          <div className="account-form-row account-form-row--single">
-            <div className="account-field">
-              <label htmlFor="acc-phone">Mobile phone</label>
-              <div className="account-phone-grid grid gap-3 sm:grid-cols-[1.2fr_2fr]">
-                <SelectInput
-                  value={countryCode}
-                  onChange={(e) => { setCountryCode(e.target.value); markDirty() }}
-                  options={COUNTRY_CODES}
+          <div className="account-section__body">
+            {/* Avatar */}
+            <div className="account-profile-head">
+              <div className="account-avatar-wrap" onClick={() => fileRef.current?.click()}>
+                <img
+                  src={avatarSrc}
+                  alt="Avatar"
+                  onError={(e) => { (e.target as HTMLImageElement).src = userFallback }}
                 />
-                <TextInput
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => { setPhone(e.target.value.replace(/\D/g, '')); markDirty() }}
-                  placeholder="e.g. 024 123 4567"
+                <div className="account-avatar-overlay">
+                  <Camera size={15} />
+                </div>
+              </div>
+              <div>
+                <p className="account-profile-name">
+                  {user?.name || stored?.name || 'User'}
+                </p>
+                <p className="account-profile-sub">{email || 'Your account'}</p>
+                <button
+                  type="button"
+                  className="account-btn account-btn--ghost"
+                  onClick={() => fileRef.current?.click()}
+                >
+                  <Camera size={18} />
+                  Change photo
+                </button>
+              </div>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={onAvatarPick}
+              />
+            </div>
+
+            {/* Name */}
+            <div className="account-form-row">
+              <div className="account-field">
+                <label htmlFor="acc-first">First name</label>
+                <input
+                  id="acc-first"
+                  value={firstName}
+                  onChange={(e) => { setFirstName(e.target.value); markDirty() }}
+                  placeholder="First name"
+                />
+              </div>
+              <div className="account-field">
+                <label htmlFor="acc-last">Last name</label>
+                <input
+                  id="acc-last"
+                  value={lastName}
+                  onChange={(e) => { setLastName(e.target.value); markDirty() }}
+                  placeholder="Last name"
+                />
+              </div>
+            </div>
+
+            {/* Email */}
+            <div className="account-form-row account-form-row--single">
+              <div className="account-field">
+                <label htmlFor="acc-email">Email address</label>
+                <input id="acc-email" value={email} readOnly />
+              </div>
+            </div>
+
+            {/* Phone */}
+            <div className="account-form-row account-form-row--single">
+              <div className="account-field">
+                <label htmlFor="acc-phone">Mobile phone</label>
+                <div className="account-phone-grid">
+                  <select
+                    aria-label="Country code"
+                    value={countryCode}
+                    onChange={(e) => { setCountryCode(e.target.value); markDirty() }}
+                  >
+                    {COUNTRY_CODES.map((c) => (
+                      <option key={`${c.value}-${c.label}`} value={c.value}>{c.label}</option>
+                    ))}
+                  </select>
+                  <input
+                    id="acc-phone"
+                    type="tel"
+                    inputMode="numeric"
+                    value={phone}
+                    onChange={(e) => { setPhone(e.target.value.replace(/\D/g, '')); markDirty() }}
+                    placeholder="e.g. 024 123 4567"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* DOB */}
+            <div className="account-form-row account-form-row--single">
+              <div className="account-field">
+                <label>Date of birth</label>
+                <div className="dob-selects">
+                  <select value={dobDay} onChange={(e) => { setDobDay(e.target.value); markDirty() }}>
+                    <option value="">Day</option>
+                    {DAYS.map((d) => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                  <select value={dobMonth} onChange={(e) => { setDobMonth(e.target.value); markDirty() }}>
+                    <option value="">Month</option>
+                    {MONTHS.map((m, i) => <option key={m} value={i}>{m}</option>)}
+                  </select>
+                  <select value={dobYear} onChange={(e) => { setDobYear(e.target.value); markDirty() }}>
+                    <option value="">Year</option>
+                    {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right column: Location + actions */}
+        <div className="account-panel__right">
+          <div className="account-section__body account-section__body--location">
+            <div className="account-section__header account-section__header--flush">
+              <MapPin size={26} />
+              <div>
+                <h3>Location</h3>
+                <p className="account-section__copy">
+                  Help us personalise your travel experience.
+                </p>
+              </div>
+            </div>
+
+            <div className="account-form-row account-form-row--single">
+              <div className="account-field">
+                <label htmlFor="acc-airport">Home airport</label>
+                <input
+                  id="acc-airport"
+                  value={homeAirport}
+                  onChange={(e) => { setHomeAirport(e.target.value); markDirty() }}
+                  placeholder="e.g. ACC — Kotoka International"
+                />
+              </div>
+            </div>
+
+            <div className="account-form-row account-form-row--single">
+              <div className="account-field">
+                <label htmlFor="acc-address">Address</label>
+                <input
+                  id="acc-address"
+                  value={address}
+                  onChange={(e) => { setAddress(e.target.value); markDirty() }}
+                  placeholder="Street address"
+                />
+              </div>
+            </div>
+
+            <div className="account-form-row">
+              <div className="account-field">
+                <label htmlFor="acc-city">City</label>
+                <input
+                  id="acc-city"
+                  value={city}
+                  onChange={(e) => { setCity(e.target.value); markDirty() }}
+                  placeholder="City"
+                />
+              </div>
+              <div className="account-field">
+                <label htmlFor="acc-region">Region</label>
+                <input
+                  id="acc-region"
+                  value={state}
+                  onChange={(e) => { setState(e.target.value); markDirty() }}
+                  placeholder="e.g. Greater Accra"
+                />
+              </div>
+            </div>
+
+            <div className="account-form-row">
+              <div className="account-field">
+                <label htmlFor="acc-zip">ZIP / Postal code</label>
+                <input
+                  id="acc-zip"
+                  value={zipCode}
+                  onChange={(e) => { setZipCode(e.target.value); markDirty() }}
+                  placeholder="ZIP code"
+                />
+              </div>
+              <div className="account-field">
+                <label htmlFor="acc-country">Country</label>
+                <input
+                  id="acc-country"
+                  value={country}
+                  onChange={(e) => { setCountry(e.target.value); markDirty() }}
+                  placeholder="Country"
                 />
               </div>
             </div>
           </div>
 
-          {/* DOB */}
-          <div className="account-form-row account-form-row--single">
-            <div className="account-field">
-              <label>Date of birth</label>
-              <div className="dob-selects">
-                <select value={dobDay} onChange={(e) => { setDobDay(e.target.value); markDirty() }}>
-                  <option value="">Day</option>
-                  {DAYS.map((d) => <option key={d} value={d}>{d}</option>)}
-                </select>
-                <select value={dobMonth} onChange={(e) => { setDobMonth(e.target.value); markDirty() }}>
-                  <option value="">Month</option>
-                  {MONTHS.map((m, i) => <option key={m} value={i}>{m}</option>)}
-                </select>
-                <select value={dobYear} onChange={(e) => { setDobYear(e.target.value); markDirty() }}>
-                  <option value="">Year</option>
-                  {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
-                </select>
-              </div>
-            </div>
+          <div className="account-actions">
+            <button
+              type="button"
+              className="account-btn account-btn--secondary"
+              onClick={handleCancel}
+              disabled={!dirty && !avatarFile}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="account-btn account-btn--primary"
+              disabled={saving || !dirty}
+            >
+              {saving ? 'Saving…' : 'Save changes'}
+            </button>
           </div>
-        </div>
-
-        <div className="account-section__footer">
-          <button type="submit" className="account-btn account-btn--primary" disabled={saving || !dirty}>
-            {saving ? 'Saving…' : 'Save'}
-          </button>
-        </div>
-      </div>
-
-      {/* ── Location ─────────────────────────────────────────────────── */}
-      <div className="account-section">
-        <div className="account-section__header">
-          <MapPin size={16} className="text-[var(--bv-accent)]" />
-          <h3>Location</h3>
-        </div>
-
-        <div className="account-section__body">
-          <div className="account-form-row account-form-row--single">
-            <div className="account-field">
-              <label htmlFor="acc-airport">Home airport</label>
-              <input
-                id="acc-airport"
-                value={homeAirport}
-                onChange={(e) => { setHomeAirport(e.target.value); markDirty() }}
-                placeholder="e.g. ACC — Kotoka International"
-              />
-            </div>
-          </div>
-
-          <div className="account-form-row">
-            <div className="account-field">
-              <label htmlFor="acc-address">Address</label>
-              <input
-                id="acc-address"
-                value={address}
-                onChange={(e) => { setAddress(e.target.value); markDirty() }}
-                placeholder="Street address"
-              />
-            </div>
-            <div className="account-field">
-              <label htmlFor="acc-city">City</label>
-              <input
-                id="acc-city"
-                value={city}
-                onChange={(e) => { setCity(e.target.value); markDirty() }}
-                placeholder="City"
-              />
-            </div>
-          </div>
-
-          <div className="account-form-row account-form-row--triple">
-            <div className="account-field">
-              <label htmlFor="acc-state">State / Province</label>
-              <input
-                id="acc-state"
-                value={state}
-                onChange={(e) => { setState(e.target.value); markDirty() }}
-                placeholder="State"
-              />
-            </div>
-            <div className="account-field">
-              <label htmlFor="acc-zip">ZIP / Postal code</label>
-              <input
-                id="acc-zip"
-                value={zipCode}
-                onChange={(e) => { setZipCode(e.target.value); markDirty() }}
-                placeholder="ZIP code"
-              />
-            </div>
-            <div className="account-field">
-              <label htmlFor="acc-country">Country</label>
-              <input
-                id="acc-country"
-                value={country}
-                onChange={(e) => { setCountry(e.target.value); markDirty() }}
-                placeholder="Country"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="account-section__footer">
-          <button type="submit" className="account-btn account-btn--primary" disabled={saving || !dirty}>
-            {saving ? 'Saving…' : 'Save'}
-          </button>
         </div>
       </div>
 
       {/* ── Password ─────────────────────────────────────────────────── */}
-      <div className="account-section">
+      <div className="account-panel">
         <div className="account-section__header">
-          <Lock size={16} className="text-[var(--bv-accent)]" />
-          <h3>Change Password</h3>
+          <Lock size={26} />
+          <div>
+            <h3>Change Password</h3>
+            <p className="account-section__copy">
+              Use at least 8 characters with a mix of letters and numbers.
+            </p>
+          </div>
         </div>
 
         <div className="account-section__body">
@@ -471,26 +597,31 @@ export default function PersonalDetailsTab() {
           </div>
         </div>
 
-        <div className="account-section__footer">
+        <div className="account-actions">
           <button
             type="button"
             className="account-btn account-btn--primary"
             disabled={pwSaving || !currentPw || !newPw}
             onClick={handlePasswordChange}
           >
-            {pwSaving ? 'Updating…' : 'Update Password'}
+            {pwSaving ? 'Updating…' : 'Update password'}
           </button>
         </div>
       </div>
 
       {/* ── Delete Account ───────────────────────────────────────────── */}
-      <div className="account-section">
-        <div className="account-section__header">
-          <Trash2 size={16} className="text-red-500" />
-          <h3>Delete Account</h3>
+      <div className="account-panel">
+        <div className="account-section__header account-section__header--danger">
+          <Trash2 size={26} />
+          <div>
+            <h3>Delete Account</h3>
+            <p className="account-section__copy">
+              This cannot be undone — your profile, bookings and reviews are removed.
+            </p>
+          </div>
         </div>
         <div className="account-section__body account-danger-row">
-          <p style={{ fontSize: 13, color: 'var(--bv-muted, #667085)', margin: 0 }}>
+          <p className="account-danger-copy">
             Permanently delete your account and all associated data. This action cannot be undone.
           </p>
           <button type="button" className="account-btn account-btn--danger-text" onClick={() => setShowDelete(true)}>
@@ -505,18 +636,22 @@ export default function PersonalDetailsTab() {
           <div className="account-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 400 }}>
             <div className="account-modal__header">
               <h3>Delete your account?</h3>
-              <button className="account-modal__close" onClick={() => setShowDelete(false)}>✕</button>
+              <button className="account-modal__close" onClick={() => setShowDelete(false)} aria-label="Close">✕</button>
             </div>
             <div className="account-modal__body">
-              <p style={{ fontSize: 14, color: 'var(--bv-muted, #667085)', margin: 0 }}>
+              <p style={{ fontSize: 14, color: 'var(--acc-muted, #667085)', margin: 0 }}>
                 This will permanently remove your profile, bookings, reviews, and saved cards. You cannot undo this.
               </p>
             </div>
             <div className="account-modal__footer">
-              <button className="account-btn" style={{ background: 'var(--bv-surface-2, #f2f4f7)', color: 'var(--bv-ink)' }} onClick={() => setShowDelete(false)}>
+              <button className="account-btn account-btn--secondary" onClick={() => setShowDelete(false)}>
                 Cancel
               </button>
-              <button className="account-btn" style={{ background: '#dc2626', color: '#fff' }} onClick={handleDeleteAccount}>
+              <button
+                className="account-btn"
+                style={{ background: '#dc2626', color: '#fff' }}
+                onClick={handleDeleteAccount}
+              >
                 Delete account
               </button>
             </div>

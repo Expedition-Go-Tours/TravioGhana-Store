@@ -47,6 +47,15 @@ function formatExp(m: number | null, y: number | null): string {
   return `${String(m).padStart(2, '0')}/${y}`
 }
 
+function StripeNote() {
+  return (
+    <div className="account-secure">
+      <ShieldCheck size={18} />
+      <span>Payments securely processed by Stripe</span>
+    </div>
+  )
+}
+
 export default function SavedCardsTab() {
   const [cards, setCards] = useState<SavedCard[]>([])
   const [loading, setLoading] = useState(true)
@@ -86,7 +95,7 @@ export default function SavedCardsTab() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [cards.length])
 
   // Close menu on outside click
   useEffect(() => {
@@ -150,7 +159,7 @@ export default function SavedCardsTab() {
   // ── Loading skeleton ────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="account-section">
+      <div className="account-panel">
         <div className="account-section__body">
           <div className="card-list">
             {[1, 2].map((i) => <div key={i} className="skeleton-row" />)}
@@ -163,12 +172,12 @@ export default function SavedCardsTab() {
   // ── Error ───────────────────────────────────────────────────────────
   if (error) {
     return (
-      <div className="account-section">
+      <div className="account-panel">
         <div className="account-section__body">
           <div className="account-empty">
             <CreditCard size={40} />
             <p>{error}</p>
-            <button className="account-btn account-btn--primary" style={{ marginTop: 12 }} onClick={refresh}>
+            <button className="account-btn account-btn--secondary" style={{ marginTop: 12 }} onClick={refresh}>
               Try again
             </button>
           </div>
@@ -177,30 +186,24 @@ export default function SavedCardsTab() {
     )
   }
 
-  // ── Empty ───────────────────────────────────────────────────────────
+  // ── Empty (template: illustration card + Add card + Stripe note) ────
   if (cards.length === 0) {
     return (
       <>
-        <div className="account-section">
-          <div className="account-section__body">
-            <div className="account-empty">
-              <CreditCard size={40} />
-              <p>No saved cards yet</p>
-              <p style={{ fontSize: 13, marginTop: 4 }}>Add a card to speed up checkout.</p>
+        <div className="account-panel account-panel--saved">
+          <div className="account-empty-card">
+            <div>
+              <div className="account-empty-icon">
+                <div className="account-card-illus" />
+              </div>
+              <h2 className="account-empty-title">No saved cards yet</h2>
+              <p className="account-empty-copy">Add a card to speed up checkout.</p>
+              <button className="account-btn--add-card" onClick={() => setShowAdd(true)}>
+                <Plus size={22} /> Add card
+              </button>
             </div>
           </div>
-          <div className="account-section__footer" style={{ justifyContent: 'center' }}>
-            <button className="account-btn account-btn--primary" onClick={() => setShowAdd(true)}>
-              <Plus size={16} /> Add card
-            </button>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, justifyContent: 'center' }}>
-          <ShieldCheck size={14} style={{ color: 'var(--bv-muted, #667085)' }} />
-          <span style={{ fontSize: 12, color: 'var(--bv-muted, #667085)' }}>
-            Payments securely processed by Stripe
-          </span>
+          <StripeNote />
         </div>
 
         {showAdd && <AddCardModal onClose={() => setShowAdd(false)} onAdded={handleAdded} />}
@@ -211,10 +214,15 @@ export default function SavedCardsTab() {
   // ── Card list ───────────────────────────────────────────────────────
   return (
     <>
-      <div className="account-section">
+      <div className="account-panel account-panel--saved">
         <div className="account-section__header">
-          <CreditCard size={16} className="text-[var(--bv-accent)]" />
-          <h3>Saved Cards</h3>
+          <CreditCard size={26} />
+          <div>
+            <h3>Saved Cards</h3>
+            <p className="account-section__copy">
+              Manage the cards you use for faster checkout.
+            </p>
+          </div>
         </div>
 
         <div className="account-section__body">
@@ -276,18 +284,13 @@ export default function SavedCardsTab() {
           </div>
         </div>
 
-        <div className="account-section__footer">
+        <div className="account-actions">
           <button className="account-btn account-btn--primary" onClick={() => setShowAdd(true)}>
             <Plus size={16} /> Add card
           </button>
         </div>
-      </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, justifyContent: 'center' }}>
-        <ShieldCheck size={14} style={{ color: 'var(--bv-muted, #667085)' }} />
-        <span style={{ fontSize: 12, color: 'var(--bv-muted, #667085)' }}>
-          Payments securely processed by Stripe
-        </span>
+        <StripeNote />
       </div>
 
       {/* ── Remove confirmation ────────────────────────────────────────── */}
@@ -296,18 +299,22 @@ export default function SavedCardsTab() {
           <div className="account-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 380 }}>
             <div className="account-modal__header">
               <h3>Remove card?</h3>
-              <button className="account-modal__close" onClick={() => setConfirmRemove(null)}>✕</button>
+              <button className="account-modal__close" onClick={() => setConfirmRemove(null)} aria-label="Close">✕</button>
             </div>
             <div className="account-modal__body">
-              <p style={{ fontSize: 14, color: 'var(--bv-muted, #667085)', margin: 0 }}>
+              <p style={{ fontSize: 14, color: 'var(--acc-muted, #667085)', margin: 0 }}>
                 This card will be removed from your saved payment methods.
               </p>
             </div>
             <div className="account-modal__footer">
-              <button className="account-btn" style={{ background: 'var(--bv-surface-2, #f2f4f7)', color: 'var(--bv-ink)' }} onClick={() => setConfirmRemove(null)}>
+              <button className="account-btn account-btn--secondary" onClick={() => setConfirmRemove(null)}>
                 Cancel
               </button>
-              <button className="account-btn" style={{ background: '#dc2626', color: '#fff' }} onClick={() => handleRemove(confirmRemove)}>
+              <button
+                className="account-btn"
+                style={{ background: '#dc2626', color: '#fff' }}
+                onClick={() => handleRemove(confirmRemove)}
+              >
                 Remove
               </button>
             </div>
