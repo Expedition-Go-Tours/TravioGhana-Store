@@ -4,155 +4,143 @@
  *   localStorage: survives new tabs and browser restarts.
  *   On load, the draft with the latest updatedAt wins.
  *   Drafts stay keyed to the last signed-in user after logout (localStorage last-user pointer).
+ *
+ * The wizard uses an 8-slot step index: 0-6 are the form steps, 7 is the
+ * success screen.
  */
 
-export interface SupplierApplicationForm {
-  supplierType: string
-  businessInfo: {
-    legalBusinessName: string
-    displayName: string
-    businessType: string
-    country: string
-    address: {
-      line1: string
-      line2: string
-      city: string
-      state: string
-      postalCode: string
-    }
-    website: string
-    phoneNumber: string
-  }
-  operatingInfo: {
-    tourCategories: string[]
-    destinations: string[]
-    languages: string[]
-    yearsInBusiness: string
-    cancellationPolicy: string
-    meetingStyle: string
-  }
-  representativeInfo: {
-    fullName: string
-    email: string
-    dateOfBirth: string
-    address: {
-      line1: string
-      line2: string
-      city: string
-      state: string
-      postalCode: string
-    }
-    idType: string
-    idDocument: File | null
-  }
-  businessDocuments: {
-    registrationDocument: File | null
-    taxDocument: File | null
-    proofOfAddress: File | null
-    licenses: File[]
-  }
-  verificationDocuments: VerificationDocumentDraft[]
-  vehicles: VehicleDraft[]
-  guides: GuideDraft[]
-  compliance: {
-    acceptedTerms: boolean
-    agreedToPayoutTerms: boolean
-  }
+export interface PayoutBankDetails {
+  accountName: string
+  accountNumber: string
+  bankName: string
+  bankCountry: string
+  currency: string
+  [key: string]: string
 }
 
-/** One verification document entry (paired with `documentMeta` on submit). */
-export interface VerificationDocumentDraft {
-  key: string
-  type: string
-  ownerType: 'SUPPLIER' | 'VEHICLE' | 'GUIDE'
-  ownerKey?: string
-  file: File | null
-}
-
-export interface VehicleDraft {
-  key: string
-  make: string
-  model: string
-  year: string
-  registrationNumber: string
-  photos: File[]
-}
-
-export interface GuideDraft {
-  key: string
-  fullName: string
-  phone: string
+export interface PayoutPaypalDetails {
+  accountName: string
   email: string
+  [key: string]: string
+}
+
+export interface PayoutMomoDetails {
+  accountName: string
+  network: string
+  number: string
+  currency: string
+  [key: string]: string
+}
+
+export interface SupplierRegistrationForm {
+  account: {
+    firstName: string
+    lastName: string
+    email: string
+    phone: string
+  }
+  /** SupplierCardId from registrationConfig, or ''. */
+  supplierCardId: string
+  /** 'business' | 'individual' (mirrors the selected card), or ''. */
+  supplierKind: string
+  individual: {
+    firstName: string
+    lastName: string
+    dob: string
+    idType: string
+    idNumber: string
+    address: string
+    region: string
+    city: string
+    brandName: string
+  }
+  business: {
+    brandName: string
+    yearEstablished: string
+    website: string
+    social: string
+    legalName: string
+    regNumber: string
+    tin: string
+    address: string
+    region: string
+    city: string
+    taxAck: boolean
+  }
+  operatingRegions: string[]
+  /** ServiceCard ids from registrationConfig. */
+  services: string[]
+  payout: {
+    method: string
+    bank: PayoutBankDetails
+    paypal: PayoutPaypalDetails
+    momo: PayoutMomoDetails
+    schedule: string
+    primary: boolean
+  }
+  compliance: {
+    acceptAll: boolean
+  }
+  /** Not persisted (Files cannot be serialized) — re-uploaded after a reload. */
+  primaryDocument: File | null
 }
 
 interface StoredDraft {
   step: number
-  form: SupplierApplicationForm
+  form: SupplierRegistrationForm
   updatedAt: number
 }
 
-const DRAFT_PREFIX = 'supplier_application_draft:'
-const LAST_DRAFT_USER_KEY = 'supplier_application_draft_last_user'
-const STEPS_COUNT = 6
+const DRAFT_PREFIX = 'supplier_registration_draft:'
+const LAST_DRAFT_USER_KEY = 'supplier_registration_draft_last_user'
+const STEPS_COUNT = 8
 
 const STORAGES: { name: string; get: () => Storage }[] = [
   { name: 'session', get: () => sessionStorage },
   { name: 'local', get: () => localStorage },
 ]
 
-export function createEmptySupplierApplicationForm(): SupplierApplicationForm {
+export function createEmptySupplierRegistrationForm(): SupplierRegistrationForm {
   return {
-    supplierType: '',
-    businessInfo: {
-      legalBusinessName: '',
-      displayName: '',
-      businessType: '',
-      country: '',
-      address: {
-        line1: '',
-        line2: '',
-        city: '',
-        state: '',
-        postalCode: '',
-      },
-      website: '',
-      phoneNumber: '',
-    },
-    operatingInfo: {
-      tourCategories: [],
-      destinations: [],
-      languages: [],
-      yearsInBusiness: '',
-      cancellationPolicy: '',
-      meetingStyle: '',
-    },
-    representativeInfo: {
-      fullName: '',
-      email: '',
-      dateOfBirth: '',
-      address: {
-        line1: '',
-        line2: '',
-        city: '',
-        state: '',
-        postalCode: '',
-      },
+    account: { firstName: '', lastName: '', email: '', phone: '' },
+    supplierCardId: '',
+    supplierKind: '',
+    individual: {
+      firstName: '',
+      lastName: '',
+      dob: '',
       idType: '',
-      idDocument: null,
+      idNumber: '',
+      address: '',
+      region: '',
+      city: '',
+      brandName: '',
     },
-    businessDocuments: {
-      registrationDocument: null,
-      taxDocument: null,
-      proofOfAddress: null,
-      licenses: [],
+    business: {
+      brandName: '',
+      yearEstablished: '',
+      website: '',
+      social: '',
+      legalName: '',
+      regNumber: '',
+      tin: '',
+      address: '',
+      region: '',
+      city: '',
+      taxAck: false,
     },
-    verificationDocuments: [],
-    vehicles: [],
-    guides: [],
-    compliance: {
-      acceptedTerms: false,
-      agreedToPayoutTerms: false,
+    operatingRegions: [],
+    services: [],
+    payout: {
+      method: 'bank',
+      bank: { accountName: '', accountNumber: '', bankName: '', bankCountry: 'Ghana', currency: 'GHS' },
+      paypal: { accountName: '', email: '' },
+      momo: { accountName: '', network: '', number: '', currency: 'GHS' },
+      schedule: 'weekly',
+      primary: true,
     },
+    compliance: { acceptAll: false },
+    primaryDocument: null,
   }
 }
 
@@ -199,6 +187,135 @@ export function resolveDraftUserId(
     getLastDraftUserId() ??
     null
   )
+}
+
+/** Strip File objects — they cannot be stored in the browser. */
+function serializeFormForDraft(form: SupplierRegistrationForm): SupplierRegistrationForm {
+  return { ...form, primaryDocument: null }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object'
+}
+
+function str(value: unknown, fallback = ''): string {
+  return typeof value === 'string' ? value : fallback
+}
+
+function bool(value: unknown, fallback = false): boolean {
+  return typeof value === 'boolean' ? value : fallback
+}
+
+function strArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : []
+}
+
+export function mergeSupplierRegistrationDraft(saved?: unknown): SupplierRegistrationForm {
+  const empty = createEmptySupplierRegistrationForm()
+  if (!isRecord(saved)) return empty
+
+  const account = isRecord(saved.account) ? saved.account : {}
+  const individual = isRecord(saved.individual) ? saved.individual : {}
+  const business = isRecord(saved.business) ? saved.business : {}
+  const payout = isRecord(saved.payout) ? saved.payout : {}
+  const bank = isRecord(payout.bank) ? payout.bank : {}
+  const paypal = isRecord(payout.paypal) ? payout.paypal : {}
+  const momo = isRecord(payout.momo) ? payout.momo : {}
+  const compliance = isRecord(saved.compliance) ? saved.compliance : {}
+
+  return {
+    account: {
+      firstName: str(account.firstName),
+      lastName: str(account.lastName),
+      email: str(account.email),
+      phone: str(account.phone),
+    },
+    supplierCardId: str(saved.supplierCardId),
+    supplierKind: str(saved.supplierKind),
+    individual: {
+      firstName: str(individual.firstName),
+      lastName: str(individual.lastName),
+      dob: str(individual.dob),
+      idType: str(individual.idType),
+      idNumber: str(individual.idNumber),
+      address: str(individual.address),
+      region: str(individual.region),
+      city: str(individual.city),
+      brandName: str(individual.brandName),
+    },
+    business: {
+      brandName: str(business.brandName),
+      yearEstablished: str(business.yearEstablished),
+      website: str(business.website),
+      social: str(business.social),
+      legalName: str(business.legalName),
+      regNumber: str(business.regNumber),
+      tin: str(business.tin),
+      address: str(business.address),
+      region: str(business.region),
+      city: str(business.city),
+      taxAck: bool(business.taxAck),
+    },
+    operatingRegions: strArray(saved.operatingRegions),
+    services: strArray(saved.services),
+    payout: {
+      method: str(payout.method, 'bank'),
+      bank: {
+        accountName: str(bank.accountName),
+        accountNumber: str(bank.accountNumber),
+        bankName: str(bank.bankName),
+        bankCountry: str(bank.bankCountry, 'Ghana'),
+        currency: str(bank.currency, 'GHS'),
+      },
+      paypal: {
+        accountName: str(paypal.accountName),
+        email: str(paypal.email),
+      },
+      momo: {
+        accountName: str(momo.accountName),
+        network: str(momo.network),
+        number: str(momo.number),
+        currency: str(momo.currency, 'GHS'),
+      },
+      schedule: str(payout.schedule, 'weekly'),
+      primary: bool(payout.primary, true),
+    },
+    compliance: { acceptAll: bool(compliance.acceptAll) },
+    primaryDocument: null,
+  }
+}
+
+function normalizeDraftPayload(parsed: unknown): StoredDraft | null {
+  if (!isRecord(parsed)) return null
+
+  const step = Number(parsed.step)
+  const safeStep = Number.isFinite(step) && step >= 0 && step < STEPS_COUNT ? Math.floor(step) : 0
+  const updatedAt = Number(parsed.updatedAt) || 0
+
+  return {
+    step: safeStep,
+    form: mergeSupplierRegistrationDraft(parsed.form),
+    updatedAt,
+  }
+}
+
+function readRawDraft(storage: Storage, key: string): StoredDraft | null {
+  try {
+    const raw = storage.getItem(key)
+    if (!raw) return null
+    return normalizeDraftPayload(JSON.parse(raw))
+  } catch {
+    return null
+  }
+}
+
+function writeRawDraft(storage: Storage, key: string, payload: StoredDraft): boolean {
+  try {
+    storage.setItem(key, JSON.stringify(payload))
+    return true
+  } catch {
+    return false
+  }
 }
 
 /** Promote pre-login (anonymous) draft when the user signs in. */
@@ -250,110 +367,12 @@ export function migrateAnonymousDraftToUser(userId: string): void {
   }
 }
 
-/** Strip File objects — they cannot be stored in the browser. */
-function serializeFormForDraft(form: SupplierApplicationForm): SupplierApplicationForm {
-  return {
-    ...form,
-    representativeInfo: {
-      ...form.representativeInfo,
-      idDocument: null,
-    },
-    businessDocuments: {
-      registrationDocument: null,
-      taxDocument: null,
-      proofOfAddress: null,
-      licenses: [],
-    },
-    verificationDocuments: form.verificationDocuments.map((d) => ({ ...d, file: null })),
-    vehicles: form.vehicles.map((v) => ({ ...v, photos: [] })),
-  }
-}
-
-function normalizeDraftPayload(parsed: unknown): StoredDraft | null {
-  if (!parsed || typeof parsed !== 'object') return null
-
-  const record = parsed as Record<string, unknown>
-  const step = Number(record.step)
-  const safeStep = Number.isFinite(step) && step >= 0 && step < STEPS_COUNT ? Math.floor(step) : 0
-  const updatedAt = Number(record.updatedAt) || 0
-
-  return {
-    step: safeStep,
-    form: mergeSupplierApplicationDraft(record.form),
-    updatedAt,
-  }
-}
-
-function readRawDraft(storage: Storage, key: string): StoredDraft | null {
-  try {
-    const raw = storage.getItem(key)
-    if (!raw) return null
-    return normalizeDraftPayload(JSON.parse(raw))
-  } catch {
-    return null
-  }
-}
-
-function writeRawDraft(storage: Storage, key: string, payload: StoredDraft): boolean {
-  try {
-    storage.setItem(key, JSON.stringify(payload))
-    return true
-  } catch {
-    return false
-  }
-}
-
-export function mergeSupplierApplicationDraft(saved?: unknown): SupplierApplicationForm {
-  const empty = createEmptySupplierApplicationForm()
-  if (!saved || typeof saved !== 'object') return empty
-
-  const savedForm = saved as Partial<SupplierApplicationForm>
-
-  return {
-    supplierType: typeof savedForm.supplierType === 'string' ? savedForm.supplierType : empty.supplierType,
-    businessInfo: {
-      ...empty.businessInfo,
-      ...savedForm.businessInfo,
-      address: { ...empty.businessInfo.address, ...savedForm.businessInfo?.address },
-    },
-    operatingInfo: {
-      ...empty.operatingInfo,
-      ...savedForm.operatingInfo,
-      tourCategories: Array.isArray(savedForm.operatingInfo?.tourCategories)
-        ? savedForm.operatingInfo.tourCategories
-        : [],
-      destinations: Array.isArray(savedForm.operatingInfo?.destinations)
-        ? savedForm.operatingInfo.destinations
-        : [],
-      languages: Array.isArray(savedForm.operatingInfo?.languages) ? savedForm.operatingInfo.languages : [],
-    },
-    representativeInfo: {
-      ...empty.representativeInfo,
-      ...savedForm.representativeInfo,
-      idDocument: null,
-      address: {
-        ...empty.representativeInfo.address,
-        ...savedForm.representativeInfo?.address,
-      },
-    },
-    businessDocuments: { ...empty.businessDocuments },
-    verificationDocuments: Array.isArray(savedForm.verificationDocuments)
-      ? savedForm.verificationDocuments.map((d) => ({ ...d, file: null }))
-      : [],
-    vehicles: Array.isArray(savedForm.vehicles)
-      ? savedForm.vehicles.map((v) => ({ ...v, photos: [] }))
-      : [],
-    guides: Array.isArray(savedForm.guides) ? savedForm.guides : [],
-    compliance: { ...empty.compliance, ...savedForm.compliance },
-  }
-}
-
 /**
  * @returns The latest draft (step + form) for the user, or null.
  */
-export function loadSupplierApplicationDraft(
+export function loadSupplierRegistrationDraft(
   userId?: string | null
-): { step: number; form: SupplierApplicationForm } | null {
+): { step: number; form: SupplierRegistrationForm } | null {
   if (typeof window === 'undefined') return null
 
   const key = draftStorageKey(userId)
@@ -373,11 +392,11 @@ export function loadSupplierApplicationDraft(
 }
 
 /**
- * Save the in-progress application so a refresh does not lose input.
+ * Save the in-progress registration so a refresh does not lose input.
  */
-export function saveSupplierApplicationDraft(
+export function saveSupplierRegistrationDraft(
   userId: string | null | undefined,
-  draft: { step: number; form: SupplierApplicationForm }
+  draft: { step: number; form: SupplierRegistrationForm }
 ): void {
   if (typeof window === 'undefined') return
 
@@ -399,7 +418,7 @@ export function saveSupplierApplicationDraft(
 }
 
 /** Remove any saved draft for the user. */
-export function clearSupplierApplicationDraft(userId?: string | null): void {
+export function clearSupplierRegistrationDraft(userId?: string | null): void {
   if (typeof window === 'undefined') return
 
   const key = draftStorageKey(userId)

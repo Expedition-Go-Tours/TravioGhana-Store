@@ -7,6 +7,7 @@ import { Globe, Megaphone, LayoutDashboard, ChevronRight, LogIn, LogOut, DollarS
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n/config'
 import { useCurrency } from '../contexts/CurrencyContext'
+import OptimizedImage from './shared/OptimizedImage'
 import logoSrc from '../assets/TravioGhana_Logo.svg'
 import userSrc from '../assets/icons/User Circle.png'
 import { subscribeToAuthState, signOutUser, getStoredAuthUser, type AuthUser } from '../lib/auth'
@@ -54,7 +55,10 @@ interface NavbarProps {
 export default function Navbar({ onOpenAuth }: NavbarProps) {
   const navigate = useNavigate()
   const location = useLocation()
-  const isTourDetailPage = location.pathname.startsWith('/tour')
+  // '/tour/<id>[/<slug>]' only — '/tours' (All Tours) starts with '/tour' too
+  // but has its own 1400px content column, so it must not inherit the
+  // tour-detail navbar column (1520px) and end up misaligned.
+  const isTourDetailPage = location.pathname.startsWith('/tour/')
   const [user, setUser] = useState<AuthUser | null>(getStoredAuthUser)
   const [searchBarSticky, setSearchBarSticky] = useState(false)
   // The tinted "over the hero" navbar is only for the homepage at the very top
@@ -77,6 +81,9 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   }
   const [signingOut, setSigningOut] = useState(false)
   const [langCurrencyOpen, setLangCurrencyOpen] = useState(false)
+  // Which tab the shared picker opens on — the globe defaults to language, the
+  // mobile menu rows pick their own.
+  const [pickerTab, setPickerTab] = useState<'language' | 'currency'>('language')
   const dropdownRef = useRef<HTMLDivElement>(null)
   const { t } = useTranslation()
   const { currency } = useCurrency()
@@ -602,7 +609,19 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                         >
                           {suggestion.kind === 'tour' && suggestion.image ? (
                             <div className="search-suggestion-thumb">
-                              <img src={suggestion.image} alt="" loading="lazy" />
+                              {/* The search payload carries the full-size photo. Without
+                                  a CDN transform a 40px thumb downloads the whole
+                                  original (up to ~370KB); this requests an 84×84 crop. */}
+                              <OptimizedImage
+                                src={suggestion.image}
+                                alt=""
+                                width={42}
+                                height={42}
+                                fit="fill"
+                                gravity="auto"
+                                sizes="42px"
+                                loading="eager"
+                              />
                             </div>
                           ) : (
                             <div className="search-suggestion-icon-wrap">
@@ -646,7 +665,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           <span className="nav-list-experience-label">{isApproved ? t('nav.supplierDashboard') : t('nav.listAnExperience', 'List an Experience')}</span>
         </a>
 
-        <div className="nav-icon-item nav-globe-trigger" onClick={() => setLangCurrencyOpen(true)}>
+        <div className="nav-icon-item nav-globe-trigger" onClick={() => { setPickerTab('language'); setLangCurrencyOpen(true) }}>
           <Globe size={20} />
           <span className="nav-icon-label">{i18n.language.substring(0, 2).toUpperCase()} | {currency.code}</span>
         </div>
@@ -882,11 +901,28 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
               <Bell size={18} />
               {t('nav.updates', 'Updates')}
             </div>
-            <div className="nav-mobile-link" onClick={() => setSubDrawerTab('language')}>
+            {/* Both rows open the same centred picker as the desktop globe.
+                They used to open MobileSubDrawer, a second full-screen
+                implementation of the same two lists. */}
+            <div
+              className="nav-mobile-link"
+              onClick={() => {
+                setMobileMenuOpen(false)
+                setPickerTab('language')
+                setLangCurrencyOpen(true)
+              }}
+            >
               <Globe size={18} />
               {t('nav.language')}
             </div>
-            <div className="nav-mobile-link" onClick={() => setSubDrawerTab('currency')}>
+            <div
+              className="nav-mobile-link"
+              onClick={() => {
+                setMobileMenuOpen(false)
+                setPickerTab('currency')
+                setLangCurrencyOpen(true)
+              }}
+            >
               <DollarSign size={18} />
               {t('nav.currency')}
             </div>
@@ -949,7 +985,9 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
       </AnimatePresence>
 
       <AnimatePresence>
-        {langCurrencyOpen && <LanguageCurrencyModal onClose={() => setLangCurrencyOpen(false)} />}
+        {langCurrencyOpen && (
+          <LanguageCurrencyModal initialTab={pickerTab} onClose={() => setLangCurrencyOpen(false)} />
+        )}
       </AnimatePresence>
 
       <MobileSubDrawer

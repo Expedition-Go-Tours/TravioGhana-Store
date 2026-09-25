@@ -36,11 +36,11 @@ export function matchGroupBand(count: number, bands: GroupSizeBandLike[]): Group
   return bands.find((b) => count >= b.from && count <= b.to)
 }
 
-/** Human label for a band, e.g. "1-2", "4+", or "3" for a single-headcount band. */
+/** Human label for a band, e.g. "1–2", "4+", or "3" for a single-headcount band. */
 export function groupBandLabel(band: GroupSizeBandLike | undefined): string {
   if (!band) return ''
   if (band.from === band.to) return `${band.from}`
-  return Number.isFinite(band.to) ? `${band.from}-${band.to}` : `${band.from}+`
+  return Number.isFinite(band.to) ? `${band.from}–${band.to}` : `${band.from}+`
 }
 
 /** Cheapest band price — used for the "from $X per group" headline. */

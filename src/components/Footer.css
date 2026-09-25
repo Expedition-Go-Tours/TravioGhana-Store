@@ -10,6 +10,9 @@
    ========================================================================== */
 
 .footer {
+  /* Shared by the nav grid and the socials block below it, so the
+     "Follow the journey" title lines up with the last nav column. */
+  --footer-col-gap: 36px;
   position: relative;
   overflow: hidden; /* clips the oversized watermark at the page edge */
   padding-top: 34px;
@@ -32,34 +35,64 @@
    keep the homepage column their navbar uses. */
 .page-support-1180 .footer-container {
   max-width: none;
-  padding-inline: max(20px, calc((100vw - 1180px) / 2));
+  padding-inline: max(20px, calc((100% - 1180px) / 2));
 }
 
 .page-support-1200 .footer-container {
   max-width: none;
-  padding-inline: max(20px, calc((100vw - 1200px) / 2));
+  padding-inline: max(20px, calc((100% - 1200px) / 2));
 }
 
 .page-support-1280 .footer-container {
   max-width: none;
-  padding-inline: max(24px, calc((100vw - 1280px) / 2));
+  padding-inline: max(24px, calc((100% - 1280px) / 2));
 }
 
 .page-hotel .footer-container,
 .page-travel-agents .footer-container,
 .page-transport-providers .footer-container {
   max-width: none;
-  padding-inline: max(20px, calc((100vw - 1200px) / 2));
+  padding-inline: max(20px, calc((100% - 1200px) / 2));
 }
 
 .page-search .footer-container {
   max-width: none;
-  padding-inline: max(40px, calc((100vw - 1400px) / 2 + 40px));
+  padding-inline: max(40px, calc((100% - 1400px) / 2 + 40px));
 }
 
 .page-confirmation .footer-container {
   max-width: none;
-  padding-inline: max(32px, calc((100vw - 1280px) / 2 + 32px));
+  padding-inline: max(32px, calc((100% - 1280px) / 2 + 32px));
+}
+
+/* List an Experience and the supplier application (/supplier/list-experience,
+   /supplier/register): the content column is `.wrap` — min(1200px, 100% - 40px)
+   — the same column the navbar already matches via `body:has(.le-page)`, so the
+   footer follows it too. */
+body:has(.le-page) .footer-container {
+  max-width: none;
+  padding-inline: max(20px, calc((100% - 1200px) / 2));
+}
+
+/* Supplier profile (/supplier/:name): match the footer column to
+   `.supplier-page-main` (max-width 1280px, gutters 20/24/32px) so the footer
+   content lines up with the profile and the navbar above it. `%` rather than
+   `vw` keeps it exact when a classic scrollbar is present, same as the navbar. */
+body:has(.supplier-page) .footer-container {
+  max-width: none;
+  padding-inline: 20px;
+}
+
+@media (min-width: 640px) {
+  body:has(.supplier-page) .footer-container {
+    padding-inline: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  body:has(.supplier-page) .footer-container {
+    padding-inline: max(32px, calc((100% - 1280px) / 2 + 32px));
+  }
 }
 
 /* Tour detail: `.tour-detail-container` is 1520px including 32px gutters
@@ -67,7 +100,7 @@
 @media (min-width: 1024px) {
   body:has(.tour-detail-page) .footer-container {
     max-width: none;
-    padding-inline: max(32px, calc((100vw - 1520px) / 2 + 32px));
+    padding-inline: max(32px, calc((100% - 1520px) / 2 + 32px));
   }
 }
 
@@ -109,36 +142,27 @@
 .footer-brand {
   display: flex;
   align-items: center;
-  gap: 11px;
   width: fit-content;
   color: #fff;
   text-decoration: none;
 }
 
-.footer-brand-mark {
+/* The navbar wordmark is dark green + gold on a transparent background; the
+   footer's dark green would swallow the "Travio" half, so the footer sets it
+   on the same white chip the payment marks use. */
+.footer-brand-plate {
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 14px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
+}
+
+.footer-brand-logo {
   display: block;
-  flex: none;
-  width: 46px;
-  height: 46px;
-}
-
-.footer-brand-name {
-  display: flex;
-  flex-direction: column;
-  font-family: var(--font-body);
-  font-size: 34px;
-  font-weight: 850;
-  line-height: 0.75;
-  letter-spacing: -0.075em;
-  color: #fff;
-}
-
-.footer-brand-name small {
-  margin-top: 10px;
-  padding-left: 3px;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.46em;
+  width: auto;
+  height: 34px;
 }
 
 .footer-brand-copy {
@@ -217,7 +241,7 @@
 .footer-nav {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 36px;
+  gap: var(--footer-col-gap);
   padding: 48px 0 64px;
 }
 
@@ -269,23 +293,6 @@
   transform: scaleX(1);
 }
 
-.footer-nav-link--strong {
-  color: #d9f0b2;
-  font-weight: 720;
-}
-
-.footer-nav-link--strong svg {
-  width: 14px;
-  height: 14px;
-  margin-left: 3px;
-  vertical-align: -2px;
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.footer-nav-link--strong:hover svg {
-  transform: translate(3px, -3px);
-}
-
 /* ===== Payments + socials ================================================ */
 
 .footer-meta {
@@ -295,6 +302,13 @@
   gap: 32px;
   padding: 29px 0 34px;
   border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+/* The socials block mirrors the width of the last nav column so both its
+   title ("Follow the journey") and its icon row sit directly under "Work
+   with Us"; the row wraps when the column is narrower than the chips. */
+.footer-meta-socials {
+  width: calc((100% - 3 * var(--footer-col-gap)) / 4);
 }
 
 .footer-meta-title {
@@ -355,27 +369,42 @@
 
 .footer-socials {
   display: flex;
+  flex-wrap: wrap;
   gap: 9px;
 }
 
 .footer-social {
   display: grid;
   place-items: center;
+  flex-shrink: 0;
   width: 38px;
   height: 38px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 50%;
-  background: #fff;
-  color: #075634;
-  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), color 0.25s, background 0.25s,
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .footer-social:hover {
   transform: translateY(-4px) rotate(-4deg);
-  background: #d9f0b2;
-  color: #075634;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+}
+
+/* Each network keeps its own brand chip with the glyph on top in white; the
+   Tripadvisor owl is a full-color bitmap, so its chip stays white. */
+.footer-social--instagram { background: #e4405f; }
+.footer-social--facebook { background: #1877f2; }
+.footer-social--tiktok { background: #000; }
+.footer-social--youtube { background: #ff0000; }
+.footer-social--tripadvisor { background: #fff; }
+
+.footer-social--tripadvisor img {
+  display: block;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
 }
 
 .footer-social svg {
@@ -488,8 +517,8 @@
     min-width: 160px;
   }
 
-  .footer-nav {
-    gap: 20px;
+  .footer {
+    --footer-col-gap: 20px;
   }
 }
 
@@ -587,6 +616,11 @@
     align-items: stretch;
     flex-direction: column;
     gap: 25px;
+  }
+
+  /* Stacked, so the column-width mirror no longer applies. */
+  .footer-meta-socials {
+    width: auto;
   }
 
   .footer-bottom {

@@ -255,6 +255,14 @@
   overflow: hidden;
 }
 
+/* The title carries the card's crawlable <a href="/tour/{id}/{slug}">, which
+   opens in a new tab like the card body does. Reset the UA link styling so it
+   renders exactly like the bare text did. */
+.cp-card-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
 .cp-card-duration {
   margin: 0;
   font-family: 'DM Sans', sans-serif;

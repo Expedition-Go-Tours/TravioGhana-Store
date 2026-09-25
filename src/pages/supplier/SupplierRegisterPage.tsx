@@ -1,21 +1,19 @@
 /**
  * "List Your Experience" — supplier registration page.
- * Marketing body ported verbatim from the HTML template, with the existing
- * SupplierApplicationForm appended at the end.
+ * `/supplier/list-experience` renders the marketing story; `/supplier/register`
+ * renders the SupplierRegistrationWizard (scoped reference port).
  */
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { ArrowLeft, LoaderCircle, ShieldCheck } from 'lucide-react'
+import { LoaderCircle } from 'lucide-react'
 
-import { SupplierApplicationForm } from '@/components/supplier/SupplierApplicationForm'
+import SupplierRegistrationWizard from '@/components/supplier/SupplierRegistrationWizard'
 import { useAuthUser } from '@/hooks/useAuthUser'
 import { useSupplierStatus, supplierStatusKey } from '@/hooks/useSupplierStatus'
 import { getSupplierPortalUrl, isApprovedSupplier } from '@/lib/supplier'
 import { useQueryClient } from '@tanstack/react-query'
 import { getAuthUserId, setAuthReturnTo } from '@/lib/auth'
-import { Button } from '@/components/ui/button'
 import Footer from '@/components/Footer'
 import RevealOnScroll from '@/components/shared/RevealOnScroll'
 import FAQAccordion from '@/components/shared/FAQAccordion'
@@ -106,7 +104,7 @@ export default function SupplierRegisterPage({ onOpenAuth, showApplicationForm =
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const user = useAuthUser()
-  const { profile, isLoading } = useSupplierStatus({ forceEnabled: true })
+  const { profile } = useSupplierStatus({ forceEnabled: true })
   const [redirecting, setRedirecting] = useState(false)
   const navigate = useNavigate()
   const userId = getAuthUserId(user)
@@ -127,97 +125,82 @@ export default function SupplierRegisterPage({ onOpenAuth, showApplicationForm =
     return () => { cancelled = true }
   }, [profile])
 
-  const application = profile
-  const handleSignInHere = async () => {
-    if (application && isApprovedSupplier(application.status)) {
-      const portalUrl = await getSupplierPortalUrl(application)
-      if (portalUrl) { window.location.replace(portalUrl); return }
-    }
-    onOpenAuth?.('signin')
-  }
-
   // Marketing CTAs (hero + bottom) route straight to the focused registration
   // page. The application form itself no longer lives on the marketing page.
   const handleApplyCta = () => {
     navigate('/supplier/register')
   }
 
-  // Focused registration view (/supplier/register): the application is the
-  // page — nothing above it but the navbar. The marketing story stays on
-  // /supplier/list-experience.
-  const applicationSection = (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
-      className="relative bg-white px-4 py-10 sm:py-16"
-    >
-      <div className="mx-auto w-full max-w-[720px]">
-        <Link
-          to="/supplier/list-experience"
-          className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-primary"
-        >
-          <ArrowLeft size={16} />
-          {t('supplierAuth.learnAboutListing', 'Learn about listing on Travio Ghana')}
-        </Link>
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-            {t('supplierAuth.registerTitle', 'Join as a Supplier')}
-          </h1>
-          <p className="mt-2 text-sm text-slate-500 sm:text-base">
-            {t('supplierAuth.registerDesc', 'Complete your supplier application to list tours, reach travellers across Ghana, and manage bookings from one dashboard.')}
-          </p>
-        </div>
-
-        {(isLoading || redirecting) && !application ? (
+  if (showApplicationForm) {
+    // Focused registration view (/supplier/register): the wizard is the page
+    // (navbar stays, no footer), matching the reference design.
+    if (redirecting) {
+      return (
+        <main className="le-page">
           <div className="flex items-center justify-center py-24">
             <LoaderCircle className="size-6 animate-spin text-primary" />
-            {redirecting && <span className="ml-3 text-sm text-slate-500">{t('supplierAuth.redirectingToPortal', 'Taking you to your supplier dashboard…')}</span>}
+            <span className="ml-3 text-sm text-slate-500">
+              {t('supplierAuth.redirectingToPortal', 'Taking you to your supplier dashboard…')}
+            </span>
           </div>
-        ) : !user ? (
-          <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-8 text-center">
-            <ShieldCheck className="mx-auto mb-3 size-10 text-primary" />
-            <h2 className="text-lg font-bold text-slate-900">{t('supplierAuth.signUpToApply', 'Sign up to apply')}</h2>
-            <p className="mt-2 text-sm text-slate-500">{t('supplierAuth.signUpToApplyDesc', 'You need to be signed up to submit a supplier application.')}</p>
-            <Button type="button" onClick={() => onOpenAuth?.('signup')} className="mt-6 h-12 px-8">
-              {t('supplierAuth.signUpButton', 'Sign Up')}
-            </Button>
-          </div>
-        ) : application ? (
-          <div className="rounded-[1.4rem] border border-emerald-100 bg-emerald-50 p-8 text-center">
-            <ShieldCheck className="mx-auto mb-3 size-10 text-emerald-600" />
-            <h2 className="text-lg font-bold text-slate-900">{t('supplierAuth.applicationSubmitted', 'Application Submitted')}</h2>
-            <p className="mt-2 text-sm text-slate-600">{t('supplierAuth.applicationSubmittedDesc', 'Your supplier application is currently under review. Our team will get back to you within 3-5 business days.')}</p>
-            <p className="mt-3 inline-block rounded-full bg-white px-4 py-1 text-xs font-semibold text-emerald-700 shadow-sm">
-              {t('supplierAuth.applicationStatus', 'Status')}: {application?.status ?? 'PENDING'}
-            </p>
-          </div>
-        ) : (
-          <SupplierApplicationForm onSubmitted={refreshStatus} />
-        )}
+        </main>
+      )
+    }
 
-        <p className="mt-10 text-center text-sm text-slate-500">
-          {t('supplierAuth.alreadyHaveAccount', 'Already have a supplier account?')}{' '}
-          <button type="button" onClick={handleSignInHere} className="bg-transparent p-0 font-semibold text-primary hover:underline">
-            {t('supplierAuth.signInHere', 'Sign in here')}
-          </button>
-        </p>
-        <p className="mt-4 text-center text-xs text-slate-400">
-          By submitting this application, you agree to our{' '}
-          <Link to="/supplier-terms" className="underline hover:text-slate-600">Supplier Terms</Link> and{' '}
-          <Link to="/privacy-policy" className="underline hover:text-slate-600">Privacy Policy</Link>.
-        </p>
-      </div>
-    </motion.div>
-  )
+    if (profile) {
+      const status = profile.status ?? 'PENDING'
+      const needsAttention = status === 'REJECTED' || status === 'EXPIRED' || status === 'SUSPENDED'
+      return (
+        <div className="sr-page">
+          <div className="shell sr-status-shell">
+            <main className="main panel">
+              <div className="success">
+                <div className="success-shell">
+                  <div className="success-badge">
+                    {needsAttention ? 'Application needs attention' : 'Application received'}
+                  </div>
+                  <div className="success-icon">{needsAttention ? '!' : '⏳'}</div>
+                  <h2>
+                    {needsAttention
+                      ? 'Your application needs more information'
+                      : 'Your application is under review'}
+                  </h2>
+                  <p>
+                    {needsAttention
+                      ? 'Our team could not approve the application as submitted. Please contact support so we can help you complete it.'
+                      : 'Thanks for applying to sell on TravioGhana. Our team reviews new supplier applications and will get back to you within 3-5 business days.'}
+                  </p>
+                  <div className="success-highlights">
+                    <div className="success-highlight">
+                      <strong>Status</strong>
+                      <span>{status}</span>
+                    </div>
+                    <div className="success-highlight">
+                      <strong>Next step</strong>
+                      <span>
+                        {needsAttention
+                          ? 'Contact support for help finishing verification.'
+                          : 'We will email you as soon as the review is complete.'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="sr-status-actions">
+                    <Link className="btn secondary" to="/supplier/list-experience">
+                      Learn about listing
+                    </Link>
+                    <Link className="btn primary" to="/">
+                      Back to TravioGhana
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+      )
+    }
 
-  if (showApplicationForm) {
-    return (
-      <main className="le-page">
-        {applicationSection}
-        <Footer />
-      </main>
-    )
+    return <SupplierRegistrationWizard onOpenAuth={onOpenAuth} onSubmitted={refreshStatus} />
   }
 
   return (

@@ -14,6 +14,8 @@ import applePaySrc from '../assets/images/apple.png'
 import googlePaySrc from '../assets/images/gpay.png'
 import mastercardSrc from '../assets/images/master.png'
 import paypalSrc from '../assets/images/papy.png'
+import travioLogoSrc from '../assets/TravioGhana_Logo.svg'
+import tripadvisorOwlSrc from '../assets/tripadvisor-owl.png'
 
 const LANGUAGES = [
   { code: 'en', flag: '🇬🇧', label: 'English (US)' },
@@ -22,10 +24,6 @@ const LANGUAGES = [
   { code: 'de', flag: '🇩🇪', label: 'Deutsch' },
   { code: 'nl', flag: '🇳🇱', label: 'Nederlands' },
 ]
-
-/** The page favicon artwork (same image as /favicon-64.png, at 192px) used as
-    the footer's brand mark. */
-const FOOTER_MARK_SRC = '/android-chrome-192x192.png'
 
 const PAYMENTS = [
   { key: 'mastercard', src: mastercardSrc, alt: 'Mastercard' },
@@ -36,17 +34,27 @@ const PAYMENTS = [
   { key: 'apple', src: applePaySrc, alt: 'Apple Pay' },
 ]
 
-const SOCIALS = [
+/** Each network's mark: most ship as a single 24×24 path filled with the
+    chip's `currentColor`; Tripadvisor ships as the full-color owl bitmap. */
+type SocialItem = {
+  key: string
+  label: string
+  href: string
+  path?: string
+  img?: string
+}
+
+const SOCIALS: SocialItem[] = [
   {
     key: 'instagram',
     label: 'Instagram',
-    href: 'https://www.instagram.com/travioGhanatours',
+    href: 'https://www.instagram.com/expeditiongotours',
     path: 'M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069M12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z',
   },
   {
     key: 'facebook',
     label: 'Facebook',
-    href: 'https://www.facebook.com/p/Travio%20Ghana-Tours-LTD-61567042001418/',
+    href: 'https://web.facebook.com/p/Expedition-Go-Tours-LTD-61567042001418/?_rdc=1&_rdr#',
     path: 'M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z',
   },
   {
@@ -60,6 +68,12 @@ const SOCIALS = [
     label: 'YouTube',
     href: 'https://www.youtube.com/c/ExpeditionGoTravelandToursLTD',
     path: 'M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z',
+  },
+  {
+    key: 'tripadvisor',
+    label: 'Tripadvisor',
+    href: 'https://www.tripadvisor.com/Attraction_Review-g293797-d24155300-Reviews-Expedition_Go_Tours_Ltd-Accra_Greater_Accra.html',
+    img: tripadvisorOwlSrc,
   },
 ]
 
@@ -110,7 +124,7 @@ function useIsMobile() {
 interface FooterNavGroupProps {
   id: string
   title: string
-  links: { to: string; label: string; strong?: boolean }[]
+  links: { to: string; label: string }[]
   /** Mobile: collapsible row. Desktop/tablet: always-open column. */
   isMobile: boolean
 }
@@ -123,23 +137,7 @@ function FooterNavGroup({ id, title, links, isMobile }: FooterNavGroupProps) {
     <ul>
       {links.map((link) => (
         <li key={`${link.to}-${link.label}`}>
-          <FooterLink
-            to={link.to}
-            className={`footer-nav-link${link.strong ? ' footer-nav-link--strong' : ''}`}
-          >
-            {link.label}
-            {link.strong && (
-              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path
-                  d="M3 13 13 3M6 3h7v7"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            )}
-          </FooterLink>
+          <FooterLink to={link.to}>{link.label}</FooterLink>
         </li>
       ))}
     </ul>
@@ -205,14 +203,13 @@ export default function Footer() {
   const currentCurrency = availableCurrencies.find((c) => c.code === currency.code)
   const year = new Date().getFullYear()
 
-  const navGroups: { key: string; title: string; links: { to: string; label: string; strong?: boolean }[] }[] = [
+  const navGroups: { key: string; title: string; links: { to: string; label: string }[] }[] = [
     {
       key: 'explore',
       title: t('footer.explore'),
       links: [
         { to: '/', label: t('footer.home') },
         { to: '/tours', label: t('footer.exploreTours') },
-        { to: '/hotels', label: t('footer.hotelsStays') },
         { to: '/blog', label: t('footer.travelInspiration') },
       ],
     },
@@ -223,7 +220,6 @@ export default function Footer() {
         { to: '/help-centre', label: t('footer.helpCentre') },
         { to: '/contact-us', label: t('footer.contactUs') },
         { to: '/faq', label: t('footer.faq') },
-        { to: '/refund-policy', label: t('footer.refundPolicy') },
       ],
     },
     {
@@ -241,11 +237,11 @@ export default function Footer() {
       key: 'work',
       title: t('footer.supplierZone'),
       links: [
-        { to: '/supplier/list-experience', label: t('footer.asSupplier'), strong: true },
+        { to: '/supplier/list-experience', label: t('footer.asSupplier') },
         { to: '/content-creators', label: t('footer.asContentCreator') },
         { to: '/travel-agents', label: t('footer.asTravelAgentReseller') },
         { to: '/transport-providers', label: t('footer.asTransportProvider') },
-        { to: '/hotels', label: t('footer.accommodationProviders') },
+        { to: '/hotels', label: t('footer.asAccommodationProvider') },
       ],
     },
   ]
@@ -257,17 +253,16 @@ export default function Footer() {
         <div className="footer-topline">
           <div className="footer-brand-block">
             <FooterLink to="/" className="footer-brand">
-              <img
-                className="footer-brand-mark"
-                src={FOOTER_MARK_SRC}
-                alt=""
-                width={46}
-                height={46}
-                loading="eager"
-                decoding="async"
-              />
-              <span className="footer-brand-name">
-                travio<small>GHANA</small>
+              <span className="footer-brand-plate">
+                <img
+                  className="footer-brand-logo"
+                  src={travioLogoSrc}
+                  alt="Travio Ghana"
+                  width={2076}
+                  height={450}
+                  loading="eager"
+                  decoding="async"
+                />
               </span>
             </FooterLink>
             <p className="footer-brand-copy">{t('footer.tagline')}</p>
@@ -343,7 +338,7 @@ export default function Footer() {
               ))}
             </div>
           </div>
-          <div>
+          <div className="footer-meta-socials">
             <span className="footer-meta-title">{t('footer.followJourney')}</span>
             <div className="footer-socials">
               {SOCIALS.map((social) => (
@@ -352,12 +347,16 @@ export default function Footer() {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="footer-social"
+                  className={`footer-social footer-social--${social.key}`}
                   aria-label={social.label}
                 >
-                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d={social.path} />
-                  </svg>
+                  {social.img ? (
+                    <img src={social.img} alt="" loading="lazy" decoding="async" />
+                  ) : (
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d={social.path} />
+                    </svg>
+                  )}
                 </a>
               ))}
             </div>

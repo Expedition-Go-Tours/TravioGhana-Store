@@ -3,7 +3,7 @@ import { toast } from 'sonner'
 import type { Tour, MultiDayTour } from '../components/data'
 import { getStoredAuthUser, getAuthUserId, subscribeToAuthState } from '../lib/auth'
 import { fetchWithAuth } from '../lib/api'
-import { mapRawTourToListing } from '../hooks/useExpeditionTours'
+import { mapRawTourToListing, type SpecialOfferData } from '../hooks/useExpeditionTours'
 import { readGated, writeGated } from '../lib/consentGatedStorage'
 
 export interface WishlistItem {
@@ -22,7 +22,18 @@ export interface WishlistItem {
   location: string
   price: number
   duration: string
+  /** Product type shown on the card's type chip (Tour / Activity / Transport).
+      Absent on items saved before this was captured — the card then omits the
+      chip rather than inventing a type. */
+  category?: string
+  /**
+   * Highlight line shown under the card title ("Guide included · Lunch
+   * included"). Absent on items saved before this was captured.
+   */
+  features?: string
   imageUrl: string
+  /** All tour photos — the saved card keeps its swipeable image carousel. */
+  photos?: string[]
   rating: number
   reviewCount: number
   addedDate: string
@@ -30,6 +41,21 @@ export interface WishlistItem {
   supplierName?: string | null
   source?: 'expedition-go' | 'travio-africa'
   externalUrl?: string
+  /** Card badge fields, captured so a saved tour keeps the badges it had. */
+  languages?: string[]
+  difficulty?: string
+  cancellationPolicy?: string
+  pickupIncluded?: boolean
+  accommodationIncluded?: boolean
+  meetingMode?: 'meeting_point' | 'pickup' | 'none'
+  /** Discount badge label shown on the card when it was saved (e.g. "-30%"). */
+  discount?: string
+  /**
+   * Supplier offers as they applied when the tour was saved. Re-checked
+   * against their date window on render (expired offers don't discount) and
+   * refreshed from the live offers list on the wishlist page.
+   */
+  specialOffers?: SpecialOfferData[]
 }
 
 interface WishlistContextValue {
@@ -48,29 +74,61 @@ function generateId(title: string, location: string): string {
   return btoa(`${title}|${location}`).replace(/=/g, '')
 }
 
-export function toWishlistItem(
-  tour: (Tour | MultiDayTour & { days?: string }) & { id?: string; slug?: string },
-): WishlistItem {
+/**
+ * The tour fields `toWishlistItem` snapshots. Beyond the plain `Tour`, live
+ * cards carry `priceValue` (authoritative numeric price) and `specialOffers`
+ * (the promo state the card is showing).
+ */
+export type WishlistSource = (Tour | MultiDayTour & { days?: string }) & {
+  id?: string
+  slug?: string
+  priceValue?: number | null
+  specialOffers?: SpecialOfferData[]
+}
+
+export function toWishlistItem(tour: WishlistSource): WishlistItem {
   const m = tour as MultiDayTour & { days?: string }
+  const t = tour as Tour
   const hasDuration = 'duration' in tour && typeof tour.duration === 'string'
   const hasDays = 'days' in m && typeof m.days === 'string'
   const realId = tour.id
+  // Features are the card's highlight line. Multi-day cards carry the same
+  // information as `highlights`, so fall back to it rather than saving blank.
+  const features = 'features' in tour && typeof t.features === 'string'
+    ? t.features
+    : ('highlights' in m && typeof m.highlights === 'string' ? m.highlights : '')
+  // Prefer the authoritative numeric price; only fall back to re-parsing the
+  // display string for legacy callers that don't pass priceValue.
+  const price = typeof tour.priceValue === 'number' && Number.isFinite(tour.priceValue) && tour.priceValue > 0
+    ? tour.priceValue
+    : parseInt(String(tour.price ?? '').replace(/[$,]/g, ''), 10) || 0
 
   return {
     id: realId || generateId(tour.title, tour.location),
     tourId: realId,
     title: tour.title,
     location: tour.location,
-    price: parseInt(tour.price.replace(/[$,]/g, '')) || 0,
+    price,
     duration: hasDuration ? tour.duration : (hasDays ? m.days : '1 Day'),
+    category: typeof t.category === 'string' ? t.category : undefined,
+    features,
     imageUrl: tour.image,
+    photos: Array.isArray(t.photos) && t.photos.length > 0 ? t.photos : undefined,
     rating: parseFloat(tour.rating) || 0,
     reviewCount: tour.reviews,
     addedDate: new Date().toISOString(),
     source: tour.source,
     externalUrl: tour.externalUrl,
-    slug: (tour as Tour & { slug?: string }).slug,
-    supplierName: (tour as Tour).supplierName,
+    slug: tour.slug,
+    supplierName: t.supplierName,
+    languages: Array.isArray(t.languages) && t.languages.length > 0 ? t.languages : undefined,
+    difficulty: t.difficulty || undefined,
+    cancellationPolicy: t.cancellationPolicy || undefined,
+    pickupIncluded: t.pickupIncluded,
+    accommodationIncluded: t.accommodationIncluded,
+    meetingMode: t.meetingMode,
+    discount: t.discount || undefined,
+    specialOffers: Array.isArray(tour.specialOffers) && tour.specialOffers.length > 0 ? tour.specialOffers : undefined,
   }
 }
 
@@ -168,8 +226,13 @@ async function pushWishlistOp(tourId: string, action: 'add' | 'remove'): Promise
 }
 
 function mapBackendTourToItem(t: any): WishlistItem {
+  // mapRawTourToListing resolves features, photos and date-filtered offers
+  // from the raw tour, so a server-synced item carries the same display
+  // payload a card captured live would.
   const listing = mapRawTourToListing(t)
-  const priceNum = parseInt(String(listing.price).replace(/[^0-9.]/g, ''), 10) || 0
+  const priceNum = listing.priceValue != null
+    ? listing.priceValue
+    : parseInt(String(listing.price).replace(/[^0-9.]/g, ''), 10) || 0
   const ratingNum = parseFloat(listing.rating) || 0
 
   return {
@@ -179,7 +242,10 @@ function mapBackendTourToItem(t: any): WishlistItem {
     location: listing.location,
     price: priceNum,
     duration: listing.duration,
+    category: listing.category || undefined,
+    features: listing.features || undefined,
     imageUrl: listing.image,
+    photos: listing.photos,
     rating: ratingNum,
     reviewCount: listing.reviews,
     // The backend WishlistItem row stores a real per-entry addedAt
@@ -188,7 +254,54 @@ function mapBackendTourToItem(t: any): WishlistItem {
     addedDate: t.addedAt || new Date().toISOString(),
     source: listing.source,
     externalUrl: listing.externalUrl,
+    slug: listing.slug,
+    supplierName: listing.supplierName,
+    languages: listing.languages,
+    difficulty: listing.difficulty,
+    cancellationPolicy: listing.cancellationPolicy,
+    pickupIncluded: listing.pickupIncluded,
+    accommodationIncluded: listing.accommodationIncluded,
+    meetingMode: listing.meetingMode,
+    discount: listing.discount,
+    specialOffers: listing.specialOffers,
   }
+}
+
+/**
+ * Display-only fields the wishlist card paints but the backend list endpoint
+ * may not project. When a server item replaces a locally captured one for the
+ * same tour, the local snapshot fills in any of these the server copy lacks —
+ * server values always win when present, so title/price/rating stay
+ * authoritative.
+ */
+const LOCAL_DISPLAY_FIELDS = [
+  'features',
+  'photos',
+  'languages',
+  'difficulty',
+  'cancellationPolicy',
+  'pickupIncluded',
+  'accommodationIncluded',
+  'meetingMode',
+  'discount',
+  'specialOffers',
+] as const
+
+export function mergeWishlistItem(server: WishlistItem, local?: WishlistItem): WishlistItem {
+  if (!local) return server
+  const merged = { ...server } as Record<string, unknown>
+  for (const key of LOCAL_DISPLAY_FIELDS) {
+    const serverValue = server[key]
+    const localValue = local[key]
+    const serverHasValue = serverValue != null
+      && serverValue !== ''
+      && !(Array.isArray(serverValue) && serverValue.length === 0)
+    const localHasValue = localValue != null
+      && localValue !== ''
+      && !(Array.isArray(localValue) && localValue.length === 0)
+    if (!serverHasValue && localHasValue) merged[key] = localValue
+  }
+  return merged as unknown as WishlistItem
 }
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
@@ -270,7 +383,19 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
       const finalItems = await fetchBackendWishlistItems()
       const localOnlyItems = wishlistRef.current.filter((i) => !i.tourId)
-      setWishlist([...localOnlyItems, ...finalItems])
+      // The server item is authoritative, but its endpoint may not project
+      // every card field (features, photos, badges, captured offers). Merge
+      // the local snapshot's display-only fields back in so a tour saved
+      // before login doesn't lose half its card after the sync.
+      const localByTourId = new Map(
+        wishlistRef.current.filter((i) => i.tourId).map((i) => [i.tourId as string, i]),
+      )
+      setWishlist([
+        ...localOnlyItems,
+        ...finalItems.map((item) =>
+          mergeWishlistItem(item, item.tourId ? localByTourId.get(item.tourId) : undefined),
+        ),
+      ])
     } catch (e) {
       console.warn('[Wishlist] sync on login failed, keeping local state:', e)
     } finally {

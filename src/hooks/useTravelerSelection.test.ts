@@ -124,7 +124,7 @@ describe('useTravelerSelection', () => {
     expect(result.current.groupHeadcount).toBe(10)
   })
 
-  it('per-group: hides the "Group of ..." row text for a single traveler, shows it for 2+', () => {
+  it('per-group: always labels the row with its matched "Group of ..." band', () => {
     const tour = {
       pricingModel: 'perGroup' as const,
       groupSizePricing: [
@@ -136,12 +136,13 @@ describe('useTravelerSelection', () => {
     }
     const { result } = renderHook(() => useTravelerSelection(tour))
     expect(result.current.groupHeadcount).toBe(2)
+    expect(result.current.travelerOptions[0].age).toBe('Group of 2–50')
     act(() => result.current.decrement('travelers'))
     expect(result.current.totalTravelers).toBe(1)
-    expect(result.current.travelerOptions[0].age).toBe('')
+    expect(result.current.travelerOptions[0].age).toBe('Group of 1')
     act(() => result.current.increment('travelers'))
     expect(result.current.totalTravelers).toBe(2)
-    expect(result.current.travelerOptions[0].age).toBe('2-50')
+    expect(result.current.travelerOptions[0].age).toBe('Group of 2–50')
   })
 
   it('per-person tiered: no "· Group of ..." tier note when a single traveler is booked', () => {

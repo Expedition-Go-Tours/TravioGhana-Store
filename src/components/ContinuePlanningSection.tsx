@@ -1,5 +1,4 @@
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { tourPath } from '../lib/tourPath'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -33,7 +32,10 @@ function shortCancellation(policy?: string): string {
 // homepage's Recommended carousel, so the mobile cards render identically.
 function toTourCardProps(item: ContinuePlanningItem, likelyToSellOut: boolean) {
   return {
-    id: item.id,
+    // Only the real backend id belongs in /tour/{id}/{slug}. Legacy items have
+    // no `tourId`, so TourCard falls back to the slug-only URL the route
+    // resolves instead of building a URL around the synthetic hash.
+    id: item.tourId ?? '',
     title: item.title,
     location: item.location,
     price: item.price > 0 ? `$${item.price}` : '',
@@ -74,9 +76,11 @@ function hasActiveOffer(offers: SpecialOfferData[] | undefined): boolean {
 
 function ContinuePlanningCard({ item, likelyToSellOut }: { item: ContinuePlanningItem; likelyToSellOut?: boolean }) {
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist()
-  const inWishlist = isInWishlist(item.id)
+  // The wishlist is keyed by the real tour id; legacy items fall back to their
+  // stored id so their existing heart state keeps working.
+  const wishlistKey = item.tourId || item.id
+  const inWishlist = isInWishlist(wishlistKey)
   const hasOffer = hasActiveOffer(item.specialOffers)
   // Display stats include matched scraped reviews; the stored item keeps the
   // raw in-app stats so re-rendering through TourCard never double-counts.
@@ -90,31 +94,51 @@ function ContinuePlanningCard({ item, likelyToSellOut }: { item: ContinuePlannin
   const displayRating = combinedStats.reviewCount > 0 ? combinedStats.rating.toFixed(1) : String(item.rating)
   const displayReviewCount = combinedStats.reviewCount > 0 ? combinedStats.reviewCount : item.reviewCount
 
+  // Canonical /tour/{id}/{slug}. Legacy items have no real id: the
+  // single-segment /tour/{slug} form is resolved by the API, while the
+  // synthetic hash id is not.
+  const slug = item.slug || item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  const url = tourPath(item.tourId ?? null, slug)
+
+  // Opens in a new tab, matching TourCard (the mobile slide and every other
+  // tour surface). The title below is the real crawlable <a>; clicks anywhere
+  // else on the card route through here.
   const openTour = () => {
-    const slug = item.slug || item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-    navigate(tourPath(item.id, slug))
+    window.open(url, '_blank', 'noopener')
   }
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     const wishItem = toWishlistItem({
-      id: item.id,
+      // `id` here is the real backend tour id — toWishlistItem treats it as
+      // such and falls back to its own hash only when it is absent.
+      id: item.tourId,
       title: item.title,
       location: item.location,
       category: item.category ?? '',
       price: item.price > 0 ? `$${item.price}` : '',
+      priceValue: item.price > 0 ? item.price : null,
       duration: item.duration,
       features: item.features,
       image: item.imageUrl,
+      photos: item.photos,
       rating: String(item.rating),
       reviews: item.reviewCount,
       source: item.source,
       externalUrl: item.externalUrl,
       slug: item.slug,
+      supplierName: item.supplierName,
+      languages: item.languages,
+      difficulty: item.difficulty,
+      cancellationPolicy: item.cancellationPolicy,
+      pickupIncluded: item.pickupIncluded,
+      meetingMode: item.meetingMode,
+      discount: item.discount,
+      specialOffers: item.specialOffers,
     })
     if (inWishlist) {
-      removeFromWishlist(item.id)
+      removeFromWishlist(wishlistKey)
     } else {
       addToWishlist(wishItem)
       toast.success(i18n.t('common.addedToWishlist'))
@@ -182,6 +206,10 @@ function ContinuePlanningCard({ item, likelyToSellOut }: { item: ContinuePlannin
       role="link"
       tabIndex={0}
       onKeyDown={(e) => {
+        // Key presses raised on the nested title link / wishlist button belong
+        // to those controls — handling them here too would open the tour on top
+        // of the control's own activation (and double-open the title link).
+        if (e.target !== e.currentTarget) return
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
           openTour()
@@ -213,7 +241,18 @@ function ContinuePlanningCard({ item, likelyToSellOut }: { item: ContinuePlannin
       </div>
 
       <div className="cp-card-content">
-        <h3 className="cp-card-title">{item.title}</h3>
+        <h3 className="cp-card-title">
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener"
+            // The card body's own handler opens a new tab too; stopping
+            // propagation keeps the title's native navigation from opening two.
+            onClick={(e) => e.stopPropagation()}
+          >
+            {item.title}
+          </a>
+        </h3>
 
         {item.duration && <p className="cp-card-duration">{item.duration}</p>}
 
@@ -411,7 +450,7 @@ export default function ContinuePlanningSection() {
                 <div key={item.id} className="continue-planning-card-wrap">
                   <ContinuePlanningSlide
                     item={item}
-                    likelyToSellOut={isLikelyToSellOut({ id: item.id, title: item.title })}
+                    likelyToSellOut={isLikelyToSellOut({ id: item.tourId || item.id, title: item.title })}
                     isMobile={isMobile}
                   />
                 </div>

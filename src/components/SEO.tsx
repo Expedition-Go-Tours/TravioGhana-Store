@@ -140,8 +140,8 @@ export function buildOrganizationSchema() {
     // Same profile list the prerender publishes — a schema that names a
     // different set than the crawler-facing one splits the entity's signals.
     sameAs: [
-      'https://www.facebook.com/p/Travio%20Ghana-Tours-LTD-61567042001418/',
-      'https://www.instagram.com/travioGhanatours',
+      'https://www.facebook.com/p/Expedition-Go-Tours-LTD-61567042001418/',
+      'https://www.instagram.com/expeditiongotours',
       'https://www.tiktok.com/@expeditiongotours',
       'https://www.youtube.com/c/ExpeditionGoTravelandToursLTD',
     ],

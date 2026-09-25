@@ -222,6 +222,7 @@ export default function TourDetailPage() {
   useEffect(() => {
     if (tour) {
       addToContinuePlanning(toContinuePlanningItem({
+        id: tour.id,
         title: tour.title,
         location: tour.location,
         image: mergedImages[0] || '',
@@ -299,25 +300,60 @@ export default function TourDetailPage() {
   }, [])
 
   const pricingRef = useRef<HTMLDivElement>(null)
+  const galleryRef = useRef<HTMLDivElement>(null)
   const reviewsRef = useRef<HTMLDivElement>(null)
 
   // Height of the booking card, published as `--tour-hero-height` so the photo
   // mosaic beside it can match it and the two columns finish on the same line.
   // Measured, never clamped: a tall card (options, offers, long notes) must
   // still end the gallery exactly where the card ends.
+  //
+  // The sync is suspended while the gallery is on screen. The card's height
+  // changes several times during a date/traveler selection (slot line, pricing
+  // spinner → quote → "price updated" note); applying those live would bounce
+  // the mosaic and make every tile re-crop at the CDN mid-interaction. It
+  // catches up the moment the gallery leaves the viewport, so the columns are
+  // already aligned again when it scrolls back.
   const [heroHeight, setHeroHeight] = useState<number | null>(null)
+  const galleryVisibleRef = useRef(false)
+  const heroSyncedRef = useRef(false)
+
+  const measureHeroHeight = useCallback(() => {
+    const el = pricingRef.current
+    if (!el) return
+    const measured = Math.round(el.getBoundingClientRect().height)
+    // Ignore zero/negative measurements while the card is still mounting.
+    if (measured <= 0) return
+    heroSyncedRef.current = true
+    setHeroHeight((prev) => (prev === measured ? prev : measured))
+  }, [])
+
   useEffect(() => {
     const el = pricingRef.current
     if (!el || typeof ResizeObserver === 'undefined') return
     const observer = new ResizeObserver(() => {
-      const measured = Math.round(el.getBoundingClientRect().height)
-      // Ignore zero/negative measurements while the card is still mounting.
-      if (measured <= 0) return
-      setHeroHeight((prev) => (prev === measured ? prev : measured))
+      // Always take the first measurement (that's the initial alignment);
+      // afterwards only apply while the gallery is out of sight.
+      if (heroSyncedRef.current && galleryVisibleRef.current) return
+      measureHeroHeight()
     })
     observer.observe(el)
     return () => observer.disconnect()
-  }, [isLoading, tour])
+  }, [isLoading, tour, measureHeroHeight])
+
+  useEffect(() => {
+    const el = galleryRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver(([entry]) => {
+      galleryVisibleRef.current = entry.isIntersecting
+      // Just scrolled past the gallery: apply whatever the card height became
+      // while the sync was suspended, so the resize happens off-screen.
+      if (!entry.isIntersecting && heroSyncedRef.current) measureHeroHeight()
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [isLoading, tour, measureHeroHeight])
+
   const [reviewDetail, setReviewDetail] = useState<{ name: string; date: string; rating: number; text: string } | null>(null)
   const [isWriteReviewOpen, setIsWriteReviewOpen] = useState(false)
   const [reviewStarFilter, setReviewStarFilter] = useState<number | null>(null)
@@ -377,12 +413,28 @@ export default function TourDetailPage() {
         location: tour?.location || '',
         price: tour?.price || 0,
         duration: tour?.duration || '',
+        category: tour?.category || undefined,
+        // Same highlight line the card shows, so the saved card keeps it.
+        features: tour?.highlights?.length ? tour.highlights.slice(0, 4).join(' · ') : '',
         imageUrl: mergedImages[0] || '',
+        photos: mergedImages.length > 0 ? mergedImages : undefined,
         rating: localTourRating,
         reviewCount: localTourReviews,
         addedDate: new Date().toISOString(),
         source: isExternal ? 'travio-africa' : 'expedition-go',
         externalUrl: tour?.externalUrl || undefined,
+        slug: tour?.slug || undefined,
+        supplierName: tour?.supplierName || undefined,
+        languages: tour?.languages,
+        difficulty: tour?.difficulty,
+        cancellationPolicy: tour?.cancellationPolicy,
+        pickupIncluded: tour?.pickupIncluded,
+        accommodationIncluded: tour?.accommodationIncluded,
+        meetingMode: tour?.meetingMode,
+        // Captured so the wishlist card keeps the promo badge/price; the
+        // wishlist page re-checks these against their date window and
+        // refreshes them from the live offers list.
+        specialOffers: tour?.specialOffers,
       })
       toast.success(t('common.addedToWishlist'))
     }
@@ -1120,7 +1172,7 @@ export default function TourDetailPage() {
             className="tour-detail-content"
             style={heroHeight ? ({ '--tour-hero-height': `${heroHeight}px` } as CSSProperties) : undefined}
           >
-            <div className="tour-detail-main">
+            <div className="tour-detail-main" ref={galleryRef}>
               <TourImageGallery
                 images={mergedImages}
                 title={selectedTourTitle}
@@ -1276,6 +1328,7 @@ export default function TourDetailPage() {
                       supplierType={supplierData.supplierType}
                       tours={supplierTours}
                       tourId={tour?.id}
+                      supplierId={supplierData.supplierId}
                       infoOpen={supplierInfoOpen}
                       onToggleInfo={() => setSupplierInfoOpen((v) => !v)}
                       onOpenInfo={() => setSupplierInfoOpen(true)}

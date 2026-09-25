@@ -6,6 +6,7 @@ import SupplierRegisterPage from './SupplierRegisterPage'
 
 const mocks = vi.hoisted(() => ({
   user: null as null | { id: string; name?: string },
+  profile: null as null | { id: string; status: string },
 }))
 
 vi.mock('@/hooks/useAuthUser', () => ({
@@ -13,7 +14,7 @@ vi.mock('@/hooks/useAuthUser', () => ({
 }))
 
 vi.mock('@/hooks/useSupplierStatus', () => ({
-  useSupplierStatus: () => ({ profile: null, isLoading: false }),
+  useSupplierStatus: () => ({ profile: mocks.profile, isLoading: false }),
   supplierStatusKey: () => ['supplier-status', 'test'],
 }))
 
@@ -27,8 +28,8 @@ vi.mock('@/lib/auth', () => ({
   setAuthReturnTo: vi.fn(),
 }))
 
-vi.mock('@/components/supplier/SupplierApplicationForm', () => ({
-  SupplierApplicationForm: () => <div>SUPPLIER_APPLICATION_FORM</div>,
+vi.mock('@/components/supplier/SupplierRegistrationWizard', () => ({
+  default: () => <div>SUPPLIER_REGISTRATION_WIZARD</div>,
 }))
 
 vi.mock('@/components/Footer', () => ({ default: () => <div>FOOTER</div> }))
@@ -64,11 +65,12 @@ function renderRegister() {
 
 beforeEach(() => {
   mocks.user = null
+  mocks.profile = null
   vi.clearAllMocks()
 })
 
 describe('SupplierRegisterPage', () => {
-  it('marketing mode renders the story, no banner and no application form', () => {
+  it('marketing mode renders the story, no banner and no registration wizard', () => {
     renderMarketing()
 
     expect(screen.getByText(/Manage your tours/i)).toBeInTheDocument()
@@ -77,9 +79,9 @@ describe('SupplierRegisterPage', () => {
     // phrase in a sentence and must stay).
     expect(screen.queryByText("Built for Ghana's experience operators.")).toBeNull()
     expect(screen.queryByText(/No listing fee/i)).toBeNull()
-    // The application wizard lives on /supplier/register only.
+    // The registration wizard lives on /supplier/register only.
     expect(screen.queryByText(/Join as a Supplier/i)).toBeNull()
-    expect(screen.queryByText('SUPPLIER_APPLICATION_FORM')).toBeNull()
+    expect(screen.queryByText('SUPPLIER_REGISTRATION_WIZARD')).toBeNull()
   })
 
   it('marketing CTA routes to the supplier registration page', async () => {
@@ -90,28 +92,31 @@ describe('SupplierRegisterPage', () => {
     expect(await screen.findByText('REGISTER_ROUTE')).toBeInTheDocument()
   })
 
-  it('register mode is the focused application page — form first, no marketing', () => {
+  it('register mode renders the registration wizard — no marketing, no footer', () => {
     renderRegister()
 
-    expect(screen.getByRole('heading', { name: /Join as a Supplier/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Learn about listing on Travio Ghana/i })).toHaveAttribute(
-      'href',
-      '/supplier/list-experience',
-    )
-    // No banner, no marketing hero, no marketing sections.
+    expect(screen.getByText('SUPPLIER_REGISTRATION_WIZARD')).toBeInTheDocument()
+    expect(screen.queryByText('FOOTER')).toBeNull()
     expect(screen.queryByText("Built for Ghana's experience operators.")).toBeNull()
     expect(screen.queryByText(/Manage your tours/i)).toBeNull()
     expect(screen.queryByText(/From sign-up to your first booking/i)).toBeNull()
   })
 
-  it('shows the sign-up prompt when signed out, and the form when signed in', () => {
-    const { unmount } = renderRegister()
-    expect(screen.getByText(/Sign up to apply/i)).toBeInTheDocument()
-    expect(screen.queryByText('SUPPLIER_APPLICATION_FORM')).toBeNull()
-    unmount()
-
-    mocks.user = { id: 'u1', name: 'Ada' }
+  it('shows the under-review status instead of the wizard when an application exists', () => {
+    mocks.profile = { id: 'app-1', status: 'UNDER_REVIEW' }
     renderRegister()
-    expect(screen.getByText('SUPPLIER_APPLICATION_FORM')).toBeInTheDocument()
+
+    expect(screen.getByText(/Your application is under review/i)).toBeInTheDocument()
+    expect(screen.getByText('UNDER_REVIEW')).toBeInTheDocument()
+    expect(screen.queryByText('SUPPLIER_REGISTRATION_WIZARD')).toBeNull()
+  })
+
+  it('shows the needs-attention status for a rejected application', () => {
+    mocks.profile = { id: 'app-2', status: 'REJECTED' }
+    renderRegister()
+
+    expect(screen.getByText(/needs more information/i)).toBeInTheDocument()
+    expect(screen.getByText('REJECTED')).toBeInTheDocument()
+    expect(screen.queryByText('SUPPLIER_REGISTRATION_WIZARD')).toBeNull()
   })
 })

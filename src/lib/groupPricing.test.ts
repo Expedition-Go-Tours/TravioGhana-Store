@@ -55,8 +55,8 @@ describe('matchGroupBand', () => {
 })
 
 describe('groupBandLabel', () => {
-  it('renders a closed range', () => {
-    expect(groupBandLabel({ from: 3, to: 5, price: 250 })).toBe('3-5')
+  it('renders a closed range with an en dash', () => {
+    expect(groupBandLabel({ from: 3, to: 5, price: 250 })).toBe('3–5')
   })
 
   it('renders an open-ended range with a "+"', () => {

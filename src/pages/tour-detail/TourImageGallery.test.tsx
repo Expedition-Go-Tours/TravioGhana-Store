@@ -76,6 +76,30 @@ describe('TourImageGallery — GetYourGuide mosaic', () => {
     expect(img.getAttribute('srcset')).toContain('c_fill,g_auto,w_600,h_400,q_auto:good,f_auto')
   })
 
+  it('snaps the tile crop height to a stable bucket so sub-bucket resizes keep the same CDN URL', async () => {
+    // 203px is inside the 200px bucket: the crop must stay h_400 (a 200px box),
+    // not re-download at h_406 every time the booking card settles by a pixel.
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      width: 300,
+      height: 203,
+      top: 0,
+      left: 0,
+      right: 300,
+      bottom: 203,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    } as DOMRect)
+
+    render(<TourImageGallery images={IMAGES} title="Accra City Tour" />)
+
+    await waitFor(() => expect(tileCount()).toBe(4))
+
+    const img = screen.getByTestId('tour-gallery-tile-0').querySelector('img')!
+    expect(img.getAttribute('src')).toContain('c_fill,g_auto,w_600,h_400,q_auto:good,f_auto')
+    expect(img.getAttribute('height')).toBe('200')
+  })
+
   it('opens the lightbox on the tile that was clicked', async () => {
     render(<TourImageGallery images={IMAGES} title="Accra City Tour" />)
     await waitFor(() => expect(tileCount()).toBe(4))

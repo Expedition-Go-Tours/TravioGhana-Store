@@ -142,14 +142,6 @@ function BackArrow({ size }: { size: number }) {
   );
 }
 
-function PinIcon() {
-  return (
-    <svg viewBox="0 0 24 32" aria-hidden="true">
-      <path d="M12 1C5.9 1 1 5.9 1 12c0 7 11 19 11 19s11-12 11-19C23 5.9 18.1 1 12 1Zm0 15.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9Z" />
-    </svg>
-  );
-}
-
 /* --- Fields --- */
 
 interface PasswordFieldProps {
@@ -533,13 +525,6 @@ export default function AuthForm({ initialMode = "signin", onBack, onAuthSuccess
               <p className="eyebrow">{t('auth.scene.eyebrow')}</p>
               <h2>{t('auth.scene.title')}</h2>
               <p>{t('auth.scene.subtitle')}</p>
-            </div>
-            <div className="location">
-              <PinIcon />
-              <span>
-                <strong>{t('auth.scene.locationName')}</strong>
-                <small>{t('auth.scene.locationRegion')}</small>
-              </span>
             </div>
           </section>
 

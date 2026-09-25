@@ -57,61 +57,6 @@
   color: #179237;
 }
 
-.supplier-nav-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.supplier-save-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: 1.5px solid #cbd5e1;
-  border-radius: 9999px;
-  background: #fff;
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #334155;
-  cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
-  font-family: var(--font-body);
-}
-
-.supplier-save-btn:hover {
-  border-color: #179237;
-  color: #179237;
-}
-
-.supplier-save-btn svg {
-  transition: transform 0.2s;
-}
-
-.supplier-save-btn:hover svg {
-  transform: scale(1.15);
-}
-
-.supplier-contact-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: none;
-  border-radius: 9999px;
-  background: #179237;
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
-  font-family: var(--font-body);
-}
-
-.supplier-contact-btn:hover {
-  background: #15803d;
-  transform: translateY(-1px);
-}
-
 /* ===== SUPPLIER HEADER ===== */
 
 .supplier-header-section {
@@ -343,6 +288,21 @@
 @media (min-width: 1024px) {
   .supplier-about-layout {
     grid-template-columns: 1fr 360px;
+  }
+
+  /* The contact card is naturally taller than the About copy (574px vs 414px
+     of content), and the grid stretches both cards to the same height. Without
+     this, that whole difference pooled under the badge row as dead space:
+     192px of nothing between the badges and the card's bottom edge. Anchoring
+     the row to the bottom turns it into breathing room above the divider and
+     lands it on the same line the contact list ends on. */
+  .supplier-about-card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .supplier-about-features {
+    margin-top: auto;
   }
 }
 

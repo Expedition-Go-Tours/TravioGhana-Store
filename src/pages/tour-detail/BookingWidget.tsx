@@ -15,6 +15,7 @@ import type { DayAvailability, DayAvailabilityInfo, DayTimeSlot } from '../../li
 import { openingHoursForDay, isSupplierOperatingDay, resolveDayStatus } from '../../lib/tourAvailability'
 import { cancellationStatus } from '../../lib/cancellationLabel'
 import { categoryKey } from '../../lib/travelerBuckets'
+import { groupBandLabel } from '../../lib/groupPricing'
 import { useTravelerSelection } from '../../hooks/useTravelerSelection'
 import { headlineUnitPrice, cardParityUnitPrice } from '../../lib/startingPrice'
 import BookingDeadlineTimer from './BookingDeadlineTimer'
@@ -848,7 +849,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                 aria-expanded={showCalendar}
                 aria-haspopup="dialog"
               >
-                <span className="booking-inline-label">{t('tourDetail.selectDate')}</span>
+                <span className="booking-inline-label">{t('booking.date', 'Date')}</span>
                 <span className="booking-inline-value">
                   <span className="booking-inline-date-text">{selectedDateLabel}</span>
                   {selectedTimeLabel && <span className="booking-selected-time">{selectedTimeLabel}</span>}
@@ -1032,11 +1033,13 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
               >
                 <span className="booking-inline-label">{t('booking.travelers')}</span>
                 <span className="booking-inline-value">
-                  <Users size={16} className="booking-inline-icon" />
-                  <span>{totalTravelers} {t('booking.traveler', { count: totalTravelers })}</span>
+                  <span className="booking-inline-count">
+                    <Users size={16} className="booking-inline-icon" />
+                    <span>{totalTravelers} {t('booking.traveler', { count: totalTravelers })}</span>
+                  </span>
                   {isPerGroup && totalTravelers > 1 && activeGroupBandLabel && (
                     <span className="booking-active-band">
-                      {' '}· {t('booking.groupOf', 'Group of {{range}}', { range: activeGroupBandLabel })}
+                      {t('booking.groupOf', 'Group of {{range}}', { range: activeGroupBandLabel })}
                     </span>
                   )}
                 </span>
@@ -1061,9 +1064,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                         .sort((a, b) => a.from - b.from)
                         .map((band, i) => {
                           const isActive = totalTravelers >= band.from && totalTravelers <= band.to
-                          const rangeLabel = band.from === band.to
-                            ? `${band.from}`
-                            : (Number.isFinite(band.to) ? `${band.from}-${band.to}` : `${band.from}+`)
+                          const rangeLabel = groupBandLabel(band)
                           return (
                             <div
                               key={i}
@@ -1094,11 +1095,15 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                         </div>
                         <div className="guest-type-price">
                           <span className="guest-type-unit">{opt.price}</span>
-                          {!isPerGroup && opt.count > 0 && (
+                          {isPerGroup ? (
+                            <span className="guest-type-line">
+                              {t('booking.perGroup', 'per group')}
+                            </span>
+                          ) : opt.count > 0 ? (
                             <span className="guest-type-line">
                               {t('booking.perPersonShort', 'per person')}
                             </span>
-                          )}
+                          ) : null}
                         </div>
                         <div className="guest-type-controls">
                           <button

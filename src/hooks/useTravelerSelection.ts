@@ -295,7 +295,7 @@ export function useTravelerSelection(tour: TravelerSelectionTour, options?: Trav
         {
           label: t('booking.travelers'),
           age: matchingGroupBand
-            ? (totalTravelers > 1 ? activeGroupBandLabel : '')
+            ? t('booking.groupOf', 'Group of {{range}}', { range: activeGroupBandLabel })
             : t('booking.perGroupHeadcount', 'Group headcount'),
           price: matchingGroupBand ? formatPrice(matchingGroupBand.price) : '',
           lineTotal: matchingGroupBand?.price ?? 0,

@@ -43,6 +43,16 @@ async function fetchAttractionResults(attraction: string, place: string): Promis
   return mergeOffersIntoTours(recommended.map(mapRawTourToListing))
 }
 
+/**
+ * The results grid is 4 columns (3 ≤1200px, 2 ≤900px, 1 ≤600px) inside a
+ * 1400px container — see SearchResultsPage.css. Without this the card's default
+ * `sizes` claims 50vw and the browser picks the 1200w image (~200KB) for a
+ * ~310px card instead of the 600w one (~83KB).
+ */
+const CARD_SIZES = '(max-width: 600px) 100vw, (max-width: 900px) 50vw, (max-width: 1200px) 33vw, 25vw'
+/** First-row cards load eager/high-priority so the visible results paint fast. */
+const PRIORITY_CARDS = 4
+
 export default function SearchResultsPage() {
   const { t } = useTranslation()
   const [searchParams] = useSearchParams()
@@ -146,7 +156,7 @@ export default function SearchResultsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.25, delay: Math.min(idx * 0.04, 0.6) }}
               >
-                <TourCard {...tour} />
+                <TourCard {...tour} sizes={CARD_SIZES} priority={idx < PRIORITY_CARDS} />
               </motion.div>
             ))}
           </div>

@@ -2970,7 +2970,9 @@
   }
 
   .sh-map {
-    min-height: 220px;
+    /* The place card shown when the pin is tapped needs the same headroom
+       the desktop map provides, otherwise its top gets clipped. */
+    min-height: 300px;
     order: -1;
     border-right: 0;
     border-bottom: 1px solid var(--sh-line);

@@ -44,7 +44,11 @@ vi.mock('../hooks/useExpeditionBookings', () => ({
 }))
 
 vi.mock('../contexts/CurrencyContext', () => ({
-  useCurrency: () => ({ currency: { code: 'USD' } }),
+  useCurrency: () => ({ currency: { code: 'USD', symbol: '$' } }),
+  availableCurrencies: [
+    { code: 'USD', symbol: '$', label: 'US Dollar' },
+    { code: 'GHS', symbol: '₵', label: 'Ghanaian Cedi' },
+  ],
 }))
 
 vi.mock('../context/WishlistContext', () => ({
@@ -76,6 +80,15 @@ import Navbar from './Navbar'
 function renderNavbar(): HTMLElement {
   return render(
     <MemoryRouter>
+      <Navbar onOpenAuth={() => {}} />
+    </MemoryRouter>,
+  ).container
+}
+
+/** Renders the navbar at a specific route so route-derived classes can be asserted. */
+function renderNavbarAt(path: string): HTMLElement {
+  return render(
+    <MemoryRouter initialEntries={[path]}>
       <Navbar onOpenAuth={() => {}} />
     </MemoryRouter>,
   ).container
@@ -129,5 +142,63 @@ describe('Navbar supplier CTA', () => {
     openMobileMenu(container)
 
     expect(ctaIconClass(container, '.nav-mobile-list-experience-icon')).toContain('lucide-layout-dashboard')
+  })
+})
+
+describe('Navbar route classes', () => {
+  beforeEach(() => {
+    state.approved = false
+    window.localStorage.clear()
+    cleanup()
+  })
+
+  it('does not apply the tour-detail column class on the All Tours listing', () => {
+    const container = renderNavbarAt('/tours')
+
+    expect(container.querySelector('.navbar')?.classList.contains('navbar--tour-detail')).toBe(false)
+  })
+
+  it('applies the tour-detail column class on a tour detail route', () => {
+    const container = renderNavbarAt('/tour/abc123/accra-city-tour')
+
+    expect(container.querySelector('.navbar')?.classList.contains('navbar--tour-detail')).toBe(true)
+  })
+})
+
+/**
+ * The language/currency picker must be one surface everywhere. The mobile menu
+ * used to open MobileSubDrawer — a second, full-screen implementation of the
+ * same two lists — while the desktop globe and the footer opened
+ * LanguageCurrencyModal.
+ */
+describe('Navbar language and currency picker', () => {
+  beforeEach(() => {
+    state.approved = false
+    window.localStorage.clear()
+    cleanup()
+  })
+
+  it('opens the shared centred picker from the mobile menu, with no second drawer', () => {
+    const container = renderNavbar()
+    openMobileMenu(container)
+
+    fireEvent.click(screen.getByText('nav.language'))
+
+    const dialog = screen.getByRole('dialog')
+    expect(dialog).toHaveAttribute('aria-modal', 'true')
+    expect(dialog).toHaveAttribute('aria-label', 'nav.language')
+    // the duplicated language/currency drawer must not be reachable any more
+    expect(container.querySelector('.nav-subdrawer')).toBeNull()
+    expect(screen.getByText('languages.en')).toBeInTheDocument()
+  })
+
+  it('opens the picker on the currency tab from the mobile menu', () => {
+    const container = renderNavbar()
+    openMobileMenu(container)
+
+    fireEvent.click(screen.getByText('nav.currency'))
+
+    expect(screen.getByRole('dialog')).toHaveAttribute('aria-label', 'nav.currency')
+    expect(screen.getByText('USD')).toBeInTheDocument()
   })
 })

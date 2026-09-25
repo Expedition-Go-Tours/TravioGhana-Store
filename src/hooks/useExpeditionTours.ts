@@ -2229,23 +2229,39 @@ export function bestOfferDiscountAmount(offers: SpecialOfferData[], fullPrice: n
 }
 
 /**
- * True when the tour currently carries a live supplier-applied offer: the
- * offer has started (or has no startDate) and hasn't ended yet (offers without
- * an endDate count as always active). Single source of truth for the
- * "Special Offer" badge on tour cards.
+ * True when an offer is live right now: it has started (or has no startDate)
+ * and hasn't ended yet (offers without an endDate count as always active).
+ * Single source of truth for every offer date-window check.
+ */
+export function isOfferActive(offer: SpecialOfferData | null | undefined, now = Date.now()): boolean {
+  if (!offer || typeof offer !== 'object') return false
+  if (offer.startDate && now < new Date(offer.startDate).getTime()) return false
+  if (offer.endDate) {
+    const end = new Date(offer.endDate).getTime()
+    if (!Number.isFinite(end) || end <= now) return false
+  }
+  return true
+}
+
+/**
+ * True when the tour currently carries a live supplier-applied offer.
+ * Single source of truth for the "Special Offer" badge on tour cards.
  */
 export function hasActiveOffer(specialOffers: SpecialOfferData[] | undefined): boolean {
   if (!Array.isArray(specialOffers) || specialOffers.length === 0) return false
   const now = Date.now()
-  return specialOffers.some((offer) => {
-    if (!offer || typeof offer !== 'object') return false
-    if (offer.startDate && now < new Date(offer.startDate).getTime()) return false
-    if (offer.endDate) {
-      const end = new Date(offer.endDate).getTime()
-      if (!Number.isFinite(end) || end <= now) return false
-    }
-    return true
-  })
+  return specialOffers.some((offer) => isOfferActive(offer, now))
+}
+
+/**
+ * The subset of offers that are live right now. Persisted offer snapshots
+ * (e.g. a wishlist item saved while a promo ran) must be re-checked against
+ * their date window before they may discount a price or raise a badge.
+ */
+export function filterActiveOffers(specialOffers: SpecialOfferData[] | undefined): SpecialOfferData[] {
+  if (!Array.isArray(specialOffers) || specialOffers.length === 0) return []
+  const now = Date.now()
+  return specialOffers.filter((offer) => isOfferActive(offer, now))
 }
 
 /**

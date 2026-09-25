@@ -19,6 +19,7 @@
 
 const fs = require('node:fs')
 const path = require('node:path')
+const { ICON_HEAD_HTML, MANIFEST_HREF } = require('./icon-links.cjs')
 
 const ROOT = path.resolve(__dirname, '..')
 const SOURCE = path.join(ROOT, 'src', 'components', 'travelStories.json')
@@ -113,7 +114,8 @@ function renderStory(story, siblings) {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/png" href="/favicon-64.png" />
+    ${ICON_HEAD_HTML}
+    <link rel="manifest" href="${MANIFEST_HREF}" />
     <title>${escapeHtml(story.title)} | ${escapeHtml(SITE_NAME)}</title>
     <meta name="description" content="${escapeHtml(description(story))}" />
     <meta name="keywords" content="${escapeHtml(keywords(story))}" />
@@ -252,7 +254,8 @@ function renderIndex(stories) {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/png" href="/favicon-64.png" />
+    ${ICON_HEAD_HTML}
+    <link rel="manifest" href="${MANIFEST_HREF}" />
     <title>${escapeHtml(title)} | ${escapeHtml(SITE_NAME)}</title>
     <meta name="description" content="${escapeHtml(description)}" />
     <meta name="keywords" content="${escapeHtml(keywords)}" />

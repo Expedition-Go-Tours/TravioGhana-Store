@@ -18,6 +18,18 @@ interface TourImageGalleryProps {
 
 type Size = { w: number; h: number }
 
+/**
+ * The mosaic height follows the booking card, which settles in small steps
+ * while the pricing state changes. Snapping the measured tile height to 40px
+ * buckets keeps the Cloudinary transform URL stable across those steps
+ * (e.g. 469–496px all crop at 480), so a few pixels of movement never
+ * re-downloads every photo; `object-fit: cover` absorbs the difference.
+ */
+const TILE_HEIGHT_BUCKET = 40
+function snapTileHeight(height: number): number {
+  return Math.max(TILE_HEIGHT_BUCKET, Math.round(height / TILE_HEIGHT_BUCKET) * TILE_HEIGHT_BUCKET)
+}
+
 interface Column {
   key: string
   grow: number
@@ -91,7 +103,7 @@ export default function TourImageGallery({ images, title, fallbackImage, onBack,
       const rect = el.getBoundingClientRect()
       const w = Math.round(rect.width)
       const h = Math.round(rect.height)
-      if (w > 0 && h > 0) next[index] = { w, h }
+      if (w > 0 && h > 0) next[index] = { w, h: snapTileHeight(h) }
     }
     setTileSizes((prev) => {
       const same =

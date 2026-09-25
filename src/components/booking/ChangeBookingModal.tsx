@@ -10,6 +10,7 @@ import { openingHoursForDay, resolveDayStatus } from '../../lib/tourAvailability
 import { cancellationStatus } from '../../lib/cancellationLabel'
 import BookingDeadlineTimer from '../../pages/tour-detail/BookingDeadlineTimer'
 import { categoryKey, categoryPayloadKey } from '../../lib/travelerBuckets'
+import { groupBandLabel } from '../../lib/groupPricing'
 import { useQueryClient } from '@tanstack/react-query'
 import '../../pages/tour-detail/BookingWidget.css'
 
@@ -546,9 +547,7 @@ export default function ChangeBookingModal({ tour, isOpen, onClose, onReserve, i
                     .sort((a, b) => a.from - b.from)
                     .map((band, i) => {
                       const isActive = totalTravelers >= band.from && totalTravelers <= band.to
-                      const rangeLabel = band.from === band.to
-                        ? `${band.from}`
-                        : (Number.isFinite(band.to) ? `${band.from}-${band.to}` : `${band.from}+`)
+                      const rangeLabel = groupBandLabel(band)
                       return (
                         <div
                           key={i}
@@ -580,11 +579,15 @@ export default function ChangeBookingModal({ tour, isOpen, onClose, onReserve, i
                       </div>
                       <div className="guest-type-price">
                         <span className="guest-type-unit">{opt.price}</span>
-                        {!isPerGroup && opt.count > 0 && (
+                        {isPerGroup ? (
+                          <span className="guest-type-line">
+                            {t('booking.perGroup', 'per group')}
+                          </span>
+                        ) : opt.count > 0 ? (
                           <span className="guest-type-line">
                             {t('booking.perPersonShort', 'per person')}
                           </span>
-                        )}
+                        ) : null}
                       </div>
                       <div className="guest-type-controls">
                         <button

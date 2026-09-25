@@ -9,6 +9,7 @@ import { useLocationSearch } from '../context/LocationSearchContext'
 import { useSearchInput } from '../context/SearchInputContext'
 import { trackSearch } from '../lib/analytics'
 import SearchSuggestionIcon from './shared/SearchSuggestionIcon'
+import OptimizedImage from './shared/OptimizedImage'
 import './SearchBar.css'
 
 const dropdownVariants: Variants = {
@@ -417,7 +418,19 @@ export default function SearchBar() {
                               >
                                 {suggestion.kind === 'tour' && suggestion.image ? (
                                   <div className="search-suggestion-thumb">
-                                    <img src={suggestion.image} alt="" loading="lazy" />
+                                    {/* The payload's photo is full size; transform it to
+                                        the 42px thumbnail box instead of downloading the
+                                        whole original (up to ~370KB) per suggestion. */}
+                                    <OptimizedImage
+                                      src={suggestion.image}
+                                      alt=""
+                                      width={42}
+                                      height={42}
+                                      fit="fill"
+                                      gravity="auto"
+                                      sizes="42px"
+                                      loading="eager"
+                                    />
                                   </div>
                                 ) : (
                                   <div className="search-suggestion-icon-wrap">

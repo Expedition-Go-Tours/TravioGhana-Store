@@ -25,6 +25,8 @@ interface SupplierSectionProps {
   /** Id of the tour this section is rendered on — passed to the supplier page
       so it can resolve the real supplier profile without a name-only lookup. */
   tourId?: string
+  /** Supplier id — lets the profile page skip the name scan entirely. */
+  supplierId?: string | null
   onOpenInfo: () => void
   infoOpen: boolean
   onToggleInfo: () => void
@@ -48,6 +50,7 @@ export default function SupplierSection({
   supplierType,
   tours,
   tourId,
+  supplierId,
   infoOpen,
   onToggleInfo,
 }: SupplierSectionProps) {
@@ -60,6 +63,10 @@ export default function SupplierSection({
   const scrollRef = useRef<HTMLDivElement>(null)
   const [showLeftArrow, setShowLeftArrow] = useState(false)
   const [showRightArrow, setShowRightArrow] = useState(false)
+  const [logoFailed, setLogoFailed] = useState(false)
+
+  const initials = name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()
+  const showLogo = Boolean(logo) && !logoFailed
 
   const updateArrows = useCallback(() => {
     const el = scrollRef.current
@@ -109,12 +116,16 @@ export default function SupplierSection({
         <div className="supplier-header">
           <div className="supplier-header-left">
             <div className="supplier-logo">
-              {logo ? (
-                <OptimizedImage src={logo} alt="" className="supplier-logo-img" width={100} />
+              {showLogo ? (
+                <OptimizedImage
+                  src={logo}
+                  alt=""
+                  className="supplier-logo-img"
+                  width={100}
+                  onError={() => setLogoFailed(true)}
+                />
               ) : (
-                <span className="supplier-logo-fallback">
-                  {name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()}
-                </span>
+                <span className="supplier-logo-fallback">{initials}</span>
               )}
             </div>
             <div>
@@ -165,7 +176,7 @@ export default function SupplierSection({
             </button>
             <button
               type="button"
-              onClick={() => navigate(`/supplier/${encodeURIComponent(name)}`, { state: { tourId } })}
+              onClick={() => navigate(`/supplier/${encodeURIComponent(name)}`, { state: { tourId, supplierId } })}
               className="supplier-view-more"
             >
               {t('supplier.viewMore')}

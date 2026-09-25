@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { X, Check } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -27,21 +27,64 @@ const TABS = [
 
 type TabKey = (typeof TABS)[number]['key']
 
+/**
+ * The one language/currency picker.
+ *
+ * It is a centred dialog at every viewport width. It used to anchor to the
+ * bottom below 640px (`items-end` + rounded top corners + a slide-up), which
+ * made the same component behave like a bottom drawer on phones while the
+ * desktop globe opened a centred modal — and the mobile menu opened a third,
+ * full-screen drawer of its own. Same pick, same surface, everywhere.
+ */
 export default function LanguageCurrencyModal({ onClose, initialTab = 'language' }: LanguageCurrencyModalProps) {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab)
   const currentLang = i18n.language.substring(0, 2)
   const { currency, setCurrency: setAppCurrency } = useCurrency()
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  // Keep the latest onClose without re-running the mount effect: callers pass
+  // an inline arrow, and re-running would re-lock scroll and re-focus on every
+  // parent render.
+  const closeRef = useRef(onClose)
+  useEffect(() => {
+    closeRef.current = onClose
+  }, [onClose])
+
+  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null
+    panelRef.current?.focus()
+
+    // Lock the page behind the dialog and put it back exactly as it was.
+    const { overflow } = document.body.style
+    document.body.style.overflow = 'hidden'
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeRef.current()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = overflow
+      previouslyFocused?.focus?.()
+    }
+  }, [])
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 40 }}
-        transition={{ duration: 0.2 }}
-        className="relative z-10 flex w-full max-w-[420px] max-h-[90vh] flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl"
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={activeTab === 'language' ? t('nav.language') : t('nav.currency')}
+        tabIndex={-1}
+        initial={{ opacity: 0, scale: 0.97 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.97 }}
+        transition={{ duration: 0.18, ease: 'easeOut' }}
+        className="relative z-10 flex max-h-[90vh] w-full max-w-[420px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl outline-none"
       >
         <div className="flex items-center justify-end border-b border-slate-100 px-6 py-4">
           <button

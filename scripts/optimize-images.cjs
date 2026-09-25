@@ -20,7 +20,9 @@ const ROOT = path.resolve(__dirname, '..')
 const TARGETS = [
   // Logos/badges rendered tiny — the biggest waste in the bundle.
   { file: 'public/travio_logo.png', width: 192, kind: 'png' },
-  { file: 'public/logo.png', width: 320, kind: 'png' },
+  // logo.png must stay 512px: generate-favicons.js writes it at 512 and the
+  // Organization schema in SEO.tsx declares a 512x512 ImageObject.
+  { file: 'public/logo.png', width: 512, kind: 'png' },
   { file: 'src/assets/expo_trans.png', width: 300, kind: 'png' },
   { file: 'src/assets/icons/User Circle.png', width: 160, kind: 'png' },
   // Route heroes (max ~2x mobile/desktop viewport width).
