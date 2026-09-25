@@ -43,19 +43,6 @@
   font-size: 20px;
   max-width: 620px;
 }
-.account-settings__art {
-  position: absolute;
-  right: 0;
-  top: -20px;
-  width: 63%;
-  height: 220px;
-  background-image: url("../../assets/images/settings-hero-art.png");
-  background-size: contain;
-  background-position: right center;
-  background-repeat: no-repeat;
-  pointer-events: none;
-  mix-blend-mode: multiply;
-}
 
 /* ── Pill tabs ──────────────────────────────────────────────────────── */
 .account-settings__tabs {
@@ -813,10 +800,6 @@
 
 /* ── Responsive: tablet ─────────────────────────────────────────────── */
 @media (max-width: 1050px) {
-  .account-settings__art {
-    opacity: 0.38;
-    width: 58%;
-  }
   .account-panel--split {
     grid-template-columns: 1fr;
   }
@@ -834,12 +817,6 @@
   }
   .account-settings__hero {
     min-height: 176px;
-  }
-  .account-settings__art {
-    top: 30px;
-    width: 100%;
-    height: 140px;
-    opacity: 0.22;
   }
   .account-settings__title {
     font-size: 38px;

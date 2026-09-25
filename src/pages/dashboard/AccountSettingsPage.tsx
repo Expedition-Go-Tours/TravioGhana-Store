@@ -22,8 +22,6 @@ export default function AccountSettingsPage() {
   return (
     <div className="account-settings">
       <section className="account-settings__hero">
-        <div className="account-settings__art" aria-hidden="true" />
-
         <h1 className="account-settings__title">Account Settings</h1>
         <p className="account-settings__subtitle">
           Manage your profile, payment methods and preferences.
