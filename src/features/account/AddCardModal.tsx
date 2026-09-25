@@ -47,10 +47,22 @@ export default function AddCardModal({ onClose, onAdded }: AddCardModalProps) {
     const container = containerRef.current
     if (!container) return
 
+    // Stripe destroys a failed Element itself (and React can run this cleanup
+    // more than once — StrictMode, re-mounts), so neither call is guaranteed
+    // to succeed. A throwing unmount here used to bubble out of the effect
+    // cleanup and take the whole route down through the error boundary:
+    // "IntegrationError: This Element has already been destroyed."
+    const teardown = (pe: StripePaymentElement | null) => {
+      if (!pe) return
+      try { pe.unmount() } catch { /* already destroyed by Stripe */ }
+      try { pe.destroy() } catch { /* already destroyed by Stripe */ }
+    }
+
     getStripePromise()
       .then(async (stripe) => {
-        if (cancelled || !stripe) {
-          if (!cancelled) setFatal(UNAVAILABLE)
+        if (cancelled) return
+        if (!stripe) {
+          setFatal(UNAVAILABLE)
           return
         }
         stripeRef.current = stripe
@@ -79,19 +91,30 @@ export default function AddCardModal({ onClose, onAdded }: AddCardModalProps) {
           },
           fonts: [{ cssSrc: `${origin}/fonts/checkout-fonts.css` }],
         })
-        if (cancelled) return
         elementsRef.current = elements
 
         const pe = elements.create('payment')
+        elRef.current = pe
+
         if (cancelled) {
-          pe.destroy()
+          elRef.current = null
+          elementsRef.current = null
+          teardown(pe)
           return
         }
-        elRef.current = pe
-        pe.mount(container)
 
         pe.on('ready', () => { if (!cancelled) setReady(true) })
         pe.on('change', (e) => { if (!cancelled) setComplete(Boolean(e.complete)) })
+        // Without this the modal just kept spinning on a hidden, dead element
+        // (e.g. when Stripe rejects the SetupIntent client secret with a 400
+        // from its Elements Sessions API).
+        pe.on('loaderror', (event) => {
+          if (cancelled) return
+          console.error('[Stripe] Payment Element failed to load:', event?.error)
+          setReady(false)
+          setFatal(event?.error?.message || UNAVAILABLE)
+        })
+        pe.mount(container)
       })
       .catch(() => {
         if (!cancelled) setFatal(UNAVAILABLE)
@@ -99,8 +122,7 @@ export default function AddCardModal({ onClose, onAdded }: AddCardModalProps) {
 
     return () => {
       cancelled = true
-      elRef.current?.unmount()
-      elRef.current?.destroy()
+      teardown(elRef.current)
       elRef.current = null
       elementsRef.current = null
       stripeRef.current = null
@@ -109,7 +131,7 @@ export default function AddCardModal({ onClose, onAdded }: AddCardModalProps) {
 
   // Confirm setup (save the card)
   const handleConfirm = async () => {
-    if (!stripeRef.current || !elementsRef.current || submitting) return
+    if (!stripeRef.current || !elementsRef.current || submitting || fatal) return
     setSubmitting(true)
 
     try {
@@ -175,7 +197,7 @@ export default function AddCardModal({ onClose, onAdded }: AddCardModalProps) {
           <div
             ref={containerRef}
             style={{
-              minHeight: ready ? 0 : 120,
+              minHeight: ready || fatal ? 0 : 120,
               opacity: ready ? 1 : 0,
               transition: 'opacity 0.2s',
             }}
@@ -198,7 +220,7 @@ export default function AddCardModal({ onClose, onAdded }: AddCardModalProps) {
           </button>
           <button
             className="account-btn account-btn--primary"
-            disabled={!ready || !complete || submitting}
+            disabled={!ready || !complete || submitting || !!fatal}
             onClick={handleConfirm}
           >
             {submitting ? 'Saving…' : 'Save card'}
