@@ -39,6 +39,7 @@ function filledIndividualForm(): SupplierApplicationForm {
     lastName: 'Boateng',
     email: 'ama@example.com',
     phone: '0244000000',
+    phoneCountryCode: '+233',
   }
   form.profile = {
     ...form.profile,
@@ -65,7 +66,8 @@ function filledBusinessForm(): SupplierApplicationForm {
     firstName: 'Peter',
     lastName: 'Mensah',
     email: 'peter@expeditiongo.test',
-    phone: '+233240000000',
+    phone: '0244000000',
+    phoneCountryCode: '+233',
   }
   form.profile = {
     ...form.profile,
@@ -249,7 +251,7 @@ describe('validateSupplierStep', () => {
     ).toEqual({})
 
     const badEmail = createEmptySupplierApplicationForm()
-    badEmail.account = { firstName: 'A', lastName: 'B', email: 'nope', phone: '123' }
+    badEmail.account = { firstName: 'A', lastName: 'B', email: 'nope', phone: '123', phoneCountryCode: '+233' }
     const errors = validateSupplierStep(STEP_ACCOUNT, badEmail, session)
     expect(errors['account.email']).toMatch(/valid email/i)
     expect(errors['account.phone']).toMatch(/valid phone/i)
@@ -339,7 +341,7 @@ describe('buildSupplierPayload', () => {
       displayName: 'Ama Cultural Walks',
       businessType: 'individual',
       country: 'GH',
-      phoneNumber: '0244000000',
+      phoneNumber: '+233244000000',
       website: '',
     })
     expect(business.address).toMatchObject({ line1: 'GA-123-4567', city: 'Accra', state: 'Greater Accra' })
@@ -354,7 +356,7 @@ describe('buildSupplierPayload', () => {
     expect(representative).toMatchObject({
       fullName: 'Ama Boateng',
       email: 'ama@example.com',
-      phoneNumber: '0244000000',
+      phoneNumber: '+233244000000',
       dateOfBirth: '1992-04-12',
       // Stored as a slug, shown to admins as the readable label.
       idType: 'Ghana Card',
@@ -382,6 +384,29 @@ describe('buildSupplierPayload', () => {
     // No legacy vehicle/guide repeaters are written.
     expect(payload.get('vehicles')).toBeNull()
     expect(payload.get('guides')).toBeNull()
+  })
+
+  it('stores the phone as a canonical international number from the country code', () => {
+    const usForm = filledIndividualForm()
+    usForm.account.phoneCountryCode = '+1'
+    usForm.account.phone = '2025551234'
+
+    const usBusiness = json(buildSupplierPayload(usForm), 'businessInfo')
+    const usRep = json(buildSupplierPayload(usForm), 'representativeInfo')
+    expect(usBusiness.phoneNumber).toBe('+12025551234')
+    expect(usRep.phoneNumber).toBe('+12025551234')
+
+    // A Ghana number typed with the local leading zero normalises the same way.
+    const ghForm = filledIndividualForm()
+    ghForm.account.phoneCountryCode = '+233'
+    ghForm.account.phone = '0244123456'
+    expect(json(buildSupplierPayload(ghForm), 'representativeInfo').phoneNumber).toBe('+233244123456')
+
+    // Drafts saved before the two-part input fall back to the Ghana default.
+    const legacyForm = filledIndividualForm()
+    legacyForm.account.phoneCountryCode = ''
+    legacyForm.account.phone = '0244000000'
+    expect(json(buildSupplierPayload(legacyForm), 'businessInfo').phoneNumber).toBe('+233244000000')
   })
 
   it('maps a registered company, its documents and its payout details', () => {

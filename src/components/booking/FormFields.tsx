@@ -55,9 +55,13 @@ interface TextInputProps {
   disabled?: boolean
   maxLength?: number
   error?: string
+  /** Optional passthroughs so non-checkout callers (supplier form) keep a11y. */
+  autoComplete?: string
+  inputMode?: 'text' | 'tel' | 'numeric' | 'email' | 'decimal' | 'search' | 'url'
+  ariaLabel?: string
 }
 
-export function TextInput({ value, onChange, onBlur, placeholder, type = 'text', valid, disabled, maxLength, error }: TextInputProps) {
+export function TextInput({ value, onChange, onBlur, placeholder, type = 'text', valid, disabled, maxLength, error, autoComplete, inputMode, ariaLabel }: TextInputProps) {
   return (
     <div className="relative">
       <input
@@ -68,6 +72,9 @@ export function TextInput({ value, onChange, onBlur, placeholder, type = 'text',
         disabled={disabled}
         placeholder={placeholder}
         maxLength={maxLength}
+        autoComplete={autoComplete}
+        inputMode={inputMode}
+        aria-label={ariaLabel}
         className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:ring-2 ${
           error
             ? 'border-rose-300 focus:border-rose-400 focus:ring-rose-100'
@@ -91,15 +98,17 @@ interface SelectInputProps {
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
   options: { label: string; value: string }[]
   error?: string
+  ariaLabel?: string
 }
 
-export function SelectInput({ value, onChange, options, error }: SelectInputProps) {
+export function SelectInput({ value, onChange, options, error, ariaLabel }: SelectInputProps) {
   return (
     <div className="relative">
       <select
         value={value}
         onChange={onChange}
-        className={`w-full appearance-none rounded-xl border bg-white px-4 py-3 pr-10 text-sm text-slate-900 shadow-sm outline-none transition focus:ring-2 [color-scheme:light] ${
+        aria-label={ariaLabel}
+        className={`w-full appearance-none rounded-xl border bg-white px-4 py-3 pr-10 text-sm text-slate-900 shadow-none outline-none transition focus:ring-2 [color-scheme:light] ${
           error
             ? 'border-rose-300 focus:border-rose-400 focus:ring-rose-100'
             : 'border-slate-200 focus:border-[#179237] focus:ring-[#179237]/15'

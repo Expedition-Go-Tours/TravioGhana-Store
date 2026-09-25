@@ -2076,3 +2076,16 @@
     width:min(1220px, 100%) !important;
   }
 }
+
+/* Phone field: country calling code + national number, matching the booking
+   checkout's two-part input (stacked on small screens, side by side above). */
+.srp-page .phone-field{
+  display:grid;
+  gap:8px;
+  grid-template-columns:minmax(0,1fr);
+}
+@media (min-width:640px){
+  .srp-page .phone-field{
+    grid-template-columns:minmax(0,1.2fr) minmax(0,2fr);
+  }
+}

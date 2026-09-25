@@ -18,7 +18,10 @@ export interface SupplierApplicationForm {
     firstName: string
     lastName: string
     email: string
+    /** National number, digits only (the booking checkout's shape). */
     phone: string
+    /** Country calling code for `phone` (e.g. "+233"). */
+    phoneCountryCode: string
   }
   /** Step 3 — individual or business profile (both render the same shape). */
   profile: {
@@ -106,6 +109,7 @@ export function createEmptySupplierApplicationForm(): SupplierApplicationForm {
       lastName: '',
       email: '',
       phone: '',
+      phoneCountryCode: '',
     },
     profile: {
       firstName: '',

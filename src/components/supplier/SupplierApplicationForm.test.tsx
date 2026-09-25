@@ -39,7 +39,7 @@ function fillAccountStep() {
   fireEvent.change(screen.getByPlaceholderText('e.g. Peter'), { target: { value: 'Ada' } })
   fireEvent.change(screen.getByPlaceholderText('e.g. Mensah'), { target: { value: 'Mensah' } })
   fireEvent.change(screen.getByPlaceholderText('name@company.com'), { target: { value: 'ada@example.com' } })
-  fireEvent.change(screen.getByPlaceholderText('+233 ...'), { target: { value: '0244000000' } })
+  fireEvent.change(screen.getByPlaceholderText('e.g. 024 123 4567'), { target: { value: '0244000000' } })
   fireEvent.change(screen.getByPlaceholderText('At least 8 characters'), { target: { value: 'supersecret' } })
   fireEvent.change(screen.getByPlaceholderText('Repeat password'), { target: { value: 'supersecret' } })
 }
@@ -70,6 +70,7 @@ function seededForm() {
     lastName: 'Mensah',
     email: 'ada@example.com',
     phone: '0244000000',
+    phoneCountryCode: '+233',
   }
   return form
 }
@@ -121,7 +122,7 @@ describe('SupplierApplicationForm', () => {
 
     // The session email/name prefill lands just after mount.
     await screen.findByDisplayValue('ada@example.com')
-    fireEvent.change(screen.getByPlaceholderText('+233 ...'), { target: { value: '0244000000' } })
+    fireEvent.change(screen.getByPlaceholderText('e.g. 024 123 4567'), { target: { value: '0244000000' } })
     fireEvent.change(screen.getByPlaceholderText('At least 8 characters'), { target: { value: 'supersecret' } })
     fireEvent.change(screen.getByPlaceholderText('Repeat password'), { target: { value: 'supersecret' } })
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
@@ -135,7 +136,7 @@ describe('SupplierApplicationForm', () => {
 
     render(<SupplierApplicationForm />)
     await screen.findByDisplayValue('ada@example.com')
-    fireEvent.change(screen.getByPlaceholderText('+233 ...'), { target: { value: '0244000000' } })
+    fireEvent.change(screen.getByPlaceholderText('e.g. 024 123 4567'), { target: { value: '0244000000' } })
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
     await waitFor(() => expect(activeStepText()).toContain('How are you joining TravioGhana?'))
@@ -197,6 +198,35 @@ describe('SupplierApplicationForm', () => {
     expect(onOpenAuth).toHaveBeenCalledWith('signin')
     // Stayed on step 1.
     expect(screen.getByText('Create your supplier account')).toBeInTheDocument()
+  })
+
+  it('uses the checkout phone input: country code plus a digits-only number', () => {
+    render(<SupplierApplicationForm />)
+
+    const countrySelect = screen.getByLabelText('Country calling code') as HTMLSelectElement
+    expect(countrySelect.value).toBe('+233') // Ghana default
+    expect(countrySelect.options.length).toBeGreaterThan(100) // full libphonenumber list
+
+    const tel = screen.getByPlaceholderText('e.g. 024 123 4567') as HTMLInputElement
+    fireEvent.change(tel, { target: { value: '024abc400 0000' } })
+    expect(tel.value).toBe('0244000000') // letters, spaces and symbols stripped
+
+    fireEvent.change(countrySelect, { target: { value: '+1' } })
+    expect(countrySelect.value).toBe('+1')
+    expect(tel.value).toBe('0244000000') // the number typed so far is kept
+  })
+
+  it('rejects a phone number that is invalid for the selected country', () => {
+    render(<SupplierApplicationForm />)
+    fillAccountStep()
+    fireEvent.change(screen.getByLabelText('Country calling code'), { target: { value: '+1' } })
+    fireEvent.change(screen.getByPlaceholderText('e.g. 024 123 4567'), { target: { value: '123' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+
+    expect(
+      screen.getByText('Enter a valid phone number for the selected country, e.g. 024 123 4567')
+    ).toBeInTheDocument()
+    expect(mocks.registerWithEmail).not.toHaveBeenCalled()
   })
 
   it('rejects an oversized document before anything is uploaded', async () => {

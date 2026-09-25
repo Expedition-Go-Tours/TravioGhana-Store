@@ -40,6 +40,8 @@ import type { LucideIcon } from 'lucide-react'
 import { useAuthUser } from '@/hooks/useAuthUser'
 import { getAuthUserId, refreshStoredUserFromBackend, registerWithEmail, setAccountPassword } from '@/lib/auth'
 import { applyAsSupplier, getSupplierApplicationStatus, MAX_SUPPLIER_APPLICATION_FILES, MAX_SUPPLIER_DOCUMENT_BYTES } from '@/lib/supplier'
+import { COUNTRY_CODES, DEFAULT_COUNTRY_CODE, isValidPhoneInput } from '@/lib/phone'
+import { SelectInput, TextInput } from '@/components/booking/FormFields'
 import SocialLinksManager from './SocialLinksManager'
 import {
   clearSupplierApplicationDraft,
@@ -433,7 +435,10 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
     if (first) scrollToField(first)
   }
 
-  const updateAccount = (key: 'firstName' | 'lastName' | 'email' | 'phone', value: string) => {
+  const updateAccount = (
+    key: 'firstName' | 'lastName' | 'email' | 'phone' | 'phoneCountryCode',
+    value: string
+  ) => {
     clearFieldError(`account.${key}`)
     if (key === 'email') setSignInHint(false)
     setForm((prev) => ({ ...prev, account: { ...prev.account, [key]: value } }))
@@ -878,13 +883,29 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
           />
         </Field>
         <Field path="account.phone" label="Phone / WhatsApp number" required error={fieldErrors['account.phone']}>
-          <input
-            type="tel"
-            placeholder="+233 ..."
-            autoComplete="tel"
-            value={form.account.phone}
-            onChange={(event) => updateAccount('phone', event.target.value)}
-          />
+          {/* Same number input as the booking checkout: country calling code +
+              national number, digits only, validated with libphonenumber-js. */}
+          <div className="phone-field">
+            <SelectInput
+              value={form.account.phoneCountryCode || DEFAULT_COUNTRY_CODE}
+              onChange={(event) => updateAccount('phoneCountryCode', event.target.value)}
+              options={COUNTRY_CODES}
+              ariaLabel="Country calling code"
+            />
+            <TextInput
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              ariaLabel="Phone / WhatsApp number"
+              placeholder="e.g. 024 123 4567"
+              value={form.account.phone}
+              onChange={(event) => updateAccount('phone', event.target.value.replace(/\D/g, ''))}
+              valid={isValidPhoneInput(
+                form.account.phoneCountryCode || DEFAULT_COUNTRY_CODE,
+                form.account.phone
+              )}
+            />
+          </div>
         </Field>
         {showPasswordFields && (
           <>

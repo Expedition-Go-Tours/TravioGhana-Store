@@ -15,6 +15,7 @@
  * @see components/supplier/SupplierApplicationForm.tsx
  */
 import type { SupplierApplicationForm } from './supplierApplicationDraft'
+import { DEFAULT_COUNTRY_CODE, buildE164Phone, isValidPhoneInput } from './phone'
 import { sanitizeSocialLinks } from './socialLinks'
 import type { LucideIcon } from 'lucide-react'
 import {
@@ -487,10 +488,12 @@ export function validateSupplierStep(
     } else if (!isValidEmail(account.email)) {
       errors['account.email'] = 'Enter a valid email address'
     }
+    // Validated with libphonenumber-js against the selected calling code —
+    // the same check the booking checkout uses.
     if (isEmpty(account.phone)) {
       errors['account.phone'] = 'Phone / WhatsApp number is required'
-    } else if (digits(account.phone) < 7) {
-      errors['account.phone'] = 'Enter a valid phone / WhatsApp number'
+    } else if (!isValidPhoneInput(account.phoneCountryCode || DEFAULT_COUNTRY_CODE, account.phone)) {
+      errors['account.phone'] = 'Enter a valid phone number for the selected country, e.g. 024 123 4567'
     }
 
     // Signed-out applicants must create the account's password. A signed-in
@@ -606,6 +609,11 @@ export function buildSupplierPayload(form: SupplierApplicationForm): FormData {
     [account.firstName, account.lastName].filter(Boolean).join(' ').trim() ||
     [profile.firstName, profile.lastName].filter(Boolean).join(' ').trim()
 
+  // Store the phone as a canonical international number so operators and
+  // booking emails can dial it without knowing the supplier's country code.
+  const fullPhone =
+    buildE164Phone(account.phoneCountryCode || DEFAULT_COUNTRY_CODE, account.phone) ?? account.phone
+
   payload.append(
     'businessInfo',
     JSON.stringify({
@@ -613,7 +621,7 @@ export function buildSupplierPayload(form: SupplierApplicationForm): FormData {
       displayName: profile.brandName,
       businessType: option?.businessType ?? 'individual',
       country: 'GH',
-      phoneNumber: account.phone,
+      phoneNumber: fullPhone,
       address: {
         line1: profile.address,
         line2: '',
@@ -653,7 +661,7 @@ export function buildSupplierPayload(form: SupplierApplicationForm): FormData {
     JSON.stringify({
       fullName,
       email: account.email.trim(),
-      phoneNumber: account.phone,
+      phoneNumber: fullPhone,
       ...(profile.dateOfBirth ? { dateOfBirth: profile.dateOfBirth } : {}),
       ...(profile.idType ? { idType: idTypeLabel(profile.idType) } : {}),
       ...(profile.idNumber ? { idNumber: profile.idNumber } : {}),
