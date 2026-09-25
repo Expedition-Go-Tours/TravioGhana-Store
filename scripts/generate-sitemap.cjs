@@ -88,68 +88,50 @@ const STATIC_PAGES = [
 async function main() {
   console.log(`Generating sitemap from ${API_URL} -> ${OUTPUT}`);
 
-  const urls = [];
-
-  // Homepage
-  urls.push(urlEntry(`${SITE_URL}/`, { priority: 1.0, changefreq: 'daily' }));
-
-  // Static pages
-  for (const p of STATIC_PAGES) {
-    urls.push(urlEntry(`${SITE_URL}${p.path}`, { priority: p.priority, changefreq: p.changefreq }));
-  }
+  // ── 1. Collect real content first ─────────────────────────────────────
+  // Every entry gets a <lastmod> from actual data (never a build timestamp):
+  // Google uses lastmod to decide what to re-crawl, and an inaccurate date is
+  // ignored — or worse, discounted for the whole sitemap.
 
   // Travel stories — the same travelStories.json the app renders and
   // scripts/generate-story-pages.cjs prerenders, so a story is only listed if
   // the crawler copy of it actually exists.
+  const stories = [];
   try {
-    const stories = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../src/components/travelStories.json'), 'utf8'));
-    for (const s of stories) {
+    const raw = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../src/components/travelStories.json'), 'utf8'));
+    for (const s of raw) {
       if (!s?.slug) continue;
-      urls.push(urlEntry(`${SITE_URL}/stories/${encodeURIComponent(s.slug)}`, {
-        priority: 0.6,
-        changefreq: 'monthly',
-      }));
+      stories.push({ slug: s.slug, lastmod: isoDate(s.dateISO || s.date) });
     }
   } catch (err) {
     console.error(`WARN: could not read travelStories.json: ${err.message}`);
   }
 
-  // Tours from the dedicated sitemap endpoint (slug + updatedAt)
-  let tourCount = 0;
-  const places = new Set();
+  // Tours + destinations from the API (canonical /tour/{id}/{slug} URLs).
+  let tourEntries = [];
+  let places = [];
   try {
     const data = await fetchJson(`${API_URL}/api/travioghana/tours/sitemap`);
-    const tours = data?.data?.urls || [];
-
-    for (const t of tours) {
-      if (!t?.slug) continue;
-      // Canonical form /tour/{id}/{slug}: the id keeps a link alive across
-      // title changes; the slug is decorative. Slug-only fallback for older
-      // sitemap payloads that predate the id field.
-      const tourUrl = t.id
-        ? `${SITE_URL}/tour/${encodeURIComponent(t.id)}/${encodeURIComponent(t.slug)}`
-        : `${SITE_URL}/tour/${encodeURIComponent(t.slug)}`;
-      urls.push(urlEntry(tourUrl, {
-        priority: 0.8,
-        changefreq: 'weekly',
+    tourEntries = (data?.data?.urls || [])
+      .filter((t) => t?.slug)
+      .map((t) => ({
+        // The id keeps a link alive across title changes; the slug is
+        // decorative. Slug-only fallback for older payloads without an id.
+        url: t.id
+          ? `${SITE_URL}/tour/${encodeURIComponent(t.id)}/${encodeURIComponent(t.slug)}`
+          : `${SITE_URL}/tour/${encodeURIComponent(t.slug)}`,
         lastmod: isoDate(t.updatedAt),
       }));
-      tourCount++;
-    }
 
     // Destination pages — real, prerender-backed listings
     const listData = await fetchJson(`${API_URL}/api/travioghana/tours?limit=50`);
+    const placeSet = new Set();
     for (const listing of listData?.data?.tours || []) {
       const tour = listing.tour || listing;
-      if (tour.city) places.add(tour.city);
-      if (tour.region) places.add(tour.region);
+      if (tour.city) placeSet.add(tour.city);
+      if (tour.region) placeSet.add(tour.region);
     }
-    for (const place of places) {
-      urls.push(urlEntry(`${SITE_URL}/tours?place=${encodeURIComponent(place)}`, {
-        priority: 0.7,
-        changefreq: 'weekly',
-      }));
-    }
+    places = [...placeSet];
   } catch (err) {
     console.error(`ERROR: could not fetch tours: ${err.message}`);
     if (fs.existsSync(OUTPUT)) {
@@ -158,6 +140,52 @@ async function main() {
     }
     console.error('No existing sitemap to fall back to — writing static-only sitemap.');
   }
+
+  // ── 2. Dates ─────────────────────────────────────────────────────────
+  const contentDates = [...stories.map((s) => s.lastmod), ...tourEntries.map((t) => t.lastmod)]
+    .filter(Boolean)
+    .sort();
+  // Pages whose body is the catalogue itself (home, /tours, /reviews, …) change
+  // whenever the catalogue does, so they share the newest content date.
+  const newestContentDate = contentDates[contentDates.length - 1] || new Date().toISOString().split('T')[0];
+  const newestTourDate = tourEntries.map((t) => t.lastmod).filter(Boolean).sort().pop() || newestContentDate;
+
+  // ── 3. Entries ───────────────────────────────────────────────────────
+  const urls = [];
+
+  // Homepage
+  urls.push(urlEntry(`${SITE_URL}/`, { priority: 1.0, changefreq: 'daily', lastmod: newestContentDate }));
+
+  // Static pages
+  for (const p of STATIC_PAGES) {
+    urls.push(
+      urlEntry(`${SITE_URL}${p.path}`, { priority: p.priority, changefreq: p.changefreq, lastmod: newestContentDate })
+    );
+  }
+
+  for (const s of stories) {
+    urls.push(urlEntry(`${SITE_URL}/stories/${encodeURIComponent(s.slug)}`, {
+      priority: 0.6,
+      changefreq: 'monthly',
+      lastmod: s.lastmod,
+    }));
+  }
+
+  for (const t of tourEntries) {
+    urls.push(urlEntry(t.url, { priority: 0.8, changefreq: 'weekly', lastmod: t.lastmod }));
+  }
+
+  // Destination listings mirror the (self-canonical) /tours?place= pages, so
+  // they carry the newest tour date.
+  for (const place of places) {
+    urls.push(urlEntry(`${SITE_URL}/tours?place=${encodeURIComponent(place)}`, {
+      priority: 0.7,
+      changefreq: 'weekly',
+      lastmod: newestTourDate,
+    }));
+  }
+
+  const entriesWithLastmod = urls.filter((u) => u.includes('<lastmod>')).length;
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
@@ -169,7 +197,7 @@ ${urls.join('\n')}
 
   fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
   fs.writeFileSync(OUTPUT, xml, 'utf8');
-  console.log(`Sitemap written: ${urls.length} URLs (${tourCount} tours, ${places.size} destinations, ${STATIC_PAGES.length} static) — ${(Buffer.byteLength(xml) / 1024).toFixed(1)} KB`);
+  console.log(`Sitemap written: ${urls.length} URLs (${tourEntries.length} tours, ${places.length} destinations, ${STATIC_PAGES.length} static, ${stories.length} stories) — ${entriesWithLastmod}/${urls.length} with lastmod — ${(Buffer.byteLength(xml) / 1024).toFixed(1)} KB`);
 
   // robots.txt — generated so the Sitemap directive always uses the canonical
   // host (a hardcoded file drifts whenever the host changes).
