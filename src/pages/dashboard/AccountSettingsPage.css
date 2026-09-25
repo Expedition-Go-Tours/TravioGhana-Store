@@ -30,13 +30,6 @@
   min-height: 190px;
   padding: 8px 0 0;
 }
-.account-settings__eyebrow {
-  letter-spacing: 0.22em;
-  font-size: 13px;
-  font-weight: 700;
-  color: #6a768d;
-  margin-bottom: 10px;
-}
 .account-settings__title {
   font-size: 52px;
   line-height: 1.04;
