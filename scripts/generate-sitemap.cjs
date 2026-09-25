@@ -83,6 +83,20 @@ const STATIC_PAGES = [
   { path: '/faq', priority: 0.5, changefreq: 'monthly' },
   { path: '/help-centre', priority: 0.4, changefreq: 'monthly' },
   { path: '/contact-us', priority: 0.4, changefreq: 'monthly' },
+  // Service and trade landing pages — all prerendered, but they were only
+  // reachable by internal links, so nothing told Google to crawl them.
+  { path: '/transport', priority: 0.7, changefreq: 'weekly' },
+  { path: '/content-creators', priority: 0.6, changefreq: 'monthly' },
+  { path: '/hotels', priority: 0.5, changefreq: 'monthly' },
+  { path: '/transport-providers', priority: 0.5, changefreq: 'monthly' },
+  { path: '/travel-agents', priority: 0.5, changefreq: 'monthly' },
+  // Legal pages: low priority, but they are indexable and people do search
+  // for them by name.
+  { path: '/refund-policy', priority: 0.3, changefreq: 'yearly' },
+  { path: '/privacy-policy', priority: 0.3, changefreq: 'yearly' },
+  { path: '/cookies-policy', priority: 0.3, changefreq: 'yearly' },
+  { path: '/terms-and-conditions', priority: 0.3, changefreq: 'yearly' },
+  { path: '/supplier-terms', priority: 0.3, changefreq: 'yearly' },
 ];
 
 async function main() {

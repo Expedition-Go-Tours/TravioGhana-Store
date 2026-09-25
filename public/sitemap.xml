@@ -76,6 +76,66 @@
   <priority>0.4</priority>
 </url>
 <url>
+  <loc>https://www.travioghana.com/transport</loc>
+  <lastmod>2026-09-23</lastmod>
+  <changefreq>weekly</changefreq>
+  <priority>0.7</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/content-creators</loc>
+  <lastmod>2026-09-23</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.6</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/hotels</loc>
+  <lastmod>2026-09-23</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.5</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/transport-providers</loc>
+  <lastmod>2026-09-23</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.5</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/travel-agents</loc>
+  <lastmod>2026-09-23</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.5</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/refund-policy</loc>
+  <lastmod>2026-09-23</lastmod>
+  <changefreq>yearly</changefreq>
+  <priority>0.3</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/privacy-policy</loc>
+  <lastmod>2026-09-23</lastmod>
+  <changefreq>yearly</changefreq>
+  <priority>0.3</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/cookies-policy</loc>
+  <lastmod>2026-09-23</lastmod>
+  <changefreq>yearly</changefreq>
+  <priority>0.3</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/terms-and-conditions</loc>
+  <lastmod>2026-09-23</lastmod>
+  <changefreq>yearly</changefreq>
+  <priority>0.3</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/supplier-terms</loc>
+  <lastmod>2026-09-23</lastmod>
+  <changefreq>yearly</changefreq>
+  <priority>0.3</priority>
+</url>
+<url>
   <loc>https://www.travioghana.com/stories/exploring-the-canopy-a-guide-to-kakum-national-park</loc>
   <lastmod>2026-06-12</lastmod>
   <changefreq>monthly</changefreq>
@@ -148,14 +208,14 @@
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/cmud56vnk00ftqggg0re7h3wn/accra-shai-hills-safari-akosombo-boat-cruise-day-tour</loc>
-  <lastmod>2026-09-22</lastmod>
+  <loc>https://www.travioghana.com/tour/cmt8rhyh803mj646pdfsd5a22/accra-night-live-experience</loc>
+  <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/cmt8rhyh803mj646pdfsd5a22/accra-night-live-experience</loc>
-  <lastmod>2026-08-29</lastmod>
+  <loc>https://www.travioghana.com/tour/cmud56vnk00ftqggg0re7h3wn/accra-shai-hills-safari-akosombo-boat-cruise-day-tour</loc>
+  <lastmod>2026-09-22</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
@@ -208,14 +268,14 @@
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/cmuefjdhj008gr44h8flybaj7/cape-coast-castle-and-kakum-national-park-day-tour</loc>
-  <lastmod>2026-09-23</lastmod>
+  <loc>https://www.travioghana.com/tour/cmt8hjkii00bo646phdiznmrr/cape-coast-castle-elmina-castle-kakum-national-park-tour</loc>
+  <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/cmt8hjkii00bo646phdiznmrr/cape-coast-castle-elmina-castle-kakum-national-park-tour</loc>
-  <lastmod>2026-08-29</lastmod>
+  <loc>https://www.travioghana.com/tour/cmuefjdhj008gr44h8flybaj7/cape-coast-castle-and-kakum-national-park-day-tour</loc>
+  <lastmod>2026-09-23</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
@@ -256,14 +316,14 @@
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/cmt8n5dpd02eq646pnogj7099/the-cape-coast-day-tour-with-assin-manso-slave-river-bath</loc>
-  <lastmod>2026-08-29</lastmod>
+  <loc>https://www.travioghana.com/tour/cmu90hgn302xooi0726tqsbcv/akosombo-african-spirituality-shrine-experience</loc>
+  <lastmod>2026-09-20</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/cmu90hgn302xooi0726tqsbcv/akosombo-african-spirituality-shrine-experience</loc>
-  <lastmod>2026-09-20</lastmod>
+  <loc>https://www.travioghana.com/tour/cmt8n5dpd02eq646pnogj7099/the-cape-coast-day-tour-with-assin-manso-slave-river-bath</loc>
+  <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
