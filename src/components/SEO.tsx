@@ -4,11 +4,14 @@ import { useLocation } from 'react-router-dom'
 const SITE_NAME = 'Travio Ghana'
 const DEFAULT_TITLE = 'Ghana Tours & Experiences | Book Authentic African Adventures'
 const DEFAULT_DESCRIPTION = 'Discover authentic Ghana tours and experiences. Book cultural tours, wildlife safaris, food tours, and adventure activities across Accra, Cape Coast, Volta Region, and more. Free cancellation, best prices guaranteed.'
-const DEFAULT_IMAGE = 'https://res.cloudinary.com/dfpagrtoy/image/upload/v1759237936/hero-bg_e5jwmx.jpg'
 // Canonical host. MUST match the domain the site actually serves (the other
 // host must redirect to this one). Configurable via VITE_SITE_URL so switching
 // hosts is an env change, not a code change.
-const SITE_URL = (import.meta.env.VITE_SITE_URL || 'https://www.travioghana.com').replace(/\/+$/, '')
+export const SITE_URL = (import.meta.env.VITE_SITE_URL || 'https://www.travioghana.com').replace(/\/+$/, '')
+// Default social card. Must be a real, crawlable asset at the fixed size the
+// prerender advertises (og:image:width/height) — the old Cloudinary hero had
+// been deleted upstream, so every share card fell back to a broken image.
+const DEFAULT_IMAGE = `${SITE_URL}/og-default.png`
 
 interface SEOProps {
   title?: string
@@ -50,8 +53,16 @@ export default function SEO({
   const location = useLocation()
 
   const fullTitle = title ? `${title} | ${SITE_NAME}` : `${DEFAULT_TITLE} | ${SITE_NAME}`
-  const currentUrl = url || `${SITE_URL}${location.pathname}${location.search}`
-  const canonicalUrl = canonical || `${SITE_URL}${location.pathname}`
+  // `place` is the only query parameter that names a real page: /tours?place=Accra
+  // is its own destination and its own sitemap entry, and the prerendered copy
+  // self-canonicalises to it. Every other parameter (filters, sort, tracking) is
+  // a view of the same list and collapses to the bare path. Dropping `place` here
+  // meant the hydrated head and the served HTML disagreed about the canonical of
+  // every destination URL — the same URL claiming two different owners.
+  const place = new URLSearchParams(location.search).get('place')
+  const indexableSearch = place ? `?place=${encodeURIComponent(place)}` : ''
+  const currentUrl = url || `${SITE_URL}${location.pathname}${indexableSearch}`
+  const canonicalUrl = canonical || `${SITE_URL}${location.pathname}${indexableSearch}`
   const ogImage = image?.startsWith('http') ? image : `${SITE_URL}${image}`
 
   return (
@@ -118,11 +129,21 @@ export function buildOrganizationSchema() {
     '@type': 'Organization',
     name: SITE_NAME,
     url: SITE_URL,
-    logo: `${SITE_URL}/src/assets/icons/compyIcon.png`,
+    // Must resolve: /src/... paths never survive the build (404 for Google).
+    // ImageObject with the intrinsic size, matching what the prerender serves.
+    logo: {
+      '@type': 'ImageObject',
+      url: `${SITE_URL}/logo.png`,
+      width: 512,
+      height: 512,
+    },
+    // Same profile list the prerender publishes — a schema that names a
+    // different set than the crawler-facing one splits the entity's signals.
     sameAs: [
-      'https://www.facebook.com/p/Travio Ghana-Tours-LTD-61567042001418/',
+      'https://www.facebook.com/p/Travio%20Ghana-Tours-LTD-61567042001418/',
       'https://www.instagram.com/travioGhanatours',
-      'https://www.youtube.com/c/travioGhanaTravelandToursLTD',
+      'https://www.tiktok.com/@expeditiongotours',
+      'https://www.youtube.com/c/ExpeditionGoTravelandToursLTD',
     ],
     contactPoint: {
       '@type': 'ContactPoint',

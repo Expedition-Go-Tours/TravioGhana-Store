@@ -1,12 +1,20 @@
 export const config = { runtime: 'nodejs' }
 
 const BOT_AGENTS = [
+  // Search crawlers
   'googlebot', 'bingbot', 'slurp', 'duckduckbot', 'baiduspider',
-  'yandexbot', 'sogou', 'facebot', 'facebookexternalhit', 'twitterbot',
-  'linkedinbot', 'slackbot', 'whatsapp', 'telegrambot', 'applebot',
-  'discordbot', 'pinterest', 'redditbot', 'quora', 'viber', 'skype',
+  'yandexbot', 'sogou', 'duckassist',
+  // Social / chat scrapers
+  'facebot', 'facebookexternalhit', 'twitterbot', 'linkedinbot',
+  'slackbot', 'whatsapp', 'telegrambot', 'discordbot', 'pinterest',
+  'redditbot', 'quora', 'viber', 'skype', 'embedly', 'flipboard',
+  // Reader / assistant fetchers
+  'applebot', 'chatgpt-user', 'oai-searchbot', 'perplexitybot',
+  'claudebot', 'anthropic-ai', 'gptbot', 'bytespider', 'ccbot',
+  'amazonbot', 'meta-externalagent', 'google-extended', 'cohere-ai',
+  // SEO / archive tooling
   'ia_archiver', 'semrushbot', 'ahrefsbot', 'mj12bot', 'dotbot',
-  'rogerbot', 'exabot', 'zoominfobot',
+  'rogerbot', 'exabot', 'zoominfobot', 'screaming frog',
 ]
 
 const SKIP_PATHS = [
@@ -44,11 +52,36 @@ export default function middleware(request) {
   // Bot detection: rewrite to prerender endpoint
   if (request.method === 'GET' && isBot(ua) && !shouldSkip(pathname)) {
     const target = `${pathname}${url.search}`
-    const prerenderUrl = `https://apiv1.travioafrica.com/api/prerender?url=${encodeURIComponent(target)}`
+
+    // Story pages are client-side data the backend cannot read, so the
+    // prerenderer would only ever answer them with 404/noindex. They are rendered to
+    // static HTML at build time (scripts/generate-story-pages.cjs) and served
+    // straight from the filesystem instead.
+    const storySlug = pathname.match(/^\/stories\/([^/]+)\/?$/)?.[1]
+    // Already-suffixed paths (/stories/x.html) must fall through to the
+    // prerenderer, which answers them with a real 404 instead of x.html.html.
+    if (storySlug && !storySlug.endsWith('.html')) {
+      return new Response(null, {
+        status: 200,
+        headers: {
+          'x-middleware-rewrite': `/stories/${encodeURIComponent(storySlug)}.html`,
+          'X-Prerender-Bot': 'true',
+        },
+      })
+    }
+
+    // The prerenderer resolves the brand from `host`: without it every
+    // travighana.com request falls back to the Expedition-Go Tours brand and
+    // ships expeditiongotours.com canonicals. The rewrite targets a shared API
+    // host, so the public host must travel in the query string.
+    const publicHost = request.headers.get('x-forwarded-host') || url.host
+    const prerenderUrl = new URL('https://apiv1.travioafrica.com/api/prerender')
+    prerenderUrl.searchParams.set('url', target)
+    if (publicHost) prerenderUrl.searchParams.set('host', publicHost)
     return new Response(null, {
       status: 200,
       headers: {
-        'x-middleware-rewrite': prerenderUrl,
+        'x-middleware-rewrite': prerenderUrl.toString(),
         'X-Prerender-Bot': 'true',
       },
     })

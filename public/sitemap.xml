@@ -24,6 +24,31 @@
   <priority>0.6</priority>
 </url>
 <url>
+  <loc>https://www.travioghana.com/blog</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.6</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/reviews</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.6</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/foundation</loc>
+  <changefreq>monthly</changefreq>
+  <priority>0.4</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/careers</loc>
+  <changefreq>monthly</changefreq>
+  <priority>0.4</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/partnerships</loc>
+  <changefreq>monthly</changefreq>
+  <priority>0.4</priority>
+</url>
+<url>
   <loc>https://www.travioghana.com/faq</loc>
   <changefreq>monthly</changefreq>
   <priority>0.5</priority>
@@ -39,193 +64,223 @@
   <priority>0.4</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/accra-guided-city-tour-cultural-and-historical-experience</loc>
+  <loc>https://www.travioghana.com/stories/exploring-the-canopy-a-guide-to-kakum-national-park</loc>
+  <changefreq>monthly</changefreq>
+  <priority>0.6</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/stories/the-history-and-heritage-of-cape-coast-castle</loc>
+  <changefreq>monthly</changefreq>
+  <priority>0.6</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/stories/a-food-lovers-guide-to-accra</loc>
+  <changefreq>monthly</changefreq>
+  <priority>0.6</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/stories/wildlife-encounters-mole-national-park-safari</loc>
+  <changefreq>monthly</changefreq>
+  <priority>0.6</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/stories/the-best-beaches-in-ghana-for-a-weekend-escape</loc>
+  <changefreq>monthly</changefreq>
+  <priority>0.6</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/stories/exploring-ashanti-culture-in-kumasi</loc>
+  <changefreq>monthly</changefreq>
+  <priority>0.6</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/tour/cmt8ij61a00oc646p0sq1d8xq/accra-guided-city-tour-cultural-and-historical-experience</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/accra-shai-hills-safari-akosombo-boat-cruise-day-tour</loc>
+  <loc>https://www.travioghana.com/tour/cmud56vnk00ftqggg0re7h3wn/accra-shai-hills-safari-akosombo-boat-cruise-day-tour</loc>
   <lastmod>2026-09-22</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/the-shia-hills-safari-quad-bike-tour</loc>
+  <loc>https://www.travioghana.com/tour/cmt8obfhc02kc646pu2xai7qc/the-shia-hills-safari-quad-bike-tour</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/private-accra-international-airport-pickup-dropoff</loc>
+  <loc>https://www.travioghana.com/tour/cmt8oi47x02m0646pkw9gurp9/private-accra-international-airport-pickup-dropoff</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/the-ghanaian-cultural-and-heritage-tour</loc>
+  <loc>https://www.travioghana.com/tour/cmt8qd5z20353646ppe2ohe6t/the-ghanaian-cultural-and-heritage-tour</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/akosombo-african-spirituality-shrine-experience</loc>
+  <loc>https://www.travioghana.com/tour/cmu90hgn302xooi0726tqsbcv/akosombo-african-spirituality-shrine-experience</loc>
   <lastmod>2026-09-20</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/the-north-safari</loc>
+  <loc>https://www.travioghana.com/tour/cmt8rhyh803mj646pdfsd5a22/accra-night-live-experience</loc>
+  <lastmod>2026-08-29</lastmod>
+  <changefreq>weekly</changefreq>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/tour/cmtxh7lli00ktrcgg0pauyguq/the-north-safari</loc>
   <lastmod>2026-09-11</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/accra-culture-walk-fantasy-coffins-art-gallery-beaches</loc>
+  <loc>https://www.travioghana.com/tour/cmt9sch1q00vdp4sblo4zfm5k/accra-culture-walk-fantasy-coffins-art-gallery-beaches</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/accra-night-live-experience</loc>
+  <loc>https://www.travioghana.com/tour/cmt9pnwm000hip4sbut0td75p/accra-traditional-african-dance-and-drumming-show</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/accra-traditional-african-dance-and-drumming-show</loc>
-  <lastmod>2026-08-29</lastmod>
-  <changefreq>weekly</changefreq>
-  <priority>0.8</priority>
-</url>
-<url>
-  <loc>https://www.travioghana.com/tour/world-heritage-fortresses-and-nzulezo</loc>
-  <lastmod>2026-09-11</lastmod>
-  <changefreq>weekly</changefreq>
-  <priority>0.8</priority>
-</url>
-<url>
-  <loc>https://www.travioghana.com/tour/safari-valley-aburi-safari-valley-eco-resort-day-tour</loc>
-  <lastmod>2026-08-29</lastmod>
-  <changefreq>weekly</changefreq>
-  <priority>0.8</priority>
-</url>
-<url>
-  <loc>https://www.travioghana.com/tour/ada-day-tour-with-amazing-experience</loc>
+  <loc>https://www.travioghana.com/tour/cmtvqvlr40007mdf43ldv341o/ada-day-tour-with-amazing-experience</loc>
   <lastmod>2026-09-10</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/transport-form-accra-to-cape-coast</loc>
+  <loc>https://www.travioghana.com/tour/cmtxfswvw009hrcggciqs4fd5/world-heritage-fortresses-and-nzulezo</loc>
+  <lastmod>2026-09-11</lastmod>
+  <changefreq>weekly</changefreq>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/tour/cmta2t3y7000rf1edrh8ehomy/safari-valley-aburi-safari-valley-eco-resort-day-tour</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/the-agbogbloshie-accra-e-waste-recycling-experience</loc>
+  <loc>https://www.travioghana.com/tour/cmta1vzxh001h12n5f6067msc/accra-2-day-trip-to-aqua-safari-resort-and-treasure-island</loc>
+  <lastmod>2026-08-29</lastmod>
+  <changefreq>weekly</changefreq>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/tour/cmt9qfkpx00l9p4sbo7lwa1bp/transport-form-accra-to-cape-coast</loc>
+  <lastmod>2026-08-29</lastmod>
+  <changefreq>weekly</changefreq>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/tour/cmu60w8kl00xa13x5myqzn01r/the-agbogbloshie-accra-e-waste-recycling-experience</loc>
   <lastmod>2026-09-17</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/from-accra-waterfalls-aburi-gardens-cocoa-farm-tour</loc>
+  <loc>https://www.travioghana.com/tour/cmt8q531m032q646pb6u8c6as/the-kumasi-cultural-and-heritage-day-tour</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/accra-2-day-trip-to-aqua-safari-resort-and-treasure-island</loc>
+  <loc>https://www.travioghana.com/tour/cmt8hjkii00bo646phdiznmrr/cape-coast-castle-elmina-castle-kakum-national-park-tour</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/the-kumasi-cultural-and-heritage-day-tour</loc>
-  <lastmod>2026-08-29</lastmod>
-  <changefreq>weekly</changefreq>
-  <priority>0.8</priority>
-</url>
-<url>
-  <loc>https://www.travioghana.com/tour/cape-coast-castle-elmina-castle-kakum-national-park-tour</loc>
-  <lastmod>2026-08-29</lastmod>
-  <changefreq>weekly</changefreq>
-  <priority>0.8</priority>
-</url>
-<url>
-  <loc>https://www.travioghana.com/tour/cape-coast-castle-and-kakum-national-park-day-tour</loc>
+  <loc>https://www.travioghana.com/tour/cmuefjdhj008gr44h8flybaj7/cape-coast-castle-and-kakum-national-park-day-tour</loc>
   <lastmod>2026-09-23</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/accra-flying-dress-experience</loc>
+  <loc>https://www.travioghana.com/tour/cmta3gpsb004kf1ed0ftvhand/accra-flying-dress-experience</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/accra-golf-lesson-with-optional-dinner-and-transfers</loc>
+  <loc>https://www.travioghana.com/tour/cmt9rfli900qup4sbuyymuzgi/kotoka-international-airport-acc-lounge-entry</loc>
+  <lastmod>2026-08-29</lastmod>
+  <changefreq>weekly</changefreq>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/tour/cmu5mnjj900rmydsujgryiucs/accra-golf-lesson-with-optional-dinner-and-transfers</loc>
   <lastmod>2026-09-17</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/kotoka-international-airport-acc-lounge-entry</loc>
+  <loc>https://www.travioghana.com/tour/cmt8n5dpd02eq646pnogj7099/the-cape-coast-day-tour-with-assin-manso-slave-river-bath</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/the-cape-coast-day-tour-with-assin-manso-slave-river-bath</loc>
+  <loc>https://www.travioghana.com/tour/cmt8k7cly01lb646phm6urw1q/accra-sankofa-art-gallery-tour-candle-making-workshop</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/accra-sankofa-art-gallery-tour-candle-making-workshop</loc>
+  <loc>https://www.travioghana.com/tour/cmt8hizsj00bk646ppg06lw18/from-accra-waterfalls-aburi-gardens-cocoa-farm-tour</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/the-despite-automobile-museum</loc>
+  <loc>https://www.travioghana.com/tour/cmt9t1gbh00ynp4sb5l3gpcf6/the-despite-automobile-museum</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/waterfalls-massage-with-aburi-gardens-cocoa-farm-activity</loc>
+  <loc>https://www.travioghana.com/tour/cmt8lt5ma025x646psioguemz/from-accra-the-nature-escape-adventure</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/the-ghana-naming-ceremony-tour</loc>
+  <loc>https://www.travioghana.com/tour/cmt8k5hlk01ky646p6x1w85m5/waterfalls-massage-with-aburi-gardens-cocoa-farm-activity</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/from-accra-the-nature-escape-adventure</loc>
+  <loc>https://www.travioghana.com/tour/cmt8kueve01tp646pm8lwp20j/the-ghana-naming-ceremony-tour</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/accra-food-tasting-tour</loc>
+  <loc>https://www.travioghana.com/tour/cmt9oka8c00dhp4sbsy9pmev1/accra-food-tasting-tour</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/the-mole-national-park-tour</loc>
+  <loc>https://www.travioghana.com/tour/cmt8q4von032m646pgq5r0qy9/the-mole-national-park-tour</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/traditional-beadmaking-workshop</loc>
+  <loc>https://www.travioghana.com/tour/cmu5l37xj00hzydsuc9v4v3hz/traditional-beadmaking-workshop</loc>
   <lastmod>2026-09-17</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
@@ -256,22 +311,17 @@
   <priority>0.7</priority>
 </url>
 <url>
+  <loc>https://www.travioghana.com/tours?place=Hwakpo</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.7</priority>
+</url>
+<url>
   <loc>https://www.travioghana.com/tours?place=Nzulezo</loc>
   <changefreq>weekly</changefreq>
   <priority>0.7</priority>
 </url>
 <url>
   <loc>https://www.travioghana.com/tours?place=Adukrom</loc>
-  <changefreq>weekly</changefreq>
-  <priority>0.7</priority>
-</url>
-<url>
-  <loc>https://www.travioghana.com/tours?place=Hwakpo</loc>
-  <changefreq>weekly</changefreq>
-  <priority>0.7</priority>
-</url>
-<url>
-  <loc>https://www.travioghana.com/tours?place=Boti</loc>
   <changefreq>weekly</changefreq>
   <priority>0.7</priority>
 </url>
@@ -297,6 +347,11 @@
 </url>
 <url>
   <loc>https://www.travioghana.com/tours?place=Nyankumasi%20Ahenkro</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.7</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/tours?place=Boti</loc>
   <changefreq>weekly</changefreq>
   <priority>0.7</priority>
 </url>

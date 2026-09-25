@@ -54,6 +54,11 @@ public/assets/font
 public/mapbox-gl/
 
 
+# Generated on every `prebuild` by scripts/generate-story-pages.cjs and served
+# by middleware.ts for crawlers — the same "generated, never hand-edited"
+# treatment as public/mapbox-gl/ above.
+public/stories/*.html
+
 # Coverage
 coverage/
 

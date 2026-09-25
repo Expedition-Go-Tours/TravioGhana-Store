@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Footer from '@/components/Footer'
+import SEO, { buildBreadcrumbSchema, SITE_URL } from '@/components/SEO'
 import '../styles/LegalPage.css'
 
 const SUMMARY = [
@@ -75,6 +76,15 @@ export default function TermsAndConditionsPage() {
 
   return (
     <main style={{ paddingTop: 80, background: '#f7f7f3' }}>
+      <SEO
+        title="Terms & Conditions"
+        description="Read the terms and conditions governing bookings and use of the Travio Ghana platform."
+        keywords="Travio Ghana terms, booking terms Ghana tours"
+        jsonLd={buildBreadcrumbSchema([
+          { name: 'Home', url: `${SITE_URL}/` },
+          { name: 'Terms & Conditions', url: `${SITE_URL}/terms-and-conditions` },
+        ])}
+      />
       {/* ── Hero card ──────────────────────────────────── */}
       <section className="leg-wrap leg-hero">
         <div>

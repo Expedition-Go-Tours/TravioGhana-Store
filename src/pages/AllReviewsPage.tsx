@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, X, Star, ArrowLeft } from 'lucide-react'
 import ExternalReviewCard from '../components/ExternalReviewCard'
 import StarRating from '../components/StarRating'
 import { useAllExternalReviews, useExternalReviewStats } from '../hooks/useExternalReviews'
+import SEO, { buildBreadcrumbSchema, SITE_URL } from '../components/SEO'
 import './AllReviewsPage.css'
 
 const PAGE_SIZE = 20
@@ -180,6 +181,16 @@ export default function AllReviewsPage() {
 
   return (
     <div className="all-reviews-page">
+      {/* Matches the prerendered /reviews copy the crawlers receive. */}
+      <SEO
+        title="Reviews & Testimonials"
+        description="Read reviews from travelers who booked Ghana tours through Travio Ghana."
+        keywords="Ghana tours reviews, Travio Ghana reviews"
+        jsonLd={buildBreadcrumbSchema([
+          { name: 'Home', url: `${SITE_URL}/` },
+          { name: 'Reviews', url: `${SITE_URL}/reviews` },
+        ])}
+      />
       <div className="all-reviews-container">
         {/* Header */}
         <div className="all-reviews-header">

@@ -42,13 +42,12 @@ export default function PrivacyPolicyPage() {
   return (
     <>
       <SEO
-        title="Privacy Policy - Travio Ghana Ghana"
+        title="Privacy Policy"
         description="Travio Ghana respects your privacy. Learn how we collect, use, and protect your personal data when you book tours and experiences through our platform."
         keywords="Travio Ghana privacy, data protection Ghana, travel privacy policy, personal data policy"
-        robots="noindex, follow"
         jsonLd={buildBreadcrumbSchema([
-          { name: 'Home', url: 'https://travioghana.com/' },
-          { name: 'Privacy Policy', url: 'https://travioghana.com/privacy-policy' },
+          { name: 'Home', url: 'https://www.travioghana.com/' },
+          { name: 'Privacy Policy', url: 'https://www.travioghana.com/privacy-policy' },
         ])}
       />
       <LegalPageShell

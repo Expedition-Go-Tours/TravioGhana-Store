@@ -357,6 +357,13 @@
   overflow-wrap: anywhere;
 }
 
+/* The title carries the card's one crawlable <a href="/tour/{id}/{slug}">.
+   Reset the UA link styling so it renders exactly like the bare text did. */
+.tour-card-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
 .tour-card-features {
   font-size: 12px;
   font-weight: 500;

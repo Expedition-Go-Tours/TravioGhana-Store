@@ -5,52 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="/favicon-64.png" />
     <meta name="theme-color" content="#ffffff" />
-    <meta name="description" content="Discover authentic Ghana tours and experiences. Book cultural tours, wildlife safaris, food tours, and adventure activities across Accra, Cape Coast, Volta Region, and more. Free cancellation, best prices guaranteed." />
-    <meta name="keywords" content="Ghana tours, things to do in Ghana, Ghana experiences, Accra tours, Cape Coast tours, Ghana safari, Ghana food tour, Ghana cultural tour, West Africa tours, African vacation" />
-    <!-- Canonical and og:url are emitted per page by src/components/SEO.tsx.
-         Nothing hardcoded here: a static homepage canonical made every page
-         (tour, listing, booking) declare "/" as its canonical URL. -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Ghana Tours & Experiences | Travio Ghana" />
-    <meta property="og:description" content="Discover authentic Ghana tours and experiences. Book cultural tours, wildlife safaris, food tours, and adventure activities across Accra, Cape Coast, Volta Region, and more." />
-    <meta property="og:image" content="https://res.cloudinary.com/dfpagrtoy/image/upload/v1759237936/hero-bg_e5jwmx.jpg" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Ghana Tours & Experiences | Travio Ghana" />
-    <meta name="twitter:description" content="Discover authentic Ghana tours and experiences. Book cultural tours, wildlife safaris, food tours, and adventure activities." />
-    <meta name="twitter:image" content="https://res.cloudinary.com/dfpagrtoy/image/upload/v1759237936/hero-bg_e5jwmx.jpg" />
-    <title>Ghana Tours & Activities | Discover Experiences | Book & Explore</title>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Travio Ghana",
-      "url": "https://www.travioghana.com",
-      "logo": "https://www.travioghana.com/src/assets/icons/compyIcon.png",
-      "sameAs": [
-        "https://www.facebook.com/p/Travio Ghana-Tours-LTD-61567042001418/",
-        "https://www.instagram.com/travioGhanatours",
-        "https://www.youtube.com/c/travioGhanaTravelandToursLTD"
-      ],
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "contactType": "customer service",
-        "availableLanguage": ["English", "French", "Spanish", "German", "Dutch"]
-      }
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Travio Ghana",
-      "url": "https://www.travioghana.com",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://www.travioghana.com/tours?place={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
-    }
-    </script>
+    <!-- Install/app metadata. Its strings are brand-facing too: the manifest is
+         a public file, so it names Travio Ghana rather than Expedition-Go. -->
+    <link rel="manifest" href="/site.webmanifest" />
+    <!-- Everything a crawler parses — description, canonical, robots, og:*,
+         twitter:* and JSON-LD — is emitted per page by src/components/SEO.tsx.
+         None of it is hardcoded here: a static copy survived hydration and gave
+         every page two conflicting values (2x og:title, 2x og:image, 4 JSON-LD),
+         which scrapers resolve by taking the stale one. The <title> stays so the
+         tab is labelled before React mounts; Helmet updates it in place. -->
+    <title>Ghana Tours &amp; Activities | Discover Experiences | Book &amp; Explore</title>
     <link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin />
     <link rel="dns-prefetch" href="https://tiles.openfreemap.org" />
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />

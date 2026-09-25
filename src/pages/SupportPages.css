@@ -52,7 +52,7 @@ html { scroll-behavior: smooth; }
   overflow: hidden;
   background:
     linear-gradient(90deg, rgba(4,50,30,.95) 0%, rgba(4,73,42,.82) 46%, rgba(5,59,36,.42) 100%),
-    url(https://res.cloudinary.com/dfpagrtoy/image/upload/f_auto,q_auto/v1759237936/hero-bg_e5jwmx.jpg) center 47% / cover no-repeat;
+    url(/Image02.webp) center 47% / cover no-repeat;
 }
 
 .support-hero-inner {

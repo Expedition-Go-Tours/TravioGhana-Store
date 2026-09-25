@@ -1,3 +1,5 @@
+import travelStoriesData from './travelStories.json'
+
 export interface Tour {
   title: string
   category: string
@@ -608,81 +610,43 @@ const reviews: Review[] = [
   },
 ]
 
+export interface TravelStorySection {
+  heading: string
+  body: string
+}
+
+export interface TravelStoryContent {
+  category: string
+  sections: TravelStorySection[]
+  highlights: string[]
+  quote: string
+}
+
 export interface TravelStory {
+  /** Stable half of /stories/<slug>, kept next to the title so the sitemap and
+   *  the prerendered story pages cannot drift from what the app links. */
+  slug: string
   title: string
   excerpt: string
   image: string
   author: string
   date: string
-  link: string
+  /** ISO 8601 form of `date` — what article:published_time and the Article
+   *  schema need; the human string stays for display. */
+  dateISO?: string
   /** Topic filters the story belongs to (nature, culture, food, adventure, heritage). */
   categories?: string[]
   /** Estimated reading time in minutes, shown on blog/story cards. */
   readTime?: number
+  /** Full article body, precomputed so the static /stories/<slug>.html that
+   *  crawlers read renders exactly what the React page shows. */
+  content: TravelStoryContent
 }
 
-const travelStories: TravelStory[] = [
-  {
-    title: 'Exploring the Canopy: A Guide to Kakum National Park',
-    excerpt: 'Walk among the treetops on one of Africa\'s most exhilarating canopy walkways. Our guide takes you through everything you need to know before visiting this natural wonder.',
-    image: 'https://images.unsplash.com/photo-1580651315530-69c8e0026377?w=600&q=80',
-    author: 'Travio Ghana Team',
-    date: 'June 12, 2026',
-    link: '#',
-    categories: ['nature', 'adventure'],
-    readTime: 5,
-  },
-  {
-    title: 'The History and Heritage of Cape Coast Castle',
-    excerpt: 'Delve into the profound history of Cape Coast Castle, a UNESCO World Heritage site that stands as a powerful reminder of Ghana\'s past and its journey forward.',
-    image: 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?w=600&q=80',
-    author: 'Kwame Asante',
-    date: 'May 28, 2026',
-    link: '#',
-    categories: ['heritage', 'culture'],
-    readTime: 7,
-  },
-  {
-    title: 'A Food Lover\'s Guide to Accra',
-    excerpt: 'From street-side kenkey to high-end jollof rice, Accra\'s food scene is a vibrant mix of tradition and innovation. Here\'s where to eat and what to try.',
-    image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&q=80',
-    author: 'Ama Serwaa',
-    date: 'May 15, 2026',
-    link: '#',
-    categories: ['food', 'culture'],
-    readTime: 5,
-  },
-  {
-    title: 'Wildlife Encounters: Mole National Park Safari',
-    excerpt: 'Elephants, antelopes, and monkeys await at Ghana\'s premier wildlife reserve. Plan your safari with our insider tips for the best experience.',
-    image: 'https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=600&q=80',
-    author: 'Travio Ghana Team',
-    date: 'April 30, 2026',
-    link: '#',
-    categories: ['nature', 'adventure'],
-    readTime: 6,
-  },
-  {
-    title: 'The Best Beaches in Ghana for a Weekend Escape',
-    excerpt: 'White sands, calm waters, and palm-fringed shores — Ghana\'s coastline has some of West Africa\'s most beautiful beaches. Discover our top picks.',
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80',
-    author: 'Nana Yaw',
-    date: 'April 18, 2026',
-    link: '#',
-    categories: ['nature', 'adventure'],
-    readTime: 4,
-  },
-  {
-    title: 'Exploring Ashanti Culture in Kumasi',
-    excerpt: 'Immerse yourself in the rich traditions of the Ashanti Kingdom, from goldsmith villages to the magnificent Manhyia Palace.',
-    image: 'https://images.unsplash.com/photo-1574169208507-84376144848b?w=600&q=80',
-    author: 'Akua Mensah',
-    date: 'March 22, 2026',
-    link: '#',
-    categories: ['culture', 'heritage'],
-    readTime: 6,
-  },
-]
+// Single source of truth: scripts/generate-sitemap.cjs and
+// scripts/generate-story-pages.cjs read this same file, so a story can never
+// be promised in the sitemap and404 when fetched.
+const travelStories: TravelStory[] = travelStoriesData
 
 export function storySlug(title: string): string {
   return title

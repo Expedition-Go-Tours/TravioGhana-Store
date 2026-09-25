@@ -105,13 +105,12 @@ export default function CookiesPolicyPage() {
   return (
     <div className="cookies-page">
       <SEO
-        title="Cookies Policy - Travio Ghana Ghana"
+        title="Cookie Policy"
         description="Learn how Travio Ghana uses cookies on our booking platform. Manage your cookie preferences and understand what data we collect."
         keywords="Travio Ghana cookies, cookie policy, website cookies, tracking cookies Ghana"
-        robots="noindex, follow"
         jsonLd={buildBreadcrumbSchema([
-          { name: 'Home', url: 'https://travioghana.com/' },
-          { name: 'Cookies Policy', url: 'https://travioghana.com/cookies-policy' },
+          { name: 'Home', url: 'https://www.travioghana.com/' },
+          { name: 'Cookies Policy', url: 'https://www.travioghana.com/cookies-policy' },
         ])}
       />
 

@@ -11,6 +11,7 @@ import TourCard from '../components/TourCard'
 import SearchContextChip from '../components/SearchContextChip'
 import NoToursEmptyState from '../components/NoToursEmptyState'
 import Footer from '../components/Footer'
+import SEO from '../components/SEO'
 import './SearchResultsPage.css'
 
 async function fetchSearchResults(query: string): Promise<TourCardData[]> {
@@ -76,6 +77,9 @@ export default function SearchResultsPage() {
 
   return (
     <div className="search-results-page">
+      {/* robots.txt already disallows /search; the tag covers crawlers
+          that ignore robots.txt, which can still read noindex. */}
+      <SEO title="Search" robots="noindex, follow" />
       <div className="search-results-header">
         <button className="search-results-back" onClick={() => navigate(-1)}>
           <ArrowLeft size={20} />

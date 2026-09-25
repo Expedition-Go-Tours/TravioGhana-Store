@@ -75,6 +75,11 @@ const STATIC_PAGES = [
   { path: '/tours', priority: 0.9, changefreq: 'daily' },
   { path: '/about-us', priority: 0.6, changefreq: 'monthly' },
   { path: '/stories', priority: 0.6, changefreq: 'weekly' },
+  { path: '/blog', priority: 0.6, changefreq: 'weekly' },
+  { path: '/reviews', priority: 0.6, changefreq: 'weekly' },
+  { path: '/foundation', priority: 0.4, changefreq: 'monthly' },
+  { path: '/careers', priority: 0.4, changefreq: 'monthly' },
+  { path: '/partnerships', priority: 0.4, changefreq: 'monthly' },
   { path: '/faq', priority: 0.5, changefreq: 'monthly' },
   { path: '/help-centre', priority: 0.4, changefreq: 'monthly' },
   { path: '/contact-us', priority: 0.4, changefreq: 'monthly' },
@@ -93,6 +98,22 @@ async function main() {
     urls.push(urlEntry(`${SITE_URL}${p.path}`, { priority: p.priority, changefreq: p.changefreq }));
   }
 
+  // Travel stories — the same travelStories.json the app renders and
+  // scripts/generate-story-pages.cjs prerenders, so a story is only listed if
+  // the crawler copy of it actually exists.
+  try {
+    const stories = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../src/components/travelStories.json'), 'utf8'));
+    for (const s of stories) {
+      if (!s?.slug) continue;
+      urls.push(urlEntry(`${SITE_URL}/stories/${encodeURIComponent(s.slug)}`, {
+        priority: 0.6,
+        changefreq: 'monthly',
+      }));
+    }
+  } catch (err) {
+    console.error(`WARN: could not read travelStories.json: ${err.message}`);
+  }
+
   // Tours from the dedicated sitemap endpoint (slug + updatedAt)
   let tourCount = 0;
   const places = new Set();
@@ -102,7 +123,13 @@ async function main() {
 
     for (const t of tours) {
       if (!t?.slug) continue;
-      urls.push(urlEntry(`${SITE_URL}/tour/${encodeURIComponent(t.slug)}`, {
+      // Canonical form /tour/{id}/{slug}: the id keeps a link alive across
+      // title changes; the slug is decorative. Slug-only fallback for older
+      // sitemap payloads that predate the id field.
+      const tourUrl = t.id
+        ? `${SITE_URL}/tour/${encodeURIComponent(t.id)}/${encodeURIComponent(t.slug)}`
+        : `${SITE_URL}/tour/${encodeURIComponent(t.slug)}`;
+      urls.push(urlEntry(tourUrl, {
         priority: 0.8,
         changefreq: 'weekly',
         lastmod: isoDate(t.updatedAt),
@@ -146,10 +173,18 @@ ${urls.join('\n')}
 
   // robots.txt — generated so the Sitemap directive always uses the canonical
   // host (a hardcoded file drifts whenever the host changes).
+  //
+  // Disallow covers URL spaces that would otherwise be crawled forever
+  // (booking flow, free-text search, per-title review forms). Everything that
+  // is meant to be judged on its meta tags stays allowed — blocking a page
+  // also blocks Google from reading its noindex, which is the opposite of what
+  // a noindex page needs.
   const robots = `User-agent: *
 Allow: /
 Disallow: /dashboard/
 Disallow: /booking/
+Disallow: /search
+Disallow: /review/
 Disallow: /auth/
 Disallow: /login
 Disallow: /api/

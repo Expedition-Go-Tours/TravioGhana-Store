@@ -168,8 +168,8 @@ export default function CareersPage() {
           description="Join Travio Ghana and help shape the future of Ghana tourism. Explore career opportunities in operations, marketing, technology, and customer support."
           keywords="Travio Ghana careers, Ghana tourism jobs, travel industry careers, work in Ghana, Travio Ghana hiring"
           jsonLd={buildBreadcrumbSchema([
-            { name: 'Home', url: 'https://travioghana.com/' },
-            { name: 'Careers', url: 'https://travioghana.com/careers' },
+            { name: 'Home', url: 'https://www.travioghana.com/' },
+            { name: 'Careers', url: 'https://www.travioghana.com/careers' },
           ])}
         />
 

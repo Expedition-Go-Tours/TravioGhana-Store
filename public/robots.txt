@@ -2,6 +2,8 @@ User-agent: *
 Allow: /
 Disallow: /dashboard/
 Disallow: /booking/
+Disallow: /search
+Disallow: /review/
 Disallow: /auth/
 Disallow: /login
 Disallow: /api/

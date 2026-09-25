@@ -10,6 +10,7 @@ import {
   Car, CreditCard, Ticket, ExternalLink, Layers,
 } from 'lucide-react'
 import logoSrc from '../assets/TravioGhana_Logo.svg'
+import SEO from '../components/SEO'
 import Footer from '../components/Footer'
 import StarRating from '../components/StarRating'
 import StepBadge from '../components/booking/StepBadge'
@@ -2477,6 +2478,7 @@ export default function BookingPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
+      <SEO title="Book your tour" robots="noindex, nofollow" />
       <div className="relative mx-auto flex w-full max-w-[1200px] items-center justify-center px-4 pt-5 sm:justify-between sm:px-6 lg:px-8">
         <motion.button
           onClick={() => navigate(-1)}

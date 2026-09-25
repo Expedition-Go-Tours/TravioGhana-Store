@@ -9,6 +9,7 @@ import BookingTransition from '../components/BookingTransition'
 import { currencySymbol } from '../lib/currencySymbol'
 import OptimizedImage from '@/components/shared/OptimizedImage'
 import logoSrc from '../assets/TravioGhana_Logo.svg'
+import SEO from '../components/SEO'
 import { formatHeadingDate, partyLabel } from '../lib/bookingUi'
 import { formatPhoneDisplay } from '../lib/phone'
 import { formatDuration } from '../hooks/useExpeditionTours'
@@ -315,6 +316,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="co-page">
+      <SEO title="Checkout" robots="noindex, nofollow" />
       <div className="co-body">
         {/* LEFT â€” brand panel + order summary (desktop/tablet) */}
         <aside className="co-left">

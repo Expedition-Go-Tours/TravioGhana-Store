@@ -6,6 +6,7 @@ import type { TravelStory } from '../components/data'
 import { useStorySearchAutocomplete } from '../hooks/useStorySearchAutocomplete'
 import type { StorySuggestion } from '../hooks/useStorySearchAutocomplete'
 import Footer from '../components/Footer'
+import SEO, { buildBreadcrumbSchema, SITE_URL } from '../components/SEO'
 import './AllStoriesPage.css'
 import OptimizedImage from '@/components/shared/OptimizedImage'
 
@@ -101,6 +102,29 @@ export default function AllStoriesPage() {
 
   return (
     <div className="all-stories-page">
+      {/* Copy matches the prerendered /stories the crawlers receive, so the two
+          copies of this URL never disagree about title or description. */}
+      <SEO
+        title="Travel Stories from Ghana"
+        description="Read inspiring travel stories from Ghana. Discover hidden gems, local culture, food, and adventure experiences."
+        keywords="Ghana travel stories, Ghana blog, travel experiences Ghana"
+        jsonLd={[
+          buildBreadcrumbSchema([
+            { name: 'Home', url: `${SITE_URL}/` },
+            { name: 'Stories', url: `${SITE_URL}/stories` },
+          ]),
+          {
+            '@context': 'https://schema.org',
+            '@type': 'ItemList',
+            itemListElement: travelStories.map((story, i) => ({
+              '@type': 'ListItem',
+              position: i + 1,
+              name: story.title,
+              url: `${SITE_URL}/stories/${story.slug}`,
+            })),
+          },
+        ]}
+      />
       <div className="all-stories-hero">
         <div className="all-stories-hero-content">
           <h1 className="all-stories-title">Travel Stories & News</h1>

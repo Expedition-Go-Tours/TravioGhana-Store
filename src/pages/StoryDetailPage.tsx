@@ -3,66 +3,10 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion'
 import { ArrowLeft, Calendar, Clock, Share2, ChevronRight, Sparkles } from 'lucide-react'
 import { travelStories, storySlug } from '../components/data'
-import type { TravelStory } from '../components/data'
 import Footer from '../components/Footer'
 import SEO, { buildArticleSchema, buildBreadcrumbSchema } from '../components/SEO'
 import './StoryDetailPage.css'
 import OptimizedImage from '@/components/shared/OptimizedImage'
-
-interface Section {
-  heading: string
-  body: string
-}
-
-interface StoryContent {
-  category: string
-  sections: Section[]
-  highlights: string[]
-  quote: string
-}
-
-/**
- * Builds a rich, topic-aware article body for a story. Keeps the data model
- * lean while giving each story a full, readable detail page.
- */
-function buildContent(story: TravelStory): StoryContent {
-  const topic = story.title.replace(/^(The|A|An)\s+/i, '')
-  const category = /food|guide to accra/i.test(story.title)
-    ? 'Food & Culture'
-    : /history|heritage|castle|culture/i.test(story.title)
-      ? 'History & Heritage'
-      : /wildlife|safari|park|canopy/i.test(story.title)
-        ? 'Nature & Wildlife'
-        : /beach/i.test(story.title)
-          ? 'Coast & Escapes'
-          : 'Travel Guide'
-
-  return {
-    category,
-    sections: [
-      {
-        heading: 'Why this belongs on your list',
-        body: `${topic} is one of those experiences that stays with you long after you leave. Beyond the postcard views, it offers a genuine window into the rhythm of local life — the people, the flavors, and the stories that shape the place. Whether you are a first-time visitor or returning traveler, there is always a new detail to discover.`,
-      },
-      {
-        heading: 'What to expect',
-        body: `Plan for a full, immersive day. Expect knowledgeable local guides, unhurried moments to take it all in, and plenty of opportunities for photos. Come with comfortable footwear, a light layer for changing conditions, and an appetite for the unexpected. The best moments are rarely the ones on the itinerary.`,
-      },
-      {
-        heading: 'Make the most of your visit',
-        body: `Arrive early to beat the crowds and catch the softer light. Keep some cash for small vendors, stay hydrated, and lean on your guide for the hidden spots that never make the brochures. Slow down — the point is not to check a box, but to feel the place.`,
-      },
-    ],
-    highlights: [
-      'Expert local guides who bring every story to life',
-      'Small-group experience for a personal, unhurried pace',
-      'Unforgettable photo moments at every turn',
-      'Authentic tastes and encounters you will not find elsewhere',
-    ],
-    quote:
-      'The best journeys answer questions that in the beginning you did not even think to ask.',
-  }
-}
 
 function initials(name: string) {
   return name
@@ -90,7 +34,9 @@ function StoryDetailPage() {
     window.scrollTo(0, 0)
   }, [slug])
 
-  const content = useMemo(() => (story ? buildContent(story) : null), [story])
+  // The body ships in travelStories.json — the same object the static
+  // /stories/<slug>.html prerenderer reads, so both render identically.
+  const content = story?.content ?? null
 
   const readTime = useMemo(() => {
     if (!content || !story) return 3
@@ -143,14 +89,15 @@ function StoryDetailPage() {
         keywords={`${story.title}, Ghana travel story, ${content.category.toLowerCase()} Ghana, Ghana travel guide, things to do in Ghana, Ghana experiences`}
         image={story.image}
         type="article"
-        publishedTime={story.date}
+        publishedTime={story.dateISO || story.date}
         jsonLd={[
           buildArticleSchema({
             title: story.title,
             description: `${story.title} - ${content.category} travel story from Ghana.`,
             image: story.image,
             url: `https://www.travioghana.com/stories/${storySlug(story.title)}`,
-            publishedTime: story.date || new Date().toISOString(),
+            publishedTime: story.dateISO || story.date,
+            modifiedTime: story.dateISO || story.date,
             author: 'Travio Ghana',
           }),
           buildBreadcrumbSchema([

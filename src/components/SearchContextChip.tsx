@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { tourPath } from '../lib/tourPath'
 import type { SearchSuggestion } from '../hooks/useSearchAutocomplete'
 import './SearchContextChip.css'
 
@@ -20,7 +21,8 @@ export default function SearchContextChip({ suggestion, onDismiss }: SearchConte
     } else if (suggestion.kind === 'region') {
       navigate(`/tours?place=${encodeURIComponent(suggestion.name)}`)
     } else if (suggestion.kind === 'tour' && suggestion.slug) {
-      navigate(`/tour/${suggestion.slug}`)
+      // Canonical /tour/{id}/{slug} — see lib/tourPath.
+      navigate(tourPath(suggestion.tourId, suggestion.slug))
     } else {
       navigate(`/tours?place=${encodeURIComponent(suggestion.name)}`)
     }

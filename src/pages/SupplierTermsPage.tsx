@@ -1,4 +1,5 @@
 import LegalPageShell from '../components/shared/LegalPageShell'
+import SEO, { buildBreadcrumbSchema, SITE_URL } from '../components/SEO'
 import './SupportPages.css'
 import './SupplierTermsPage.css'
 
@@ -33,6 +34,16 @@ export default function SupplierTermsPage() {
       toc={TOC}
       activeTab="supplier-terms"
     >
+      {/* Matches the prerendered /supplier-terms copy crawlers receive. */}
+      <SEO
+        title="Supplier Terms"
+        description="Terms and conditions for suppliers listing tours and experiences on Travio Ghana."
+        keywords="Travio Ghana supplier terms, list tours Ghana"
+        jsonLd={buildBreadcrumbSchema([
+          { name: 'Home', url: `${SITE_URL}/` },
+          { name: 'Supplier Terms', url: `${SITE_URL}/supplier-terms` },
+        ])}
+      />
       <h2 id="1-introduction">1. Introduction</h2>
       <p>
         These Supplier Terms (the &ldquo;Terms&rdquo;) form a legally binding agreement between you (&ldquo;Supplier&rdquo;, &ldquo;you&rdquo;) and Expedition-Go Tours Ltd (&ldquo;Travio Ghana&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;). By registering a supplier account and listing experiences on the Travio Ghana platform (the &ldquo;Platform&rdquo;), you accept and agree to these Terms.

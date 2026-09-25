@@ -202,15 +202,16 @@ export default function TourCard({ id, title, duration, features, price, rating,
     }
   }
 
+  // Canonical /tour/{id}/{slug} — see lib/tourPath. Static/mock cards have no
+  // id, so they keep the slug-only form the route still resolves.
+  const url = tourPath(id, tourSlug)
+
   const handleCardClick = (event?: React.MouseEvent) => {
     // A horizontal swipe on the image ends with a click — don't navigate.
     if (swipeJustHappened.current) {
       swipeJustHappened.current = false
       return
     }
-    // Canonical /tour/{id}/{slug} — see lib/tourPath. Static/mock cards have no
-    // id, so they keep the slug-only form the route still resolves.
-    const url = tourPath(id, tourSlug)
     // Modifier/middle clicks keep their browser meaning: open a new tab.
     const wantsNewTab = openInNewTab
       || (event != null && (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button === 1))
@@ -221,7 +222,32 @@ export default function TourCard({ id, title, duration, features, price, rating,
     navigate(url)
   }
 
+  // The card body must stay a <div>: it hosts the wishlist/carousel buttons,
+  // and interactive content isn't allowed inside a link. So the *title* carries
+  // the crawlable <a href="/tour/{id}/{slug}"> — one real hyperlink per card,
+  // which is what crawlers follow. Clicks on it stop at the title (otherwise
+  // both this handler and the card's would fire and open two tabs); everything
+  // outside the title keeps the original div behaviour above.
+  const handleTitleClick = (event: React.MouseEvent) => {
+    event.stopPropagation()
+    if (swipeJustHappened.current) {
+      swipeJustHappened.current = false
+      event.preventDefault()
+      return
+    }
+    if (openInNewTab) return // target="_blank" already opens the new tab
+    // Modifier clicks keep the browser's own new-tab behaviour; only a plain
+    // click is re-routed through the SPA so it doesn't reload the app.
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button === 1) return
+    event.preventDefault()
+    navigate(url)
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Key presses raised inside a nested control (the title link, wishlist,
+    // carousel arrows) belong to that control — handling them here as well
+    // would navigate the card on top of the control's own activation.
+    if (e.target !== e.currentTarget) return
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault()
       handleCardClick()
@@ -258,7 +284,12 @@ export default function TourCard({ id, title, duration, features, price, rating,
     <div
       className={`tour-card${imageClean ? ' tour-card-clean' : ''}`}
       onClick={handleCardClick}
-      onAuxClick={(e) => { if (e.button === 1) handleCardClick(e) }}
+      onAuxClick={(e) => {
+        // Middle-clicking the title link opens its href natively — don't add a
+        // second window.open on top of it.
+        if ((e.target as HTMLElement).closest?.('a')) return
+        if (e.button === 1) handleCardClick(e)
+      }}
       onKeyDown={handleKeyDown}
       onMouseEnter={warmTourRouteChunk}
       onFocus={warmTourRouteChunk}
@@ -372,7 +403,16 @@ export default function TourCard({ id, title, duration, features, price, rating,
           </span>
           {discount && <span className="tour-card-discount">{discount}</span>}
         </div>
-        <h3 className="tour-card-title" title={title}>{title}</h3>
+        <h3 className="tour-card-title" title={title}>
+          <a
+            href={url}
+            target={openInNewTab ? '_blank' : undefined}
+            rel={openInNewTab ? 'noopener' : undefined}
+            onClick={handleTitleClick}
+          >
+            {title}
+          </a>
+        </h3>
         <div className="tour-card-meta">
           {meetingMode === 'meeting_point' ? (
             <span className="tour-card-badge tour-card-badge-meeting">

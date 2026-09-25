@@ -503,6 +503,14 @@ export default function AllToursPage() {
         title={seoTitle}
         description={seoDescription}
         keywords={seoKeywords}
+        // Mirrors the prerendered copy: ?place= is self-canonical (SEO.tsx
+        // keeps the param), and a place with no tours stays served but out of
+        // the index so an invented town cannot mint a duplicate of /tours.
+        robots={
+          placeParam && !isPending && (allTours?.length ?? 0) === 0
+            ? 'noindex, follow'
+            : undefined
+        }
         jsonLd={[
           buildBreadcrumbSchema([
             { name: 'Home', url: 'https://www.travioghana.com/' },
@@ -684,6 +692,7 @@ export default function AllToursPage() {
                   transition={{ duration: 0.25 }}
                 >
                     <TourCard
+                      id={tour.id}
                       title={tour.title}
                       category={tour.category}
                       duration={tour.duration}
