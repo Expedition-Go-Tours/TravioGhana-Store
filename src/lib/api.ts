@@ -58,6 +58,79 @@ export async function fetchWithAuth(path: string, options: RequestInit = {}): Pr
   return res
 }
 
+/**
+ * Multipart POST that reports request-body progress.
+ *
+ * `fetch()` cannot surface upload progress (there are no upload events without
+ * request streams + duplex), so document submissions use XMLHttpRequest — the
+ * only browser API that exposes `xhr.upload.onprogress`. Auth handling mirrors
+ * `fetchWithAuth`: send the token, and on a 401 refresh once and retry (a
+ * `FormData` body is reusable, so the retry re-sends the same files).
+ *
+ * `onProgress` receives whole percentages, and 100 once the browser has handed
+ * the last byte to the network — the server still has to store the files, so
+ * callers should switch to a "processing" state at 100.
+ */
+export function apiUploadWithProgress<T>(
+  path: string,
+  body: FormData,
+  onProgress?: (percent: number) => void
+): Promise<T> {
+  type UploadResult = { status: number; payload: Record<string, unknown> }
+
+  const send = (token: string | null) =>
+    new Promise<UploadResult>((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+      xhr.open('POST', `${getApiBaseUrl()}${path}`)
+      xhr.responseType = 'json'
+      xhr.setRequestHeader('Accept', 'application/json')
+      if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+
+      if (onProgress) {
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable && event.total > 0) {
+            onProgress(Math.min(100, Math.round((event.loaded / event.total) * 100)))
+          }
+        }
+        xhr.upload.onload = () => onProgress(100)
+      }
+
+      xhr.onload = () =>
+        resolve({ status: xhr.status, payload: (xhr.response ?? {}) as Record<string, unknown> })
+      xhr.onerror = () =>
+        reject(
+          new Error(
+            'We could not reach TravioGhana to upload your document. Check your connection and try again.'
+          )
+        )
+      xhr.ontimeout = () =>
+        reject(new Error('The upload took too long. Check your connection and try again.'))
+      xhr.onabort = () => reject(new Error('The upload was cancelled.'))
+
+      xhr.send(body)
+    })
+
+  return (async () => {
+    const token = await getAuthToken()
+    let result = await send(token)
+
+    if (result.status === 401 && token) {
+      const refreshed = await refreshAuthToken().catch(() => null)
+      if (refreshed) result = await send(refreshed)
+    }
+
+    if (result.status < 200 || result.status >= 300) {
+      const message =
+        typeof result.payload.message === 'string'
+          ? result.payload.message
+          : `Request failed (${result.status})`
+      throw new ApiError(message, result.status)
+    }
+
+    return (result.payload.data ?? result.payload) as T
+  })()
+}
+
 export async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetchWithAuth(path, options)
 

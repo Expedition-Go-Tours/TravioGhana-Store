@@ -48,6 +48,8 @@ export interface AuthUser {
   email?: string
   photoURL?: string
   roles?: string[]
+  /** Whether the account has an email/password credential (false for Google-only). */
+  hasPassword?: boolean
 }
 
 type AuthStateListener = (user: AuthUser | null) => void
@@ -554,6 +556,37 @@ export function getAccessTokenExpiryMs(): number | null {
   const decoded = decodeAccessToken()
   if (!decoded || !decoded.exp) return null
   return decoded.exp * 1000
+}
+
+/**
+ * Set (or replace) the signed-in account's password.
+ *
+ * Social-login accounts (Google) are created without a password, so
+ * `currentPassword` is only needed when one already exists — the backend
+ * enforces that. On success the stored user is updated in place so
+ * `hasPassword` reflects reality without a second round trip.
+ */
+export async function setAccountPassword(
+  newPassword: string,
+  currentPassword?: string,
+): Promise<AuthUser> {
+  const token = await getAuthToken()
+  if (!token) {
+    throw new Error('You need to be signed in to set a password.')
+  }
+
+  const payload = await authFetch('/auth/set-password', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ newPassword, ...(currentPassword ? { currentPassword } : {}) }),
+  })
+
+  const updated: AuthUser = payload?.data?.user ?? payload?.user ?? { hasPassword: true }
+  const { auth, area } = readStoredAuthState()
+  const user = { ...(auth.user ?? {}), ...updated, hasPassword: true }
+  storeAuth({ ...auth, user }, area ?? 'local')
+  notifyAuthStateChange(user)
+  return user
 }
 
 /** True if a stored access token exists and has not yet expired. */

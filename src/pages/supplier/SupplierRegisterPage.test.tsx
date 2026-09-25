@@ -6,7 +6,7 @@ import SupplierRegisterPage from './SupplierRegisterPage'
 
 const mocks = vi.hoisted(() => ({
   user: null as null | { id: string; name?: string },
-  profile: null as null | { id: string; status: string },
+  profile: null as null | { id: string; userId: string; status: string; adminNotes?: string | null },
 }))
 
 vi.mock('@/hooks/useAuthUser', () => ({
@@ -28,8 +28,8 @@ vi.mock('@/lib/auth', () => ({
   setAuthReturnTo: vi.fn(),
 }))
 
-vi.mock('@/components/supplier/SupplierRegistrationWizard', () => ({
-  default: () => <div>SUPPLIER_REGISTRATION_WIZARD</div>,
+vi.mock('@/components/supplier/SupplierApplicationForm', () => ({
+  SupplierApplicationForm: () => <div>SUPPLIER_APPLICATION_FORM</div>,
 }))
 
 vi.mock('@/components/Footer', () => ({ default: () => <div>FOOTER</div> }))
@@ -70,7 +70,7 @@ beforeEach(() => {
 })
 
 describe('SupplierRegisterPage', () => {
-  it('marketing mode renders the story, no banner and no registration wizard', () => {
+  it('marketing mode renders the story, no banner and no application form', () => {
     renderMarketing()
 
     expect(screen.getByText(/Manage your tours/i)).toBeInTheDocument()
@@ -79,9 +79,9 @@ describe('SupplierRegisterPage', () => {
     // phrase in a sentence and must stay).
     expect(screen.queryByText("Built for Ghana's experience operators.")).toBeNull()
     expect(screen.queryByText(/No listing fee/i)).toBeNull()
-    // The registration wizard lives on /supplier/register only.
+    // The application wizard lives on /supplier/register only.
     expect(screen.queryByText(/Join as a Supplier/i)).toBeNull()
-    expect(screen.queryByText('SUPPLIER_REGISTRATION_WIZARD')).toBeNull()
+    expect(screen.queryByText('SUPPLIER_APPLICATION_FORM')).toBeNull()
   })
 
   it('marketing CTA routes to the supplier registration page', async () => {
@@ -92,31 +92,71 @@ describe('SupplierRegisterPage', () => {
     expect(await screen.findByText('REGISTER_ROUTE')).toBeInTheDocument()
   })
 
-  it('register mode renders the registration wizard — no marketing, no footer', () => {
+  it('register mode is the focused application page — form first, no marketing', () => {
     renderRegister()
 
-    expect(screen.getByText('SUPPLIER_REGISTRATION_WIZARD')).toBeInTheDocument()
-    expect(screen.queryByText('FOOTER')).toBeNull()
+    expect(screen.getByRole('heading', { name: /Join as a Supplier/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Learn about listing on Travio Ghana/i })).toHaveAttribute(
+      'href',
+      '/supplier/list-experience',
+    )
+    // No banner, no marketing hero, no marketing sections.
     expect(screen.queryByText("Built for Ghana's experience operators.")).toBeNull()
     expect(screen.queryByText(/Manage your tours/i)).toBeNull()
     expect(screen.queryByText(/From sign-up to your first booking/i)).toBeNull()
   })
 
-  it('shows the under-review status instead of the wizard when an application exists', () => {
-    mocks.profile = { id: 'app-1', status: 'UNDER_REVIEW' }
-    renderRegister()
+  it('renders the application wizard whether signed out or signed in — the wizard creates the account', () => {
+    const { unmount } = renderRegister()
+    // Step 1 of the wizard collects the password, so signed-out visitors go
+    // straight into the form instead of a separate "Sign up to apply" card.
+    expect(screen.getByText('SUPPLIER_APPLICATION_FORM')).toBeInTheDocument()
+    expect(screen.queryByText(/Sign up to apply/i)).toBeNull()
+    unmount()
 
-    expect(screen.getByText(/Your application is under review/i)).toBeInTheDocument()
-    expect(screen.getByText('UNDER_REVIEW')).toBeInTheDocument()
-    expect(screen.queryByText('SUPPLIER_REGISTRATION_WIZARD')).toBeNull()
+    mocks.user = { id: 'u1', name: 'Ada' }
+    renderRegister()
+    expect(screen.getByText('SUPPLIER_APPLICATION_FORM')).toBeInTheDocument()
   })
 
-  it('shows the needs-attention status for a rejected application', () => {
-    mocks.profile = { id: 'app-2', status: 'REJECTED' }
+  it('shows review copy for a pending application and the reviewer note when rejected', () => {
+    mocks.profile = { id: 's1', userId: 'u1', status: 'UNDER_REVIEW' }
+    const { unmount } = renderRegister()
+
+    expect(screen.getByText('Application under review')).toBeInTheDocument()
+    expect(screen.getByText(/Status: UNDER_REVIEW/i)).toBeInTheDocument()
+    expect(screen.queryByText(/Note from our review team/i)).toBeNull()
+    unmount()
+
+    mocks.profile = {
+      id: 's1',
+      userId: 'u1',
+      status: 'REJECTED',
+      adminNotes: 'The ID photo was not legible. Please upload a clearer copy.',
+    }
     renderRegister()
 
-    expect(screen.getByText(/needs more information/i)).toBeInTheDocument()
-    expect(screen.getByText('REJECTED')).toBeInTheDocument()
-    expect(screen.queryByText('SUPPLIER_REGISTRATION_WIZARD')).toBeNull()
+    expect(screen.getByText('Application not approved')).toBeInTheDocument()
+    expect(screen.getByText(/Status: REJECTED/i)).toBeInTheDocument()
+    expect(screen.getByText(/Note from our review team/i)).toBeInTheDocument()
+    expect(screen.getByText(/not legible/i)).toBeInTheDocument()
+    // The form is replaced by the status card once an application exists.
+    expect(screen.queryByText('SUPPLIER_APPLICATION_FORM')).toBeNull()
+  })
+
+  it('explains suspension and expiry instead of claiming a review is in progress', () => {
+    mocks.profile = { id: 's1', userId: 'u1', status: 'SUSPENDED', adminNotes: 'Safety review pending.' }
+    const { unmount } = renderRegister()
+
+    expect(screen.getByText('Supplier account suspended')).toBeInTheDocument()
+    expect(screen.getByText(/Safety review pending/i)).toBeInTheDocument()
+    expect(screen.queryByText(/get back to you within 3-5 business days/i)).toBeNull()
+    unmount()
+
+    mocks.profile = { id: 's1', userId: 'u1', status: 'EXPIRED' }
+    renderRegister()
+
+    expect(screen.getByText('Supplier profile expired')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /@/ })).toHaveAttribute('href', expect.stringContaining('mailto:'))
   })
 })

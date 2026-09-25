@@ -5,148 +5,172 @@
  *   On load, the draft with the latest updatedAt wins.
  *   Drafts stay keyed to the last signed-in user after logout (localStorage last-user pointer).
  *
- * The wizard uses an 8-slot step index: 0-6 are the form steps, 7 is the
- * success screen.
+ * Storage keys are versioned (`…:v2:`) because the wizard was restructured
+ * (6 payload-shaped steps → 7 prototype-shaped steps): a v1 draft's step index
+ * and field layout no longer line up, so v1 keys are ignored and cleaned up.
  */
+import { sanitizeSocialLinks, type SocialLinks } from './socialLinks'
 
-export interface PayoutBankDetails {
-  accountName: string
-  accountNumber: string
-  bankName: string
-  bankCountry: string
-  currency: string
-  [key: string]: string
-}
-
-export interface PayoutPaypalDetails {
-  accountName: string
-  email: string
-  [key: string]: string
-}
-
-export interface PayoutMomoDetails {
-  accountName: string
-  network: string
-  number: string
-  currency: string
-  [key: string]: string
-}
-
-export interface SupplierRegistrationForm {
+export interface SupplierApplicationForm {
+  /** Supplier-type card chosen on step 2 (mapped to the backend enum on submit). */
+  supplierChoice: string
   account: {
     firstName: string
     lastName: string
     email: string
     phone: string
   }
-  /** SupplierCardId from registrationConfig, or ''. */
-  supplierCardId: string
-  /** 'business' | 'individual' (mirrors the selected card), or ''. */
-  supplierKind: string
-  individual: {
+  /** Step 3 — individual or business profile (both render the same shape). */
+  profile: {
+    // Individual identity
     firstName: string
     lastName: string
-    dob: string
+    dateOfBirth: string
     idType: string
     idNumber: string
-    address: string
-    region: string
-    city: string
+    // Business profile
     brandName: string
-  }
-  business: {
-    brandName: string
+    legalBusinessName: string
     yearEstablished: string
     website: string
-    social: string
-    legalName: string
-    regNumber: string
+    /** Social links keyed by platform (`twitter`, `instagram`, … → full URL). */
+    socialLinks: SocialLinks
+    registrationNumber: string
     tin: string
+    // Address (both kinds)
     address: string
     region: string
     city: string
-    taxAck: boolean
   }
-  operatingRegions: string[]
-  /** ServiceCard ids from registrationConfig. */
+  /** Step 4 — service cards the supplier wants to sell. */
   services: string[]
+  /** Step 3 — Ghana operating regions pills. */
+  operatingRegions: string[]
+  /** Step 3 — business-kind tax responsibility acknowledgement. */
+  taxAcknowledged: boolean
+  /** Step 6 — payout preference (details are optional, per the prototype). */
   payout: {
-    method: string
-    bank: PayoutBankDetails
-    paypal: PayoutPaypalDetails
-    momo: PayoutMomoDetails
-    schedule: string
-    primary: boolean
+    method: 'bank' | 'paypal' | 'momo'
+    schedule: 'weekly' | 'twice_monthly' | 'monthly'
+    bankAccountName: string
+    bankAccountNumber: string
+    bankName: string
+    bankCountry: string
+    currency: string
+    paypalAccountName: string
+    paypalEmail: string
+    momoAccountName: string
+    momoNetwork: string
+    momoNumber: string
   }
+  /** UI-only toggle on the payout step. */
+  primaryPayoutPreference: boolean
+  /** Step 5 — exactly one SUPPLIER-owned document is required up front. */
+  verificationDocuments: VerificationDocumentDraft[]
   compliance: {
-    acceptAll: boolean
+    acceptedTerms: boolean
+    agreedToPayoutTerms: boolean
   }
-  /** Not persisted (Files cannot be serialized) — re-uploaded after a reload. */
-  primaryDocument: File | null
+}
+
+/** One verification document entry (paired with `documentMeta` on submit). */
+export interface VerificationDocumentDraft {
+  key: string
+  type: string
+  ownerType: 'SUPPLIER'
+  file: File | null
 }
 
 interface StoredDraft {
   step: number
-  form: SupplierRegistrationForm
+  form: SupplierApplicationForm
   updatedAt: number
 }
 
-const DRAFT_PREFIX = 'supplier_registration_draft:'
-const LAST_DRAFT_USER_KEY = 'supplier_registration_draft_last_user'
-const STEPS_COUNT = 8
+const DRAFT_PREFIX = 'supplier_application_draft:v2:'
+/** Pre-restructure drafts — removed on read/write, never restored. */
+const LEGACY_DRAFT_PREFIX = 'supplier_application_draft:'
+const LAST_DRAFT_USER_KEY = 'supplier_application_draft_last_user'
+const STEPS_COUNT = 7
 
 const STORAGES: { name: string; get: () => Storage }[] = [
   { name: 'session', get: () => sessionStorage },
   { name: 'local', get: () => localStorage },
 ]
 
-export function createEmptySupplierRegistrationForm(): SupplierRegistrationForm {
+export function createEmptySupplierApplicationForm(): SupplierApplicationForm {
   return {
-    account: { firstName: '', lastName: '', email: '', phone: '' },
-    supplierCardId: '',
-    supplierKind: '',
-    individual: {
+    supplierChoice: '',
+    account: {
       firstName: '',
       lastName: '',
-      dob: '',
+      email: '',
+      phone: '',
+    },
+    profile: {
+      firstName: '',
+      lastName: '',
+      dateOfBirth: '',
       idType: '',
       idNumber: '',
-      address: '',
-      region: '',
-      city: '',
       brandName: '',
-    },
-    business: {
-      brandName: '',
+      legalBusinessName: '',
       yearEstablished: '',
       website: '',
-      social: '',
-      legalName: '',
-      regNumber: '',
+      socialLinks: {},
+      registrationNumber: '',
       tin: '',
       address: '',
       region: '',
       city: '',
-      taxAck: false,
     },
-    operatingRegions: [],
     services: [],
+    operatingRegions: [],
+    taxAcknowledged: false,
     payout: {
       method: 'bank',
-      bank: { accountName: '', accountNumber: '', bankName: '', bankCountry: 'Ghana', currency: 'GHS' },
-      paypal: { accountName: '', email: '' },
-      momo: { accountName: '', network: '', number: '', currency: 'GHS' },
       schedule: 'weekly',
-      primary: true,
+      bankAccountName: '',
+      bankAccountNumber: '',
+      bankName: '',
+      bankCountry: 'Ghana',
+      currency: 'GHS',
+      paypalAccountName: '',
+      paypalEmail: '',
+      momoAccountName: '',
+      momoNetwork: '',
+      momoNumber: '',
     },
-    compliance: { acceptAll: false },
-    primaryDocument: null,
+    primaryPayoutPreference: true,
+    verificationDocuments: [],
+    compliance: {
+      acceptedTerms: false,
+      agreedToPayoutTerms: false,
+    },
   }
 }
 
 function draftStorageKey(userId?: string | null): string {
   const id = String(userId || '').trim()
   return `${DRAFT_PREFIX}${id || 'anonymous'}`
+}
+
+function legacyDraftStorageKey(userId?: string | null): string {
+  const id = String(userId || '').trim()
+  return `${LEGACY_DRAFT_PREFIX}${id || 'anonymous'}`
+}
+
+/** Best-effort removal of pre-restructure drafts (wrong step/field layout). */
+function removeLegacyDraft(userId?: string | null): void {
+  if (typeof window === 'undefined') return
+  const legacy = legacyDraftStorageKey(userId)
+  for (const { get } of STORAGES) {
+    try {
+      get().removeItem(legacy)
+    } catch {
+      // ignore
+    }
+  }
 }
 
 /** Remember who last saved a draft so logout does not lose progress. */
@@ -187,135 +211,6 @@ export function resolveDraftUserId(
     getLastDraftUserId() ??
     null
   )
-}
-
-/** Strip File objects — they cannot be stored in the browser. */
-function serializeFormForDraft(form: SupplierRegistrationForm): SupplierRegistrationForm {
-  return { ...form, primaryDocument: null }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return !!value && typeof value === 'object'
-}
-
-function str(value: unknown, fallback = ''): string {
-  return typeof value === 'string' ? value : fallback
-}
-
-function bool(value: unknown, fallback = false): boolean {
-  return typeof value === 'boolean' ? value : fallback
-}
-
-function strArray(value: unknown): string[] {
-  return Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : []
-}
-
-export function mergeSupplierRegistrationDraft(saved?: unknown): SupplierRegistrationForm {
-  const empty = createEmptySupplierRegistrationForm()
-  if (!isRecord(saved)) return empty
-
-  const account = isRecord(saved.account) ? saved.account : {}
-  const individual = isRecord(saved.individual) ? saved.individual : {}
-  const business = isRecord(saved.business) ? saved.business : {}
-  const payout = isRecord(saved.payout) ? saved.payout : {}
-  const bank = isRecord(payout.bank) ? payout.bank : {}
-  const paypal = isRecord(payout.paypal) ? payout.paypal : {}
-  const momo = isRecord(payout.momo) ? payout.momo : {}
-  const compliance = isRecord(saved.compliance) ? saved.compliance : {}
-
-  return {
-    account: {
-      firstName: str(account.firstName),
-      lastName: str(account.lastName),
-      email: str(account.email),
-      phone: str(account.phone),
-    },
-    supplierCardId: str(saved.supplierCardId),
-    supplierKind: str(saved.supplierKind),
-    individual: {
-      firstName: str(individual.firstName),
-      lastName: str(individual.lastName),
-      dob: str(individual.dob),
-      idType: str(individual.idType),
-      idNumber: str(individual.idNumber),
-      address: str(individual.address),
-      region: str(individual.region),
-      city: str(individual.city),
-      brandName: str(individual.brandName),
-    },
-    business: {
-      brandName: str(business.brandName),
-      yearEstablished: str(business.yearEstablished),
-      website: str(business.website),
-      social: str(business.social),
-      legalName: str(business.legalName),
-      regNumber: str(business.regNumber),
-      tin: str(business.tin),
-      address: str(business.address),
-      region: str(business.region),
-      city: str(business.city),
-      taxAck: bool(business.taxAck),
-    },
-    operatingRegions: strArray(saved.operatingRegions),
-    services: strArray(saved.services),
-    payout: {
-      method: str(payout.method, 'bank'),
-      bank: {
-        accountName: str(bank.accountName),
-        accountNumber: str(bank.accountNumber),
-        bankName: str(bank.bankName),
-        bankCountry: str(bank.bankCountry, 'Ghana'),
-        currency: str(bank.currency, 'GHS'),
-      },
-      paypal: {
-        accountName: str(paypal.accountName),
-        email: str(paypal.email),
-      },
-      momo: {
-        accountName: str(momo.accountName),
-        network: str(momo.network),
-        number: str(momo.number),
-        currency: str(momo.currency, 'GHS'),
-      },
-      schedule: str(payout.schedule, 'weekly'),
-      primary: bool(payout.primary, true),
-    },
-    compliance: { acceptAll: bool(compliance.acceptAll) },
-    primaryDocument: null,
-  }
-}
-
-function normalizeDraftPayload(parsed: unknown): StoredDraft | null {
-  if (!isRecord(parsed)) return null
-
-  const step = Number(parsed.step)
-  const safeStep = Number.isFinite(step) && step >= 0 && step < STEPS_COUNT ? Math.floor(step) : 0
-  const updatedAt = Number(parsed.updatedAt) || 0
-
-  return {
-    step: safeStep,
-    form: mergeSupplierRegistrationDraft(parsed.form),
-    updatedAt,
-  }
-}
-
-function readRawDraft(storage: Storage, key: string): StoredDraft | null {
-  try {
-    const raw = storage.getItem(key)
-    if (!raw) return null
-    return normalizeDraftPayload(JSON.parse(raw))
-  } catch {
-    return null
-  }
-}
-
-function writeRawDraft(storage: Storage, key: string, payload: StoredDraft): boolean {
-  try {
-    storage.setItem(key, JSON.stringify(payload))
-    return true
-  } catch {
-    return false
-  }
 }
 
 /** Promote pre-login (anonymous) draft when the user signs in. */
@@ -367,13 +262,114 @@ export function migrateAnonymousDraftToUser(userId: string): void {
   }
 }
 
+/** Strip File objects — they cannot be stored in the browser. */
+function serializeFormForDraft(form: SupplierApplicationForm): SupplierApplicationForm {
+  return {
+    ...form,
+    verificationDocuments: form.verificationDocuments.map((d) => ({ ...d, file: null })),
+  }
+}
+
+function normalizeDraftPayload(parsed: unknown): StoredDraft | null {
+  if (!parsed || typeof parsed !== 'object') return null
+
+  const record = parsed as Record<string, unknown>
+  const step = Number(record.step)
+  const safeStep = Number.isFinite(step) && step >= 0 && step < STEPS_COUNT ? Math.floor(step) : 0
+  const updatedAt = Number(record.updatedAt) || 0
+
+  return {
+    step: safeStep,
+    form: mergeSupplierApplicationDraft(record.form),
+    updatedAt,
+  }
+}
+
+function readRawDraft(storage: Storage, key: string): StoredDraft | null {
+  try {
+    const raw = storage.getItem(key)
+    if (!raw) return null
+    return normalizeDraftPayload(JSON.parse(raw))
+  } catch {
+    return null
+  }
+}
+
+function writeRawDraft(storage: Storage, key: string, payload: StoredDraft): boolean {
+  try {
+    storage.setItem(key, JSON.stringify(payload))
+    return true
+  } catch {
+    return false
+  }
+}
+
+function str(value: unknown, fallback = ''): string {
+  return typeof value === 'string' ? value : fallback
+}
+
+function strArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : []
+}
+
+export function mergeSupplierApplicationDraft(saved?: unknown): SupplierApplicationForm {
+  const empty = createEmptySupplierApplicationForm()
+  if (!saved || typeof saved !== 'object') return empty
+
+  const savedForm = saved as Partial<SupplierApplicationForm>
+
+  return {
+    supplierChoice: str(savedForm.supplierChoice, empty.supplierChoice),
+    account: { ...empty.account, ...pickStrings(savedForm.account, empty.account) },
+    profile: {
+      ...empty.profile,
+      ...pickStrings(savedForm.profile, empty.profile),
+      socialLinks: sanitizeSocialLinks((savedForm.profile as { socialLinks?: unknown } | undefined)?.socialLinks),
+    },
+    services: strArray(savedForm.services),
+    operatingRegions: strArray(savedForm.operatingRegions),
+    taxAcknowledged: Boolean(savedForm.taxAcknowledged),
+    payout: { ...empty.payout, ...pickStrings(savedForm.payout, empty.payout), method: normalizeMethod(savedForm.payout?.method), schedule: normalizeSchedule(savedForm.payout?.schedule) },
+    primaryPayoutPreference:
+      typeof savedForm.primaryPayoutPreference === 'boolean'
+        ? savedForm.primaryPayoutPreference
+        : empty.primaryPayoutPreference,
+    verificationDocuments: Array.isArray(savedForm.verificationDocuments)
+      ? savedForm.verificationDocuments.map((d) => ({ ...d, ownerType: 'SUPPLIER' as const, file: null }))
+      : [],
+    compliance: { ...empty.compliance, ...savedForm.compliance },
+  }
+}
+
+/** Keep only string fields (never trust shape blindly from storage). */
+function pickStrings<T extends Record<string, unknown>>(saved: unknown, fallback: T): Partial<T> {
+  if (!saved || typeof saved !== 'object') return {}
+  const out: Record<string, unknown> = {}
+  for (const key of Object.keys(fallback)) {
+    const value = (saved as Record<string, unknown>)[key]
+    if (typeof value === 'string') out[key] = value
+    else if (typeof fallback[key as keyof T] === 'boolean' && typeof value === 'boolean') out[key] = value
+  }
+  return out as Partial<T>
+}
+
+function normalizeMethod(value: unknown): 'bank' | 'paypal' | 'momo' {
+  return value === 'paypal' || value === 'momo' ? value : 'bank'
+}
+
+function normalizeSchedule(value: unknown): 'weekly' | 'twice_monthly' | 'monthly' {
+  return value === 'twice_monthly' || value === 'monthly' ? value : 'weekly'
+}
+
 /**
  * @returns The latest draft (step + form) for the user, or null.
  */
-export function loadSupplierRegistrationDraft(
+export function loadSupplierApplicationDraft(
   userId?: string | null
-): { step: number; form: SupplierRegistrationForm } | null {
+): { step: number; form: SupplierApplicationForm } | null {
   if (typeof window === 'undefined') return null
+
+  removeLegacyDraft(userId)
 
   const key = draftStorageKey(userId)
   let best: StoredDraft | null = null
@@ -392,15 +388,16 @@ export function loadSupplierRegistrationDraft(
 }
 
 /**
- * Save the in-progress registration so a refresh does not lose input.
+ * Save the in-progress application so a refresh does not lose input.
  */
-export function saveSupplierRegistrationDraft(
+export function saveSupplierApplicationDraft(
   userId: string | null | undefined,
-  draft: { step: number; form: SupplierRegistrationForm }
+  draft: { step: number; form: SupplierApplicationForm }
 ): void {
   if (typeof window === 'undefined') return
 
   if (userId) rememberDraftUserId(userId)
+  removeLegacyDraft(userId)
 
   const step = Number(draft?.step)
   const safeStep = Number.isFinite(step) && step >= 0 && step < STEPS_COUNT ? Math.floor(step) : 0
@@ -418,15 +415,16 @@ export function saveSupplierRegistrationDraft(
 }
 
 /** Remove any saved draft for the user. */
-export function clearSupplierRegistrationDraft(userId?: string | null): void {
+export function clearSupplierApplicationDraft(userId?: string | null): void {
   if (typeof window === 'undefined') return
 
-  const key = draftStorageKey(userId)
-  for (const { get } of STORAGES) {
-    try {
-      get().removeItem(key)
-    } catch {
-      // ignore
+  for (const key of [draftStorageKey(userId), legacyDraftStorageKey(userId)]) {
+    for (const { get } of STORAGES) {
+      try {
+        get().removeItem(key)
+      } catch {
+        // ignore
+      }
     }
   }
 }
