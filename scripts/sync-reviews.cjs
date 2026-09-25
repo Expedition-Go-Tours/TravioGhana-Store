@@ -273,10 +273,14 @@ async function scrapeTripAdvisorTour(page, tour, pagesToScrape) {
           const idMatch = reviewLink.match(/-r(\d+)-/)
           const reviewId = idMatch ? `ta-${idMatch[1]}` : null
 
-          const avatarEl = card.querySelector('img[src*="avatar"]')
-          const avatar = avatarEl?.getAttribute('src') || null
+          // Reviewer avatars are deliberately NOT stored: they are hosted on the
+        // platform's CDN (e.g. dynamic-media-cdn.tripadvisor.com), whose
+        // robots.txt blocks Googlebot — embedding them got flagged in Search
+        // Console as a resource it could not load, and hotlinking a third
+        // party's media is theirs to control. The UI shows an initial instead.
+        
 
-          return { externalId: reviewId, reviewerName, rating, title, text, date, reviewerAvatar: avatar }
+          return { externalId: reviewId, reviewerName, rating, title, text, date, reviewerAvatar: null }
         }).filter((r) => r.reviewerName || r.text)
       })
 
@@ -365,11 +369,10 @@ async function scrapeGetYourGuideTour(page, tour, maxBatches) {
           const nameEl = card.querySelector('.review-card__author-details-name')
           const dateEl = card.querySelector('.review-card__author-details-name-legend')
           const textEl = card.querySelector('.review-card__description-group .toggle-content__content')
-          const avatarEl = card.querySelector('.review-card__author-photo img, img[class*="avatar"]')
 
           return {
             reviewerName: nameEl?.textContent?.trim() || 'Anonymous',
-            reviewerAvatar: avatarEl?.getAttribute('src') || null,
+            reviewerAvatar: null, // see the note above: third-party CDN avatars are not embedded
             rating: ratingMatch ? parseInt(ratingMatch[1]) : 5,
             text: textEl?.innerText?.trim() || '',
             date: (dateEl?.textContent || '').replace(/\s*-\s*Verified booking.*$/i, '').trim(),
