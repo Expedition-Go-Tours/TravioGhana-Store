@@ -5,7 +5,7 @@
  *   POST /suppliers/apply              — submit a supplier application (multipart)
  *   GET  /suppliers/application/status — poll the current user's application status
  */
-import { apiFetch } from './api'
+import { apiFetch, apiUploadWithProgress } from './api'
 import { getStoredAuthTokens } from './auth'
 
 /** TravioAfrica-Supplier platform origin (approved suppliers SSO here). */
@@ -31,6 +31,9 @@ export interface SupplierProfile {
   payoutInfo?: Record<string, unknown>
   businessDocuments?: Record<string, unknown>
   compliance?: Record<string, unknown>
+  /** Reviewer note written on reject / request-info (TravioGhana-Admin). */
+  adminNotes?: string | null
+  reviewedAt?: string | null
   createdAt?: string
   updatedAt?: string
 }
@@ -55,6 +58,13 @@ export type SupplierApplicationStatus =
  * uploaded".
  */
 export const MAX_SUPPLIER_APPLICATION_FILES = 1 + 1 + 1 + 1 + 5 + 30 + 30
+
+/**
+ * Largest single document accepted, mirroring multer's `limits.fileSize` in the
+ * backend (config/cloudinary.js: 10 * 1024 * 1024). Checked before upload so the
+ * supplier gets a clear message instead of a mid-submit failure.
+ */
+export const MAX_SUPPLIER_DOCUMENT_BYTES = 10 * 1024 * 1024
 
 export const SUPPLIER_TYPES: { value: string; label: string; description: string }[] = [
   { value: 'TOUR_GUIDE', label: 'Tour Guide', description: 'An individual who leads tours, with their own licence and ID.' },
@@ -123,17 +133,22 @@ export function documentTypeLabel(type?: string | null): string {
  * The payload must be multipart/form-data: each JSON section is appended as a
  * JSON-string field, and documents as file fields (matches the backend route
  * and multer upload configuration).
+ *
+ * `onUploadProgress` reports the document upload percentage, so the form can
+ * show real progress instead of an indefinite spinner — supplier documents are
+ * often multi-megabyte phone photos on slow mobile networks.
  */
-export async function applyAsSupplier(payload: FormData): Promise<{ supplierProfile: SupplierProfile }> {
-  return apiFetch('/suppliers/apply', {
-    method: 'POST',
-    body: payload,
-  })
+export async function applyAsSupplier(
+  payload: FormData,
+  onUploadProgress?: (percent: number) => void
+): Promise<{ supplierProfile: SupplierProfile }> {
+  return apiUploadWithProgress('/suppliers/apply', payload, onUploadProgress)
 }
 
 /**
  * Get the current user's supplier application status.
- * Returns null when no application exists yet (backend responds 404).
+ * "No application yet" is a valid state, and the backend answers 200 with
+ * `supplierProfile: null` for it (a 404 is also tolerated for older builds).
  */
 export async function getSupplierApplicationStatus(): Promise<SupplierProfile | null> {
   try {

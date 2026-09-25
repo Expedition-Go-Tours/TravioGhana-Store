@@ -4,56 +4,69 @@
  *   localStorage: survives new tabs and browser restarts.
  *   On load, the draft with the latest updatedAt wins.
  *   Drafts stay keyed to the last signed-in user after logout (localStorage last-user pointer).
+ *
+ * Storage keys are versioned (`…:v2:`) because the wizard was restructured
+ * (6 payload-shaped steps → 7 prototype-shaped steps): a v1 draft's step index
+ * and field layout no longer line up, so v1 keys are ignored and cleaned up.
  */
+import { sanitizeSocialLinks, type SocialLinks } from './socialLinks'
 
 export interface SupplierApplicationForm {
-  supplierType: string
-  businessInfo: {
-    legalBusinessName: string
-    displayName: string
-    businessType: string
-    country: string
-    address: {
-      line1: string
-      line2: string
-      city: string
-      state: string
-      postalCode: string
-    }
-    website: string
-    phoneNumber: string
-  }
-  operatingInfo: {
-    tourCategories: string[]
-    destinations: string[]
-    languages: string[]
-    yearsInBusiness: string
-    cancellationPolicy: string
-    meetingStyle: string
-  }
-  representativeInfo: {
-    fullName: string
+  /** Supplier-type card chosen on step 2 (mapped to the backend enum on submit). */
+  supplierChoice: string
+  account: {
+    firstName: string
+    lastName: string
     email: string
+    phone: string
+  }
+  /** Step 3 — individual or business profile (both render the same shape). */
+  profile: {
+    // Individual identity
+    firstName: string
+    lastName: string
     dateOfBirth: string
-    address: {
-      line1: string
-      line2: string
-      city: string
-      state: string
-      postalCode: string
-    }
     idType: string
-    idDocument: File | null
+    idNumber: string
+    // Business profile
+    brandName: string
+    legalBusinessName: string
+    yearEstablished: string
+    website: string
+    /** Social links keyed by platform (`twitter`, `instagram`, … → full URL). */
+    socialLinks: SocialLinks
+    registrationNumber: string
+    tin: string
+    // Address (both kinds)
+    address: string
+    region: string
+    city: string
   }
-  businessDocuments: {
-    registrationDocument: File | null
-    taxDocument: File | null
-    proofOfAddress: File | null
-    licenses: File[]
+  /** Step 4 — service cards the supplier wants to sell. */
+  services: string[]
+  /** Step 3 — Ghana operating regions pills. */
+  operatingRegions: string[]
+  /** Step 3 — business-kind tax responsibility acknowledgement. */
+  taxAcknowledged: boolean
+  /** Step 6 — payout preference (details are optional, per the prototype). */
+  payout: {
+    method: 'bank' | 'paypal' | 'momo'
+    schedule: 'weekly' | 'twice_monthly' | 'monthly'
+    bankAccountName: string
+    bankAccountNumber: string
+    bankName: string
+    bankCountry: string
+    currency: string
+    paypalAccountName: string
+    paypalEmail: string
+    momoAccountName: string
+    momoNetwork: string
+    momoNumber: string
   }
+  /** UI-only toggle on the payout step. */
+  primaryPayoutPreference: boolean
+  /** Step 5 — exactly one SUPPLIER-owned document is required up front. */
   verificationDocuments: VerificationDocumentDraft[]
-  vehicles: VehicleDraft[]
-  guides: GuideDraft[]
   compliance: {
     acceptedTerms: boolean
     agreedToPayoutTerms: boolean
@@ -64,25 +77,8 @@ export interface SupplierApplicationForm {
 export interface VerificationDocumentDraft {
   key: string
   type: string
-  ownerType: 'SUPPLIER' | 'VEHICLE' | 'GUIDE'
-  ownerKey?: string
+  ownerType: 'SUPPLIER'
   file: File | null
-}
-
-export interface VehicleDraft {
-  key: string
-  make: string
-  model: string
-  year: string
-  registrationNumber: string
-  photos: File[]
-}
-
-export interface GuideDraft {
-  key: string
-  fullName: string
-  phone: string
-  email: string
 }
 
 interface StoredDraft {
@@ -91,9 +87,11 @@ interface StoredDraft {
   updatedAt: number
 }
 
-const DRAFT_PREFIX = 'supplier_application_draft:'
+const DRAFT_PREFIX = 'supplier_application_draft:v2:'
+/** Pre-restructure drafts — removed on read/write, never restored. */
+const LEGACY_DRAFT_PREFIX = 'supplier_application_draft:'
 const LAST_DRAFT_USER_KEY = 'supplier_application_draft_last_user'
-const STEPS_COUNT = 6
+const STEPS_COUNT = 7
 
 const STORAGES: { name: string; get: () => Storage }[] = [
   { name: 'session', get: () => sessionStorage },
@@ -102,53 +100,49 @@ const STORAGES: { name: string; get: () => Storage }[] = [
 
 export function createEmptySupplierApplicationForm(): SupplierApplicationForm {
   return {
-    supplierType: '',
-    businessInfo: {
-      legalBusinessName: '',
-      displayName: '',
-      businessType: '',
-      country: '',
-      address: {
-        line1: '',
-        line2: '',
-        city: '',
-        state: '',
-        postalCode: '',
-      },
-      website: '',
-      phoneNumber: '',
-    },
-    operatingInfo: {
-      tourCategories: [],
-      destinations: [],
-      languages: [],
-      yearsInBusiness: '',
-      cancellationPolicy: '',
-      meetingStyle: '',
-    },
-    representativeInfo: {
-      fullName: '',
+    supplierChoice: '',
+    account: {
+      firstName: '',
+      lastName: '',
       email: '',
+      phone: '',
+    },
+    profile: {
+      firstName: '',
+      lastName: '',
       dateOfBirth: '',
-      address: {
-        line1: '',
-        line2: '',
-        city: '',
-        state: '',
-        postalCode: '',
-      },
       idType: '',
-      idDocument: null,
+      idNumber: '',
+      brandName: '',
+      legalBusinessName: '',
+      yearEstablished: '',
+      website: '',
+      socialLinks: {},
+      registrationNumber: '',
+      tin: '',
+      address: '',
+      region: '',
+      city: '',
     },
-    businessDocuments: {
-      registrationDocument: null,
-      taxDocument: null,
-      proofOfAddress: null,
-      licenses: [],
+    services: [],
+    operatingRegions: [],
+    taxAcknowledged: false,
+    payout: {
+      method: 'bank',
+      schedule: 'weekly',
+      bankAccountName: '',
+      bankAccountNumber: '',
+      bankName: '',
+      bankCountry: 'Ghana',
+      currency: 'GHS',
+      paypalAccountName: '',
+      paypalEmail: '',
+      momoAccountName: '',
+      momoNetwork: '',
+      momoNumber: '',
     },
+    primaryPayoutPreference: true,
     verificationDocuments: [],
-    vehicles: [],
-    guides: [],
     compliance: {
       acceptedTerms: false,
       agreedToPayoutTerms: false,
@@ -159,6 +153,24 @@ export function createEmptySupplierApplicationForm(): SupplierApplicationForm {
 function draftStorageKey(userId?: string | null): string {
   const id = String(userId || '').trim()
   return `${DRAFT_PREFIX}${id || 'anonymous'}`
+}
+
+function legacyDraftStorageKey(userId?: string | null): string {
+  const id = String(userId || '').trim()
+  return `${LEGACY_DRAFT_PREFIX}${id || 'anonymous'}`
+}
+
+/** Best-effort removal of pre-restructure drafts (wrong step/field layout). */
+function removeLegacyDraft(userId?: string | null): void {
+  if (typeof window === 'undefined') return
+  const legacy = legacyDraftStorageKey(userId)
+  for (const { get } of STORAGES) {
+    try {
+      get().removeItem(legacy)
+    } catch {
+      // ignore
+    }
+  }
 }
 
 /** Remember who last saved a draft so logout does not lose progress. */
@@ -254,18 +266,7 @@ export function migrateAnonymousDraftToUser(userId: string): void {
 function serializeFormForDraft(form: SupplierApplicationForm): SupplierApplicationForm {
   return {
     ...form,
-    representativeInfo: {
-      ...form.representativeInfo,
-      idDocument: null,
-    },
-    businessDocuments: {
-      registrationDocument: null,
-      taxDocument: null,
-      proofOfAddress: null,
-      licenses: [],
-    },
     verificationDocuments: form.verificationDocuments.map((d) => ({ ...d, file: null })),
-    vehicles: form.vehicles.map((v) => ({ ...v, photos: [] })),
   }
 }
 
@@ -303,6 +304,14 @@ function writeRawDraft(storage: Storage, key: string, payload: StoredDraft): boo
   }
 }
 
+function str(value: unknown, fallback = ''): string {
+  return typeof value === 'string' ? value : fallback
+}
+
+function strArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : []
+}
+
 export function mergeSupplierApplicationDraft(saved?: unknown): SupplierApplicationForm {
   const empty = createEmptySupplierApplicationForm()
   if (!saved || typeof saved !== 'object') return empty
@@ -310,42 +319,46 @@ export function mergeSupplierApplicationDraft(saved?: unknown): SupplierApplicat
   const savedForm = saved as Partial<SupplierApplicationForm>
 
   return {
-    supplierType: typeof savedForm.supplierType === 'string' ? savedForm.supplierType : empty.supplierType,
-    businessInfo: {
-      ...empty.businessInfo,
-      ...savedForm.businessInfo,
-      address: { ...empty.businessInfo.address, ...savedForm.businessInfo?.address },
+    supplierChoice: str(savedForm.supplierChoice, empty.supplierChoice),
+    account: { ...empty.account, ...pickStrings(savedForm.account, empty.account) },
+    profile: {
+      ...empty.profile,
+      ...pickStrings(savedForm.profile, empty.profile),
+      socialLinks: sanitizeSocialLinks((savedForm.profile as { socialLinks?: unknown } | undefined)?.socialLinks),
     },
-    operatingInfo: {
-      ...empty.operatingInfo,
-      ...savedForm.operatingInfo,
-      tourCategories: Array.isArray(savedForm.operatingInfo?.tourCategories)
-        ? savedForm.operatingInfo.tourCategories
-        : [],
-      destinations: Array.isArray(savedForm.operatingInfo?.destinations)
-        ? savedForm.operatingInfo.destinations
-        : [],
-      languages: Array.isArray(savedForm.operatingInfo?.languages) ? savedForm.operatingInfo.languages : [],
-    },
-    representativeInfo: {
-      ...empty.representativeInfo,
-      ...savedForm.representativeInfo,
-      idDocument: null,
-      address: {
-        ...empty.representativeInfo.address,
-        ...savedForm.representativeInfo?.address,
-      },
-    },
-    businessDocuments: { ...empty.businessDocuments },
+    services: strArray(savedForm.services),
+    operatingRegions: strArray(savedForm.operatingRegions),
+    taxAcknowledged: Boolean(savedForm.taxAcknowledged),
+    payout: { ...empty.payout, ...pickStrings(savedForm.payout, empty.payout), method: normalizeMethod(savedForm.payout?.method), schedule: normalizeSchedule(savedForm.payout?.schedule) },
+    primaryPayoutPreference:
+      typeof savedForm.primaryPayoutPreference === 'boolean'
+        ? savedForm.primaryPayoutPreference
+        : empty.primaryPayoutPreference,
     verificationDocuments: Array.isArray(savedForm.verificationDocuments)
-      ? savedForm.verificationDocuments.map((d) => ({ ...d, file: null }))
+      ? savedForm.verificationDocuments.map((d) => ({ ...d, ownerType: 'SUPPLIER' as const, file: null }))
       : [],
-    vehicles: Array.isArray(savedForm.vehicles)
-      ? savedForm.vehicles.map((v) => ({ ...v, photos: [] }))
-      : [],
-    guides: Array.isArray(savedForm.guides) ? savedForm.guides : [],
     compliance: { ...empty.compliance, ...savedForm.compliance },
   }
+}
+
+/** Keep only string fields (never trust shape blindly from storage). */
+function pickStrings<T extends Record<string, unknown>>(saved: unknown, fallback: T): Partial<T> {
+  if (!saved || typeof saved !== 'object') return {}
+  const out: Record<string, unknown> = {}
+  for (const key of Object.keys(fallback)) {
+    const value = (saved as Record<string, unknown>)[key]
+    if (typeof value === 'string') out[key] = value
+    else if (typeof fallback[key as keyof T] === 'boolean' && typeof value === 'boolean') out[key] = value
+  }
+  return out as Partial<T>
+}
+
+function normalizeMethod(value: unknown): 'bank' | 'paypal' | 'momo' {
+  return value === 'paypal' || value === 'momo' ? value : 'bank'
+}
+
+function normalizeSchedule(value: unknown): 'weekly' | 'twice_monthly' | 'monthly' {
+  return value === 'twice_monthly' || value === 'monthly' ? value : 'weekly'
 }
 
 /**
@@ -355,6 +368,8 @@ export function loadSupplierApplicationDraft(
   userId?: string | null
 ): { step: number; form: SupplierApplicationForm } | null {
   if (typeof window === 'undefined') return null
+
+  removeLegacyDraft(userId)
 
   const key = draftStorageKey(userId)
   let best: StoredDraft | null = null
@@ -382,6 +397,7 @@ export function saveSupplierApplicationDraft(
   if (typeof window === 'undefined') return
 
   if (userId) rememberDraftUserId(userId)
+  removeLegacyDraft(userId)
 
   const step = Number(draft?.step)
   const safeStep = Number.isFinite(step) && step >= 0 && step < STEPS_COUNT ? Math.floor(step) : 0
@@ -402,12 +418,13 @@ export function saveSupplierApplicationDraft(
 export function clearSupplierApplicationDraft(userId?: string | null): void {
   if (typeof window === 'undefined') return
 
-  const key = draftStorageKey(userId)
-  for (const { get } of STORAGES) {
-    try {
-      get().removeItem(key)
-    } catch {
-      // ignore
+  for (const key of [draftStorageKey(userId), legacyDraftStorageKey(userId)]) {
+    for (const { get } of STORAGES) {
+      try {
+        get().removeItem(key)
+      } catch {
+        // ignore
+      }
     }
   }
 }

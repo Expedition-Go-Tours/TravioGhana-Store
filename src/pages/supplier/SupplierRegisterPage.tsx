@@ -7,20 +7,22 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, LoaderCircle, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, Clock, LoaderCircle, ShieldCheck, ShieldOff, XCircle } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 
 import { SupplierApplicationForm } from '@/components/supplier/SupplierApplicationForm'
 import { useAuthUser } from '@/hooks/useAuthUser'
 import { useSupplierStatus, supplierStatusKey } from '@/hooks/useSupplierStatus'
 import { getSupplierPortalUrl, isApprovedSupplier } from '@/lib/supplier'
+import { SUPPORT_EMAIL } from '@/lib/support'
 import { useQueryClient } from '@tanstack/react-query'
 import { getAuthUserId, setAuthReturnTo } from '@/lib/auth'
-import { Button } from '@/components/ui/button'
 import Footer from '@/components/Footer'
 import RevealOnScroll from '@/components/shared/RevealOnScroll'
 import FAQAccordion from '@/components/shared/FAQAccordion'
 import '@/styles/partner-pages.css'
 import '@/styles/ListExperience.css'
+import '@/styles/SupplierRegister.css'
 import tour1 from '@/assets/tours/tour1.avif'
 import tour2 from '@/assets/tours/tour2.avif'
 import tour3 from '@/assets/tours/tour3.avif'
@@ -32,6 +34,89 @@ import tour8 from '@/assets/tours/tour8.avif'
 import phoneLogin from '@/assets/phone-screens/login.png'
 import phoneDashboard from '@/assets/phone-screens/dashboard.png'
 import phoneProducts from '@/assets/phone-screens/products.png'
+
+/**
+ * Status-aware copy for the "application submitted" card. The card used to say
+ * "under review" for every state, which is misleading for rejected, suspended or
+ * expired suppliers — only APPROVED/ACTIVE redirect to the supplier portal.
+ */
+type ApplicationTone = 'pending' | 'negative' | 'warning'
+
+interface ApplicationCardState {
+  tone: ApplicationTone
+  icon: LucideIcon
+  title: string
+  description: string
+  showReviewerNote: boolean
+}
+
+const APPLICATION_TONE_CARD: Record<ApplicationTone, string> = {
+  pending: 'border-emerald-100 bg-emerald-50',
+  negative: 'border-rose-100 bg-rose-50',
+  warning: 'border-amber-100 bg-amber-50',
+}
+
+const APPLICATION_TONE_ICON: Record<ApplicationTone, string> = {
+  pending: 'text-emerald-600',
+  negative: 'text-rose-600',
+  warning: 'text-amber-600',
+}
+
+const APPLICATION_TONE_PILL: Record<ApplicationTone, string> = {
+  pending: 'text-emerald-700',
+  negative: 'text-rose-700',
+  warning: 'text-amber-700',
+}
+
+function applicationCardState(status?: string | null): ApplicationCardState {
+  switch (status) {
+    case 'REJECTED':
+      return {
+        tone: 'negative',
+        icon: XCircle,
+        title: 'Application not approved',
+        description:
+          'Our review team could not approve this application as submitted. Review the note below, then contact support so we can take it forward with you.',
+        showReviewerNote: true,
+      }
+    case 'SUSPENDED':
+      return {
+        tone: 'negative',
+        icon: ShieldOff,
+        title: 'Supplier account suspended',
+        description:
+          'Your supplier account is suspended, so listings and payouts are paused. Contact support once the issue is resolved.',
+        showReviewerNote: true,
+      }
+    case 'EXPIRED':
+      return {
+        tone: 'warning',
+        icon: Clock,
+        title: 'Supplier profile expired',
+        description:
+          'Your supplier profile has expired. Contact support to renew it and get your listings bookable again.',
+        showReviewerNote: false,
+      }
+    case 'UNDER_REVIEW':
+      return {
+        tone: 'pending',
+        icon: ShieldCheck,
+        title: 'Application under review',
+        description:
+          'Our team is reviewing your details and documents. We will get back to you within 3-5 business days.',
+        showReviewerNote: false,
+      }
+    default:
+      return {
+        tone: 'pending',
+        icon: ShieldCheck,
+        title: 'Application submitted',
+        description:
+          'Your supplier application has been received. Our team will review it and get back to you within 3-5 business days.',
+        showReviewerNote: false,
+      }
+  }
+}
 
 interface SupplierRegisterPageProps {
   onOpenAuth?: (mode: 'signin' | 'signup') => void
@@ -128,6 +213,8 @@ export default function SupplierRegisterPage({ onOpenAuth, showApplicationForm =
   }, [profile])
 
   const application = profile
+  const applicationState = applicationCardState(application?.status)
+  const ApplicationStateIcon = applicationState.icon
   const handleSignInHere = async () => {
     if (application && isApprovedSupplier(application.status)) {
       const portalUrl = await getSupplierPortalUrl(application)
@@ -152,7 +239,7 @@ export default function SupplierRegisterPage({ onOpenAuth, showApplicationForm =
       transition={{ duration: 0.3, ease: 'easeOut' }}
       className="relative bg-white px-4 py-10 sm:py-16"
     >
-      <div className="mx-auto w-full max-w-[720px]">
+      <div className="mx-auto w-full max-w-[1180px]">
         <Link
           to="/supplier/list-experience"
           className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-primary"
@@ -174,26 +261,33 @@ export default function SupplierRegisterPage({ onOpenAuth, showApplicationForm =
             <LoaderCircle className="size-6 animate-spin text-primary" />
             {redirecting && <span className="ml-3 text-sm text-slate-500">{t('supplierAuth.redirectingToPortal', 'Taking you to your supplier dashboard…')}</span>}
           </div>
-        ) : !user ? (
-          <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-8 text-center">
-            <ShieldCheck className="mx-auto mb-3 size-10 text-primary" />
-            <h2 className="text-lg font-bold text-slate-900">{t('supplierAuth.signUpToApply', 'Sign up to apply')}</h2>
-            <p className="mt-2 text-sm text-slate-500">{t('supplierAuth.signUpToApplyDesc', 'You need to be signed up to submit a supplier application.')}</p>
-            <Button type="button" onClick={() => onOpenAuth?.('signup')} className="mt-6 h-12 px-8">
-              {t('supplierAuth.signUpButton', 'Sign Up')}
-            </Button>
-          </div>
         ) : application ? (
-          <div className="rounded-[1.4rem] border border-emerald-100 bg-emerald-50 p-8 text-center">
-            <ShieldCheck className="mx-auto mb-3 size-10 text-emerald-600" />
-            <h2 className="text-lg font-bold text-slate-900">{t('supplierAuth.applicationSubmitted', 'Application Submitted')}</h2>
-            <p className="mt-2 text-sm text-slate-600">{t('supplierAuth.applicationSubmittedDesc', 'Your supplier application is currently under review. Our team will get back to you within 3-5 business days.')}</p>
-            <p className="mt-3 inline-block rounded-full bg-white px-4 py-1 text-xs font-semibold text-emerald-700 shadow-sm">
+          <div className={`rounded-[1.4rem] border p-8 text-center ${APPLICATION_TONE_CARD[applicationState.tone]}`}>
+            <ApplicationStateIcon className={`mx-auto mb-3 size-10 ${APPLICATION_TONE_ICON[applicationState.tone]}`} />
+            <h2 className="text-lg font-bold text-slate-900">{applicationState.title}</h2>
+            <p className="mt-2 text-sm text-slate-600">{applicationState.description}</p>
+            <p className={`mt-3 inline-block rounded-full bg-white px-4 py-1 text-xs font-semibold shadow-sm ${APPLICATION_TONE_PILL[applicationState.tone]}`}>
               {t('supplierAuth.applicationStatus', 'Status')}: {application?.status ?? 'PENDING'}
             </p>
+            {applicationState.showReviewerNote && application.adminNotes ? (
+              <div className="mx-auto mt-4 max-w-xl rounded-xl border border-black/5 bg-white/70 px-4 py-3 text-left">
+                <span className="block text-xs font-semibold text-slate-800">
+                  {t('supplierAuth.reviewerNote', 'Note from our review team')}
+                </span>
+                <p className="mt-1 text-xs text-slate-600">{application.adminNotes}</p>
+              </div>
+            ) : null}
+            {applicationState.tone !== 'pending' ? (
+              <p className="mt-4 text-xs text-slate-500">
+                {t('supplierAuth.applicationSupport', 'Questions about this decision?')}{' '}
+                <a className="font-semibold text-primary hover:underline" href={`mailto:${SUPPORT_EMAIL}`}>
+                  {SUPPORT_EMAIL}
+                </a>
+              </p>
+            ) : null}
           </div>
         ) : (
-          <SupplierApplicationForm onSubmitted={refreshStatus} />
+          <SupplierApplicationForm onSubmitted={refreshStatus} onOpenAuth={onOpenAuth} />
         )}
 
         <p className="mt-10 text-center text-sm text-slate-500">
@@ -215,7 +309,6 @@ export default function SupplierRegisterPage({ onOpenAuth, showApplicationForm =
     return (
       <main className="le-page">
         {applicationSection}
-        <Footer />
       </main>
     )
   }
