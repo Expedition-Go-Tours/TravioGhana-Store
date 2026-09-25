@@ -2056,3 +2056,23 @@
   color:#375a46;
 }
 .srp-page .upload-progress-strip .progress{height:6px}
+
+/* ── Page column aligned with the navbar logo ──────────────────────────────
+   On `.le-page` pages the navbar (Navbar.css) uses a 1200px column with
+   `max(20px, (100vw - 1200px) / 2)` gutters. The registration section used a
+   1180px box plus its own `px-4`, so the page content sat ~10px right of the
+   logo — this mirrors the navbar's maths exactly so both edges line up. */
+.supplier-register-container{
+  width:100%;
+  margin:0 auto;
+  padding-left:max(20px, calc((100vw - 1200px) / 2));
+  padding-right:max(20px, calc((100vw - 1200px) / 2));
+}
+
+/* Let the wizard shell fill that column (the page container now owns the
+   gutters), so the form card starts on the logo's edge too. */
+@media (min-width:768px){
+  .srp-page .shell{
+    width:min(1220px, 100%) !important;
+  }
+}

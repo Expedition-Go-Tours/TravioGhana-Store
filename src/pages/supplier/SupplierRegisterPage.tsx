@@ -237,9 +237,9 @@ export default function SupplierRegisterPage({ onOpenAuth, showApplicationForm =
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
-      className="relative bg-white px-4 py-10 sm:py-16"
+      className="relative bg-white py-10 sm:py-16"
     >
-      <div className="mx-auto w-full max-w-[1180px]">
+      <div className="supplier-register-container">
         <Link
           to="/supplier/list-experience"
           className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-primary"
