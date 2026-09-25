@@ -18,9 +18,11 @@ const DotLottieReact = lazy(() =>
  * The dashboard column is max 1200px wide, so the saved grid is 3-up on
  * desktop, 2-up on tablets and 1-up on phones. Without this descriptor the
  * card's default 50vw assumption makes the browser fetch the 1200w image for
- * a ~370px card.
+ * a ~370px card. On mobile the grid renders fixed 280px cards (the same width
+ * as the Continue Planning / home carousel slides), so the descriptor asks
+ * for exactly that width instead of 100vw.
  */
-const CARD_SIZES = '(max-width: 767px) 100vw, (max-width: 1199px) 50vw, 33vw'
+const CARD_SIZES = '(max-width: 768px) 280px, (max-width: 1199px) 50vw, 33vw'
 
 /**
  * A saved tour renders as the very same card the home page uses — features,

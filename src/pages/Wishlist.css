@@ -160,8 +160,51 @@
     font-size: 15px;
   }
 
+  /* Mobile: the saved cards become the same swipeable row as the Continue
+     Planning / home carousels — 280px slides, 16px gaps, scroll snapping.
+     The row breaks out of the dashboard column's 24px padding so it spans the
+     page, and keeps the carousel's 16px gutter on both sides. */
   .wishlist-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 16px;
+    margin-inline: -24px;
+    padding: 4px 16px 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    /* Keep the 16px gutter when a card snaps — without this, snap aligns the
+       card to the scrollport edge and swallows the padding. */
+    scroll-padding-inline: 16px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .wishlist-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .wishlist-grid > * {
+    flex: 0 0 280px;
+    min-width: 280px;
+    display: flex;
+    align-items: stretch;
+    scroll-snap-align: start;
+  }
+
+  .wishlist-grid > * > * {
+    width: 100%;
+  }
+}
+
+/* Tablet (769–1023) keeps full-column cards — Continue Planning renders its
+   horizontal card there, so there is no 280px TourCard to match. Size the
+   photo by the card width instead of the fixed 205px box so a 2-up card isn't
+   a ~2:1 letterbox. Desktop's 3-column cards keep their 205px box. */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .wishlist-grid .tour-card-clean .tour-card-image {
+    height: auto;
+    aspect-ratio: 3 / 2;
   }
 }
