@@ -17,6 +17,11 @@ const mocks = vi.hoisted(() => ({
   getSupplierApplicationStatus: vi.fn<() => Promise<unknown>>(async () => null),
 }))
 
+// jsdom has no 2D canvas, so the celebration must never touch the real library.
+const confettiMock = vi.hoisted(() => Object.assign(vi.fn(), { reset: vi.fn() }))
+
+vi.mock('canvas-confetti', () => ({ default: confettiMock }))
+
 vi.mock('@/hooks/useAuthUser', () => ({
   useAuthUser: () => mocks.user,
 }))
@@ -101,6 +106,8 @@ describe('SupplierApplicationForm', () => {
     mocks.applyAsSupplier.mockResolvedValue({})
     mocks.getSupplierApplicationStatus.mockReset()
     mocks.getSupplierApplicationStatus.mockResolvedValue(null)
+    confettiMock.mockClear()
+    confettiMock.reset.mockClear()
     localStorage.clear()
     sessionStorage.clear()
   })
@@ -404,6 +411,9 @@ describe('SupplierApplicationForm', () => {
     await waitFor(() => expect(successScreenIsActive()).toBe(true))
     expect(screen.getByText(/Taking you to your supplier dashboard/)).toBeInTheDocument()
     expect(onSubmitted).not.toHaveBeenCalled()
+    // The celebration is the same canvas-confetti burst as the tour-submitted
+    // screen on the supplier dashboard.
+    expect(confettiMock).toHaveBeenCalled()
 
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 4100))

@@ -22,6 +22,7 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
+import confetti from 'canvas-confetti'
 import {
   Check,
   ChevronDown,
@@ -116,7 +117,8 @@ const STANDARDS = [
   },
 ]
 
-const CONFETTI_SPANS = Array.from({ length: 20 }, (_, i) => i)
+/** Same palette as the supplier dashboard's "tour submitted" celebration. */
+const CONFETTI_COLORS = ['#10b981', '#34d399', '#6ee7b7', '#f59e0b', '#3b82f6', '#ec4899']
 
 /** Document picker: phone photos and PDFs, matching the backend's multer filter. */
 const DOCUMENT_ACCEPT = 'image/*,.pdf'
@@ -779,14 +781,50 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
     else void handleContinue()
   }
 
-  // Confetti replay when the success screen appears (prototype triggerSuccessCelebration).
+  // Celebrate the account going live with the same canvas-confetti burst the
+  // supplier dashboard fires when a tour is submitted: a centre burst from the
+  // top, then two angled side bursts a beat later.
   useEffect(() => {
     if (!submitted) return
-    const confetti = document.getElementById('successConfetti')
-    if (!confetti) return
-    confetti.classList.remove('play')
-    void confetti.offsetWidth
-    confetti.classList.add('play')
+
+    confetti({
+      particleCount: 90,
+      spread: 75,
+      angle: 270,
+      startVelocity: 42,
+      gravity: 0.9,
+      ticks: 220,
+      scalar: 0.9,
+      origin: { x: 0.5, y: 0 },
+      colors: CONFETTI_COLORS,
+      zIndex: 200,
+    })
+
+    const timer = window.setTimeout(() => {
+      confetti({
+        particleCount: 55,
+        spread: 60,
+        angle: 300,
+        startVelocity: 38,
+        origin: { x: 0.15, y: 0.1 },
+        colors: CONFETTI_COLORS,
+        zIndex: 200,
+      })
+      confetti({
+        particleCount: 55,
+        spread: 60,
+        angle: 240,
+        startVelocity: 38,
+        origin: { x: 0.85, y: 0.1 },
+        colors: CONFETTI_COLORS,
+        zIndex: 200,
+      })
+    }, 250)
+
+    return () => {
+      window.clearTimeout(timer)
+      confetti.reset()
+    }
   }, [submitted])
 
   const handleViewStatus = () => onSubmitted?.()
@@ -1933,12 +1971,6 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
   const renderSuccess = () => (
     <section className={`form-step${submitted ? ' active' : ''}`}>
       <div className="success" id="successScreen">
-        <div className="success-confetti" id="successConfetti" aria-hidden="true">
-          {CONFETTI_SPANS.map((index) => (
-            <span key={index} />
-          ))}
-        </div>
-
         <div className="success-shell">
           <div className="success-badge">
             <CircleCheckBig size={14} strokeWidth={2.2} aria-hidden="true" />
