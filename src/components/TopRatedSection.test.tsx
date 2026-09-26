@@ -78,7 +78,7 @@ describe('TopRatedSection — location rail', () => {
     expect(screen.getAllByText('Cape Coast Castles')).toHaveLength(1)
   })
 
-  it('renders the labelled rail alone when the region has no local tours', () => {
+  it('renders the rail alone (no dangling divider) when the region has no local tours', () => {
     render(
       <TopRatedSection
         location="Ashanti"
@@ -88,7 +88,8 @@ describe('TopRatedSection — location rail', () => {
       />
     )
 
-    expect(screen.getByText('More experiences near Ashanti')).toBeInTheDocument()
+    // Nothing local precedes the rail, so there is nothing to divide from.
+    expect(screen.queryByText('More experiences near Ashanti')).toBeNull()
     expect(screen.getByText('Cape Coast Castles')).toBeInTheDocument()
   })
 

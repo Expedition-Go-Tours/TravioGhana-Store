@@ -135,7 +135,7 @@ export default function RecommendSection({ preloaded, isLoading, title, location
                           <TourCard {...tour} imageClean hideFeatures priority={i === 0} />
                         </div>
                       ))}
-                      <SectionRailDivider label={backfill?.label} />
+                      {baseTours?.length ? <SectionRailDivider label={backfill?.label} /> : null}
                       {backfillTours.map((tour, i) => (
                         <div key={`rail-${tour.title}-${i}`} className="carousel-card-wrap">
                           <TourCard {...tour} imageClean hideFeatures />

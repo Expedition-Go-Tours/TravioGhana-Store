@@ -109,7 +109,7 @@ export default function NewExperiencesSection({ preloaded, isLoading, title, loc
                           <TourCard {...tour} isNew hideSourceBadge hideFeatures imageClean />
                         </div>
                       ))}
-                      <SectionRailDivider label={backfill?.label} />
+                      {localItems?.length ? <SectionRailDivider label={backfill?.label} /> : null}
                       {backfillTours.map((tour, i) => (
                         <div key={`rail-${tour.id ?? tour.title}-${i}`} className="newexp-card-wrap">
                           <TourCard {...tour} isNew hideSourceBadge hideFeatures imageClean />

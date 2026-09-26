@@ -104,7 +104,7 @@ export default function TopRatedSection({ preloaded, isLoading, title, location,
                           <TourCard {...tour} imageClean hideFeatures />
                         </div>
                       ))}
-                      <SectionRailDivider label={backfill?.label} />
+                      {localItems?.length ? <SectionRailDivider label={backfill?.label} /> : null}
                       {backfillTours.map((tour, i) => (
                         <div key={`rail-${tour.title}-${i}`} className="toprated-card-wrap">
                           <TourCard {...tour} imageClean hideFeatures />
