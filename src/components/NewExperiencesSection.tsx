@@ -3,38 +3,45 @@ import { useTranslation } from 'react-i18next'
 import SectionHeading from './SectionHeading'
 import TourCard from './TourCard'
 import TourCardSkeleton from './TourCardSkeleton'
-import { useNewExperiences, mapToTourCard, type HomepageBackfill } from '../hooks/useHomepageSections'
+import { useNewExperiences, mapToTourCard, type HomepageBackfill, type HomepageTour } from '../hooks/useHomepageSections'
+import SectionRailDivider from './SectionRailDivider'
 import './NewExperiencesSection.css'
 
 const CARD_WIDTH = 295
 const GAP = 16
 
 interface Props {
+  preloaded?: HomepageTour[]
   isLoading?: boolean
   title?: string
   location?: string
   backfill?: HomepageBackfill | null
 }
 
-export default function NewExperiencesSection({ isLoading, title, location, backfill }: Props) {
+export default function NewExperiencesSection({ preloaded, isLoading, title, location, backfill }: Props) {
   const { t } = useTranslation()
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
-  const { data: liveTours } = useNewExperiences(30)
+  // Scoped sections are authoritative — App passes the city-scoped rows as
+  // `preloaded`, so the global new list must not stand in for them.
+  const scoped = Boolean(location)
+  const { data: liveTours } = useNewExperiences(30, !preloaded && !scoped)
 
-  const localItems = liveTours?.length
-    ? liveTours.map(t => mapToTourCard(t))
+  const localItems = (preloaded ?? liveTours)?.length
+    ? (preloaded ?? liveTours)!.map(t => mapToTourCard(t))
     : null
 
   const backfillTours = useMemo(() => {
     if (!backfill?.tours?.length) return []
-    return backfill.tours.map(t => mapToTourCard(t))
-  }, [backfill])
+    const localIds = new Set((localItems ?? []).map((t) => t.id))
+    // The rail must never repeat a card the local rows already show.
+    return backfill.tours.map(t => mapToTourCard(t)).filter((t) => !localIds.has(t.id))
+  }, [backfill, localItems])
 
   const items = useMemo(() => {
-    if (!localItems) return null
-    return backfillTours.length > 0 ? [...localItems, ...backfillTours] : localItems
+    if (!localItems && backfillTours.length === 0) return null
+    return [...(localItems ?? []), ...backfillTours]
   }, [localItems, backfillTours])
 
   const updateArrows = useCallback(() => {
@@ -95,11 +102,21 @@ export default function NewExperiencesSection({ isLoading, title, location, back
                       <TourCardSkeleton />
                     </div>
                   ))
-                : items?.map((tour, i) => (
-                    <div key={`${tour.id ?? tour.title}-${i}`} className="newexp-card-wrap">
-                      <TourCard {...tour} isNew hideSourceBadge hideFeatures imageClean />
-                    </div>
-                  ))
+                : (
+                    <>
+                      {localItems?.map((tour, i) => (
+                        <div key={`${tour.id ?? tour.title}-${i}`} className="newexp-card-wrap">
+                          <TourCard {...tour} isNew hideSourceBadge hideFeatures imageClean />
+                        </div>
+                      ))}
+                      <SectionRailDivider label={backfill?.label} />
+                      {backfillTours.map((tour, i) => (
+                        <div key={`rail-${tour.id ?? tour.title}-${i}`} className="newexp-card-wrap">
+                          <TourCard {...tour} isNew hideSourceBadge hideFeatures imageClean />
+                        </div>
+                      ))}
+                    </>
+                  )
               }
             </div>
           </div>

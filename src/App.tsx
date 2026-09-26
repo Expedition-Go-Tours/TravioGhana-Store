@@ -168,7 +168,7 @@ function HomePage() {
         <MountOnView><Suspense fallback={<HomeSectionSkeleton />}><TopRatedSection preloaded={data?.topRated} isLoading={loading} title={locationTitle?.('Top Rated')} location={locationFilter} backfill={data?.topRatedBackfill} /></Suspense></MountOnView>
         <MountOnView><Suspense fallback={<HomeSectionSkeleton />}><SellOutSection preloaded={data?.sellOut} isLoading={loading} title={locationTitle?.('Likely To Sell Out')} location={locationFilter} backfill={data?.sellOutBackfill} /></Suspense></MountOnView>
         <MountOnView><Suspense fallback={<HomeSectionSkeleton />}><LastMinuteDealsSection preloaded={data?.offers} isLoading={loading} title={locationTitle?.('Special Offers')} location={locationFilter} /></Suspense></MountOnView>
-        <MountOnView><Suspense fallback={<HomeSectionSkeleton />}><NewExperiencesSection isLoading={loading} title={locationTitle?.('New Experiences')} location={locationFilter} backfill={data?.newExperiencesBackfill} /></Suspense></MountOnView>
+        <MountOnView><Suspense fallback={<HomeSectionSkeleton />}><NewExperiencesSection preloaded={data?.new} isLoading={loading} title={locationTitle?.('New Experiences')} location={locationFilter} backfill={data?.newExperiencesBackfill} /></Suspense></MountOnView>
         <MountOnView><Suspense fallback={<HomeSectionSkeleton />}><TopAttractionsNearbySection preloaded={data?.attractions} title={locationTitle?.('Top Attractions Nearby')} location={locationFilter} /></Suspense></MountOnView>
         <MountOnView><ExternalReviewsSection /></MountOnView>
         <MountOnView><PreviousSearchSections /></MountOnView>

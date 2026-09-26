@@ -4,6 +4,7 @@ import SectionHeading from './SectionHeading'
 import TourCard from './TourCard'
 import TourCardSkeleton from './TourCardSkeleton'
 import { useLikelySellOut, mapToTourCard, type HomepageTour, type HomepageBackfill } from '../hooks/useHomepageSections'
+import SectionRailDivider from './SectionRailDivider'
 import './SellOutSection.css'
 
 const CARD_WIDTH = 295
@@ -22,7 +23,10 @@ export default function SellOutSection({ preloaded, isLoading, title, location, 
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
-  const { data: liveData } = useLikelySellOut(12, !preloaded)
+  // See TopRatedSection: a scoped payload is authoritative, so the global
+  // fallback stays off while a location is active.
+  const scoped = Boolean(location)
+  const { data: liveData } = useLikelySellOut(12, !preloaded && !scoped)
 
   const localItems = (preloaded ?? liveData)?.length
     ? (preloaded ?? liveData)!.map((t) => ({ ...mapToTourCard(t), likelyToSellOut: true }))
@@ -30,12 +34,15 @@ export default function SellOutSection({ preloaded, isLoading, title, location, 
 
   const backfillTours = useMemo(() => {
     if (!backfill?.tours?.length) return []
-    return backfill.tours.map((t) => ({ ...mapToTourCard(t), likelyToSellOut: true }))
-  }, [backfill])
+    const localIds = new Set((localItems ?? []).map((t) => t.id))
+    return backfill.tours
+      .map((t) => ({ ...mapToTourCard(t), likelyToSellOut: true }))
+      .filter((t) => !localIds.has(t.id))
+  }, [backfill, localItems])
 
   const items = useMemo(() => {
-    if (!localItems) return null
-    return backfillTours.length > 0 ? [...localItems, ...backfillTours] : localItems
+    if (!localItems && backfillTours.length === 0) return null
+    return [...(localItems ?? []), ...backfillTours]
   }, [localItems, backfillTours])
 
   const updateArrows = useCallback(() => {
@@ -89,11 +96,21 @@ export default function SellOutSection({ preloaded, isLoading, title, location, 
                       <TourCardSkeleton />
                     </div>
                   ))
-                : items?.map((tour, i) => (
-                    <div key={`${tour.title}-${i}`} className="sellout-card-wrap">
-                      <TourCard {...tour} imageClean hideFeatures />
-                    </div>
-                  ))
+                : (
+                    <>
+                      {localItems?.map((tour, i) => (
+                        <div key={`${tour.title}-${i}`} className="sellout-card-wrap">
+                          <TourCard {...tour} imageClean hideFeatures />
+                        </div>
+                      ))}
+                      <SectionRailDivider label={backfill?.label} />
+                      {backfillTours.map((tour, i) => (
+                        <div key={`rail-${tour.title}-${i}`} className="sellout-card-wrap">
+                          <TourCard {...tour} imageClean hideFeatures />
+                        </div>
+                      ))}
+                    </>
+                  )
               }
             </div>
           </div>

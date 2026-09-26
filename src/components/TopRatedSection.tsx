@@ -4,6 +4,7 @@ import SectionHeading from './SectionHeading'
 import TourCard from './TourCard'
 import TourCardSkeleton from './TourCardSkeleton'
 import { useTopRated, mapToTourCard, type HomepageTour, type HomepageBackfill } from '../hooks/useHomepageSections'
+import SectionRailDivider from './SectionRailDivider'
 import './TopRatedSection.css'
 
 const CARD_WIDTH = 295
@@ -22,7 +23,12 @@ export default function TopRatedSection({ preloaded, isLoading, title, location,
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
-  const { data: liveData } = useTopRated(12, !preloaded)
+  // Scoped sections are authoritative: with a location active the payload
+  // already carries the local rows plus their labelled nearby rail, so the
+  // global fallback must stay off (it would fill a regional section with
+  // unrelated tours).
+  const scoped = Boolean(location)
+  const { data: liveData } = useTopRated(12, !preloaded && !scoped)
 
   const localItems = (preloaded ?? liveData)?.length
     ? (preloaded ?? liveData)!.map(mapToTourCard)
@@ -30,12 +36,14 @@ export default function TopRatedSection({ preloaded, isLoading, title, location,
 
   const backfillTours = useMemo(() => {
     if (!backfill?.tours?.length) return []
-    return backfill.tours.map(mapToTourCard)
-  }, [backfill])
+    const localIds = new Set((localItems ?? []).map((t) => t.id))
+    // The rail must never repeat a card the local rows already show.
+    return backfill.tours.map(mapToTourCard).filter((t) => !localIds.has(t.id))
+  }, [backfill, localItems])
 
   const items = useMemo(() => {
-    if (!localItems) return null
-    return backfillTours.length > 0 ? [...localItems, ...backfillTours] : localItems
+    if (!localItems && backfillTours.length === 0) return null
+    return [...(localItems ?? []), ...backfillTours]
   }, [localItems, backfillTours])
 
   const updateArrows = useCallback(() => {
@@ -89,11 +97,21 @@ export default function TopRatedSection({ preloaded, isLoading, title, location,
                       <TourCardSkeleton />
                     </div>
                   ))
-                : items?.map((tour, i) => (
-                    <div key={`${tour.title}-${i}`} className="toprated-card-wrap">
-                      <TourCard {...tour} imageClean hideFeatures />
-                    </div>
-                  ))
+                : (
+                    <>
+                      {localItems?.map((tour, i) => (
+                        <div key={`${tour.title}-${i}`} className="toprated-card-wrap">
+                          <TourCard {...tour} imageClean hideFeatures />
+                        </div>
+                      ))}
+                      <SectionRailDivider label={backfill?.label} />
+                      {backfillTours.map((tour, i) => (
+                        <div key={`rail-${tour.title}-${i}`} className="toprated-card-wrap">
+                          <TourCard {...tour} imageClean hideFeatures />
+                        </div>
+                      ))}
+                    </>
+                  )
               }
             </div>
           </div>

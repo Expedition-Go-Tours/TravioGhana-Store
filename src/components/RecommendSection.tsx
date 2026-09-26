@@ -5,6 +5,7 @@ import TourCard from './TourCard'
 import TourCardSkeleton from './TourCardSkeleton'
 import { useRecommendedTours, useExpeditionOffers, type TourCardData } from '../hooks/useExpeditionTours'
 import { useRecommended, mapToTourCard, type HomepageTour, type HomepageBackfill } from '../hooks/useHomepageSections'
+import SectionRailDivider from './SectionRailDivider'
 import './RecommendSection.css'
 
 const CARD_WIDTH = 295
@@ -23,11 +24,15 @@ export default function RecommendSection({ preloaded, isLoading, title, location
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
-  const { data: personalizedTours } = useRecommended(12, !preloaded)
+  // Scoped sections are authoritative: with a location active the payload
+  // carries the local rows plus their labelled nearby rail, so none of the
+  // global fallbacks may fill in behind it.
+  const scoped = Boolean(location)
+  const { data: personalizedTours } = useRecommended(12, !preloaded && !scoped)
   // Only fall back to live endpoints when the aggregate homepage payload did
   // not supply the section — otherwise these duplicate the boot requests.
-  const { data: liveTours } = useRecommendedTours(12, !preloaded)
-  const { data: offerTours } = useExpeditionOffers(12, !preloaded)
+  const { data: liveTours } = useRecommendedTours(12, !preloaded && !scoped)
+  const { data: offerTours } = useExpeditionOffers(12, !preloaded && !scoped)
 
   // Prefer preloaded > personalized > liveTours
   const baseTours = preloaded?.length
@@ -41,13 +46,15 @@ export default function RecommendSection({ preloaded, isLoading, title, location
   // Backfill tours (from nearby regions when local has few)
   const backfillTours = useMemo(() => {
     if (!backfill?.tours?.length) return []
-    return backfill.tours.map(mapToTourCard)
-  }, [backfill])
+    const localIds = new Set((baseTours ?? []).map((t) => t.id))
+    // The rail must never repeat a card the local rows already show.
+    return backfill.tours.map(mapToTourCard).filter((t) => !localIds.has(t.id))
+  }, [backfill, baseTours])
 
   // Offer tours replace their plain card when present, appended otherwise.
   const items = useMemo(() => {
-    if (!baseTours) return null
-    const all = backfillTours.length > 0 ? [...baseTours, ...backfillTours] : baseTours
+    if (!baseTours && backfillTours.length === 0) return null
+    const all = [...(baseTours ?? []), ...backfillTours]
     if (!offerTours || offerTours.length === 0) return all
     const keyOf = (t: { slug?: string; title: string }) => t.slug || t.title
     const offerByKey = new Map<string, TourCardData>()
@@ -121,11 +128,21 @@ export default function RecommendSection({ preloaded, isLoading, title, location
                       <TourCardSkeleton />
                     </div>
                   ))
-                : items?.map((tour, i) => (
-                    <div key={`${tour.title}-${i}`} className="carousel-card-wrap">
-                      <TourCard {...tour} imageClean hideFeatures priority={i === 0} />
-                    </div>
-                  ))
+                : (
+                    <>
+                      {baseTours?.map((tour, i) => (
+                        <div key={`${tour.title}-${i}`} className="carousel-card-wrap">
+                          <TourCard {...tour} imageClean hideFeatures priority={i === 0} />
+                        </div>
+                      ))}
+                      <SectionRailDivider label={backfill?.label} />
+                      {backfillTours.map((tour, i) => (
+                        <div key={`rail-${tour.title}-${i}`} className="carousel-card-wrap">
+                          <TourCard {...tour} imageClean hideFeatures />
+                        </div>
+                      ))}
+                    </>
+                  )
               }
             </div>
           </div>

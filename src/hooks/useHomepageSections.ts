@@ -166,7 +166,7 @@ export function useHomepage({ enabled = true } = {}) {
         topRated: applyOffersById(await enrichTourBadgeFields(data.topRated), byId),
         sellOut: applyOffersById(await enrichTourBadgeFields(data.sellOut), byId),
         trending: applyOffersById(await enrichTourBadgeFields(data.trending), byId),
-        new: applyOffersById(await enrichTourBadgeFields(data.new), byId),
+        new: applyOffersById(await enrichTourBadgeFields(newRowsOf(data)), byId),
         offers: await enrichTourBadgeFields(data.offers),
       }
     },
@@ -176,6 +176,16 @@ export function useHomepage({ enabled = true } = {}) {
 }
 
 // â”€â”€â”€ Fetcher â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+/**
+ * The unified homepage payload names this slice `newExperiences` while the
+ * client type (and every section) calls it `new` — normalise both spellings so
+ * a scoped section can render the rows the API actually sent instead of always
+ * falling back to its own global request.
+ */
+function newRowsOf(data: HomepageData & { newExperiences?: HomepageTour[] }): HomepageTour[] {
+  return data.newExperiences ?? data.new ?? []
+}
 
 async function fetchHomepageSection<T>(path: string): Promise<T> {
   const res = await fetchWithAuth(`/homepage${path}`)
@@ -509,7 +519,7 @@ export function useHomepageByCity(city: string | null) {
         topRated: applyOffersById(await enrichTourBadgeFields(data.topRated), byId),
         sellOut: applyOffersById(await enrichTourBadgeFields(data.sellOut), byId),
         trending: applyOffersById(await enrichTourBadgeFields(data.trending), byId),
-        new: applyOffersById(await enrichTourBadgeFields(data.new), byId),
+        new: applyOffersById(await enrichTourBadgeFields(newRowsOf(data)), byId),
         offers: await enrichTourBadgeFields(data.offers),
         city: data.city || city,
       }
