@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest'
-import { render, screen, cleanup } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, beforeAll, afterEach } from 'vitest'
+import { render, screen, cleanup, fireEvent } from '@testing-library/react'
 import type { WishlistItem } from '../context/WishlistContext'
 import type { SpecialOfferData } from '../hooks/useExpeditionTours'
 
@@ -98,19 +98,28 @@ const savedTour = (over: Partial<WishlistItem> = {}): WishlistItem => ({
   ...over,
 })
 
+/**
+ * jsdom has no matchMedia. `matches: true` makes the page take its mobile
+ * branch (the horizontal Continue Planning card), `false` its desktop branch
+ * (the vertical TourCard grid).
+ */
+function setMobileViewport(matches: boolean) {
+  window.matchMedia = ((query: string) => ({
+    matches,
+    media: query,
+    onchange: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => false,
+  })) as unknown as typeof window.matchMedia
+}
+
 describe('Wishlist page', () => {
   beforeAll(() => {
     // jsdom's matchMedia lacks addEventListener; TourCard subscribes to a breakpoint.
-    window.matchMedia = ((query: string) => ({
-      matches: false,
-      media: query,
-      onchange: null,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      addListener: () => {},
-      removeListener: () => {},
-      dispatchEvent: () => false,
-    })) as unknown as typeof window.matchMedia
+    setMobileViewport(false)
   })
 
   beforeEach(() => {
@@ -221,5 +230,88 @@ describe('Wishlist page', () => {
     expect(screen.getByText('Your wishlist is empty')).toBeInTheDocument()
     expect(screen.getByText('Explore Tours')).toBeInTheDocument()
     expect(container.querySelectorAll('.tour-card')).toHaveLength(0)
+  })
+})
+
+/**
+ * On mobile the page abandons the vertical TourCard grid and stacks the
+ * homepage's horizontal Continue Planning card instead — same cover photo,
+ * facts, rating, price and removal heart, just wider than tall.
+ */
+describe('Wishlist page — mobile horizontal cards', () => {
+  beforeEach(() => {
+    // Sibling describe: replicate the shared state reset so no live offer or
+    // saved item leaks in from an earlier test.
+    state.items = []
+    state.liveOffers = []
+    state.removeFromWishlist.mockReset()
+    state.addToWishlist.mockReset()
+    setMobileViewport(true)
+  })
+
+  afterEach(() => {
+    setMobileViewport(false)
+  })
+
+  it('renders one horizontal card per saved tour, not the vertical card', () => {
+    state.items = [
+      savedTour(),
+      savedTour({ id: 'tour-2', tourId: 'tour-2', title: 'Cape Coast Castles', price: 75, category: '' }),
+    ]
+    const { container } = render(<Wishlist />)
+
+    expect(container.querySelectorAll('.cp-card')).toHaveLength(2)
+    expect(container.querySelectorAll('.tour-card')).toHaveLength(0)
+    expect(screen.getByText('Accra City Tour')).toBeInTheDocument()
+    expect(screen.getByText('Cape Coast Castles')).toBeInTheDocument()
+    // both prices reached the card as numbers
+    expect([...screen.getAllByTestId('price')].map((el) => el.textContent)).toEqual(['120', '75'])
+  })
+
+  it('does not show a short-description line on the card', () => {
+    // The card carries the title, duration, icon facts, rating and price only —
+    // the item's captured features/description text stays off it.
+    state.items = [savedTour()]
+    render(<Wishlist />)
+
+    expect(screen.queryByText('Guide included · Lunch included')).not.toBeInTheDocument()
+    expect(document.querySelector('.cp-card-features')).toBeNull()
+  })
+
+  it('keeps the heart as the removal control', () => {
+    state.items = [savedTour()]
+    const { container } = render(<Wishlist />)
+
+    fireEvent.click(container.querySelector('.cp-card-wishlist')!)
+    expect(state.removeFromWishlist).toHaveBeenCalledWith('tour-1')
+  })
+
+  it('shows the promo price and discount chip while the offer is live', () => {
+    state.items = [savedTour({ specialOffers: [offer()], discount: '-30%' })]
+    const { container } = render(<Wishlist />)
+
+    expect(container.querySelector('.cp-card-price-strike')?.textContent).toBe('120')
+    expect(container.querySelector('.cp-card-price-promo')?.textContent).toBe('84')
+    expect(container.querySelector('.cp-card-discount-chip')?.textContent).toBe('-30%')
+  })
+
+  it('prefers the live offer over the offer captured at save time', () => {
+    state.items = [savedTour({ specialOffers: [offer({ discountPercentage: 10 })] })]
+    state.liveOffers = [{ id: 'tour-1', specialOffers: [offer({ id: 'live', discountPercentage: 50 })] }]
+    const { container } = render(<Wishlist />)
+
+    expect(container.querySelector('.cp-card-price-promo')?.textContent).toBe('60')
+    expect(container.querySelector('.cp-card-price-strike')?.textContent).toBe('120')
+  })
+
+  it('drops a captured promo once its offer has expired', () => {
+    state.items = [savedTour({ specialOffers: [offer({ endDate: '2020-01-01T00:00:00.000Z' })], discount: '-30%' })]
+    const { container } = render(<Wishlist />)
+
+    // No strike-through, no promo price, no stale "-30%" chip: full price only.
+    expect(container.querySelector('.cp-card-price-strike')).toBeNull()
+    expect(container.querySelector('.cp-card-price-promo')).toBeNull()
+    expect(container.querySelector('.cp-card-discount-chip')).toBeNull()
+    expect(container.querySelector('.cp-card-price')?.textContent).toBe('120')
   })
 })

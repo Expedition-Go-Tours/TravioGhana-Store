@@ -160,41 +160,66 @@
     font-size: 15px;
   }
 
-  /* Mobile: the saved cards become the same swipeable row as the Continue
-     Planning / home carousels — 280px slides, 16px gaps, scroll snapping.
-     The row breaks out of the dashboard column's 24px padding so it spans the
-     page, and keeps the carousel's 16px gutter on both sides. */
+  /* Mobile: saved tours stack as full-width horizontal Continue Planning
+     cards (the horizontal card the homepage shows on desktop) instead of the
+     old vertical TourCard swipe rail. The list breaks out of the dashboard
+     column's 24px padding so each card keeps the site-wide 16px mobile
+     gutter. */
   .wishlist-grid {
     display: flex;
-    flex-wrap: nowrap;
+    flex-direction: column;
     align-items: stretch;
-    gap: 16px;
+    gap: 14px;
     margin-inline: -24px;
-    padding: 4px 16px 12px;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    /* Keep the 16px gutter when a card snaps — without this, snap aligns the
-       card to the scrollport edge and swallows the padding. */
-    scroll-padding-inline: 16px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    padding-inline: 16px;
   }
 
-  .wishlist-grid::-webkit-scrollbar {
-    display: none;
-  }
-
-  .wishlist-grid > * {
-    flex: 0 0 280px;
-    min-width: 280px;
-    display: flex;
-    align-items: stretch;
-    scroll-snap-align: start;
-  }
-
+  .wishlist-grid > *,
   .wishlist-grid > * > * {
     width: 100%;
+  }
+
+  /* Compress the card's white area, never the 128px photo: stacking the
+     "from"/price column vertically frees the width the body needs for the
+     title, facts and rating. */
+  .wishlist-grid .cp-card {
+    padding: 8px;
+    gap: 10px;
+  }
+
+  .wishlist-grid .cp-card-price-col {
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 0;
+    min-width: 0;
+    padding: 0 2px 4px 0;
+  }
+
+  .wishlist-grid .cp-card-from {
+    font-size: 10px;
+  }
+
+  .wishlist-grid .cp-card-price,
+  .wishlist-grid .cp-card-price-promo {
+    font-size: 17px;
+  }
+
+  .wishlist-grid .cp-card-price-strike {
+    font-size: 12px;
+  }
+
+  /* The body is narrow on a phone: stack the icon facts vertically rather
+     than splitting a row mid-fact, and let the features line wrap. */
+  .wishlist-grid .cp-card-facts {
+    flex-direction: column;
+    align-items: flex-start;
+    row-gap: 4px;
+    column-gap: 0;
+  }
+
+  .wishlist-grid .cp-card-facts li {
+    white-space: normal;
   }
 }
 

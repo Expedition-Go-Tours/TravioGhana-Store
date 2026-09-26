@@ -1,4 +1,4 @@
-﻿import { lazy, Suspense, useMemo } from 'react'
+﻿import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Info } from 'lucide-react'
 import { Button } from '../components/ui/button'
@@ -6,6 +6,8 @@ import { useWishlist, type WishlistItem } from '../context/WishlistContext'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import TourCard from '../components/TourCard'
+import ContinuePlanningCard, { type ContinuePlanningCardItem } from '../components/ContinuePlanningCard'
+import { useSellOutContext } from '../context/SellOutContext'
 import { useHomepageOffers } from '../hooks/useHomepageSections'
 import type { SpecialOfferData } from '../hooks/useExpeditionTours'
 import './Wishlist.css'
@@ -16,13 +18,12 @@ const DotLottieReact = lazy(() =>
 
 /**
  * The dashboard column is max 1200px wide, so the saved grid is 3-up on
- * desktop, 2-up on tablets and 1-up on phones. Without this descriptor the
- * card's default 50vw assumption makes the browser fetch the 1200w image for
- * a ~370px card. On mobile the grid renders fixed 280px cards (the same width
- * as the Continue Planning / home carousel slides), so the descriptor asks
- * for exactly that width instead of 100vw.
+ * desktop and 2-up on tablets. Without this descriptor the card's default
+ * 50vw assumption makes the browser fetch the 1200w image for a ~370px card.
+ * Mobile renders the horizontal Continue Planning card instead of TourCard,
+ * so only the tablet/desktop widths appear here.
  */
-const CARD_SIZES = '(max-width: 768px) 280px, (max-width: 1199px) 50vw, 33vw'
+const CARD_SIZES = '(max-width: 1199px) 50vw, 33vw'
 
 /**
  * A saved tour renders as the very same card the home page uses — features,
@@ -70,10 +71,59 @@ function toCardProps(item: WishlistItem, refreshedOffers?: SpecialOfferData[]) {
   }
 }
 
+/**
+ * On mobile a saved tour renders as the horizontal Continue Planning card
+ * instead of the vertical TourCard, so the wishlist matches the card the home
+ * page shows on desktop. Offers are handed over as stored and filtered by the
+ * card itself, so a snapshot whose date window has passed can never discount
+ * the price or raise the "Special Offer" badge.
+ */
+function toPlanningCardItem(item: WishlistItem, refreshedOffers?: SpecialOfferData[]): ContinuePlanningCardItem {
+  return {
+    id: item.id,
+    tourId: item.tourId,
+    title: item.title,
+    location: item.location,
+    price: item.price,
+    duration: item.duration,
+    features: item.features,
+    imageUrl: item.imageUrl,
+    photos: item.photos,
+    rating: item.rating,
+    reviewCount: item.reviewCount,
+    category: item.category,
+    supplierName: item.supplierName,
+    languages: item.languages,
+    difficulty: item.difficulty,
+    cancellationPolicy: item.cancellationPolicy,
+    pickupIncluded: item.pickupIncluded,
+    meetingMode: item.meetingMode,
+    source: item.source,
+    externalUrl: item.externalUrl,
+    slug: item.slug,
+    discount: item.discount,
+    specialOffers: refreshedOffers ?? item.specialOffers,
+  }
+}
+
 export default function Wishlist() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { wishlist: wishlistItems } = useWishlist()
+  const { isLikelyToSellOut } = useSellOutContext()
+
+  // Same breakpoint the Continue Planning section uses to decide between its
+  // horizontal card and the vertical TourCard.
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(max-width: 768px)').matches,
+  )
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
 
   // Live offers for the saved tours. One cached request shares the homepage's
   // offers data; the snapshot captured at save time stays as the fallback for
@@ -175,11 +225,18 @@ export default function Wishlist() {
                   exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.2 } }}
                   transition={{ duration: 0.3 }}
                 >
-                  <TourCard
-                    {...toCardProps(item, item.tourId ? offersById.get(item.tourId) : undefined)}
-                    imageClean
-                    sizes={CARD_SIZES}
-                  />
+                  {isMobile ? (
+                    <ContinuePlanningCard
+                      item={toPlanningCardItem(item, item.tourId ? offersById.get(item.tourId) : undefined)}
+                      likelyToSellOut={isLikelyToSellOut({ id: item.tourId || item.id, title: item.title })}
+                    />
+                  ) : (
+                    <TourCard
+                      {...toCardProps(item, item.tourId ? offersById.get(item.tourId) : undefined)}
+                      imageClean
+                      sizes={CARD_SIZES}
+                    />
+                  )}
                 </motion.div>
               ))}
             </AnimatePresence>

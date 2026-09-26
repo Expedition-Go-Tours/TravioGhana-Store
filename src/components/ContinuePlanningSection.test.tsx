@@ -46,6 +46,7 @@ vi.mock('../contexts/CurrencyContext', () => ({
 
 vi.mock('../hooks/useExpeditionTours', () => ({
   bestOfferDiscountAmount: () => 0,
+  filterActiveOffers: (offers: unknown) => (Array.isArray(offers) ? offers : []),
 }))
 
 import ContinuePlanningSection from './ContinuePlanningSection'
