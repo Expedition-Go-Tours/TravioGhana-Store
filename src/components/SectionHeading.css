@@ -14,7 +14,10 @@
 .section-title {
   font-family: 'Manrope', sans-serif;
   font-weight: 800;
-  font-size: clamp(19px, 2.2vw, 32px);
+  /* Cap lowered from 32px: section headings were rendering at the full 32px on
+     any viewport ≥1455px, which left almost no gap under the 38px hero headline.
+     The 2.2vw slope is untouched, so nothing below ~1180px changes at all. */
+  font-size: clamp(19px, 2.2vw, 26px);
   color: #1a1a1a;
   margin: 0;
   line-height: 1.2;
