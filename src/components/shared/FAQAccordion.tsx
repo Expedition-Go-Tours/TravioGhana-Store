@@ -9,6 +9,11 @@ interface FAQAccordionProps {
   items: FAQItem[]
   /** First item starts open (default true). */
   defaultOpen?: boolean
+  /**
+   * Render "01", "02"… before each question (the supplier landing template).
+   * Off by default so the partner pages keep their plain questions.
+   */
+  numbered?: boolean
 }
 
 /**
@@ -22,7 +27,7 @@ interface FAQAccordionProps {
  * observer also keeps the expanded height correct when the copy reflows
  * (viewport resize, font swap, locale change).
  */
-export default function FAQAccordion({ items, defaultOpen = true }: FAQAccordionProps) {
+export default function FAQAccordion({ items, defaultOpen = true, numbered = false }: FAQAccordionProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(defaultOpen ? 0 : null)
   const [heights, setHeights] = useState<Record<number, number>>({})
   const answerRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -67,7 +72,10 @@ export default function FAQAccordion({ items, defaultOpen = true }: FAQAccordion
               onClick={() => toggle(i)}
               aria-expanded={isOpen}
             >
-              <span>{item.question}</span>
+              <span>
+                {numbered && <b aria-hidden="true">{String(i + 1).padStart(2, '0')}</b>}
+                {item.question}
+              </span>
               <span aria-hidden="true">+</span>
             </button>
             <div

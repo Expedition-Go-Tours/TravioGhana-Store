@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import SupplierRegisterPage from './SupplierRegisterPage'
 
@@ -32,35 +32,17 @@ vi.mock('@/components/supplier/SupplierApplicationForm', () => ({
   SupplierApplicationForm: () => <div>SUPPLIER_APPLICATION_FORM</div>,
 }))
 
-vi.mock('@/components/Footer', () => ({ default: () => <div>FOOTER</div> }))
-
-vi.mock('@/components/shared/RevealOnScroll', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}))
-
-function withProviders(ui: React.ReactNode, initialPath: string) {
+function withProviders(ui: React.ReactNode) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={[initialPath]}>{ui}</MemoryRouter>
+      <MemoryRouter initialEntries={['/supplier/register']}>{ui}</MemoryRouter>
     </QueryClientProvider>,
   )
 }
 
-/** Marketing page at /supplier/list-experience, with /supplier/register as a probe. */
-function renderMarketing() {
-  return withProviders(
-    <Routes>
-      <Route path="/supplier/list-experience" element={<SupplierRegisterPage showApplicationForm={false} />} />
-      <Route path="/supplier/register" element={<div>REGISTER_ROUTE</div>} />
-    </Routes>,
-    '/supplier/list-experience',
-  )
-}
-
-/** The real focused registration page at /supplier/register. */
 function renderRegister() {
-  return withProviders(<SupplierRegisterPage />, '/supplier/register')
+  return withProviders(<SupplierRegisterPage />)
 }
 
 beforeEach(() => {
@@ -70,29 +52,7 @@ beforeEach(() => {
 })
 
 describe('SupplierRegisterPage', () => {
-  it('marketing mode renders the story, no banner and no application form', () => {
-    renderMarketing()
-
-    expect(screen.getByText(/Manage your tours/i)).toBeInTheDocument()
-    expect(screen.getAllByRole('button', { name: /become a supplier/i }).length).toBeGreaterThan(0)
-    // Removed top-line banner (exact string — the hero copy mentions the same
-    // phrase in a sentence and must stay).
-    expect(screen.queryByText("Built for Ghana's experience operators.")).toBeNull()
-    expect(screen.queryByText(/No listing fee/i)).toBeNull()
-    // The application wizard lives on /supplier/register only.
-    expect(screen.queryByText(/Join as a Supplier/i)).toBeNull()
-    expect(screen.queryByText('SUPPLIER_APPLICATION_FORM')).toBeNull()
-  })
-
-  it('marketing CTA routes to the supplier registration page', async () => {
-    renderMarketing()
-
-    fireEvent.click(screen.getAllByRole('button', { name: /become a supplier/i })[0])
-
-    expect(await screen.findByText('REGISTER_ROUTE')).toBeInTheDocument()
-  })
-
-  it('register mode is the focused application page — form first, no marketing', () => {
+  it('is the focused application page — form first, no marketing', () => {
     renderRegister()
 
     expect(screen.getByRole('heading', { name: /Join as a Supplier/i })).toBeInTheDocument()
@@ -100,10 +60,9 @@ describe('SupplierRegisterPage', () => {
       'href',
       '/supplier/list-experience',
     )
-    // No banner, no marketing hero, no marketing sections.
-    expect(screen.queryByText("Built for Ghana's experience operators.")).toBeNull()
-    expect(screen.queryByText(/Manage your tours/i)).toBeNull()
-    expect(screen.queryByText(/From sign-up to your first booking/i)).toBeNull()
+    // The marketing story lives on /supplier/list-experience only.
+    expect(screen.queryByText(/List your tours/i)).toBeNull()
+    expect(screen.queryByText(/From supplier to live listing/i)).toBeNull()
   })
 
   it('renders the application wizard whether signed out or signed in — the wizard creates the account', () => {

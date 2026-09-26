@@ -47,6 +47,7 @@ const AllReviewsPage = lazy(() => import('./pages/AllReviewsPage'))
 const ReviewExperiencePage = lazy(() => import('./pages/ReviewExperiencePage'))
 const SupplierPage = lazy(() => import('./pages/SupplierPage'))
 const SupplierRegisterPage = lazy(() => import('./pages/supplier/SupplierRegisterPage'))
+const ListExperiencePage = lazy(() => import('./pages/supplier/ListExperiencePage'))
 const BookingPage = lazy(() => import('./pages/BookingPage'))
 const BookingConfirmationPage = lazy(() => import('./pages/BookingConfirmationPage'))
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'))
@@ -366,7 +367,7 @@ function AppContent() {
             <SupplierRegisterPage onOpenAuth={handleOpenAuth} />
           } />
           <Route path="/supplier/list-experience" element={
-            <SupplierRegisterPage onOpenAuth={handleOpenAuth} showApplicationForm={false} />
+            <ListExperiencePage />
           } />
           <Route path="/booking" element={<BookingPage />} />
           <Route path="/:tourId/booking" element={<BookingPage />} />

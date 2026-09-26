@@ -2,7 +2,7 @@ import { useRef, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Star, ChevronDown, ChevronRight, ChevronLeft, Phone, Mail, Globe, MapPin } from 'lucide-react'
+import { Star, ChevronDown, ChevronRight, ChevronLeft, Mail } from 'lucide-react'
 import TourCard from '../../components/TourCard'
 import type { TourCardData } from '../../hooks/useExpeditionTours'
 import { supplierTypeLabel } from '../../lib/supplier'
@@ -15,10 +15,7 @@ interface SupplierSectionProps {
   description?: string
   rating: number | null
   totalTours: number
-  phone?: string
   email?: string
-  website?: string
-  address?: string
   verified?: boolean
   supplierType?: string | null
   tours: TourCardData[]
@@ -42,10 +39,7 @@ export default function SupplierSection({
   description,
   rating,
   totalTours,
-  phone,
   email,
-  website,
-  address,
   verified,
   supplierType,
   tours,
@@ -57,9 +51,6 @@ export default function SupplierSection({
   const { t } = useTranslation()
   const navigate = useNavigate()
   const displayRating = rating != null ? rating.toFixed(1) : null
-  const websiteHref = website
-    ? website.startsWith('http') ? website : `https://${website}`
-    : null
   const scrollRef = useRef<HTMLDivElement>(null)
   const [showLeftArrow, setShowLeftArrow] = useState(false)
   const [showRightArrow, setShowRightArrow] = useState(false)
@@ -188,34 +179,14 @@ export default function SupplierSection({
           >
             <div className="supplier-about-body">
               {description && <p className="supplier-description">{description}</p>}
-              <div className="supplier-contact">
-                {phone && (
-                  <div className="supplier-contact-item">
-                    <Phone size={16} className="supplier-contact-icon" />
-                    <a href={`tel:${phone.replace(/\s/g, '')}`}>{phone}</a>
-                  </div>
-                )}
-                {email && (
+              {email && (
+                <div className="supplier-contact">
                   <div className="supplier-contact-item">
                     <Mail size={16} className="supplier-contact-icon" />
                     <a href={`mailto:${email}`}>{email}</a>
                   </div>
-                )}
-                {websiteHref && (
-                  <div className="supplier-contact-item">
-                    <Globe size={16} className="supplier-contact-icon" />
-                    <a href={websiteHref} target="_blank" rel="noopener noreferrer">
-                      {website}
-                    </a>
-                  </div>
-                )}
-                {address && (
-                  <div className="supplier-contact-item">
-                    <MapPin size={16} className="supplier-contact-icon" />
-                    <span>{address}</span>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

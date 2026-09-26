@@ -86,4 +86,18 @@ describe('FAQAccordion', () => {
     render(<FAQAccordion items={items} defaultOpen={false} />)
     screen.getAllByRole('button').forEach((b) => expect(b).toHaveAttribute('aria-expanded', 'false'))
   })
+
+  it('renders zero-padded step numbers when numbered', () => {
+    render(<FAQAccordion items={items} numbered />)
+
+    const numbers = Array.from(document.querySelectorAll('.eg-faq-btn b')).map((el) => el.textContent)
+    expect(numbers).toEqual(['01', '02'])
+    expect(screen.getByText(/How do I book\?/)).toBeInTheDocument()
+  })
+
+  it('omits the numbers by default (partner pages keep plain questions)', () => {
+    render(<FAQAccordion items={items} />)
+
+    expect(document.querySelectorAll('.eg-faq-btn b')).toHaveLength(0)
+  })
 })

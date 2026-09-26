@@ -1053,10 +1053,7 @@ export default function TourDetailPage() {
       logo: mapped.logo || tour?.supplierPhoto || '',
       description: mapped.description || (tour?.supplierName ? t('tourDetail.supplierDescription', { name: tour.supplierName }) : ''),
       rating: mapped.rating ?? (tour?.rating ?? null),
-      phone: mapped.phone || '',
       email: mapped.email || '',
-      website: mapped.website || '',
-      address: mapped.address || tour?.location || '',
       verified: mapped.verified,
       supplierType: mapped.supplierType,
     }
@@ -1331,10 +1328,7 @@ export default function TourDetailPage() {
                       description={supplierData.description}
                       rating={supplierData.rating}
                       totalTours={supplierTourCount ?? relatedTours.length}
-                      phone={supplierData.phone}
                       email={supplierData.email}
-                      website={supplierData.website}
-                      address={supplierData.address}
                       verified={supplierData.verified}
                       supplierType={supplierData.supplierType}
                       tours={supplierTours}
