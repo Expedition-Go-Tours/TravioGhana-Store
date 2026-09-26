@@ -534,6 +534,11 @@ export function useHomepageByCity(city: string | null) {
  * the homepage search-history rails ("Continue your search in X" / "Previously
  * searched in Y"). Only fetches when a city is provided. The backend cache key
  * is anonymous + per-city, so the result is shared across users.
+ *
+ * The API returns the place's own tours plus a nearby rail (`backfill.tours`).
+ * Ignoring the rail left a region with little supply showing one or two cards,
+ * so nearby experiences now continue the rail — local rows first, then the
+ * fill, without repeating a card.
  */
 export function useCityRecommended(city: string | null, limit = 12) {
   return useQuery({
@@ -541,8 +546,13 @@ export function useCityRecommended(city: string | null, limit = 12) {
     queryFn: async () => {
       const params = new URLSearchParams({ limit: String(limit) })
       if (city) params.set('city', city)
-      const data = await fetchHomepageSection<{ tours: HomepageTour[] }>(`/recommended?${params}`)
-      return enrichTourBadgeFields(data.tours)
+      const data = await fetchHomepageSection<{ tours: HomepageTour[]; backfill?: HomepageBackfill | null }>(
+        `/recommended?${params}`
+      )
+      const local = await enrichTourBadgeFields(data.tours ?? [])
+      const localIds = new Set(local.map((t) => t.id))
+      const nearby = (data.backfill?.tours ?? []).filter((t) => !localIds.has(t.id))
+      return enrichTourBadgeFields([...local, ...nearby].slice(0, limit))
     },
     enabled: !!city,
     staleTime: 5 * 60 * 1000,
