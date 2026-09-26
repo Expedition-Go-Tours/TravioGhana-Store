@@ -791,6 +791,21 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
 
   const handleViewStatus = () => onSubmitted?.()
 
+  // Auto-accept: the supplier account is live the moment the application is
+  // submitted, so walk them straight to their dashboard. The button below stays
+  // as a manual fallback for anyone who wants to read this screen first, and
+  // `onSubmitted` (the parent's status refresh) is what triggers the SSO
+  // redirect once the account reads back as ACTIVE.
+  const autoRedirected = useRef(false)
+  useEffect(() => {
+    if (!submitted || !onSubmitted || autoRedirected.current) return
+    const timer = window.setTimeout(() => {
+      autoRedirected.current = true
+      onSubmitted()
+    }, 4000)
+    return () => window.clearTimeout(timer)
+  }, [submitted, onSubmitted])
+
   // ── Derived display values ──────────────────────────────────────────────
 
   const selectedOption = supplierTypeOption(form.supplierChoice)
@@ -1927,31 +1942,35 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
         <div className="success-shell">
           <div className="success-badge">
             <CircleCheckBig size={14} strokeWidth={2.2} aria-hidden="true" />
-            Application submitted
+            Supplier account created
           </div>
           <div className="success-icon">
             <Check size={34} strokeWidth={2.6} aria-hidden="true" />
           </div>
-          <h2>Your supplier profile is on its way</h2>
+          <h2>Your supplier account is ready</h2>
           <p>
-            Welcome to TravioGhana. Your supplier account and application are in — our team will
-            review everything and get back to you within 3-5 business days.
+            Welcome to TravioGhana. Your supplier account is active — open your dashboard to create
+            your first listing. Our team verifies your ID document in the background and will email
+            you only if something needs your attention.
           </p>
 
           <div className="success-highlights">
             <div className="success-highlight">
-              <strong>Application received</strong>
-              <span>Your details and documents are now with our review team.</span>
+              <strong>Dashboard unlocked</strong>
+              <span>Create tours, set availability and publish — all from your supplier dashboard.</span>
             </div>
             <div className="success-highlight">
-              <strong>What happens next</strong>
-              <span>We&rsquo;ll email you as soon as the review is complete — then you can start creating listings.</span>
+              <strong>Document check</strong>
+              <span>We&rsquo;re verifying the ID document you uploaded — nothing else is needed from you.</span>
             </div>
           </div>
 
           <button type="button" className="btn primary success-dashboard-btn" onClick={handleViewStatus}>
-            View application status
+            Go to your dashboard
           </button>
+          <p className="success-redirect-note" role="status">
+            Taking you to your supplier dashboard&hellip;
+          </p>
         </div>
       </div>
     </section>

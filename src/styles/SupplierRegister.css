@@ -153,6 +153,11 @@
       line-height:1.5;
     }.srp-page .success-dashboard-btn{
       min-width:240px;
+    }.srp-page .success-redirect-note{
+      margin:10px 0 0;
+      font-size:11px;
+      color:#78857d;
+      text-align:center;
     }.srp-page .success-confetti{
       position:absolute;
       inset:0;

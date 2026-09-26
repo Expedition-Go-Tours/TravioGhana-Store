@@ -55,6 +55,13 @@ function activeStepCard(): HTMLElement {
   return card
 }
 
+/** The success section stays mounted too — only its `.active` class flips. */
+function successScreenIsActive(): boolean {
+  return (
+    document.querySelector('#successScreen')?.closest('.form-step')?.classList.contains('active') ?? false
+  )
+}
+
 function activeFileInput(): HTMLInputElement {
   const input = document.querySelector<HTMLInputElement>('.form-step.active input[type="file"]')
   if (!input) throw new Error('file input not found')
@@ -376,7 +383,31 @@ describe('SupplierApplicationForm', () => {
     })
 
     await waitFor(() =>
-      expect(screen.getByText('Your supplier profile is on its way')).toBeInTheDocument()
+      expect(screen.getByText('Your supplier account is ready')).toBeInTheDocument()
     )
   })
+
+  it('hands an auto-accepted supplier to their dashboard after a short pause', async () => {
+    seedReviewStep()
+    mocks.applyAsSupplier.mockResolvedValue({ supplierProfile: { id: 's1' } })
+    mocks.getSupplierApplicationStatus.mockResolvedValue({ id: 's1', userId: 'u1', status: 'ACTIVE' })
+    const onSubmitted = vi.fn()
+
+    render(<SupplierApplicationForm onSubmitted={onSubmitted} />)
+    await waitFor(() => expect(activeStepText()).toContain('Review your setup'))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create supplier profile' }))
+
+    // The account is live on submission, so the success screen promises the
+    // dashboard and the parent is asked to refresh the status (the refresh is
+    // what performs the SSO redirect once the account reads back as ACTIVE).
+    await waitFor(() => expect(successScreenIsActive()).toBe(true))
+    expect(screen.getByText(/Taking you to your supplier dashboard/)).toBeInTheDocument()
+    expect(onSubmitted).not.toHaveBeenCalled()
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 4100))
+    })
+    expect(onSubmitted).toHaveBeenCalledTimes(1)
+  }, 10000)
 })
