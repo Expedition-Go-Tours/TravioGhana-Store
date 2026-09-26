@@ -23,7 +23,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import confetti from 'canvas-confetti'
-import supplierLogo from '@/assets/TravioGhana_Supplier_Logo.png'
 import {
   Check,
   ChevronDown,
@@ -2084,7 +2083,10 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
       <div className="shell">
         <aside className="sidebar panel">
           <div className="brand">
-            <img className="brand-logo" src={supplierLogo} alt="TravioGhana" />
+            <div className="brand-copy">
+              <strong>Supplier onboarding</strong>
+              <span>TravioGhana partner registration</span>
+            </div>
           </div>
 
           <div className="intro-card">
