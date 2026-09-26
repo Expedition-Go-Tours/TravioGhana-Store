@@ -802,10 +802,22 @@
 @media (max-width: 1050px) {
   .account-panel--split {
     grid-template-columns: 1fr;
+    /* Stacked, the two blocks stop being one card split by a hairline: a real
+       gap separates them, using the 26px this file already leaves between
+       stacked panels. */
+    row-gap: 26px;
   }
   .account-panel__left {
     border-right: 0;
-    border-bottom: 1px solid var(--acc-line);
+    border-bottom: 0;
+  }
+  /* row-gap now carries the seam, so drop the padding that used to sit
+     against it — otherwise the gap reads as 26px + 20px + 20px. */
+  .account-panel__left .account-section__body {
+    padding-bottom: 0;
+  }
+  .account-panel__right .account-section__body--location {
+    padding-top: 0;
   }
 }
 
