@@ -54,6 +54,8 @@ export interface SupplierProfileData {
   country: string | null
   /** Human-readable opening hours, e.g. "Every day 08:00–22:00". */
   operatingHours: string | null
+  /** Whether the supplier is open right now. null when their hours are unknown. */
+  isOpenNow: boolean | null
   socials: SupplierSocialLink[]
 }
 
@@ -227,6 +229,55 @@ export function normaliseOperatingHours(raw: unknown): string | null {
     .join('; ')
 }
 
+/** Minutes since midnight for "HH:MM" (also "H:MM"), or null when malformed. */
+function parseClockValue(value: unknown): number | null {
+  const match = asString(value)?.match(/^(\d{1,2}):(\d{2})$/)
+  if (!match) return null
+  const hours = Number(match[1])
+  const minutes = Number(match[2])
+  if (hours > 23 || minutes > 59) return null
+  return hours * 60 + minutes
+}
+
+function isWithinWindow(nowMinutes: number, start: number, end: number): boolean {
+  if (end === start) return false
+  if (end > start) return nowMinutes >= start && nowMinutes < end
+  // Overnight window (e.g. 22:00–02:00) wraps past midnight.
+  return nowMinutes >= start || nowMinutes < end
+}
+
+/**
+ * Whether the supplier is open right now, from their raw account-page hours.
+ * Handles the structured day → windows object the wizard posts and the
+ * collapsed "Every day HH:MM–HH:MM" string; anything else answers null
+ * (unknown) rather than claiming the supplier is closed.
+ */
+export function isSupplierOpenNow(raw: unknown, now = new Date()): boolean | null {
+  const nowMinutes = now.getHours() * 60 + now.getMinutes()
+
+  if (typeof raw === 'string') {
+    const match = raw.match(/every day\s+(\d{1,2}:\d{2})\s*[–—-]\s*(\d{1,2}:\d{2})/i)
+    if (!match) return null
+    const start = parseClockValue(match[1])
+    const end = parseClockValue(match[2])
+    if (start == null || end == null) return null
+    return isWithinWindow(nowMinutes, start, end)
+  }
+
+  if (!raw || typeof raw !== 'object') return null
+  const day = WEEKDAYS[(now.getDay() + 6) % 7]
+  const windows = (raw as Record<string, unknown>)[day]
+  if (!Array.isArray(windows)) return null
+  for (const window of windows) {
+    if (!window || typeof window !== 'object') continue
+    const start = parseClockValue((window as { startTime?: unknown }).startTime)
+    const end = parseClockValue((window as { endTime?: unknown }).endTime)
+    if (start == null || end == null) continue
+    if (isWithinWindow(nowMinutes, start, end)) return true
+  }
+  return false
+}
+
 const SOCIAL_FIELDS: { key: string; label: string }[] = [
   { key: 'instagram', label: 'Instagram' },
   { key: 'facebook', label: 'Facebook' },
@@ -363,6 +414,7 @@ export function mapSupplierProfile({ tour, supplier, fallback }: SupplierProfile
     city: asString(businessInfo.city) || null,
     country: countryName(asString(businessInfo.country)),
     operatingHours: normaliseOperatingHours(businessInfo.operatingHours),
+    isOpenNow: isSupplierOpenNow(businessInfo.operatingHours),
     socials: extractSupplierSocials(businessInfo),
   }
 }

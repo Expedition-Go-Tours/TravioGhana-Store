@@ -7,8 +7,11 @@ import {
   isVisibleExternalReview,
   scaleDistribution,
   selectMatchedProducts,
+  selectSupplierReviewData,
   type ExternalReview,
   type ExternalReviewProduct,
+  type ExternalReviewStatsData,
+  type ExternalReviewStatsProduct,
 } from './useExternalReviews'
 import { matchTourForTitle } from '../lib/reviewTourLink'
 import data from '../../public/data/externalReviews.json'
@@ -421,5 +424,95 @@ describe('scraped headline numbers with the real dataset', () => {
     const stats = headline('Kadelo Travels', { rating: 0, reviewCount: 0 })
     expect(stats.externalCount).toBe(0)
     expect(stats.reviewCount).toBe(0)
+  })
+})
+
+describe('selectSupplierReviewData', () => {
+  const scrapedSupplier = 'Expedition-Go Tours LTD'
+
+  function statsProduct(
+    over: Partial<ExternalReviewStatsProduct> & Pick<ExternalReviewStatsProduct, 'id' | 'tourTitle'>,
+  ): ExternalReviewStatsProduct {
+    return {
+      source: 'TRIPADVISOR',
+      tourUrl: 'https://example.com/product',
+      rating: null,
+      reviewCount: null,
+      distribution: null,
+      resolvedDistribution: null,
+      official: false,
+      ...over,
+    }
+  }
+
+  function statsData(over: Partial<ExternalReviewStatsData> = {}): ExternalReviewStatsData {
+    return {
+      stats: { totalReviews: 0, averageRating: null, platforms: [] },
+      products: [],
+      productAggregates: {},
+      featuredReviews: [],
+      ...over,
+    }
+  }
+
+  it("merges every product matched to the supplier's tours into one summary", () => {
+    const data = statsData({
+      products: [
+        statsProduct({
+          id: 'p1',
+          tourTitle: 'Accra City Tour',
+          rating: 4.8,
+          reviewCount: 100,
+          distribution: { 5: 90, 4: 7, 3: 2, 2: 1 },
+          resolvedDistribution: { 5: 90, 4: 7, 3: 2, 2: 1, 1: 0 },
+          official: true,
+        }),
+        statsProduct({
+          id: 'p2',
+          tourTitle: 'Cape Coast Castles',
+          rating: 4.9,
+          reviewCount: 50,
+          resolvedDistribution: { 5: 50, 4: 0, 3: 0, 2: 0, 1: 0 },
+          official: true,
+        }),
+      ],
+      featuredReviews: [
+        review({ id: 'r1', source: 'TRIPADVISOR', rating: 5, tourTitle: 'Accra City Tour', productId: 'p1' }),
+        review({ id: 'r2', source: 'TRIPADVISOR', rating: 5, tourTitle: 'Cape Coast Castles', productId: 'p2' }),
+        review({ id: 'r3', source: 'TRIPADVISOR', rating: 5, tourTitle: 'Somewhere Else', productId: 'other' }),
+      ],
+    })
+
+    const result = selectSupplierReviewData(data, [
+      { title: 'Accra City Tour', location: 'Accra, Ghana', supplierName: scrapedSupplier },
+      { title: 'Cape Coast Castles', location: 'Cape Coast, Ghana', supplierName: scrapedSupplier },
+    ])
+
+    // (100 × 4.8 + 50 × 4.9) / 150 = 4.83 → 4.8
+    expect(result.summary.count).toBe(150)
+    expect(result.summary.rating).toBe(4.8)
+    expect(result.summary.distribution?.[5]).toBe(140)
+    // Only the rows belonging to the matched products survive.
+    expect(result.reviews.map((r) => r.id)).toEqual(['r1', 'r2'])
+  })
+
+  it('fails closed for other operators and falls back to their in-app totals', () => {
+    const data = statsData({
+      products: [statsProduct({ id: 'p1', tourTitle: 'Accra City Tour', rating: 4.8, reviewCount: 100 })],
+    })
+
+    const result = selectSupplierReviewData(data, [
+      { title: 'Accra City Tour', supplierName: 'Kadelo Travels', rating: '4.5', reviews: 10 },
+    ])
+
+    expect(result.summary).toEqual({ rating: 4.5, count: 10, distribution: null })
+    expect(result.reviews).toEqual([])
+  })
+
+  it('returns an empty summary when there is nothing to show', () => {
+    expect(selectSupplierReviewData(undefined, [])).toEqual({
+      summary: { rating: null, count: 0, distribution: null },
+      reviews: [],
+    })
   })
 })

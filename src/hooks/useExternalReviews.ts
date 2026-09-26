@@ -614,3 +614,82 @@ export function useCombinedTourStats(tour: CombinedStatsTour | null | undefined)
     return combineReviewStats({ rating, reviewCount }, [], fallback)
   }, [data, title, location, supplierName, rating, reviewCount])
 }
+
+// ─── Supplier-level reviews ──────────────────────────────────────────────────
+
+/** Tour fields the supplier review selector needs. */
+export interface SupplierReviewTour extends MatchableTour {
+  rating?: number | string | null
+  reviews?: number | null
+  ratingValue?: number | null
+}
+
+export interface SupplierReviewSummary {
+  /** Weighted average (official scraped totals first, in-app fallback). */
+  rating: number | null
+  count: number
+  /** Star → count from scraped distributions; null when only in-app data exists. */
+  distribution: Record<number, number> | null
+}
+
+export interface SupplierReviewData {
+  summary: SupplierReviewSummary
+  /** Featured review rows belonging to the supplier's matched products. */
+  reviews: ExternalReview[]
+}
+
+/**
+ * Merges the scraped products matched to a supplier's tours into one summary,
+ * falling back to the supplier's own in-app rating totals when nothing scraped
+ * matches. Runs off the slim stats payload — the 1.6 MB row dataset is never
+ * needed for the supplier profile.
+ */
+export function selectSupplierReviewData(
+  data: ExternalReviewStatsData | undefined,
+  tours: SupplierReviewTour[],
+): SupplierReviewData {
+  let localCount = 0
+  let localSum = 0
+  for (const tour of tours) {
+    const count = Math.max(0, Number(tour.reviews) || 0)
+    const rating = Number(tour.ratingValue ?? tour.rating) || 0
+    if (count > 0 && rating > 0) {
+      localCount += count
+      localSum += rating * count
+    }
+  }
+  const localSummary: SupplierReviewSummary = localCount > 0
+    ? { rating: roundOne(localSum / localCount), count: localCount, distribution: null }
+    : { rating: null, count: 0, distribution: null }
+
+  if (!data || tours.length === 0) return { summary: localSummary, reviews: [] }
+
+  const productsById = new Map<string, ExternalReviewStatsProduct>()
+  for (const tour of tours) {
+    for (const product of selectMatchedProducts(data.products, tour)) {
+      productsById.set(product.id, product)
+    }
+  }
+  const products = [...productsById.values()]
+  if (products.length === 0) return { summary: localSummary, reviews: [] }
+
+  const aggregate = aggregateProducts(products)
+  const summary: SupplierReviewSummary = aggregate
+    ? { rating: aggregate.rating, count: aggregate.reviewCount, distribution: aggregateResolvedDistribution(products) }
+    : localSummary
+
+  const productIds = new Set(products.map((product) => product.id))
+  const reviews = data.featuredReviews.filter(
+    (review) =>
+      (review.productId != null && productIds.has(review.productId)) ||
+      matchTourForTitle(review.tourTitle, tours) !== null,
+  )
+
+  return { summary, reviews }
+}
+
+/** Supplier profile reviews: summary + featured cards for the homepage-styled rail. */
+export function useSupplierReviews(tours: SupplierReviewTour[]) {
+  const { data, isLoading } = useExternalReviewStatsData()
+  return { ...selectSupplierReviewData(data, tours), isLoading }
+}

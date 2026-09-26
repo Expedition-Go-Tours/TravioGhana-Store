@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, cleanup } from '@testing-library/react'
+import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 
 /**
@@ -10,17 +10,27 @@ import { MemoryRouter } from 'react-router-dom'
  * these tests pin the icon to the state (desktop and mobile drawer).
  */
 
-const state = vi.hoisted(() => ({ approved: false }))
+const state = vi.hoisted(() => ({
+  approved: false,
+  hasActiveSearch: false,
+  resetLocation: vi.fn(),
+  clearContinuePlanning: vi.fn(),
+}))
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, fallback?: string) =>
-      ({
+    t: (key: string, fallback?: string | { defaultValue?: string }) => {
+      const strings: Record<string, string> = {
         'nav.supplierDashboard': 'Supplier dashboard',
         'nav.listAnExperience': 'List an Experience',
         'nav.supplierDashboardSub': 'Manage your listings',
         'nav.listAnExperienceSub': 'Become a supplier and start earning',
-      })[key] ?? fallback ?? key,
+        'nav.resetToDefault': 'Reset to default',
+      }
+      if (strings[key]) return strings[key]
+      if (typeof fallback === 'string') return fallback
+      return fallback?.defaultValue ?? key
+    },
   }),
 }))
 
@@ -60,11 +70,15 @@ vi.mock('../context/SearchInputContext', () => ({
 }))
 
 vi.mock('../context/LocationSearchContext', () => ({
-  useLocationSearch: () => ({ hasActiveSearch: false, setLocation: vi.fn(), resetLocation: vi.fn() }),
+  useLocationSearch: () => ({
+    hasActiveSearch: state.hasActiveSearch,
+    setLocation: vi.fn(),
+    resetLocation: state.resetLocation,
+  }),
 }))
 
 vi.mock('../context/ContinuePlanningContext', () => ({
-  useContinuePlanning: () => ({ clearContinuePlanning: vi.fn() }),
+  useContinuePlanning: () => ({ clearContinuePlanning: state.clearContinuePlanning }),
 }))
 
 vi.mock('../hooks/useSearchAutocomplete', () => ({
@@ -200,5 +214,50 @@ describe('Navbar language and currency picker', () => {
 
     expect(screen.getByRole('dialog')).toHaveAttribute('aria-label', 'nav.currency')
     expect(screen.getByText('USD')).toBeInTheDocument()
+  })
+})
+
+/**
+ * The desktop avatar dropdown has always offered "Reset to default" for an
+ * active region search, but its container (.nav-icons) is hidden below
+ * 1024px and the hamburger drawer had no equivalent — a phone user who
+ * searched a region had no way back to the unpersonalised homepage.
+ */
+describe('Navbar mobile reset to default', () => {
+  beforeEach(() => {
+    state.approved = false
+    state.hasActiveSearch = false
+    state.resetLocation.mockReset()
+    state.clearContinuePlanning.mockReset()
+    window.localStorage.clear()
+    cleanup()
+  })
+
+  it('offers no reset row while no region search is active', () => {
+    const container = renderNavbar()
+    openMobileMenu(container)
+
+    expect(screen.queryByText('Reset to default')).toBeNull()
+  })
+
+  it('shows the reset row directly after List an Experience', () => {
+    state.hasActiveSearch = true
+    const container = renderNavbar()
+    openMobileMenu(container)
+
+    const row = screen.getByText('Reset to default')
+    expect(container.querySelector('.nav-mobile-list-experience')?.nextElementSibling).toBe(row)
+  })
+
+  it('clears the active region and closes the drawer when tapped', async () => {
+    state.hasActiveSearch = true
+    const container = renderNavbar()
+    openMobileMenu(container)
+
+    fireEvent.click(screen.getByText('Reset to default'))
+
+    expect(state.resetLocation).toHaveBeenCalledTimes(1)
+    expect(state.clearContinuePlanning).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(container.querySelector('.nav-mobile-menu')).toBeNull())
   })
 })

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   extractSupplierSocials,
   formatSupplierAddress,
+  isSupplierOpenNow,
   mapSupplierProfile,
   normaliseOperatingHours,
   type RawSupplierTour,
@@ -78,6 +79,7 @@ describe('mapSupplierProfile — live API shapes', () => {
     expect(profile.verified).toBe(true)
     expect(profile.supplierType).toBe('TOUR_COMPANY')
     expect(profile.socials.map((s) => s.label)).toEqual(['Instagram', 'TikTok', 'YouTube'])
+    expect(typeof profile.isOpenNow).toBe('boolean')
   })
 
   it('parses the string averageRating and never substitutes a tour rating', () => {
@@ -189,8 +191,37 @@ describe('normaliseOperatingHours', () => {
   })
 })
 
-describe('extractSupplierSocials', () => {
-  it('keeps only filled networks and leaves full URLs alone', () => {
+describe('isSupplierOpenNow', () => {
+  // 2026-09-28 is a Monday, so the fixtures are deterministic.
+  const mondayNoon = new Date(2026, 8, 28, 12, 0)
+  const mondayLate = new Date(2026, 8, 28, 23, 0)
+
+  it('reads the structured day → windows form', () => {
+    const hours = { Monday: [{ startTime: '09:00', endTime: '17:00' }] }
+    expect(isSupplierOpenNow(hours, mondayNoon)).toBe(true)
+    expect(isSupplierOpenNow(hours, mondayLate)).toBe(false)
+  })
+
+  it('returns false for a day with no windows, null when the day is missing', () => {
+    expect(isSupplierOpenNow({ Monday: [] }, mondayNoon)).toBe(false)
+    expect(isSupplierOpenNow({ Tuesday: [{ startTime: '09:00', endTime: '17:00' }] }, mondayNoon)).toBeNull()
+  })
+
+  it('wraps overnight windows past midnight', () => {
+    const hours = { Monday: [{ startTime: '22:00', endTime: '02:00' }] }
+    expect(isSupplierOpenNow(hours, mondayLate)).toBe(true)
+    expect(isSupplierOpenNow(hours, mondayNoon)).toBe(false)
+  })
+
+  it('parses the collapsed "Every day" string and rejects the rest', () => {
+    expect(isSupplierOpenNow('Every day 08:00–22:00', mondayNoon)).toBe(true)
+    expect(isSupplierOpenNow('Every day 08:00–22:00', mondayLate)).toBe(false)
+    expect(isSupplierOpenNow('Mon–Fri 8–5', mondayNoon)).toBeNull()
+    expect(isSupplierOpenNow(null, mondayNoon)).toBeNull()
+  })
+})
+
+describe('extractSupplierSocials', () => {  it('keeps only filled networks and leaves full URLs alone', () => {
     const links = extractSupplierSocials(liveBusinessInfo)
     expect(links).toEqual([
       { network: 'instagram', label: 'Instagram', url: 'https://instagram.com/expeditiongotours' },

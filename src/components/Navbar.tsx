@@ -956,6 +956,28 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
               <ChevronRight size={18} className="nav-mobile-list-experience-chevron" />
             </a>
 
+            {/* Mirrors the desktop avatar-dropdown item. The dropdown lives in
+                .nav-icons, which is hidden below 1024px, so without this row a
+                phone user with an active region search had no way back to the
+                unpersonalised homepage. */}
+            {hasActiveSearch && (
+              <div
+                className="nav-mobile-link"
+                onClick={() => {
+                  resetLocation()
+                  clearContinuePlanning()
+                  setMobileMenuOpen(false)
+                  navigate('/')
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
+                </svg>
+                {t('nav.resetToDefault', { defaultValue: 'Reset to default' })}
+              </div>
+            )}
+
             <div className="nav-mobile-divider" />
             {user && (
               signingOut ? (

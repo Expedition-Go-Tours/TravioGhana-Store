@@ -1,8 +1,12 @@
-/* ===== SUPPLIER PAGE ===== */
+/* ============================================================
+   Supplier profile — reference layout with Travio Ghana tokens.
+   Nav + footer come from the app chrome; the supplier page owns
+   everything between them.
+   ============================================================ */
 
 .supplier-page {
   min-height: 100vh;
-  background: #F8F9FA;
+  background: var(--bv-surface-2, #f9fafb);
 }
 
 .supplier-page-nav-offset {
@@ -13,29 +17,59 @@
 .supplier-page-main {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 32px 20px 64px;
-  color: #0f172a;
+  padding: 24px 20px 64px;
+  color: var(--bv-ink, #101828);
 }
 
 @media (min-width: 640px) {
   .supplier-page-main {
-    padding: 40px 24px 80px;
+    padding: 32px 24px 80px;
   }
 }
 
 @media (min-width: 1024px) {
   .supplier-page-main {
-    padding: 48px 32px 96px;
+    padding: 40px 32px 96px;
   }
 }
 
-/* ===== NAVIGATION ROW ===== */
+/* ===== STATE CARDS (loading / error / not found) ===== */
 
-.supplier-nav-row {
+.supplier-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: calc(100vh - 12rem);
+  padding: 24px;
+  text-align: center;
+}
+
+.supplier-state-text {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--bv-muted, #667085);
+}
+
+.supplier-state-link {
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--bv-accent-strong, #15803d);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* ===== BACK ROW ===== */
+
+.supplier-back-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 32px;
+  margin-bottom: 14px;
 }
 
 .supplier-back-btn {
@@ -44,300 +78,454 @@
   gap: 8px;
   border: none;
   background: none;
-  padding: 8px 0;
-  font-size: 15px;
-  font-weight: 500;
-  color: #334155;
+  padding: 6px 0;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--bv-text, #344054);
   cursor: pointer;
   transition: color 0.15s;
-  font-family: var(--font-body);
 }
 
 .supplier-back-btn:hover {
-  color: #179237;
+  color: var(--bv-accent-strong, #15803d);
 }
 
-/* ===== SUPPLIER HEADER ===== */
+/* ===== HERO ===== */
 
-.supplier-header-section {
+.supplier-hero {
+  background: var(--bv-surface, #fff);
+  border: 1px solid var(--bv-border, #eceef2);
+  border-radius: 24px;
+  box-shadow: 0 10px 28px rgba(16, 24, 40, 0.055);
+  padding: 24px;
+}
+
+.supplier-hero-top {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 24px;
-  margin-bottom: 40px;
 }
 
-@media (max-width: 639px) {
-  .supplier-header-section {
-    flex-direction: column;
-    text-align: center;
-  }
-}
-
-.supplier-header-logo-wrap {
-  position: relative;
-  width: 100px;
-  height: 100px;
-  flex-shrink: 0;
-}
-
-@media (min-width: 640px) {
-  .supplier-header-logo-wrap {
-    width: 120px;
-    height: 120px;
-  }
-}
-
-.supplier-header-logo {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: #fff;
-  border: 2px solid #e2e8f0;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-}
-
-.supplier-header-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.supplier-header-logo-fallback {
-  font-size: 28px;
-  font-weight: 900;
-  color: #179237;
-}
-
-.supplier-header-verified {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: #179237;
-  border: 3px solid #F8F9FA;
-  display: grid;
-  place-items: center;
-}
-
-.supplier-header-info {
+.supplier-identity {
+  display: flex;
+  align-items: center;
+  gap: 18px;
   min-width: 0;
 }
 
-@media (max-width: 639px) {
-  .supplier-header-info {
-    text-align: center;
-  }
-
-  .supplier-header-meta {
-    justify-content: center;
-  }
-}
-
-.supplier-header-name {
-  font-size: 28px;
-  font-weight: 900;
-  color: #0f172a;
-  margin: 0;
-  word-break: break-word;
-  line-height: 1.2;
-}
-
-@media (min-width: 640px) {
-  .supplier-header-name {
-    font-size: 36px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .supplier-header-name {
-    font-size: 42px;
-  }
-}
-
-.supplier-header-meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 14px;
-  margin-top: 10px;
-  font-size: 17px;
-  color: #475569;
-}
-
-@media (min-width: 640px) {
-  .supplier-header-meta {
-    font-size: 15px;
-    gap: 6px 12px;
-    margin-top: 8px;
-  }
-}
-
-.supplier-header-star {
-  color: #179237;
-}
-
-.supplier-header-rating {
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.supplier-header-dot {
-  color: #cbd5e1;
-}
-
-.supplier-header-tours {
-  font-weight: 600;
-}
-
-/* ===== TRUST BADGES (inside About card) ===== */
-
-.supplier-about-features {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  padding-top: 24px;
-  border-top: 1px solid #f1f5f9;
-}
-
-@media (min-width: 1024px) {
-  .supplier-about-features {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-  /* Keep the narrow 4-across cards compact & centered. */
-  .supplier-about-features .supplier-trust-badge {
-    flex-direction: column;
-    text-align: center;
-  }
-}
-
-.supplier-trust-badge {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 10px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 18px;
-  transition: box-shadow 0.2s, transform 0.2s;
-}
-
-@media (min-width: 640px) {
-  .supplier-trust-badge {
-    flex-direction: row;
-    text-align: left;
-    gap: 14px;
-  }
-}
-
-.supplier-trust-badge:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  transform: translateY(-2px);
-}
-
-.supplier-trust-badge-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: #f0fdf4;
+/* The logo box never clips its corner elements — the tour-detail chunk also
+   ships a `.supplier-logo` rule (64px, overflow hidden) that used to win once
+   that route chunk warmed, so this class is deliberately page-specific. */
+.supplier-hero-logo {
+  position: relative;
+  flex: 0 0 auto;
+  width: 88px;
+  height: 88px;
+  padding: 7px;
+  border: 1px solid var(--bv-border, #eceef2);
+  border-radius: 22px;
+  background: var(--bv-surface, #fff);
+  box-shadow: 0 7px 18px rgba(16, 24, 40, 0.07);
   display: grid;
   place-items: center;
-  flex-shrink: 0;
-  color: #179237;
+  overflow: visible;
 }
 
-@media (min-width: 640px) {
-  .supplier-trust-badge-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-  }
-}
-
-.supplier-trust-badge-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.supplier-trust-badge-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.supplier-trust-badge-desc {
-  font-size: 13px;
-  color: #64748b;
-}
-
-/* ===== ABOUT + CONTACT TWO-COLUMN ===== */
-
-.supplier-about-layout {
-  display: grid;
-  gap: 24px;
-  margin-bottom: 48px;
-}
-
-@media (min-width: 1024px) {
-  .supplier-about-layout {
-    grid-template-columns: 1fr 360px;
-  }
-
-  /* The contact card is naturally taller than the About copy (574px vs 414px
-     of content), and the grid stretches both cards to the same height. Without
-     this, that whole difference pooled under the badge row as dead space:
-     192px of nothing between the badges and the card's bottom edge. Anchoring
-     the row to the bottom turns it into breathing room above the divider and
-     lands it on the same line the contact list ends on. */
-  .supplier-about-card {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .supplier-about-features {
-    margin-top: auto;
-  }
-}
-
-/* Left Card */
-.supplier-about-card {
+.supplier-hero-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 16px;
   background: #fff;
-  border-radius: 20px;
-  padding: 28px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 
-@media (min-width: 640px) {
-  .supplier-about-card {
-    padding: 32px;
-  }
-}
-
-.supplier-about-heading {
-  font-size: 24px;
+.supplier-hero-logo-fallback {
+  font-family: var(--font-heading);
+  font-size: 28px;
   font-weight: 800;
-  color: #0f172a;
-  margin: 0 0 16px;
+  color: var(--bv-accent, #16a34a);
 }
 
-@media (min-width: 640px) {
-  .supplier-about-heading {
-    font-size: 28px;
-  }
+.supplier-verified {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--bv-accent, #16a34a);
+  color: #fff;
+  border: 4px solid #fff;
+}
+
+.supplier-name-block {
+  min-width: 0;
+}
+
+.supplier-name-block h1 {
+  margin: 0 0 8px;
+  font-family: var(--font-heading);
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.8px;
+  color: var(--bv-ink, #101828);
+  overflow-wrap: anywhere;
+}
+
+.supplier-name-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.supplier-score {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--bv-ink, #101828);
+}
+
+.supplier-reviews-link {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--bv-text, #344054);
+  text-decoration: underline;
+}
+
+.supplier-reviews-link:hover {
+  color: var(--bv-accent-strong, #15803d);
+}
+
+.supplier-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.supplier-message-btn {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 220px;
+  min-height: 58px;
+  padding: 11px 15px;
+  border: 1px solid var(--bv-border-strong, #d8dce3);
+  border-radius: 16px;
+  background: var(--bv-surface-2, #f9fafb);
+  color: var(--bv-ink, #101828);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.supplier-message-btn:hover {
+  background: var(--bv-accent-soft, #ecfdf3);
+  border-color: var(--bv-accent, #16a34a);
+}
+
+.supplier-message-icon {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--bv-accent-soft, #ecfdf3);
+  color: var(--bv-accent, #16a34a);
+}
+
+.supplier-message-copy strong {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--bv-accent-strong, #15803d);
+}
+
+.supplier-message-copy small {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--bv-muted, #667085);
+}
+
+/* ===== SUPPLIER PHOTO STRIP ===== */
+
+/* A horizontal snap rail at every size — four tiles across on desktop (the
+   chevrons scroll three at a time, like the tour and review rails), one wide
+   tile per view on mobile. */
+.supplier-photo-strip-wrap {
+  position: relative;
+  margin-top: 18px;
+}
+
+.supplier-photo-strip {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.supplier-photo-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.supplier-photo-strip .supplier-photo-tile {
+  flex: 0 0 calc((100% - 36px) / 4);
+  scroll-snap-align: start;
+}
+
+.supplier-photo-tile {
+  position: relative;
+  height: 225px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #eef2ef;
+}
+
+.supplier-photo-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.supplier-photo-count {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 2;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(16, 24, 40, 0.72);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 800;
+  backdrop-filter: blur(4px);
+}
+
+.supplier-view-photos {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 2;
+  border: 0;
+  border-radius: 11px;
+  padding: 10px 13px;
+  background: #fff;
+  color: var(--bv-ink, #101828);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.14);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.supplier-view-photos:hover {
+  background: var(--bv-accent-soft, #ecfdf3);
+}
+
+/* The whole photo is the "open full image" control. */
+.supplier-photo-open {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.supplier-photo-open:focus-visible {
+  outline: 2px solid var(--bv-accent, #16a34a);
+  outline-offset: -2px;
+}
+
+.supplier-photo-open img {
+  transition: transform 0.35s ease;
+}
+
+.supplier-photo-open:hover img {
+  transform: scale(1.03);
+}
+
+/* Chevron paging controls over the strip. */
+.supplier-photo-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--bv-border, #eceef2);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--bv-ink, #101828);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.supplier-photo-nav:hover {
+  background: #fff;
+  color: var(--bv-accent-strong, #15803d);
+}
+
+.supplier-photo-nav:active {
+  transform: translateY(-50%) scale(0.94);
+}
+
+.supplier-photo-nav:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.supplier-photo-nav-left {
+  left: 12px;
+}
+
+.supplier-photo-nav-right {
+  right: 12px;
+}
+
+/* ===== PROVIDER DETAILS ===== */
+
+.supplier-details {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--bv-border, #eceef2);
+}
+
+.supplier-details h2 {
+  margin: 0 0 12px;
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.25px;
+  color: var(--bv-ink, #101828);
+}
+
+.supplier-details-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.supplier-detail-card {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 12px 13px;
+  border: 1px solid var(--bv-border, #eceef2);
+  border-radius: 14px;
+  background: var(--bv-surface-2, #f9fafb);
+}
+
+.supplier-detail-icon {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--bv-accent-soft, #ecfdf3);
+  color: var(--bv-accent, #16a34a);
+}
+
+.supplier-detail-copy {
+  min-width: 0;
+}
+
+.supplier-detail-copy small {
+  display: block;
+  margin-bottom: 3px;
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bv-faint, #98a2b3);
+}
+
+.supplier-detail-copy strong {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--bv-ink, #101828);
+  overflow-wrap: anywhere;
+}
+
+.supplier-open-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: var(--bv-accent-soft, #ecfdf3);
+  color: var(--bv-accent-strong, #15803d);
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.supplier-open-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--bv-accent, #16a34a);
+}
+
+/* ===== ABOUT ===== */
+
+.supplier-about-card {
+  background: var(--bv-surface, #fff);
+  border: 1px solid var(--bv-border, #eceef2);
+  border-radius: 24px;
+  box-shadow: 0 8px 22px rgba(16, 24, 40, 0.045);
+  padding: 28px;
+  margin: 22px 0 26px;
+}
+
+.supplier-about-card h2 {
+  margin: 0 0 14px;
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.55px;
+  color: var(--bv-ink, #101828);
 }
 
 .supplier-about-description {
+  max-width: 1180px;
+  font-family: var(--font-body);
   font-size: 15px;
   line-height: 1.75;
-  color: #475569;
-  margin-bottom: 28px;
+  color: var(--bv-muted, #667085);
 }
 
 .supplier-about-description p {
@@ -348,255 +536,510 @@
   margin-bottom: 0;
 }
 
-/* Right Card — Contact */
-.supplier-contact-card {
-  background: #fff;
-  border-radius: 20px;
-  padding: 28px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  height: 100%;
+.supplier-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 26px;
 }
 
-@media (min-width: 1024px) {
-  .supplier-contact-card {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .supplier-contact-list {
-    flex: 1;
-    justify-content: center;
-  }
-}
-
-@media (min-width: 640px) {
-  .supplier-contact-card {
-    padding: 32px;
-  }
-}
-
-.supplier-contact-heading {
-  font-size: 18px;
-  font-weight: 800;
-  color: #0f172a;
-  margin: 0 0 24px;
-}
-
-.supplier-contact-list {
+.supplier-stat {
   display: flex;
   flex-direction: column;
-}
-
-.supplier-contact-row {
-  display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 12px 0;
+  justify-content: center;
+  gap: 10px;
+  min-height: 205px;
+  padding: 22px 18px;
+  border: 1px solid var(--bv-border, #eceef2);
+  border-radius: 20px;
+  background: var(--bv-surface, #fff);
+  text-align: center;
 }
 
-.supplier-contact-icon-wrap {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #f0fdf4;
+.supplier-stat-icon {
+  width: 62px;
+  height: 62px;
   display: grid;
   place-items: center;
-  flex-shrink: 0;
-  color: #179237;
-}
-
-.supplier-contact-detail {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.supplier-contact-label {
-  font-size: 12px;
-  font-weight: 500;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.supplier-contact-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: #0f172a;
-  text-decoration: none;
-  word-break: break-all;
-}
-
-a.supplier-contact-value:hover {
-  color: #179237;
-}
-
-.supplier-contact-divider {
-  height: 1px;
-  background: #f1f5f9;
-}
-
-/* ===== TOURS SECTION ===== */
-
-.supplier-tours-section {
-  margin-bottom: 32px;
-}
-
-.supplier-tours-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 28px;
-}
-
-.supplier-tours-heading {
-  font-size: 22px;
+  border-radius: 17px;
+  background: var(--bv-accent-soft, #ecfdf3);
+  color: var(--bv-accent, #16a34a);
+  font-family: var(--font-heading);
+  font-size: 28px;
   font-weight: 800;
-  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.supplier-stat strong {
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--bv-ink, #101828);
+}
+
+.supplier-stat > span:last-child {
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--bv-muted, #667085);
+  max-width: 180px;
+}
+
+/* ===== SECTION HEADS (activities + reviews) ===== */
+
+.supplier-section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 34px 0 14px;
+}
+
+.supplier-section-head h2 {
   margin: 0;
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: var(--bv-ink, #101828);
 }
 
-@media (min-width: 640px) {
-  .supplier-tours-heading {
-    font-size: 26px;
-  }
+.supplier-section-head p {
+  margin: 4px 0 0;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--bv-muted, #667085);
 }
 
-.supplier-tours-count {
-  font-size: 16px;
-  font-weight: 500;
-  color: #94a3b8;
-  margin-left: 8px;
+.supplier-count {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--bv-faint, #98a2b3);
 }
 
-.supplier-tours-sort {
-  display: none;
+.supplier-section-actions {
+  display: flex;
+  gap: 9px;
   align-items: center;
-  gap: 6px;
-  font-size: 14px;
+  flex-wrap: wrap;
+}
+
+.supplier-arrow-btn {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--bv-border, #eceef2);
+  background: var(--bv-surface, #fff);
+  color: var(--bv-ink, #101828);
   cursor: pointer;
-  color: #475569;
-  flex-shrink: 0;
+  box-shadow: var(--bv-shadow-sm, 0 1px 2px rgba(16, 24, 40, 0.05));
+  transition: border-color 0.15s, color 0.15s, opacity 0.15s;
 }
 
-@media (min-width: 640px) {
-  .supplier-tours-sort {
-    display: inline-flex;
-  }
+.supplier-arrow-btn:hover:not(:disabled) {
+  border-color: var(--bv-accent, #16a34a);
+  color: var(--bv-accent-strong, #15803d);
 }
 
-.supplier-tours-sort-label {
-  font-weight: 500;
-  color: #94a3b8;
+.supplier-arrow-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
-.supplier-tours-sort-value {
-  font-weight: 600;
-  color: #0f172a;
+.supplier-view-all {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--bv-border-strong, #d8dce3);
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: var(--bv-surface, #fff);
+  color: var(--bv-accent-strong, #15803d);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
 }
 
-.supplier-tours-sort svg {
-  color: #179237;
+.supplier-view-all:hover {
+  background: var(--bv-accent-soft, #ecfdf3);
+  border-color: var(--bv-accent, #16a34a);
 }
 
-.supplier-tours-grid {
+/* ===== ACTIVITIES RAIL ===== */
+
+.supplier-activities {
+  margin-bottom: 8px;
+}
+
+.supplier-rail-card {
+  background: var(--bv-surface, #fff);
+  border: 1px solid var(--bv-border, #eceef2);
+  border-radius: 20px;
+  box-shadow: var(--bv-shadow-sm, 0 1px 2px rgba(16, 24, 40, 0.05));
+  padding: 18px;
+  overflow: hidden;
+}
+
+.supplier-rail-loading {
+  margin: 0;
+  padding: 24px 0;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--bv-faint, #98a2b3);
+}
+
+.supplier-rail-clip,
+.supplier-review-rail-clip {
+  overflow: hidden;
+}
+
+/* Homepage carousel geometry (see RecommendSection): 295px desktop slides,
+   280px on phones, 16/12px gaps, snap scrolling. */
+.supplier-rail,
+.supplier-review-rail {
   display: flex;
   gap: 16px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
+  align-items: stretch;
+  padding: 4px 0 8px;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding-bottom: 4px;
-  align-items: stretch;
 }
 
-.supplier-tours-grid::-webkit-scrollbar {
+.supplier-rail::-webkit-scrollbar,
+.supplier-review-rail::-webkit-scrollbar {
   display: none;
 }
 
-.supplier-tours-grid > * {
-  flex: 0 0 280px;
+.supplier-card-wrap,
+.supplier-review-card-wrap {
+  width: 295px;
+  min-width: 295px;
+  flex-shrink: 0;
+  display: flex;
+  align-self: stretch;
   scroll-snap-align: start;
 }
 
-/* `.tour-card` sets `height: 100%`, and a definite height opts a flex/grid item
-   out of `align-items: stretch`. These cards are DIRECT children of this
-   container, so that 100% has nothing to resolve against and every card fell
-   back to its content height — unlike the homepage carousels, which wrap each
-   card in a motion div the percentage can resolve against. Cards whose title
-   fits on one line therefore came out a line shorter than the rest (measured
-   343px vs 362px: "Traditional Beadmaking Workshop" and "The North Safari").
-   `height: auto` restores stretching, so every card in the row matches. */
-.supplier-tours-grid .tour-card {
-  height: auto;
+.supplier-card-wrap > *,
+.supplier-review-card-wrap > * {
+  width: 100%;
 }
 
-@media (min-width: 600px) {
-  .supplier-tours-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-    overflow-x: visible;
-    scroll-snap-type: none;
-    -webkit-overflow-scrolling: auto;
-    padding-bottom: 0;
-    /* Grid stretch only equalises cards within a row, so rows with a one-line
-       title were ~19px shorter than their neighbours. `1fr` gives every row the
-       tallest card's height; the `height: auto` above lets the cards fill it. */
-    grid-auto-rows: 1fr;
-  }
+/* ===== REVIEWS ===== */
 
-  .supplier-tours-grid > * {
-    flex: none;
-    min-width: 0;
-    scroll-snap-align: none;
-  }
+.supplier-reviews-section {
+  scroll-margin-top: 84px;
 }
 
-@media (min-width: 900px) {
-  .supplier-tours-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
-  }
+.supplier-review-summary-card {
+  background: var(--bv-surface, #fff);
+  border: 1px solid var(--bv-border, #eceef2);
+  border-radius: 22px;
+  box-shadow: 0 8px 22px rgba(16, 24, 40, 0.045);
+  padding: 22px;
 }
 
-@media (min-width: 1200px) {
-  .supplier-tours-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 16px;
-  }
+.supplier-review-summary-grid {
+  display: grid;
+  grid-template-columns: 265px minmax(0, 1fr);
+  gap: 20px;
+  align-items: stretch;
 }
 
-/* Bottom CTA */
-.supplier-tours-bottom {
+.supplier-review-score-block {
   display: flex;
-  justify-content: center;
-  margin-top: 40px;
-  padding-top: 32px;
-  border-top: 1px solid #e2e8f0;
+  flex-direction: column;
 }
 
-.supplier-tours-view-all {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  border: 1.5px solid #179237;
-  border-radius: 9999px;
-  background: #fff;
-  padding: 14px 36px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #179237;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s, transform 0.15s;
+.supplier-review-score-line {
+  display: flex;
+  align-items: flex-end;
+  gap: 9px;
+}
+
+.supplier-review-score {
+  font-family: var(--font-heading);
+  font-size: 54px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--bv-ink, #101828);
+}
+
+.supplier-review-out-of {
+  margin-bottom: 6px;
   font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--bv-muted, #667085);
 }
 
-.supplier-tours-view-all:hover {
-  background: #179237;
-  color: #fff;
-  transform: translateY(-1px);
+.supplier-review-score-stars {
+  display: flex;
+  margin: 8px 0 4px;
+}
+
+.supplier-review-score-count {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--bv-muted, #667085);
+}
+
+.supplier-review-bars {
+  margin-top: 16px;
+}
+
+.supplier-review-bar {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) 40px;
+  gap: 9px;
+  align-items: center;
+  margin: 8px 0;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--bv-muted, #667085);
+}
+
+.supplier-review-bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: #edf1ef;
+  overflow: hidden;
+}
+
+.supplier-review-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--bv-accent, #16a34a);
+}
+
+.supplier-review-bar-value {
+  text-align: right;
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 1024px) {
+  .supplier-hero-top {
+    align-items: flex-start;
+  }
+
+  .supplier-photo-tile {
+    height: 200px;
+  }
+}
+
+@media (max-width: 900px) {
+  .supplier-details-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .supplier-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .supplier-review-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .supplier-hero-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .supplier-message-btn {
+    flex: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .supplier-page-main {
+    padding: 20px 16px 56px;
+  }
+
+  /* Photo gallery: one wide tile per view, swiped by hand (chevrons are
+     desktop-only). "View all photos" moves under the rail so it never covers
+     the photo being swiped to. */
+  .supplier-photo-strip-wrap {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .supplier-photo-strip {
+    gap: 8px;
+  }
+
+  .supplier-photo-strip .supplier-photo-tile {
+    flex-basis: 78%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+
+  .supplier-photo-strip-wrap .supplier-view-photos {
+    position: static;
+    align-self: flex-end;
+    margin-top: 10px;
+    padding: 9px 14px;
+    border: 1px solid var(--bv-border-strong, #d8dce3);
+    border-radius: 12px;
+    background: var(--bv-surface, #fff);
+    color: var(--bv-accent-strong, #15803d);
+    font-size: 13px;
+    font-weight: 800;
+    box-shadow: none;
+  }
+
+  .supplier-photo-strip-wrap .supplier-view-photos:hover {
+    background: var(--bv-accent-soft, #ecfdf3);
+    border-color: var(--bv-accent, #16a34a);
+  }
+
+  /* Provider facts: swipeable too, one card at a time with the next peeking. */
+  .supplier-details-grid {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 2px;
+  }
+
+  .supplier-details-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .supplier-detail-card {
+    flex: 0 0 78%;
+    scroll-snap-align: start;
+  }
+
+  /* Supplier stats (Verified / type / tours / rating): swipeable as well, so
+     the About card doesn't grow into a tall single-column stack. */
+  .supplier-stats {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 2px;
+  }
+
+  .supplier-stats::-webkit-scrollbar {
+    display: none;
+  }
+
+  .supplier-stat {
+    flex: 0 0 78%;
+    min-height: 0;
+    scroll-snap-align: start;
+  }
+
+  /* Centre the rating header; the review rail is swiped, so no chevrons. */
+  .supplier-review-score-block {
+    align-items: center;
+    text-align: center;
+  }
+
+  .supplier-review-score-stars {
+    justify-content: center;
+  }
+
+  .supplier-review-bars {
+    width: 100%;
+  }
+
+  .supplier-reviews-section .supplier-arrow-btn {
+    display: none;
+  }
+
+  .supplier-rail,
+  .supplier-review-rail {
+    gap: 12px;
+  }
+
+  .supplier-card-wrap,
+  .supplier-review-card-wrap {
+    width: 280px;
+    min-width: 280px;
+  }
+
+  .supplier-rail-card {
+    padding: 12px;
+  }
+
+  .supplier-review-summary-card {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 650px) {
+  .supplier-hero {
+    padding: 16px;
+  }
+
+  .supplier-hero-top {
+    flex-direction: column;
+  }
+
+  .supplier-hero-logo {
+    width: 72px;
+    height: 72px;
+    padding: 6px;
+  }
+
+  .supplier-name-block h1 {
+    font-size: 24px;
+  }
+
+  .supplier-hero-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .supplier-message-btn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .supplier-section-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .supplier-section-actions {
+    width: 100%;
+  }
+
+  .supplier-about-card {
+    padding: 20px;
+  }
+
+  .supplier-about-card h2 {
+    font-size: 23px;
+  }
+
+  .supplier-section-head h2 {
+    font-size: 23px;
+  }
+}
+
+@media (max-width: 560px) {
+  .supplier-review-score {
+    font-size: 44px;
+  }
 }
