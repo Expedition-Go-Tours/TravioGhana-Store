@@ -262,7 +262,6 @@
   "hero": {
     "destination": "Destination",
     "destinationPlaceholder": "Search cities, towns, attractions or regions",
-    "currentSearch": "Current search: {{location}}",
     "search": "Search",
     "subtitle": "Discover amazing tours and activities.",
     "title": "Book Unforgettable Experiences in Ghana"
