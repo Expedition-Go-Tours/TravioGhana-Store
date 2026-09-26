@@ -1843,18 +1843,7 @@
   font-weight:600;
 }
 
-/* The wizard title lives in the heading, so the topbar is just the eyebrow +
-   progress row — flat, no card. Keep the prototype's split: eyebrow left,
-   progress right. */
-.srp-page .topbar{
-  background:transparent !important;
-  border:0 !important;
-  border-radius:0 !important;
-  box-shadow:none !important;
-  padding:0 !important;
-  margin:0 0 18px !important;
-  justify-content:space-between;
-}
+
 
 /* Icon + copy rows (notices, notes): keep the leading icon from stretching. */
 .srp-page .notice > svg,
