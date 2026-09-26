@@ -335,7 +335,7 @@ const ID_DOCUMENT: RequiredSupplierDocument = {
   type: primaryDocumentType(),
   title: 'Government-issued ID',
   description:
-    'Upload one Ghana Card, passport or another accepted government-issued ID. Your name and date of birth should match your profile.',
+    'Upload one Ghana Card, passport or another accepted government-issued ID. Your details should match the information on your profile.',
   uploadLabel: 'Upload your ID',
 }
 
@@ -343,8 +343,8 @@ const BUSINESS_CERTIFICATE_DOCUMENT: RequiredSupplierDocument = {
   type: 'BUSINESS_CERTIFICATE',
   title: 'Business registration certificate',
   description:
-    'Upload your business registration certificate from the Registrar General (or your business trading certificate). The name on it should match the business name on your application.',
-  uploadLabel: 'Upload your certificate',
+    'Upload your business registration certificate so we can confirm the business behind this TravioGhana supplier account.',
+  uploadLabel: 'Upload business certificate',
 }
 
 /**

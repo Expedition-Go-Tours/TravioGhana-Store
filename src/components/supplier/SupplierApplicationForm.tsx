@@ -23,6 +23,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import confetti from 'canvas-confetti'
+import supplierLogo from '@/assets/TravioGhana_Supplier_Logo.png'
 import {
   Check,
   ChevronDown,
@@ -879,12 +880,14 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
   const isIndividual = selectedOption?.kind === 'individual'
   const requiredDocs = requiredSupplierDocuments(form.supplierChoice)
   const requiredDocCount = requiredDocs.length
+  const uploadedRequiredCount = requiredDocs.filter((requirement) =>
+    form.verificationDocuments.some(
+      (doc) => doc.ownerType === 'SUPPLIER' && doc.type === requirement.type && doc.file
+    )
+  ).length
   const quickVerifyTitle =
     requiredDocCount === 1 ? '1 document required' : `${requiredDocCount} documents required`
-  const quickVerifySubtitle =
-    requiredDocCount === 1
-      ? "That's all we need to start your supplier account."
-      : 'Your ID and business certificate — then you can start.'
+  const quickVerifySubtitle = "That's all we need from you for now."
   const laterDocs = laterDocumentsFor(form.supplierChoice, form.services)
   const serviceSummary = serviceLabels(form.services)
   const payoutMethodLabel = PAYOUT_METHODS.find((method) => method.id === form.payout.method)?.label ?? ''
@@ -1961,7 +1964,11 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
         </div>
         <div className="summary-card">
           <span>Verification</span>
-          <strong>1 document uploaded</strong>
+          <strong id="summaryVerification">
+            {uploadedRequiredCount > 0
+              ? `${uploadedRequiredCount} document${uploadedRequiredCount === 1 ? '' : 's'} uploaded`
+              : 'Can be completed later'}
+          </strong>
         </div>
         <div className="summary-card">
           <span>Payout</span>
@@ -2034,31 +2041,31 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
         <div className="success-shell">
           <div className="success-badge">
             <CircleCheckBig size={14} strokeWidth={2.2} aria-hidden="true" />
-            Supplier account created
+            Supplier setup complete
           </div>
           <div className="success-icon">
             <Check size={34} strokeWidth={2.6} aria-hidden="true" />
           </div>
-          <h2>Your supplier account is ready</h2>
+          <h2>Your supplier profile is ready</h2>
           <p>
-            Welcome to TravioGhana. Your supplier account is active — open your dashboard to create
-            your first listing. Our team verifies your ID document in the background and will email
-            you only if something needs your attention.
+            Welcome to TravioGhana. Your supplier account has been created successfully and you can
+            now open your supplier dashboard to complete your setup, manage verification and start
+            creating listings.
           </p>
 
           <div className="success-highlights">
             <div className="success-highlight">
-              <strong>Dashboard unlocked</strong>
-              <span>Create tours, set availability and publish — all from your supplier dashboard.</span>
+              <strong>Account created</strong>
+              <span>Your core supplier profile is now set up.</span>
             </div>
             <div className="success-highlight">
-              <strong>Document check</strong>
-              <span>We&rsquo;re verifying the ID document you uploaded — nothing else is needed from you.</span>
+              <strong>Next step</strong>
+              <span>Open your supplier dashboard and start adding products.</span>
             </div>
           </div>
 
           <button type="button" className="btn primary success-dashboard-btn" onClick={handleViewStatus}>
-            Go to your dashboard
+            Open Supplier Dashboard
           </button>
           <p className="success-redirect-note" role="status">
             Taking you to your supplier dashboard&hellip;
@@ -2077,9 +2084,10 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
       <div className="shell">
         <aside className="sidebar panel">
           <div className="brand">
+            <img className="brand-logo" src={supplierLogo} alt="TravioGhana" />
             <div className="brand-copy">
-              <strong>TravioGhana Supplier Registration</strong>
-              <span>Supplier onboarding</span>
+              <strong>Supplier onboarding</strong>
+              <span>TravioGhana partner registration</span>
             </div>
           </div>
 
@@ -2112,6 +2120,7 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
 
         <main className="main panel">
           <div className="topbar">
+            <span className="eyebrow">TravioGhana Supplier Registration</span>
             <div className="progress-wrap">
               <div className="progress-meta">
                 <span id="progressText">{progressText}</span>

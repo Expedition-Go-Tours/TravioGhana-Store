@@ -158,7 +158,7 @@ describe('required + later documents', () => {
     })
     expect(requiredSupplierDocuments('registered_company')[1]).toMatchObject({
       type: 'BUSINESS_CERTIFICATE',
-      uploadLabel: 'Upload your certificate',
+      uploadLabel: 'Upload business certificate',
     })
   })
 

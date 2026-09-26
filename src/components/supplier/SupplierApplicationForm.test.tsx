@@ -415,7 +415,7 @@ describe('SupplierApplicationForm', () => {
     })
 
     await waitFor(() =>
-      expect(screen.getByText('Your supplier account is ready')).toBeInTheDocument()
+      expect(screen.getByText('Your supplier profile is ready')).toBeInTheDocument()
     )
   })
 
