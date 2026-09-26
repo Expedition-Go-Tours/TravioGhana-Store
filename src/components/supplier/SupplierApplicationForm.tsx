@@ -2085,10 +2085,6 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
         <aside className="sidebar panel">
           <div className="brand">
             <img className="brand-logo" src={supplierLogo} alt="TravioGhana" />
-            <div className="brand-copy">
-              <strong>Supplier onboarding</strong>
-              <span>TravioGhana partner registration</span>
-            </div>
           </div>
 
           <div className="intro-card">
