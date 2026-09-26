@@ -802,22 +802,25 @@
 @media (max-width: 1050px) {
   .account-panel--split {
     grid-template-columns: 1fr;
-    /* Stacked, the two blocks stop being one card split by a hairline: a real
-       gap separates them, using the 26px this file already leaves between
-       stacked panels. */
     row-gap: 26px;
+    /* Stacked, the two blocks stop being halves of one card: the split gives up
+       its card chrome so the page background shows between them, and each block
+       becomes a card of its own — the same 26px gap and the same panel styling
+       the Change Password card below already uses. */
+    background: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
   }
-  .account-panel__left {
-    border-right: 0;
-    border-bottom: 0;
-  }
-  /* row-gap now carries the seam, so drop the padding that used to sit
-     against it — otherwise the gap reads as 26px + 20px + 20px. */
-  .account-panel__left .account-section__body {
-    padding-bottom: 0;
-  }
-  .account-panel__right .account-section__body--location {
-    padding-top: 0;
+  .account-panel__left,
+  .account-panel__right {
+    min-width: 0;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid var(--acc-line);
+    border-radius: 20px;
+    box-shadow: var(--acc-shadow);
+    overflow: hidden;
   }
 }
 
