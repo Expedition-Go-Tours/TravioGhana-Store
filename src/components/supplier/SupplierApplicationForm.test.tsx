@@ -260,6 +260,31 @@ describe('SupplierApplicationForm', () => {
     expect(mocks.applyAsSupplier).not.toHaveBeenCalled()
   })
 
+  it('asks businesses for an ID and a business certificate', async () => {
+    // A registered company must attach both documents up front.
+    const form = seededForm()
+    form.supplierChoice = 'registered_company'
+    saveSupplierApplicationDraft(null, { step: 4, form })
+
+    render(<SupplierApplicationForm />)
+    await waitFor(() => expect(activeStepText()).toContain('Quick verification'))
+
+    expect(activeStepText()).toContain('2 documents required')
+    expect(activeStepText()).toContain('Government-issued ID')
+    expect(activeStepText()).toContain('Business registration certificate')
+    expect(document.querySelectorAll('.form-step.active .quick-upload-card')).toHaveLength(2)
+  })
+
+  it('asks individual suppliers for the ID only', async () => {
+    seedVerificationStep()
+    render(<SupplierApplicationForm />)
+    await waitFor(() => expect(activeStepText()).toContain('Quick verification'))
+
+    expect(activeStepText()).toContain('1 document required')
+    expect(activeStepText()).not.toContain('Business registration certificate')
+    expect(document.querySelectorAll('.form-step.active .quick-upload-card')).toHaveLength(1)
+  })
+
   it('shows a spinner while a photo is read, then a preview with remove', async () => {
     seedVerificationStep()
     const bitmap = { close: vi.fn() }

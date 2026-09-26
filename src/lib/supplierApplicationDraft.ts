@@ -68,7 +68,10 @@ export interface SupplierApplicationForm {
   }
   /** UI-only toggle on the payout step. */
   primaryPayoutPreference: boolean
-  /** Step 5 — exactly one SUPPLIER-owned document is required up front. */
+  /**
+   * Step 5 — the SUPPLIER-owned documents required up front (an ID for every
+   * type, plus a business registration certificate for business types).
+   */
   verificationDocuments: VerificationDocumentDraft[]
   compliance: {
     acceptedTerms: boolean

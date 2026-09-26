@@ -64,8 +64,7 @@ import {
   PAYOUT_CURRENCIES,
   PAYOUT_METHODS,
   PAYOUT_SCHEDULES,
-  primaryDocumentCopy,
-  primaryDocumentType,
+  requiredSupplierDocuments,
   serviceLabels,
   STEPS_COUNT,
   STEP_ACCOUNT,
@@ -306,12 +305,14 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
   const [laterDocsOpen, setLaterDocsOpen] = useState(false)
 
   // Document upload: `preparing` covers the client-side read/decode of the
-  // chosen file, `uploadPercent` the real multipart upload on submit.
-  const [docStatus, setDocStatus] = useState<'idle' | 'preparing' | 'ready'>('idle')
-  const [docPreview, setDocPreview] = useState('')
-  const [docError, setDocError] = useState('')
+  // chosen file, `uploadPercent` the real multipart upload on submit. Business
+  // types upload two documents, so the transient state is keyed by document type.
+  const [docStatusByType, setDocStatusByType] = useState<Record<string, 'idle' | 'preparing' | 'ready'>>({})
+  const [docPreviewByType, setDocPreviewByType] = useState<Record<string, string>>({})
+  const [docErrorByType, setDocErrorByType] = useState<Record<string, string>>({})
   const [uploadPercent, setUploadPercent] = useState<number | null>(null)
-  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({})
+  const previewsRef = useRef<Record<string, string>>({})
 
   const toastTimerRef = useRef<number | undefined>(undefined)
   const nudgeTimerRef = useRef<number | undefined>(undefined)
@@ -599,30 +600,56 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
     }))
   }
 
-  // ── Step 4: primary document ────────────────────────────────────────────
+  // ── Step 4: required documents (ID + business certificate when applicable) ─
 
-  /** Drop a preview object URL as soon as it is replaced (or on unmount). */
+  /** Set a document slot's preview, dropping the object URL it replaces. */
+  const setDocPreviewFor = (type: string, url: string) => {
+    setDocPreviewByType((prev) => {
+      const old = prev[type]
+      if (old && old !== url) URL.revokeObjectURL(old)
+      return { ...prev, [type]: url }
+    })
+  }
+
+  const setDocStatusFor = (type: string, status: 'idle' | 'preparing' | 'ready') =>
+    setDocStatusByType((prev) => ({ ...prev, [type]: status }))
+
+  const setDocErrorFor = (type: string, message: string) =>
+    setDocErrorByType((prev) => ({ ...prev, [type]: message }))
+
+  // Keep the latest preview URLs reachable from the unmount cleanup, then drop
+  // every one of them (the per-slot replace/remove paths already revoke theirs).
+  useEffect(() => {
+    previewsRef.current = docPreviewByType
+  }, [docPreviewByType])
+
   useEffect(
     () => () => {
-      if (docPreview) URL.revokeObjectURL(docPreview)
+      Object.values(previewsRef.current).forEach((url) => {
+        if (url) URL.revokeObjectURL(url)
+      })
     },
-    [docPreview]
+    []
   )
 
-  const setPrimaryDocument = (file: File | null) => {
+  /** Upsert the SUPPLIER-owned document of a given type (ID, certificate, …). */
+  const setDocumentFile = (type: string, file: File | null) => {
     clearFieldError('verificationDocuments')
+    setDocErrorFor(type, '')
     setForm((prev) => {
-      const others = prev.verificationDocuments.filter((doc) => doc.ownerType !== 'SUPPLIER')
-      const primary = prev.verificationDocuments.find((doc) => doc.ownerType === 'SUPPLIER')
+      const others = prev.verificationDocuments.filter(
+        (doc) => doc.ownerType !== 'SUPPLIER' || doc.type !== type
+      )
+      const existing = prev.verificationDocuments.find(
+        (doc) => doc.ownerType === 'SUPPLIER' && doc.type === type
+      )
       return {
         ...prev,
         verificationDocuments: [
           ...others,
           {
-            key: primary?.key ?? `sup-${primaryDocumentType()}-${Math.random().toString(36).slice(2, 8)}`,
-            // Always an ID: a draft saved before businesses switched to ID photos
-            // may still carry another document type.
-            type: primaryDocumentType(),
+            key: existing?.key ?? `sup-${type}-${Math.random().toString(36).slice(2, 8)}`,
+            type,
             ownerType: 'SUPPLIER' as const,
             file,
           },
@@ -639,20 +666,20 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
    * past the 10 MB limit) is re-encoded to JPEG here — so the supplier learns
    * about it now instead of after submitting the whole application.
    */
-  const handleDocumentSelected = async (file: File | null) => {
+  const handleDocumentSelected = async (type: string, file: File | null) => {
     if (!file) return
     clearFieldError('verificationDocuments')
-    setDocError('')
+    setDocErrorFor(type, '')
 
     const isImage = file.type.startsWith('image/')
     if (!isImage && file.type !== 'application/pdf') {
-      setDocStatus('idle')
-      setPrimaryDocument(null)
-      setDocError('Please upload a JPG, PNG or PDF of your document.')
+      setDocStatusFor(type, 'idle')
+      setDocumentFile(type, null)
+      setDocErrorFor(type, 'Please upload a JPG, PNG or PDF of your document.')
       return
     }
 
-    setDocStatus('preparing')
+    setDocStatusFor(type, 'preparing')
     let prepared = file
 
     if (isImage && typeof createImageBitmap !== 'undefined') {
@@ -664,9 +691,9 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
         // Unreadable/unsupported image — handled below.
       }
       if (!bitmap) {
-        setDocStatus('idle')
-        setPrimaryDocument(null)
-        setDocError('We could not read that image. Try another photo, or upload a PDF of the document.')
+        setDocStatusFor(type, 'idle')
+        setDocumentFile(type, null)
+        setDocErrorFor(type, 'We could not read that image. Try another photo, or upload a PDF of the document.')
         return
       }
 
@@ -678,9 +705,9 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
           showToast('Photo prepared for upload')
         } catch {
           bitmap.close()
-          setDocStatus('idle')
-          setPrimaryDocument(null)
-          setDocError('We could not prepare that image for upload. Try a JPG, PNG or PDF of your document.')
+          setDocStatusFor(type, 'idle')
+          setDocumentFile(type, null)
+          setDocErrorFor(type, 'We could not prepare that image for upload. Try a JPG, PNG or PDF of your document.')
           return
         }
       }
@@ -688,9 +715,10 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
     }
 
     if (prepared.size > MAX_SUPPLIER_DOCUMENT_BYTES) {
-      setDocStatus('idle')
-      setPrimaryDocument(null)
-      setDocError(
+      setDocStatusFor(type, 'idle')
+      setDocumentFile(type, null)
+      setDocErrorFor(
+        type,
         `That file is ${formatFileSize(prepared.size)}. The largest document we accept is ${formatFileSize(MAX_SUPPLIER_DOCUMENT_BYTES)} — please compress it or take a smaller photo.`
       )
       return
@@ -701,19 +729,20 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
         ? URL.createObjectURL(prepared)
         : ''
 
-    setDocPreview(previewUrl)
-    setPrimaryDocument(prepared)
-    setDocStatus('ready')
-    if (fileInputRef.current) fileInputRef.current.value = ''
+    setDocPreviewFor(type, previewUrl)
+    setDocumentFile(type, prepared)
+    setDocStatusFor(type, 'ready')
+    const input = fileInputRefs.current[type]
+    if (input) input.value = ''
   }
 
-  const removePrimaryDocument = () => {
-    if (docPreview) URL.revokeObjectURL(docPreview)
-    setDocPreview('')
-    setDocStatus('idle')
-    setDocError('')
-    setPrimaryDocument(null)
-    if (fileInputRef.current) fileInputRef.current.value = ''
+  const removeDocument = (type: string) => {
+    setDocPreviewFor(type, '')
+    setDocStatusFor(type, 'idle')
+    setDocErrorFor(type, '')
+    setDocumentFile(type, null)
+    const input = fileInputRefs.current[type]
+    if (input) input.value = ''
   }
 
   // ── Step 6 + submit ─────────────────────────────────────────────────────
@@ -848,8 +877,14 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
 
   const selectedOption = supplierTypeOption(form.supplierChoice)
   const isIndividual = selectedOption?.kind === 'individual'
-  const docCopy = primaryDocumentCopy()
-  const primaryDoc = form.verificationDocuments.find((doc) => doc.ownerType === 'SUPPLIER')
+  const requiredDocs = requiredSupplierDocuments(form.supplierChoice)
+  const requiredDocCount = requiredDocs.length
+  const quickVerifyTitle =
+    requiredDocCount === 1 ? '1 document required' : `${requiredDocCount} documents required`
+  const quickVerifySubtitle =
+    requiredDocCount === 1
+      ? "That's all we need to start your supplier account."
+      : 'Your ID and business certificate — then you can start.'
   const laterDocs = laterDocumentsFor(form.supplierChoice, form.services)
   const serviceSummary = serviceLabels(form.services)
   const payoutMethodLabel = PAYOUT_METHODS.find((method) => method.id === form.payout.method)?.label ?? ''
@@ -862,22 +897,6 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
   const isDocUploading = uploadPercent !== null
   const docUploadPercent = uploadPercent ?? 0
   const docUploadFinishing = docUploadPercent >= 100
-  const docPreparing = docStatus === 'preparing'
-  const docCardTitle = docPreparing
-    ? 'Preparing your document…'
-    : isDocUploading
-      ? 'Uploading your document…'
-      : docCopy.uploadLabel
-  const docCardHint = docPreparing
-    ? 'Checking the file — this only takes a moment.'
-    : isDocUploading
-      ? docUploadFinishing
-        ? 'Uploaded — finishing up your application.'
-        : `${docUploadPercent}% of your document uploaded.`
-      : `JPG, PNG or PDF · up to ${formatFileSize(MAX_SUPPLIER_DOCUMENT_BYTES)}`
-  const docCardFile = primaryDoc?.file
-    ? `${primaryDoc.file.name}${primaryDoc.file.size ? ` · ${formatFileSize(primaryDoc.file.size)}` : ''}`
-    : 'No file selected'
 
   const visibleStep = Math.min(step + 1, STEPS_COUNT)
   const progressPercent = submitted ? 100 : Math.min(100, Math.round((visibleStep / STEPS_COUNT) * 100))
@@ -1463,7 +1482,11 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
     <section className={`form-step${step === STEP_VERIFICATION ? ' active' : ''}`} id="verificationStep">
       <StepHeading
         title="Quick verification"
-        description="We only need one document to get your supplier account started. You can create your listings next, and we'll ask for any service-specific documents only when they become relevant."
+        description={
+          requiredDocCount === 1
+            ? "We only need one document to get your supplier account started. You can create your listings next, and we'll ask for any service-specific documents only when they become relevant."
+            : "We need your ID and your business registration certificate to get your supplier account started. You can create your listings next, and we'll ask for any service-specific documents only when they become relevant."
+        }
         error={error}
       />
 
@@ -1474,95 +1497,132 @@ export function SupplierApplicationForm({ onSubmitted, onOpenAuth }: SupplierApp
           </div>
           <div>
             <span>QUICK START</span>
-            <strong id="quickVerifyTitle">{docCopy.quickTitle}</strong>
-            <p id="quickVerifySubtitle">{docCopy.quickSubtitle}</p>
+            <strong id="quickVerifyTitle">{quickVerifyTitle}</strong>
+            <p id="quickVerifySubtitle">{quickVerifySubtitle}</p>
           </div>
         </div>
 
-        <div className="section quick-document-section" data-field="verificationDocuments">
-          <div className="quick-document-copy">
-            <span className="stage-eyebrow required-now-accent">REQUIRED NOW</span>
-            <h3 id="primaryDocumentTitle">{docCopy.title}</h3>
-            <p id="primaryDocumentDescription">{docCopy.description}</p>
-          </div>
+        {requiredDocs.map((requirement) => {
+          const doc = form.verificationDocuments.find(
+            (entry) => entry.ownerType === 'SUPPLIER' && entry.type === requirement.type
+          )
+          const file = doc?.file ?? null
+          const preview = docPreviewByType[requirement.type] ?? ''
+          const status = docStatusByType[requirement.type] ?? 'idle'
+          const preparing = status === 'preparing'
+          const cardError = docErrorByType[requirement.type] ?? ''
+          const cardTitle = preparing
+            ? 'Preparing your document…'
+            : isDocUploading
+              ? 'Uploading your document…'
+              : requirement.uploadLabel
+          const cardHint = preparing
+            ? 'Checking the file — this only takes a moment.'
+            : isDocUploading
+              ? docUploadFinishing
+                ? 'Uploaded — finishing up your application.'
+                : `${docUploadPercent}% of your document uploaded.`
+              : `JPG, PNG or PDF · up to ${formatFileSize(MAX_SUPPLIER_DOCUMENT_BYTES)}`
+          const cardFile = file
+            ? `${file.name}${file.size ? ` · ${formatFileSize(file.size)}` : ''}`
+            : 'No file selected'
 
-          <label
-            className={`quick-upload-card document-upload${primaryDoc?.file ? ' uploaded' : ''}${docPreparing ? ' is-preparing' : ''}${isDocUploading ? ' is-uploading' : ''}${docError ? ' has-error' : ''}`}
-            id="primaryDocumentUpload"
-            aria-busy={docPreparing || isDocUploading}
-          >
-            <div className="quick-upload-icon" id="primaryDocumentIcon">
-              {docPreparing || isDocUploading ? (
-                <LoaderCircle className="doc-spinner" size={22} strokeWidth={2} aria-hidden="true" />
-              ) : docPreview ? (
-                <img className="doc-thumb" src={docPreview} alt="" />
-              ) : primaryDoc?.file ? (
-                <FileText size={22} strokeWidth={1.7} aria-hidden="true" />
-              ) : (
-                <IdCard size={22} strokeWidth={1.7} aria-hidden="true" />
-              )}
-            </div>
-            <div className="quick-upload-text">
-              <strong id="primaryUploadLabel">{docCardTitle}</strong>
-              <span className="doc-upload-hint" aria-live="polite">
-                {docCardHint}
-              </span>
-              <small className="upload-file-name">{docCardFile}</small>
-              {isDocUploading && (
-                <div
-                  className="doc-progress"
-                  role="progressbar"
-                  aria-label="Document upload progress"
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={docUploadPercent}
-                >
-                  <span className="doc-progress-fill" style={{ width: `${docUploadPercent}%` }} />
+          return (
+            <div
+              className="section quick-document-section"
+              data-field="verificationDocuments"
+              key={requirement.type}
+            >
+              <div className="quick-document-copy">
+                <span className="stage-eyebrow required-now-accent">REQUIRED NOW</span>
+                <h3 id={`primaryDocumentTitle-${requirement.type}`}>{requirement.title}</h3>
+                <p id={`primaryDocumentDescription-${requirement.type}`}>{requirement.description}</p>
+              </div>
+
+              <label
+                className={`quick-upload-card document-upload${file ? ' uploaded' : ''}${preparing ? ' is-preparing' : ''}${isDocUploading ? ' is-uploading' : ''}${cardError ? ' has-error' : ''}`}
+                aria-busy={preparing || isDocUploading}
+              >
+                <div className="quick-upload-icon">
+                  {preparing || isDocUploading ? (
+                    <LoaderCircle className="doc-spinner" size={22} strokeWidth={2} aria-hidden="true" />
+                  ) : preview ? (
+                    <img className="doc-thumb" src={preview} alt="" />
+                  ) : file ? (
+                    <FileText size={22} strokeWidth={1.7} aria-hidden="true" />
+                  ) : (
+                    <IdCard size={22} strokeWidth={1.7} aria-hidden="true" />
+                  )}
+                </div>
+                <div className="quick-upload-text">
+                  <strong>{cardTitle}</strong>
+                  <span className="doc-upload-hint" aria-live="polite">
+                    {cardHint}
+                  </span>
+                  <small className="upload-file-name">{cardFile}</small>
+                  {isDocUploading && (
+                    <div
+                      className="doc-progress"
+                      role="progressbar"
+                      aria-label="Document upload progress"
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={docUploadPercent}
+                    >
+                      <span className="doc-progress-fill" style={{ width: `${docUploadPercent}%` }} />
+                    </div>
+                  )}
+                </div>
+                <div className="quick-upload-action">
+                  <span className="upload-action-label">
+                    {preparing
+                      ? 'Preparing…'
+                      : isDocUploading
+                        ? `${docUploadPercent}%`
+                        : file
+                          ? 'Replace file'
+                          : 'Choose file'}
+                  </span>
+                  {!preparing && !isDocUploading && <Upload size={15} strokeWidth={2} aria-hidden="true" />}
+                </div>
+                <input
+                  ref={(element) => {
+                    fileInputRefs.current[requirement.type] = element
+                  }}
+                  type="file"
+                  hidden
+                  accept={DOCUMENT_ACCEPT}
+                  onChange={(event) =>
+                    void handleDocumentSelected(requirement.type, event.target.files?.[0] ?? null)
+                  }
+                />
+              </label>
+
+              {file && status === 'ready' && !isDocUploading && (
+                <div className="doc-upload-footer">
+                  <span>Uploads securely when you submit your application.</span>
+                  <button
+                    type="button"
+                    className="doc-remove-btn"
+                    onClick={(event) => {
+                      // The card is a <label>, so stop it re-opening the picker.
+                      event.preventDefault()
+                      event.stopPropagation()
+                      removeDocument(requirement.type)
+                    }}
+                  >
+                    <X size={12} strokeWidth={2.6} aria-hidden="true" />
+                    Remove
+                  </button>
                 </div>
               )}
-            </div>
-            <div className="quick-upload-action">
-              <span className="upload-action-label">
-                {docPreparing
-                  ? 'Preparing…'
-                  : isDocUploading
-                    ? `${docUploadPercent}%`
-                    : primaryDoc?.file
-                      ? 'Replace file'
-                      : 'Choose file'}
-              </span>
-              {!docPreparing && !isDocUploading && <Upload size={15} strokeWidth={2} aria-hidden="true" />}
-            </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              hidden
-              accept={DOCUMENT_ACCEPT}
-              onChange={(event) => void handleDocumentSelected(event.target.files?.[0] ?? null)}
-            />
-          </label>
 
-          {primaryDoc?.file && docStatus === 'ready' && !isDocUploading && (
-            <div className="doc-upload-footer">
-              <span>Uploads securely when you submit your application.</span>
-              <button
-                type="button"
-                className="doc-remove-btn"
-                onClick={(event) => {
-                  // The card is a <label>, so stop it re-opening the picker.
-                  event.preventDefault()
-                  event.stopPropagation()
-                  removePrimaryDocument()
-                }}
-              >
-                <X size={12} strokeWidth={2.6} aria-hidden="true" />
-                Remove
-              </button>
+              {cardError && <ErrorText message={cardError} />}
             </div>
-          )}
+          )
+        })}
 
-          <ErrorText message={docError || fieldErrors['verificationDocuments']} />
-        </div>
+        <ErrorText message={fieldErrors['verificationDocuments']} />
 
         <div className="quick-done-card">
           <div className="quick-done-icon">

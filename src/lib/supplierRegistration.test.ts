@@ -8,8 +8,8 @@ import {
   isValidEmail,
   laterDocumentsFor,
   normalizeWebsite,
-  primaryDocumentCopy,
   primaryDocumentType,
+  requiredSupplierDocuments,
   serviceLabels,
   splitFullName,
   STEP_ACCOUNT,
@@ -136,13 +136,29 @@ describe('supplier type options', () => {
   })
 })
 
-describe('primary document + later documents', () => {
-  it('requires a photo of the applicant ID for every supplier type', () => {
+describe('required + later documents', () => {
+  it('requires only an ID for the individual supplier types', () => {
     expect(primaryDocumentType()).toBe('GHANA_CARD')
-    expect(primaryDocumentCopy()).toMatchObject({
+    for (const choice of ['individual_guide', 'experience_host', 'independent_driver']) {
+      expect(requiredSupplierDocuments(choice).map((doc) => doc.type)).toEqual(['GHANA_CARD'])
+    }
+  })
+
+  it('requires an ID plus a business certificate for business supplier types', () => {
+    for (const choice of ['registered_company', 'sole_proprietor', 'transport_company']) {
+      expect(requiredSupplierDocuments(choice).map((doc) => doc.type)).toEqual([
+        'GHANA_CARD',
+        'BUSINESS_CERTIFICATE',
+      ])
+    }
+    // The ID card copy is unchanged (title/upload label the supplier sees).
+    expect(requiredSupplierDocuments('individual_guide')[0]).toMatchObject({
       title: 'Government-issued ID',
       uploadLabel: 'Upload your ID',
-      quickTitle: '1 document required',
+    })
+    expect(requiredSupplierDocuments('registered_company')[1]).toMatchObject({
+      type: 'BUSINESS_CERTIFICATE',
+      uploadLabel: 'Upload your certificate',
     })
   })
 
@@ -158,31 +174,25 @@ describe('primary document + later documents', () => {
       'Vehicle insurance',
       'Roadworthiness',
     ])
-    // Transport company → the certificate plus the same vehicle set.
+    // Transport company → the vehicle set (certificate is required up front now).
     expect(laterDocumentsFor('transport_company', ['airport_transfers']).map((doc) => doc.name)).toEqual([
-      'Business registration certificate',
       "Driver's licence",
       'Vehicle registration',
       'Vehicle insurance',
       'Roadworthiness',
     ])
-    // Registered company with transfers → certificate + vehicle registration/insurance.
+    // Registered company with transfers → vehicle registration/insurance.
     expect(laterDocumentsFor('registered_company', ['airport_transfers']).map((doc) => doc.name)).toEqual([
-      'Business registration certificate',
       'Vehicle registration',
       'Vehicle insurance',
     ])
-    // Registered company selling tours only → certificate + GTA licence + liability insurance.
+    // Registered company selling tours only → GTA licence + liability insurance.
     expect(laterDocumentsFor('registered_company', ['tours']).map((doc) => doc.name)).toEqual([
-      'Business registration certificate',
       'Ghana Tourism Authority licence',
       'Public liability / activity insurance',
     ])
-    // Sole proprietor → the certificate, nothing else yet.
-    expect(laterDocumentsFor('sole_proprietor', []).map((doc) => doc.name)).toEqual([
-      'Business registration certificate',
-    ])
-    // Nothing to ask for yet.
+    // Nothing further to ask for yet.
+    expect(laterDocumentsFor('sole_proprietor', [])).toEqual([])
     expect(laterDocumentsFor('experience_host', [])).toEqual([])
   })
 })
@@ -301,13 +311,29 @@ describe('validateSupplierStep', () => {
     expect(validateSupplierStep(STEP_SERVICES, form, session)).toEqual({})
   })
 
-  it('step 4 requires the one up-front document', () => {
+  it('step 4 requires every up-front document', () => {
     const form = filledIndividualForm()
     expect(validateSupplierStep(STEP_VERIFICATION, form, session)['verificationDocuments']).toBeTruthy()
     form.verificationDocuments = [
       { key: 'k', type: 'GHANA_CARD', ownerType: 'SUPPLIER', file: new File(['x'], 'id.png') },
     ]
     expect(validateSupplierStep(STEP_VERIFICATION, form, session)).toEqual({})
+
+    // A business also needs its registration certificate.
+    const business = filledBusinessForm()
+    business.verificationDocuments = [
+      { key: 'k', type: 'GHANA_CARD', ownerType: 'SUPPLIER', file: new File(['x'], 'id.png') },
+    ]
+    expect(validateSupplierStep(STEP_VERIFICATION, business, session)['verificationDocuments']).toContain(
+      'Business registration certificate'
+    )
+    business.verificationDocuments.push({
+      key: 'c',
+      type: 'BUSINESS_CERTIFICATE',
+      ownerType: 'SUPPLIER',
+      file: new File(['x'], 'cert.pdf'),
+    })
+    expect(validateSupplierStep(STEP_VERIFICATION, business, session)).toEqual({})
   })
 
   it('step 5 only checks optional payout details when they are filled in', () => {
@@ -419,6 +445,12 @@ describe('buildSupplierPayload', () => {
         ownerType: 'SUPPLIER',
         file: new File(['x'], 'ghana-card.jpg', { type: 'image/jpeg' }),
       },
+      {
+        key: 'c',
+        type: 'BUSINESS_CERTIFICATE',
+        ownerType: 'SUPPLIER',
+        file: new File(['x'], 'cert.pdf', { type: 'application/pdf' }),
+      },
     ]
 
     const payload = buildSupplierPayload(form)
@@ -455,8 +487,11 @@ describe('buildSupplierPayload', () => {
     })
 
     const documents = payload.getAll('documents')
-    expect(documents).toHaveLength(1)
-    expect(json(payload, 'documentMeta')).toEqual([{ type: 'GHANA_CARD', ownerType: 'SUPPLIER' }])
+    expect(documents).toHaveLength(2)
+    expect(json(payload, 'documentMeta')).toEqual([
+      { type: 'GHANA_CARD', ownerType: 'SUPPLIER' },
+      { type: 'BUSINESS_CERTIFICATE', ownerType: 'SUPPLIER' },
+    ])
   })
 
   it('omits documentMeta when nothing was uploaded', () => {
