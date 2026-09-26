@@ -1843,8 +1843,9 @@
   font-weight:600;
 }
 
-/* The wizard title now lives in that header row, so the topbar is just the
-   progress indicator — flat, no card. */
+/* The wizard title lives in the heading, so the topbar is just the eyebrow +
+   progress row — flat, no card. Keep the prototype's split: eyebrow left,
+   progress right. */
 .srp-page .topbar{
   background:transparent !important;
   border:0 !important;
@@ -1852,7 +1853,7 @@
   box-shadow:none !important;
   padding:0 !important;
   margin:0 0 18px !important;
-  justify-content:flex-end;
+  justify-content:space-between;
 }
 
 /* Icon + copy rows (notices, notes): keep the leading icon from stretching. */
@@ -2011,15 +2012,17 @@
 .supplier-register-container{
   width:100%;
   margin:0 auto;
-  padding-left:max(20px, calc((100vw - 1200px) / 2));
-  padding-right:max(20px, calc((100vw - 1200px) / 2));
+  /* The prototype's wizard shell is `min(1440px, 100% - 32px)`; these gutters
+     mirror that maths so the page header lines up with the card edges. */
+  padding-left:max(16px, calc((100vw - 1440px) / 2));
+  padding-right:max(16px, calc((100vw - 1440px) / 2));
 }
 
-/* Let the wizard shell fill that column (the page container now owns the
-   gutters), so the form card starts on the logo's edge too. */
+/* Let the wizard shell take the page column's full width (the container owns
+   the gutters), giving the 1080px form content the prototype's inset margins. */
 @media (min-width:768px){
   .srp-page .shell{
-    width:min(1220px, 100%) !important;
+    width:min(1440px, 100%) !important;
   }
 }
 
