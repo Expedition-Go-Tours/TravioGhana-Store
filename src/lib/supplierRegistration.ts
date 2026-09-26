@@ -314,32 +314,53 @@ export function idTypeLabel(value?: string | null): string {
 }
 
 /**
- * The one document required up front, per the prototype's "1 document
- * required" promise: every supplier type uploads a photo of a government-issued
- * ID. Business certificates and service-specific documents are only requested
- * later, when they become relevant (see `laterDocumentsFor`).
+ * The identity document required up front for every supplier type. Business
+ * types must also attach a business registration certificate — see
+ * `requiredSupplierDocuments`.
  */
 export function primaryDocumentType(): string {
   return 'GHANA_CARD'
 }
 
-export interface PrimaryDocumentCopy {
+/** One document that must be uploaded before the application can be submitted. */
+export interface RequiredSupplierDocument {
+  /** `documentMeta.type` sent to the backend (Prisma DocumentType). */
+  type: string
   title: string
   description: string
   uploadLabel: string
-  quickTitle: string
-  quickSubtitle: string
 }
 
-export function primaryDocumentCopy(): PrimaryDocumentCopy {
-  return {
-    title: 'Government-issued ID',
-    description:
-      'Upload one Ghana Card, passport or another accepted government-issued ID. Your name and date of birth should match your profile.',
-    uploadLabel: 'Upload your ID',
-    quickTitle: '1 document required',
-    quickSubtitle: "That's all we need to start your supplier account.",
-  }
+const ID_DOCUMENT: RequiredSupplierDocument = {
+  type: primaryDocumentType(),
+  title: 'Government-issued ID',
+  description:
+    'Upload one Ghana Card, passport or another accepted government-issued ID. Your name and date of birth should match your profile.',
+  uploadLabel: 'Upload your ID',
+}
+
+const BUSINESS_CERTIFICATE_DOCUMENT: RequiredSupplierDocument = {
+  type: 'BUSINESS_CERTIFICATE',
+  title: 'Business registration certificate',
+  description:
+    'Upload your business registration certificate from the Registrar General (or your business trading certificate). The name on it should match the business name on your application.',
+  uploadLabel: 'Upload your certificate',
+}
+
+/**
+ * Documents that must be attached at the verification step, per supplier type.
+ *
+ * Every supplier uploads a photo of a government-issued ID. Registered
+ * companies, sole proprietors / businesses and transport companies must also
+ * attach their business registration certificate up front; the individual
+ * types (tour guide, experience host, independent driver) do not.
+ */
+export function requiredSupplierDocuments(
+  choiceId: string | null | undefined
+): RequiredSupplierDocument[] {
+  const option = supplierTypeOption(choiceId)
+  const kind: SupplierKind = option?.kind ?? 'individual'
+  return kind === 'business' ? [ID_DOCUMENT, BUSINESS_CERTIFICATE_DOCUMENT] : [ID_DOCUMENT]
 }
 
 export interface LaterDocument {
@@ -365,15 +386,6 @@ export function laterDocumentsFor(choiceId: string | null | undefined, services:
 
   const docs: LaterDocument[] = []
   const add = (name: string, detail: string) => docs.push({ name, detail })
-
-  // Businesses upload a photo of their ID up front like everyone else, so the
-  // registration certificate is requested later instead.
-  if (!isIndividual) {
-    add(
-      'Business registration certificate',
-      'May be requested to confirm the business behind this account before your listings go live.'
-    )
-  }
 
   if (isIndividual && hasTours && !isIndependentDriver) {
     add('Ghana Tourism Authority licence', 'May be requested before applicable tours or experiences go live.')
@@ -562,8 +574,17 @@ export function validateSupplierStep(
   }
 
   if (step === STEP_VERIFICATION) {
-    const hasFile = form.verificationDocuments.some((doc) => doc.ownerType === 'SUPPLIER' && doc.file)
-    if (!hasFile) errors['verificationDocuments'] = 'Upload the required document to continue'
+    const required = requiredSupplierDocuments(form.supplierChoice)
+    const missing = required.filter(
+      (req) =>
+        !form.verificationDocuments.some(
+          (doc) => doc.ownerType === 'SUPPLIER' && doc.type === req.type && doc.file
+        )
+    )
+    if (missing.length > 0) {
+      errors['verificationDocuments'] =
+        `Upload the required document${missing.length > 1 ? 's' : ''}: ${missing.map((doc) => doc.title).join(', ')}`
+    }
   }
 
   if (step === STEP_PAYOUT) {

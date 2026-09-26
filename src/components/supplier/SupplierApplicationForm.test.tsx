@@ -17,6 +17,11 @@ const mocks = vi.hoisted(() => ({
   getSupplierApplicationStatus: vi.fn<() => Promise<unknown>>(async () => null),
 }))
 
+// jsdom has no 2D canvas, so the celebration must never touch the real library.
+const confettiMock = vi.hoisted(() => Object.assign(vi.fn(), { reset: vi.fn() }))
+
+vi.mock('canvas-confetti', () => ({ default: confettiMock }))
+
 vi.mock('@/hooks/useAuthUser', () => ({
   useAuthUser: () => mocks.user,
 }))
@@ -53,6 +58,13 @@ function activeStepCard(): HTMLElement {
   const card = document.querySelector<HTMLElement>('.form-step.active .quick-upload-card')
   if (!card) throw new Error('upload card not found')
   return card
+}
+
+/** The success section stays mounted too — only its `.active` class flips. */
+function successScreenIsActive(): boolean {
+  return (
+    document.querySelector('#successScreen')?.closest('.form-step')?.classList.contains('active') ?? false
+  )
 }
 
 function activeFileInput(): HTMLInputElement {
@@ -94,6 +106,8 @@ describe('SupplierApplicationForm', () => {
     mocks.applyAsSupplier.mockResolvedValue({})
     mocks.getSupplierApplicationStatus.mockReset()
     mocks.getSupplierApplicationStatus.mockResolvedValue(null)
+    confettiMock.mockClear()
+    confettiMock.reset.mockClear()
     localStorage.clear()
     sessionStorage.clear()
   })
@@ -246,6 +260,31 @@ describe('SupplierApplicationForm', () => {
     expect(mocks.applyAsSupplier).not.toHaveBeenCalled()
   })
 
+  it('asks businesses for an ID and a business certificate', async () => {
+    // A registered company must attach both documents up front.
+    const form = seededForm()
+    form.supplierChoice = 'registered_company'
+    saveSupplierApplicationDraft(null, { step: 4, form })
+
+    render(<SupplierApplicationForm />)
+    await waitFor(() => expect(activeStepText()).toContain('Quick verification'))
+
+    expect(activeStepText()).toContain('2 documents required')
+    expect(activeStepText()).toContain('Government-issued ID')
+    expect(activeStepText()).toContain('Business registration certificate')
+    expect(document.querySelectorAll('.form-step.active .quick-upload-card')).toHaveLength(2)
+  })
+
+  it('asks individual suppliers for the ID only', async () => {
+    seedVerificationStep()
+    render(<SupplierApplicationForm />)
+    await waitFor(() => expect(activeStepText()).toContain('Quick verification'))
+
+    expect(activeStepText()).toContain('1 document required')
+    expect(activeStepText()).not.toContain('Business registration certificate')
+    expect(document.querySelectorAll('.form-step.active .quick-upload-card')).toHaveLength(1)
+  })
+
   it('shows a spinner while a photo is read, then a preview with remove', async () => {
     seedVerificationStep()
     const bitmap = { close: vi.fn() }
@@ -376,7 +415,34 @@ describe('SupplierApplicationForm', () => {
     })
 
     await waitFor(() =>
-      expect(screen.getByText('Your supplier profile is on its way')).toBeInTheDocument()
+      expect(screen.getByText('Your supplier account is ready')).toBeInTheDocument()
     )
   })
+
+  it('hands an auto-accepted supplier to their dashboard after a short pause', async () => {
+    seedReviewStep()
+    mocks.applyAsSupplier.mockResolvedValue({ supplierProfile: { id: 's1' } })
+    mocks.getSupplierApplicationStatus.mockResolvedValue({ id: 's1', userId: 'u1', status: 'ACTIVE' })
+    const onSubmitted = vi.fn()
+
+    render(<SupplierApplicationForm onSubmitted={onSubmitted} />)
+    await waitFor(() => expect(activeStepText()).toContain('Review your setup'))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create supplier profile' }))
+
+    // The account is live on submission, so the success screen promises the
+    // dashboard and the parent is asked to refresh the status (the refresh is
+    // what performs the SSO redirect once the account reads back as ACTIVE).
+    await waitFor(() => expect(successScreenIsActive()).toBe(true))
+    expect(screen.getByText(/Taking you to your supplier dashboard/)).toBeInTheDocument()
+    expect(onSubmitted).not.toHaveBeenCalled()
+    // The celebration is the same canvas-confetti burst as the tour-submitted
+    // screen on the supplier dashboard.
+    expect(confettiMock).toHaveBeenCalled()
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 4100))
+    })
+    expect(onSubmitted).toHaveBeenCalledTimes(1)
+  }, 10000)
 })

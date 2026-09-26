@@ -101,7 +101,6 @@ export function documentRequirementsFor(supplierType: string, country: string): 
       if (isGhana) reqs.push('GTA_CERTIFICATE')
       break
     case 'VEHICLE_OPERATOR':
-      reqs.push('BUSINESS_CERTIFICATE')
       reqs.push('PASSENGER_TRANSPORT_LICENCE')
       break
     default:

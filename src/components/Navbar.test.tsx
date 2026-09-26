@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 
@@ -7,11 +7,14 @@ import { MemoryRouter } from 'react-router-dom'
  * marketing "List an Experience" page for everyone else, and the supplier's own
  * portal for an approved supplier. It used to keep the same megaphone icon in
  * both states, which made "Supplier dashboard" look like the marketing link —
- * these tests pin the icon to the state (desktop and mobile drawer).
+ * these tests pin the icon to the state (desktop and mobile drawer), and pin
+ * where each state sends you: the portal in a new tab, the marketing page
+ * in-app.
  */
 
 const state = vi.hoisted(() => ({
   approved: false,
+  profile: null as { status: string } | null,
   hasActiveSearch: false,
   resetLocation: vi.fn(),
   clearContinuePlanning: vi.fn(),
@@ -35,7 +38,7 @@ vi.mock('react-i18next', () => ({
 }))
 
 vi.mock('../hooks/useSupplierStatus', () => ({
-  useSupplierStatus: () => ({ profile: null, isApproved: state.approved }),
+  useSupplierStatus: () => ({ profile: state.profile, isApproved: state.approved }),
 }))
 
 vi.mock('../lib/auth', () => ({
@@ -45,6 +48,8 @@ vi.mock('../lib/auth', () => ({
     displayName: 'Test Supplier',
     photoURL: null,
   }),
+  // Read by lib/supplier when it builds the SSO hand-off URL.
+  getStoredAuthTokens: () => ({ accessToken: 'access-123', refreshToken: 'refresh-456' }),
   subscribeToAuthState: () => Promise.resolve(() => {}),
   signOutUser: () => Promise.resolve(),
 }))
@@ -156,6 +161,96 @@ describe('Navbar supplier CTA', () => {
     openMobileMenu(container)
 
     expect(ctaIconClass(container, '.nav-mobile-list-experience-icon')).toContain('lucide-layout-dashboard')
+  })
+})
+
+/**
+ * Where the CTA sends you. An approved supplier is leaving the storefront to do
+ * work in their own dashboard, so the portal opens in a new tab and the store
+ * stays put behind it — a same-tab load left them with no way back but the
+ * browser's back button. The marketing page is a page *of this site*, so it
+ * keeps routing in-app.
+ */
+describe('Navbar supplier CTA hand-off', () => {
+  const realLocation = window.location
+  let assign: ReturnType<typeof vi.fn>
+
+  beforeEach(() => {
+    state.approved = false
+    state.profile = null
+    window.localStorage.clear()
+    cleanup()
+    assign = vi.fn()
+    // jsdom refuses real navigation; nothing else in Navbar reads window.location.
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      writable: true,
+      value: { ...realLocation, assign },
+    })
+  })
+
+  afterEach(() => {
+    Object.defineProperty(window, 'location', { configurable: true, writable: true, value: realLocation })
+    vi.restoreAllMocks()
+  })
+
+  /** Clicks the desktop CTA and lets the async hand-off settle. */
+  async function clickCta() {
+    const container = renderNavbar()
+    fireEvent.click(container.querySelector('.nav-list-experience') as Element)
+    await vi.waitFor(() => expect(window.open).toHaveBeenCalled())
+  }
+
+  it('opens the portal in a new tab instead of replacing the storefront', async () => {
+    state.approved = true
+    state.profile = { status: 'APPROVED' }
+    vi.spyOn(window, 'open').mockImplementation(() => ({}) as Window)
+
+    await clickCta()
+
+    expect(window.open).toHaveBeenCalledTimes(1)
+    const [url, target] = (window.open as ReturnType<typeof vi.spyOn>).mock.calls[0]
+    expect(target).toBe('_blank')
+    expect(url).toContain('/auth/callback?')
+    expect(url).toContain('accessToken=access-123')
+    expect(assign).not.toHaveBeenCalled()
+  })
+
+  it('cuts the new tab off from window.opener', async () => {
+    state.approved = true
+    state.profile = { status: 'APPROVED' }
+    const tab = { opener: window } as unknown as Window
+    vi.spyOn(window, 'open').mockImplementation(() => tab)
+
+    await clickCta()
+
+    expect(tab.opener).toBeNull()
+  })
+
+  it('still reaches the portal when a popup blocker refuses the new tab', async () => {
+    state.approved = true
+    state.profile = { status: 'APPROVED' }
+    // A blocked popup is the one case where window.open returns null.
+    vi.spyOn(window, 'open').mockImplementation(() => null)
+
+    const container = renderNavbar()
+    fireEvent.click(container.querySelector('.nav-list-experience') as Element)
+    await vi.waitFor(() => expect(assign).toHaveBeenCalledTimes(1))
+
+    // Same SSO URL, just loaded in this tab rather than dropped on the floor.
+    expect(assign.mock.calls[0][0]).toContain('/auth/callback?')
+  })
+
+  it('keeps the marketing page in-app for everyone else', async () => {
+    state.approved = false
+    const open = vi.spyOn(window, 'open').mockImplementation(() => ({}) as Window)
+
+    const container = renderNavbar()
+    fireEvent.click(container.querySelector('.nav-list-experience') as Element)
+    await Promise.resolve()
+
+    expect(open).not.toHaveBeenCalled()
+    expect(assign).not.toHaveBeenCalled()
   })
 })
 

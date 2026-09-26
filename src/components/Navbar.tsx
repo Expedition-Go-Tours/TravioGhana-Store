@@ -52,6 +52,26 @@ interface NavbarProps {
   onOpenAuth?: (mode: 'signin' | 'signup') => void
 }
 
+/**
+ * Hand an approved supplier off to their own dashboard in a new tab, leaving the
+ * storefront open behind it. They left to do work in the portal, not to keep
+ * browsing, and a same-tab load left them with no way back but the back button.
+ *
+ * The opener is severed by hand rather than with the `noopener` window feature
+ * the rest of the app passes: `noopener` makes `window.open` return null on
+ * success too, which would make the blocked-popup branch below fire every time
+ * and bounce the portal into the same tab. The null return is reserved for
+ * "a blocker refused us", and then a same-tab load beats a dead click.
+ */
+function openPortalInNewTab(url: string) {
+  const tab = window.open(url, '_blank')
+  if (tab) {
+    tab.opener = null
+    return
+  }
+  window.location.assign(url)
+}
+
 export default function Navbar({ onOpenAuth }: NavbarProps) {
   const navigate = useNavigate()
   const location = useLocation()
@@ -278,15 +298,19 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
 
   // Navbar "List an Experience" CTA (desktop).
   //
-  // Approved suppliers go straight into the supplier platform via SSO;
-  // everyone else (signed out, no application yet, or under review) lands on
-  // the "Join as a Supplier" page, which renders either the application form
+  // Approved suppliers go straight into the supplier platform via SSO, in a new
+  // tab; everyone else (signed out, no application yet, or under review) lands
+  // on the "Join as a Supplier" page, which renders either the application form
   // or the current application status.
   const handleListExperience = useCallback(async () => {
     if (isApproved) {
+      // Resolved from the profile we already hold, so this settles in a
+      // microtask and the click's user activation is still live by the time
+      // openPortalInNewTab runs — which is what stops a popup blocker from
+      // swallowing the click before the fallback can notice.
       const portalUrl = await getSupplierPortalUrl(supplierProfile)
       if (portalUrl) {
-        window.location.assign(portalUrl)
+        openPortalInNewTab(portalUrl)
         return
       }
     }
