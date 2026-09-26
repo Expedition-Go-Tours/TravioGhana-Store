@@ -1998,21 +1998,14 @@
    `max(20px, (100vw - 1200px) / 2)` gutters. The registration section used a
    1180px box plus its own `px-4`, so the page content sat ~10px right of the
    logo — this mirrors the navbar's maths exactly so both edges line up. */
+/* The container uses the navbar's 1200px column so the page header aligns
+   with the logo. The wizard shell (min(1220px, 100%-32px)) then centers
+   itself inside it with a natural inset margin — matching the prototype. */
 .supplier-register-container{
   width:100%;
   margin:0 auto;
-  /* The prototype's wizard shell is `min(1440px, 100% - 32px)`; these gutters
-     mirror that maths so the page header lines up with the card edges. */
-  padding-left:max(16px, calc((100vw - 1440px) / 2));
-  padding-right:max(16px, calc((100vw - 1440px) / 2));
-}
-
-/* Let the wizard shell take the page column's full width (the container owns
-   the gutters), giving the 1080px form content the prototype's inset margins. */
-@media (min-width:768px){
-  .srp-page .shell{
-    width:min(1440px, 100%) !important;
-  }
+  padding-left:max(20px, calc((100vw - 1200px) / 2));
+  padding-right:max(20px, calc((100vw - 1200px) / 2));
 }
 
 /* Phone field: country calling code + national number, matching the booking
