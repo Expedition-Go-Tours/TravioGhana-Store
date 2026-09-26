@@ -29,14 +29,22 @@
   background: #179237;
 }
 
-/* ── 3-column info row ────────────────────────────────────────────── */
+/* ── 3-column info card ──────────────────────────────────────────────
+   One white card (Reviews / Destination / Experience Host) instead of the
+   old full-bleed strip: rounded corners, a hairline border, equal columns
+   and clean vertical dividers. Stays 3-up on phones — type and padding step
+   down rather than reflowing — so the row keeps the mockup's rhythm at
+   every width. */
 
 .tour-header-info-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-top: 14px;
-  border-top: 1px solid rgba(15, 23, 42, 0.08);
-  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fff;
+  border: 1px solid #e8edf2;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 30px -24px rgba(15, 23, 42, 0.25);
 }
 
 .tour-header-info-item {
@@ -44,12 +52,13 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 12px 8px;
+  min-width: 0;
+  padding: 14px 10px;
   text-align: center;
 }
 
 .tour-header-info-item + .tour-header-info-item {
-  border-left: 1px solid rgba(15, 23, 42, 0.08);
+  border-left: 1px solid #eef1f5;
 }
 
 .tour-header-info-icon {
@@ -64,7 +73,23 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #6b7280;
-  line-height: 1;
+  line-height: 1.2;
+}
+
+/* Clickable reviews cell: strip the UA button chrome so it reads as the
+   value text. Declared before `.tour-header-info-value` on purpose — the
+   value rules below own the final type scale. */
+.tour-header-info-reviews-btn {
+  font: inherit;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  max-width: 100%;
+}
+
+.tour-header-info-reviews-btn:hover {
+  text-decoration: underline;
 }
 
 .tour-header-info-value {
@@ -72,23 +97,15 @@
   font-size: 13px;
   font-weight: 600;
   color: #0f172a;
-  line-height: 1.2;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
-.tour-header-info-reviews-btn {
-  border: none;
-  background: none;
-  padding: 0;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: inherit;
-  font-weight: inherit;
-  color: inherit;
-  line-height: 1.2;
-}
-
-.tour-header-info-reviews-btn:hover {
-  text-decoration: underline;
+/* "(900)" next to the rating reads as secondary metadata. */
+.tour-header-info-count {
+  color: #64748b;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .tour-header-info-icon-star {
@@ -114,7 +131,7 @@
   }
 
   .tour-header-info-item {
-    padding: 14px 12px;
+    padding: 16px 14px;
   }
 
   .tour-header-info-label {
@@ -137,7 +154,7 @@
   }
 
   .tour-header-info-item {
-    padding: 16px 16px;
+    padding: 18px 16px;
   }
 
   .tour-header-info-label {

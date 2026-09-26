@@ -5,6 +5,8 @@ import './TourHeader.css'
 
 interface TourHeaderProps {
   title: string
+  /** Combined rating (in-app + matched scraped reviews), rounded to one decimal. */
+  rating?: number
   reviewCount: number
   location?: string
   supplierName?: string
@@ -13,12 +15,17 @@ interface TourHeaderProps {
 
 export default function TourHeader({
   title,
+  rating = 0,
   reviewCount,
   location,
   supplierName,
   onReviewsClick,
 }: TourHeaderProps) {
   const { t } = useTranslation()
+  // Headline value follows the "4.3 (900)" review-product convention; without
+  // a rating (fresh listing) fall back to the plain count.
+  const hasRating = Number.isFinite(rating) && rating > 0
+
   return (
     <header className="tour-header-new">
       <h1 className="tour-header-title">{title}</h1>
@@ -32,7 +39,14 @@ export default function TourHeader({
             onClick={onReviewsClick}
             className="tour-header-info-reviews-btn tour-header-info-value"
           >
-            <span>{reviewCount} {t('sections.reviews').toLowerCase()}</span>
+            {hasRating ? (
+              <span>
+                {rating.toFixed(1)}
+                <span className="tour-header-info-count"> ({reviewCount.toLocaleString()})</span>
+              </span>
+            ) : (
+              <span>{reviewCount.toLocaleString()} {t('sections.reviews').toLowerCase()}</span>
+            )}
           </button>
         </div>
 

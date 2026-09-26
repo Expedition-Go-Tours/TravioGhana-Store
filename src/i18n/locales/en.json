@@ -58,6 +58,7 @@
     "welcomeBack": "Welcome back"
   },
   "booking": {
+    "bestPrice": "Best price",
     "promoCode": "Promo Code",
     "date": "Date",
     "travelers": "Travelers",

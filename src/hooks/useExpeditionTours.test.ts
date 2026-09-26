@@ -1,5 +1,59 @@
 import { describe, it, expect } from 'vitest'
-import { extractItinerary, extractMeetingInfo, extractStartingPriceFromRaw, extractAvailabilitySchedule, mapSpecialOffers } from './useExpeditionTours'
+import {
+  extractItinerary,
+  extractMeetingInfo,
+  extractStartingPriceFromRaw,
+  extractAvailabilitySchedule,
+  mapSpecialOffers,
+  mergeSimilarTours,
+  type TourCardData,
+} from './useExpeditionTours'
+
+function tourCard(over: Partial<TourCardData> & Pick<TourCardData, 'id' | 'title'>): TourCardData {
+  return {
+    category: 'Tour',
+    duration: '1 day',
+    features: '',
+    price: '$100',
+    rating: '4.8',
+    reviews: 10,
+    location: 'Accra, Ghana',
+    image: 'https://example.com/a.jpg',
+    source: 'expedition-go',
+    slug: over.id || 'slug',
+    ...over,
+  }
+}
+
+describe('mergeSimilarTours', () => {
+  it('tops the curated row up with live suggestions, deduped and in order', () => {
+    const curated = [tourCard({ id: 'a', title: 'A' }), tourCard({ id: 'b', title: 'B' })]
+    const extras = [
+      tourCard({ id: 'b', title: 'B duplicate' }),
+      tourCard({ id: 'c', title: 'C' }),
+      tourCard({ id: 'd', title: 'D' }),
+    ]
+
+    expect(mergeSimilarTours(curated, extras, 10).map((tour) => tour.id)).toEqual(['a', 'b', 'c', 'd'])
+  })
+
+  it('dedupes by slug when a suggestion carries no id', () => {
+    const curated = [tourCard({ id: '', title: 'A', slug: 'a-slug' })]
+    const extras = [
+      tourCard({ id: '', title: 'A again', slug: 'a-slug' }),
+      tourCard({ id: '', title: 'B', slug: 'b-slug' }),
+    ]
+
+    expect(mergeSimilarTours(curated, extras, 5).map((tour) => tour.slug)).toEqual(['a-slug', 'b-slug'])
+  })
+
+  it('never exceeds the limit', () => {
+    const curated = Array.from({ length: 3 }, (_, i) => tourCard({ id: `c${i}`, title: `C${i}` }))
+    const extras = Array.from({ length: 10 }, (_, i) => tourCard({ id: `e${i}`, title: `E${i}` }))
+
+    expect(mergeSimilarTours(curated, extras, 5)).toHaveLength(5)
+  })
+})
 
 function tourWith(productContent: unknown): any {
   return {

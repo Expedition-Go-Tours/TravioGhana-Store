@@ -133,14 +133,14 @@
 .skeleton-gallery-square {
   width: 100%;
   aspect-ratio: 1 / 1;
-  border-radius: 0;
+  border-radius: 12px;
 }
 
 .skeleton-gallery-mosaic {
   display: none;
 }
 
-/* ≥768px: the GetYourGuide 20% / 54% / 26% mosaic. */
+/* ≥768px: the loaded mosaic's hero-left (~68%) + right stack (remainder). */
 @media (min-width: 768px) {
   .skeleton-gallery-square {
     display: none;
@@ -157,11 +157,7 @@
   }
 
   .skeleton-gallery-mosaic > .skeleton-block:nth-child(1) {
-    flex: 0 0 20%;
-  }
-
-  .skeleton-gallery-mosaic > .skeleton-block:nth-child(2) {
-    flex: 0 0 54%;
+    flex: 0 0 68%;
   }
 
   .skeleton-gallery-mosaic-col {

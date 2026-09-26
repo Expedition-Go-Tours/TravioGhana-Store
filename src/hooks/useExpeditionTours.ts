@@ -2305,6 +2305,36 @@ export function useExpeditionOffers(limit = 12, enabled = true) {
  * siblings. Queries the public /tours listing directly so every active
  * tour can show a "similar experiences" section, not just curated ones.
  */
+/**
+ * Cards the "Similar Experiences" rail keeps: five per desktop view, so the
+ * row scrolls over two screens instead of stopping at one.
+ */
+const SIMILAR_TOURS_LIMIT = 10
+/** Over-fetch so the row still fills after excluding the current tour. */
+const SIMILAR_TOURS_FETCH_LIMIT = 12
+
+/**
+ * Append live suggestions to the curated similar row: deduped by tour id/slug,
+ * in order, capped at `limit`. The curated endpoint caps its own suggestions at
+ * four, so this is what fills the five-per-view desktop layout.
+ */
+export function mergeSimilarTours(
+  primary: TourCardData[],
+  extras: TourCardData[],
+  limit: number,
+): TourCardData[] {
+  const seen = new Set(primary.map((tour) => tour.id || tour.slug))
+  const merged = [...primary]
+  for (const tour of extras) {
+    const key = tour.id || tour.slug
+    if (seen.has(key)) continue
+    seen.add(key)
+    merged.push(tour)
+    if (merged.length >= limit) break
+  }
+  return merged.slice(0, limit)
+}
+
 async function fetchSimilarToursFallback(excludeTourId: string | undefined, category: string | null, city: string | null, country: string | null): Promise<TourCardData[]> {
   const tryFetch = async (params: URLSearchParams) => {
     const payload = await expeditionFetchRaw(`/tours?${params.toString()}`)
@@ -2314,24 +2344,24 @@ async function fetchSimilarToursFallback(excludeTourId: string | undefined, cate
 
   // 1) Same category first (closest match to the curated endpoint's intent)
   if (category) {
-    const params = new URLSearchParams({ category, limit: '8' })
+    const params = new URLSearchParams({ category, limit: String(SIMILAR_TOURS_FETCH_LIMIT) })
     const results = await tryFetch(params)
-    if (results.length > 0) return results.slice(0, 4).map(mapRawTourToListing)
+    if (results.length > 0) return results.slice(0, SIMILAR_TOURS_LIMIT).map(mapRawTourToListing)
   }
 
   // 2) Fall back to same city/country
   if (city || country) {
-    const params = new URLSearchParams({ limit: '8' })
+    const params = new URLSearchParams({ limit: String(SIMILAR_TOURS_FETCH_LIMIT) })
     if (city) params.set('city', city)
     if (country) params.set('country', country)
     const results = await tryFetch(params)
-    if (results.length > 0) return results.slice(0, 4).map(mapRawTourToListing)
+    if (results.length > 0) return results.slice(0, SIMILAR_TOURS_LIMIT).map(mapRawTourToListing)
   }
 
   // 3) Last resort: just show other active tours
-  const params = new URLSearchParams({ limit: '8', sortBy: 'popularity' })
+  const params = new URLSearchParams({ limit: String(SIMILAR_TOURS_FETCH_LIMIT), sortBy: 'popularity' })
   const results = await tryFetch(params)
-  return results.slice(0, 4).map(mapRawTourToListing)
+  return results.slice(0, SIMILAR_TOURS_LIMIT).map(mapRawTourToListing)
 }
 
 /**
@@ -2536,7 +2566,25 @@ export function useSimilarTours(slug: string | undefined) {
         }
       }
 
-      return records.map((r) => mapToListing(r.tour))
+      const mapped = records.map((r) => mapToListing(r.tour))
+      if (mapped.length >= SIMILAR_TOURS_LIMIT) return mapped.slice(0, SIMILAR_TOURS_LIMIT)
+
+      // The curated endpoint caps its suggestions at four, so top the row up
+      // with the live suggestions to fill the five-per-view desktop layout.
+      // A failed top-up still returns the curated row rather than erroring.
+      try {
+        const rawTour = await fetchRawTourBySlugOrId(slug!)
+        if (!rawTour) return mapped
+        const extras = await fetchSimilarToursFallback(
+          rawTour.id,
+          rawTour.category || null,
+          rawTour.city || null,
+          rawTour.country || null,
+        )
+        return mergeSimilarTours(mapped, extras, SIMILAR_TOURS_LIMIT)
+      } catch {
+        return mapped
+      }
     },
   })
 }

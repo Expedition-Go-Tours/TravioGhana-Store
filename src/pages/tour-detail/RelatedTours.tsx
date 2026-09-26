@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import TourCard from '../../components/TourCard'
 import type { TourCardData } from '../../hooks/useExpeditionTours'
@@ -33,21 +34,26 @@ export default function RelatedTours({ tours }: RelatedToursProps) {
     <section className="related-tours">
       <div className="related-tours-header">
         <h2 className="related-tours-title">{t('tourDetail.similarExperiences')}</h2>
-        <div className="related-tours-nav">
-          <button
-            className="related-tours-nav-btn"
-            onClick={() => scroll('left')}
-            aria-label="Previous tours"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <button
-            className="related-tours-nav-btn"
-            onClick={() => scroll('right')}
-            aria-label="Next tours"
-          >
-            <ChevronRight size={20} />
-          </button>
+        <div className="related-tours-actions">
+          <Link to="/tours" className="related-tours-view-all">
+            {t('sections.viewAll')}
+          </Link>
+          <div className="related-tours-nav">
+            <button
+              className="related-tours-nav-btn"
+              onClick={() => scroll('left')}
+              aria-label="Previous tours"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <button
+              className="related-tours-nav-btn"
+              onClick={() => scroll('right')}
+              aria-label="Next tours"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
         </div>
       </div>
 

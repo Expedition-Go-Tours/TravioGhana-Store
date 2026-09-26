@@ -3,12 +3,12 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { bookingPath } from '../../lib/tourPath'
 import type { TourDetailData, SpecialOfferData } from '../../hooks/useExpeditionTours'
-import { bestOfferDiscountAmount } from '../../hooks/useExpeditionTours'
+import { bestOfferDiscountAmount, filterActiveOffers } from '../../hooks/useExpeditionTours'
 import { buildBookingTour } from '../../lib/bookingTour'
 import { Button } from '../../components/ui/button'
 import { CalendarPicker } from '../../components/ui/apple-calendar-picker'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Users, Minus, Plus, Clock as ClockIcon, BadgePercent, Info, Zap, ChevronDown } from 'lucide-react'
+import { Users, Minus, Plus, Clock as ClockIcon, BadgePercent, Info, Zap, ChevronDown, Tag } from 'lucide-react'
 import { toast } from 'sonner'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import type { DayAvailability, DayAvailabilityInfo, DayTimeSlot } from '../../lib/tourAvailability'
@@ -696,9 +696,14 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
 
   // Special offers a supplier applied to this tour on the supplier platform.
   // The backend projection (GET /tours/:id) already filters to ACTIVE offers
-  // whose date window includes today. The checkout engine auto-applies the
-  // best one — `discounts` is the ground truth of what was actually applied.
-  const activeOffers: SpecialOfferData[] = Array.isArray(tour.specialOffers) ? tour.specialOffers : []
+  // whose date window includes today. Re-check against their window locally
+  // (same helper as the tour cards) so a stale cached payload can neither
+  // discount the headline nor raise the "Best price" pill.
+  const activeOffers: SpecialOfferData[] = filterActiveOffers(tour.specialOffers)
+  // A live supplier offer — the gate for the "Best price" pill at the top of
+  // the card. Any active offer qualifies, mirroring the "Special Offer" tag on
+  // the tour cards.
+  const hasSpecialOffer = activeOffers.length > 0
   // Round like the tour cards (FormattedPrice) so the widget's headline and
   // totals show the same rounded figures as the card on the homepage.
   const formatMoney = (n: number) => `${currency.symbol}${Math.round(convertPrice(n)).toLocaleString()}`
@@ -766,6 +771,13 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
     <div className="booking-widget-desktop">
       <div className="booking-widget-card">
           <div className="booking-price-section">
+          {/* Raised only while the tour carries a live supplier offer. */}
+          {hasSpecialOffer && (
+            <span className="booking-best-price-badge">
+              <Tag size={13} strokeWidth={2.4} />
+              {t('booking.bestPrice', { defaultValue: 'Best price' })}
+            </span>
+          )}
           <div className="booking-price-main">
             {showLiveTotal ? (
               <>

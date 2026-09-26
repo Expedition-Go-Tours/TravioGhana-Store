@@ -39,20 +39,21 @@ interface Column {
 }
 
 /**
- * GetYourGuide's desktop mosaic geometry (`@media (min-width:768px)`):
- * left 20% / centre 54% / right column takes the remainder.
+ * Desktop mosaic geometry (mockup): the cover photo takes the large hero tile
+ * on the left (~2/3 of the width) and a right column takes the remainder with
+ * the next photos stacked as equal tiles. 4px gaps, 12px outer radius.
  */
-const LEFT_COLUMN = { grow: 0, shrink: 0, basis: '20%' }
-const CENTER_COLUMN = { grow: 0, shrink: 0, basis: '54%' }
-const RIGHT_COLUMN = { grow: 1, shrink: 1, basis: '0%' }
+const HERO_COLUMN = { grow: 0, shrink: 0, basis: '68%' }
+const STACK_COLUMN = { grow: 1, shrink: 1, basis: '0%' }
 
 /**
- * Same proportions as GetYourGuide, degraded gracefully for short galleries:
- *   4+ → left 20% / centre 54% / right column (two stacked tiles)
- *   3  → left 20% / centre 54% / right (one full-height tile)
+ * Same proportions at every count, degraded gracefully for short galleries:
+ *   4+ → hero (cover) + right column with three stacked tiles (any extra
+ *        photos stay in the lightbox, reachable via "View all N photos")
+ *   3  → hero (cover) + right column with two stacked tiles
  *   2  → two half-width tiles
  *   1  → one full-width tile
- * The cover photo (index 0) always takes the large centre tile.
+ * The cover photo (index 0) always takes the hero tile.
  */
 function buildColumns(count: number): Column[] {
   if (count <= 0) return []
@@ -65,15 +66,13 @@ function buildColumns(count: number): Column[] {
   }
   if (count === 3) {
     return [
-      { key: 'left', ...LEFT_COLUMN, indexes: [1] },
-      { key: 'center', ...CENTER_COLUMN, indexes: [0] },
-      { key: 'right', ...RIGHT_COLUMN, indexes: [2] },
+      { key: 'hero', ...HERO_COLUMN, indexes: [0] },
+      { key: 'stack', ...STACK_COLUMN, indexes: [1, 2] },
     ]
   }
   return [
-    { key: 'left', ...LEFT_COLUMN, indexes: [1] },
-    { key: 'center', ...CENTER_COLUMN, indexes: [0] },
-    { key: 'right', ...RIGHT_COLUMN, indexes: [2, 3] },
+    { key: 'hero', ...HERO_COLUMN, indexes: [0] },
+    { key: 'stack', ...STACK_COLUMN, indexes: [1, 2, 3] },
   ]
 }
 

@@ -82,14 +82,14 @@ function TourDetailSkeleton() {
         </div>
 
         <div className="tour-detail-content">
-          {/* Image gallery skeleton — mirrors the GYG mosaic (square on mobile) */}
+          {/* Image gallery skeleton — mirrors the loaded mosaic (square on mobile) */}
           <div className="tour-detail-main">
             <div className="tour-detail-gallery-skeleton">
               <div className="skeleton-block skeleton-gallery-square" />
               <div className="skeleton-gallery-mosaic">
                 <div className="skeleton-block" />
-                <div className="skeleton-block" />
                 <div className="skeleton-gallery-mosaic-col">
+                  <div className="skeleton-block" />
                   <div className="skeleton-block" />
                   <div className="skeleton-block" />
                 </div>
@@ -305,41 +305,51 @@ export default function TourDetailPage() {
 
   // Height of the booking card, published as `--tour-hero-height` so the photo
   // mosaic beside it can match it and the two columns finish on the same line.
-  // Measured, never clamped: a tall card (options, offers, long notes) must
-  // still end the gallery exactly where the card ends.
-  //
-  // The sync is suspended while the gallery is on screen. The card's height
-  // changes several times during a date/traveler selection (slot line, pricing
-  // spinner → quote → "price updated" note); applying those live would bounce
-  // the mosaic and make every tile re-crop at the CDN mid-interaction. It
-  // catches up the moment the gallery leaves the viewport, so the columns are
-  // already aligned again when it scrolls back.
+  // The gallery must never overhang the card, so:
+  //   - the first measurement of a tour always applies (initial alignment),
+  //   - a shrink applies immediately, even while the gallery is on screen —
+  //     otherwise a card that collapsed after the baseline (availability rows,
+  //     closed calendar, shorter tour) leaves the mosaic hanging below it,
+  //   - growth is deferred while the gallery is visible: the card changes
+  //     height several times during a date/traveler selection (slot line,
+  //     pricing spinner → quote → "price updated" note) and applying those
+  //     live would bounce the mosaic and make every tile re-crop mid-interaction,
+  //   - leaving the viewport forces a full re-sync, so the columns are already
+  //     aligned again when the gallery scrolls back.
   const [heroHeight, setHeroHeight] = useState<number | null>(null)
   const galleryVisibleRef = useRef(false)
   const heroSyncedRef = useRef(false)
 
-  const measureHeroHeight = useCallback(() => {
+  const applyHeroHeight = useCallback((measured: number, force = false) => {
+    heroSyncedRef.current = true
+    setHeroHeight((prev) => {
+      if (prev === measured) return prev
+      if (!force && prev != null && galleryVisibleRef.current && measured > prev) return prev
+      return measured
+    })
+  }, [])
+
+  const measureHeroHeight = useCallback((force = false) => {
     const el = pricingRef.current
     if (!el) return
     const measured = Math.round(el.getBoundingClientRect().height)
     // Ignore zero/negative measurements while the card is still mounting.
     if (measured <= 0) return
-    heroSyncedRef.current = true
-    setHeroHeight((prev) => (prev === measured ? prev : measured))
-  }, [])
+    applyHeroHeight(measured, force)
+  }, [applyHeroHeight])
 
   useEffect(() => {
     const el = pricingRef.current
     if (!el || typeof ResizeObserver === 'undefined') return
+    // A fresh tour (or the initial mount) starts a new sync: its first
+    // measurement becomes the baseline even while the gallery is visible.
+    heroSyncedRef.current = false
     const observer = new ResizeObserver(() => {
-      // Always take the first measurement (that's the initial alignment);
-      // afterwards only apply while the gallery is out of sight.
-      if (heroSyncedRef.current && galleryVisibleRef.current) return
-      measureHeroHeight()
+      measureHeroHeight(!heroSyncedRef.current)
     })
     observer.observe(el)
     return () => observer.disconnect()
-  }, [isLoading, tour, measureHeroHeight])
+  }, [isLoading, tour?.id, measureHeroHeight])
 
   useEffect(() => {
     const el = galleryRef.current
@@ -347,12 +357,12 @@ export default function TourDetailPage() {
     const observer = new IntersectionObserver(([entry]) => {
       galleryVisibleRef.current = entry.isIntersecting
       // Just scrolled past the gallery: apply whatever the card height became
-      // while the sync was suspended, so the resize happens off-screen.
-      if (!entry.isIntersecting && heroSyncedRef.current) measureHeroHeight()
+      // while growth was deferred, so the resize happens off-screen.
+      if (!entry.isIntersecting) measureHeroHeight(true)
     })
     observer.observe(el)
     return () => observer.disconnect()
-  }, [isLoading, tour, measureHeroHeight])
+  }, [isLoading, tour?.id, measureHeroHeight])
 
   const [reviewDetail, setReviewDetail] = useState<{ name: string; date: string; rating: number; text: string } | null>(null)
   const [isWriteReviewOpen, setIsWriteReviewOpen] = useState(false)
@@ -1135,6 +1145,7 @@ export default function TourDetailPage() {
           <div className="tour-detail-header-row">
             <TourHeader
               title={selectedTourTitle}
+              rating={selectedTourRating}
               reviewCount={selectedTourReviews}
               location={tour.location}
               supplierName={tour.supplierName}

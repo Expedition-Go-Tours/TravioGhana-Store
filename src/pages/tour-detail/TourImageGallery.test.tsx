@@ -48,20 +48,21 @@ function tileCount() {
   return screen.queryAllByTestId(/^tour-gallery-tile-\d+$/).length
 }
 
-describe('TourImageGallery — GetYourGuide mosaic', () => {
-  it('lays out left 20% / centre 54% / right (rest) with one tile per photo', async () => {
+describe('TourImageGallery — desktop mosaic', () => {
+  it('lays out a large hero tile on the left with the next photos stacked on the right', async () => {
     const { container } = render(<TourImageGallery images={IMAGES} title="Accra City Tour" />)
 
     await waitFor(() => expect(tileCount()).toBe(4))
 
     const columns = Array.from(container.querySelectorAll<HTMLElement>('.tour-gallery-mosaic-column'))
-    expect(columns).toHaveLength(3)
-    expect(columns[0].style.flexBasis).toBe('20%')
-    expect(columns[1].style.flexBasis).toBe('54%')
-    expect(columns[2].style.flexGrow).toBe('1')
-    expect(columns[2].style.flexBasis).toBe('0%')
-    // right column stacks two tiles (4 visible photos, like GYG)
-    expect(columns[2].querySelectorAll('.tour-gallery-tile')).toHaveLength(2)
+    expect(columns).toHaveLength(2)
+    // hero tile carries the cover photo and ~2/3 of the width
+    expect(columns[0].style.flexBasis).toBe('68%')
+    expect(columns[0].querySelectorAll('.tour-gallery-tile')).toHaveLength(1)
+    // right column takes the remainder and stacks three tiles
+    expect(columns[1].style.flexGrow).toBe('1')
+    expect(columns[1].style.flexBasis).toBe('0%')
+    expect(columns[1].querySelectorAll('.tour-gallery-tile')).toHaveLength(3)
   })
 
   it('crops each tile at the CDN to the exact box it renders in', async () => {

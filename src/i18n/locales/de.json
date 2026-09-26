@@ -58,6 +58,7 @@
     "welcomeBack": "Willkommen zurück"
   },
   "booking": {
+    "bestPrice": "Bestpreis",
     "promoCode": "Aktionscode",
     "date": "Datum",
     "travelers": "Reisende",
