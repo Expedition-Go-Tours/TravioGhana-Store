@@ -1759,14 +1759,9 @@
   font-weight:700;
 }
 
-/* The register view renders the wizard inline on the page. The prototype's
-   page-level background panel (gradient + orbs + min-height:100vh) made the
-   form look like a big inset box, so flatten it. */
+/* Brand greens: the storefront button greens (#179237 → #22c55e) instead of
+   the prototype's forest palette, so the wizard matches the app CTAs. */
 .srp-page{
-  background:transparent;
-  min-height:0;
-  /* Brand greens: the storefront button greens (#179237 → #22c55e) instead of
-     the prototype's forest palette, so the wizard matches the app CTAs. */
   --green:#179237;
   --green-dark:#179237;
   --green-2:#22c55e;
@@ -1777,34 +1772,6 @@
 .srp-page .progress > div{
   background:linear-gradient(90deg,#179237,#22c55e);
 }
-.srp-page::before,
-.srp-page::after{display:none}
-
-/* …and flatten the card panels themselves: on the store the wizard is part of
-   the page, not an inset box with a border/radius/shadow. */
-.srp-page .panel{
-  background:transparent;
-  border:0;
-  border-radius:0;
-  box-shadow:none;
-  backdrop-filter:none;
-  -webkit-backdrop-filter:none;
-}
-.srp-page .sidebar{
-  padding:0 0 6px;
-  min-height:0;
-}
-
-/* Give the header container (title + step chips) comfortable padding — the
-   labels were sitting right on its edges. 34px matches the form's side inset. */
-@media (min-width:981px){
-  .srp-page .sidebar{padding:14px 34px 16px}
-}
-.srp-page .main{
-  padding:24px 0 0;
-  min-height:0;
-}
-.srp-page .main::before{display:none}
 
 /* The wizard's choice cards are real <button>s for keyboard/AT support. */
 .srp-page button.choice-card{
