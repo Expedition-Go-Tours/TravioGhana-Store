@@ -7,11 +7,10 @@ import type { HomepageTour } from '../hooks/useHomepageSections'
 /**
  * Location-scoped section rendering.
  *
- * The API returns local rows in `tours` and pads the row with a labelled rail
+ * The API returns local rows in `tours` and pads the row with a nearby rail
  * (`backfill`). The storefront used to append that rail on top of a `tours`
- * array that already contained it, so every filler card rendered twice — and a
- * region with no local supply rendered nothing but filler under a regional
- * title. These tests pin both behaviours.
+ * array that already contained it, so every filler card rendered twice. The
+ * rail now continues seamlessly — no "More experiences near X" divider.
  */
 
 vi.mock('react-i18next', () => ({
@@ -71,14 +70,15 @@ describe('TopRatedSection — location rail', () => {
     )
 
     expect(screen.getByText('Top Rated in Ashanti Region')).toBeInTheDocument()
-    expect(screen.getByText('More experiences near Ashanti')).toBeInTheDocument()
+    // The nearby rail continues the row: no divider text.
+    expect(screen.queryByText(/More experiences near/)).toBeNull()
     // The duplicated tour renders exactly once.
     expect(screen.getAllByText('Accra City Tour')).toHaveLength(1)
     expect(screen.getAllByText('Kumasi Heritage Day')).toHaveLength(1)
     expect(screen.getAllByText('Cape Coast Castles')).toHaveLength(1)
   })
 
-  it('renders the rail alone (no dangling divider) when the region has no local tours', () => {
+  it('renders the rail alone when the region has no local tours', () => {
     render(
       <TopRatedSection
         location="Ashanti"
@@ -88,8 +88,7 @@ describe('TopRatedSection — location rail', () => {
       />
     )
 
-    // Nothing local precedes the rail, so there is nothing to divide from.
-    expect(screen.queryByText('More experiences near Ashanti')).toBeNull()
+    expect(screen.queryByText(/More experiences near/)).toBeNull()
     expect(screen.getByText('Cape Coast Castles')).toBeInTheDocument()
   })
 

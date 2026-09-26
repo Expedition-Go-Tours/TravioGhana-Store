@@ -4,7 +4,6 @@ import SectionHeading from './SectionHeading'
 import TourCard from './TourCard'
 import TourCardSkeleton from './TourCardSkeleton'
 import { useNewExperiences, mapToTourCard, type HomepageBackfill, type HomepageTour } from '../hooks/useHomepageSections'
-import SectionRailDivider from './SectionRailDivider'
 import './NewExperiencesSection.css'
 
 const CARD_WIDTH = 295
@@ -109,7 +108,6 @@ export default function NewExperiencesSection({ preloaded, isLoading, title, loc
                           <TourCard {...tour} isNew hideSourceBadge hideFeatures imageClean />
                         </div>
                       ))}
-                      {localItems?.length ? <SectionRailDivider label={backfill?.label} /> : null}
                       {backfillTours.map((tour, i) => (
                         <div key={`rail-${tour.id ?? tour.title}-${i}`} className="newexp-card-wrap">
                           <TourCard {...tour} isNew hideSourceBadge hideFeatures imageClean />

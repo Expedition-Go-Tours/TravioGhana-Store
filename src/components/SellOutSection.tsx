@@ -4,7 +4,6 @@ import SectionHeading from './SectionHeading'
 import TourCard from './TourCard'
 import TourCardSkeleton from './TourCardSkeleton'
 import { useLikelySellOut, mapToTourCard, type HomepageTour, type HomepageBackfill } from '../hooks/useHomepageSections'
-import SectionRailDivider from './SectionRailDivider'
 import './SellOutSection.css'
 
 const CARD_WIDTH = 295
@@ -103,7 +102,6 @@ export default function SellOutSection({ preloaded, isLoading, title, location, 
                           <TourCard {...tour} imageClean hideFeatures />
                         </div>
                       ))}
-                      {localItems?.length ? <SectionRailDivider label={backfill?.label} /> : null}
                       {backfillTours.map((tour, i) => (
                         <div key={`rail-${tour.title}-${i}`} className="sellout-card-wrap">
                           <TourCard {...tour} imageClean hideFeatures />

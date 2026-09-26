@@ -4,7 +4,6 @@ import SectionHeading from './SectionHeading'
 import TourCard from './TourCard'
 import TourCardSkeleton from './TourCardSkeleton'
 import { useTopRated, mapToTourCard, type HomepageTour, type HomepageBackfill } from '../hooks/useHomepageSections'
-import SectionRailDivider from './SectionRailDivider'
 import './TopRatedSection.css'
 
 const CARD_WIDTH = 295
@@ -104,7 +103,6 @@ export default function TopRatedSection({ preloaded, isLoading, title, location,
                           <TourCard {...tour} imageClean hideFeatures />
                         </div>
                       ))}
-                      {localItems?.length ? <SectionRailDivider label={backfill?.label} /> : null}
                       {backfillTours.map((tour, i) => (
                         <div key={`rail-${tour.title}-${i}`} className="toprated-card-wrap">
                           <TourCard {...tour} imageClean hideFeatures />

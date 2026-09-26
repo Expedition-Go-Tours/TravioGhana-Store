@@ -5,7 +5,6 @@ import TourCard from './TourCard'
 import TourCardSkeleton from './TourCardSkeleton'
 import { useRecommendedTours, useExpeditionOffers, type TourCardData } from '../hooks/useExpeditionTours'
 import { useRecommended, mapToTourCard, type HomepageTour, type HomepageBackfill } from '../hooks/useHomepageSections'
-import SectionRailDivider from './SectionRailDivider'
 import './RecommendSection.css'
 
 const CARD_WIDTH = 295
@@ -135,7 +134,6 @@ export default function RecommendSection({ preloaded, isLoading, title, location
                           <TourCard {...tour} imageClean hideFeatures priority={i === 0} />
                         </div>
                       ))}
-                      {baseTours?.length ? <SectionRailDivider label={backfill?.label} /> : null}
                       {backfillTours.map((tour, i) => (
                         <div key={`rail-${tour.title}-${i}`} className="carousel-card-wrap">
                           <TourCard {...tour} imageClean hideFeatures />
