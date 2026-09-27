@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async'
 import { useLocation } from 'react-router-dom'
+import { BRAND_SOCIAL_URLS } from '../lib/brandSocial'
 
 const SITE_NAME = 'Travio Ghana'
 const DEFAULT_TITLE = 'Ghana Tours & Experiences | Book Authentic African Adventures'
@@ -137,13 +138,15 @@ export function buildOrganizationSchema() {
       width: 512,
       height: 512,
     },
-    // Same profile list the prerender publishes — a schema that names a
-    // different set than the crawler-facing one splits the entity's signals.
+    // Same profile list the footer renders and the prerender publishes — a
+    // schema that names a different set than the crawler-facing one splits the
+    // entity's signals. These were three accounts belonging to the
+    // Expedition-Go brand; see `lib/brandSocial` for the full account of it.
     sameAs: [
+      // Facebook stays inline: shared with the Expedition-Go brand, slug
+      // unconfirmed. Move it into brandSocial once it has a page of its own.
       'https://www.facebook.com/p/Expedition-Go-Tours-LTD-61567042001418/',
-      'https://www.instagram.com/expeditiongotours',
-      'https://www.tiktok.com/@expeditiongotours',
-      'https://www.youtube.com/c/ExpeditionGoTravelandToursLTD',
+      ...BRAND_SOCIAL_URLS,
     ],
     contactPoint: {
       '@type': 'ContactPoint',
