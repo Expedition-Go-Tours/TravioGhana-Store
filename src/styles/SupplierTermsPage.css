@@ -1,0 +1,418 @@
+/* ============================================================
+   Supplier Terms — /supplier-terms
+   ------------------------------------------------------------
+   Port of Travio_Ghana_Supplier_Terms_Mobile_Scroll_Fixed.html.
+
+   Scoped to .stp-page: the prototype was a standalone document, so
+   its html/body/:root resets and its single-word class names (.wrap,
+   .hero, .summary, .kicker, .updated, .layout, .sidebar, .label,
+   .toc, .helpbox, .content, .to-top ...) would otherwise leak into
+   every other page. All five of its <style> blocks are kept — the
+   base sheet, the mobile reading refinements, the sticky mobile
+   section navigator, the agreement enhancements and the scroll fix —
+   so nothing about its mobile behaviour is lost.
+
+   Deliberate adaptations for this app:
+   1. The prototype’s own nav and footer are dropped — this route
+      already renders the app’s global Navbar and Footer.
+   2. Because the app’s navbar is FIXED (64px) while the prototype’s
+      was static and scrolled away, every offset that assumed a clear
+      viewport gets +64px: scroll-padding-top, the h2 scroll-margins
+      and the sticky sidebar/tab-bar top.
+   3. `body{overflow-x:hidden}` is dropped: it existed only to stop the
+      mobile pills from scrolling the document, and the app already
+      clips body overflow. Keeping it on the wrapper would turn the
+      wrapper into a scroll container and break the sticky sidebar.
+   4. The content markup reuses the app’s support-* classes; the few
+      rules it needs from SupportPages.css are restated here against the
+      prototype’s palette so the page is self-contained and its look is
+      deterministic.
+   ============================================================ */
+
+.stp-page{--green:#153f32;--deep:#0d2d25;--paper:#f7f7f3;--white:#fff;--ink:#18211e;--muted:#69736f;--line:rgba(24,33,30,.13);--accent:#d9ee87}
+.stp-page *{box-sizing:border-box}
+html:has(.stp-page){scroll-behavior:smooth;scroll-padding-top:28px}
+.stp-page{margin:0;background:var(--paper);color:var(--ink);font-family:"DM Sans",sans-serif}
+.stp-page a{color:inherit;text-decoration:none}
+.stp-page .wrap{width:min(1200px,calc(100% - 40px));margin:auto}
+.stp-page .hero{background:var(--green);color:white;border-radius:26px;padding:60px;display:grid;grid-template-columns:1fr .62fr;gap:55px;align-items:end;position:relative;overflow:hidden}
+.stp-page .hero:after{content:"";position:absolute;width:360px;height:360px;border:70px solid rgba(255,255,255,.055);border-radius:50%;right:-130px;top:-180px}
+.stp-page .kicker{text-transform:uppercase;letter-spacing:.15em;color:var(--accent);font:800 11px "Manrope"}
+.stp-page .hero h1{font:800 clamp(50px,6.3vw,82px)/.98 "Manrope";letter-spacing:-.055em;margin:18px 0 20px}
+.stp-page .hero p{font-size:17px;line-height:1.62;color:rgba(255,255,255,.72);max-width:720px}
+.stp-page .updated{display:flex;align-items:center;gap:9px;font-size:12px;color:rgba(255,255,255,.64)}
+.stp-page .updated i{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.stp-page .summary{background:var(--accent);color:var(--deep);border-radius:19px;padding:27px;position:relative;z-index:2}
+.stp-page .summary h2{font:800 20px "Manrope";margin:0 0 17px}
+.stp-page .summary ul{list-style:none;margin:0;padding:0}
+.stp-page .summary li{display:flex;gap:10px;padding:11px 0;border-top:1px solid rgba(13,45,37,.15);font-size:13px}
+.stp-page .summary i{font-style:normal;font-weight:800}
+.stp-page .legal-nav{padding:18px 0}
+.stp-page .policy-tabs{display:flex;gap:8px;overflow:auto;scrollbar-width:none}
+.stp-page .policy-tabs a{white-space:nowrap;background:white;border:1px solid var(--line);padding:10px 14px;border-radius:99px;font-size:12px;font-weight:700}
+.stp-page .policy-tabs a.active{background:var(--green);color:white;border-color:var(--green)}
+.stp-page .layout{display:grid;grid-template-columns:280px 1fr;gap:65px;padding:55px 0 100px}
+.stp-page .sidebar{position:sticky;top:25px;height:calc(100vh - 50px);overflow:auto;padding-right:15px;scrollbar-width:thin}
+.stp-page .sidebar .label{font:800 11px "Manrope";letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.stp-page .toc{display:grid}
+.stp-page .toc a{display:grid;grid-template-columns:30px 1fr;gap:8px;padding:9px 8px;border-left:2px solid var(--line);font-size:12px;color:var(--muted);line-height:1.35}
+.stp-page .toc a span{font-size:10px;color:#a0a7a4}
+.stp-page .toc a:hover, .stp-page .toc a.current{border-left-color:var(--green);color:var(--green);background:white}
+.stp-page .toc a.current{font-weight:700}
+.stp-page .helpbox{margin-top:25px;background:var(--deep);color:white;border-radius:14px;padding:18px}
+.stp-page .helpbox b{display:block;font:700 15px "Manrope";margin-bottom:7px}
+.stp-page .helpbox p{font-size:12px;color:rgba(255,255,255,.65);line-height:1.5}
+.stp-page .helpbox a{display:inline-block;background:var(--accent);color:var(--deep);padding:9px 11px;border-radius:8px;font-size:11px;font-weight:800}
+.stp-page .content{min-width:0;background:white;border-radius:22px;padding:55px 65px;box-shadow:0 17px 45px rgba(20,45,36,.06)}
+.stp-page .content>p:first-child{font-size:18px;line-height:1.7;color:#3f4b46}
+.stp-page .content h2{font:800 29px/1.15 "Manrope";letter-spacing:-.035em;margin:58px 0 16px;padding-top:7px}
+.stp-page .content h2:first-of-type{margin-top:32px}
+.stp-page .content h3{font:700 19px/1.3 "Manrope";margin:32px 0 12px}
+.stp-page .content p, .stp-page .content li{font-size:15px;line-height:1.75;color:#47524e}
+.stp-page .content ul, .stp-page .content ol{padding-left:22px}
+.stp-page .content li{padding:3px 0}
+.stp-page .content strong{color:var(--ink)}
+.stp-page .content a{color:var(--green);text-decoration:underline;text-underline-offset:3px}
+.stp-page .content .support-cta, .stp-page .content [class*="cta"]{background:var(--green);color:white;border-radius:16px;padding:26px;margin-top:45px}
+.stp-page .content .support-cta a, .stp-page .content [class*="cta"] a{color:white}
+.stp-page .to-top{position:fixed;right:20px;bottom:20px;width:43px;height:43px;border:0;border-radius:50%;background:var(--green);color:white;cursor:pointer;opacity:0;pointer-events:none;transition:.2s}
+.stp-page .to-top.show{opacity:1;pointer-events:auto}
+@media(max-width:850px){.stp-page .hero{grid-template-columns:1fr;padding:42px 30px}
+.stp-page .summary{max-width:520px}
+.stp-page .layout{grid-template-columns:1fr;gap:25px}
+.stp-page .sidebar{position:static;height:auto;overflow:visible}
+.stp-page .toc{display:flex;overflow:auto}
+.stp-page .toc a{min-width:160px;border-left:0;border-bottom:2px solid var(--line)}
+.stp-page .helpbox{display:none}
+.stp-page .content{padding:38px 28px}}
+@media(max-width:560px){.stp-page .wrap{width:calc(100% - 26px)}
+.stp-page .hero{border-radius:19px;padding:35px 23px}
+.stp-page .hero h1{font-size:45px}
+.stp-page .hero p{font-size:15px}
+.stp-page .summary{padding:21px}
+.stp-page .layout{padding-top:25px}
+.stp-page .content{padding:30px 20px;border-radius:16px}
+.stp-page .content h2{font-size:24px;margin-top:45px}}
+@media(max-width:850px){html:has(.stp-page){scroll-padding-top:88px}
+.stp-page .wrap{max-width:100%}
+.stp-page .hero{gap:28px;align-items:start}
+.stp-page .hero:after{width:260px;height:260px;border-width:48px;right:-130px;top:-120px}
+.stp-page .hero h1{max-width:11ch}
+.stp-page .summary{width:100%;max-width:none}
+.stp-page .legal-nav{padding:14px 0 4px}
+.stp-page .policy-tabs{margin-inline:-20px;padding:0 20px 10px;scroll-padding-inline:20px;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch}
+.stp-page .policy-tabs a{min-height:44px;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+.stp-page .layout{padding-top:28px}
+.stp-page .sidebar{min-width:0;padding:0}
+.stp-page .sidebar .label{margin-bottom:10px}
+.stp-page .toc{gap:8px;margin-inline:-20px;padding:0 20px 10px;scroll-padding-inline:20px;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+.stp-page .toc a{min-width:min(74vw,270px);min-height:58px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;align-items:center;scroll-snap-align:start}
+.stp-page .toc a:hover, .stp-page .toc a.current{border-color:var(--green);box-shadow:0 5px 14px rgba(20,45,36,.08)}
+.stp-page .content{overflow-wrap:anywhere}
+.stp-page .content p, .stp-page .content li{font-size:16px;line-height:1.72}
+.stp-page .content a{word-break:break-word}
+.stp-page .content img, .stp-page .content svg{max-width:100%;height:auto}
+.stp-page .content table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.stp-page .content .support-actions{display:grid}
+.stp-page .content .support-btn{min-height:48px;width:100%;justify-content:center}
+.stp-page .to-top{width:48px;height:48px;right:14px;bottom:14px;z-index:10}}
+@media(max-width:560px){.stp-page .wrap{width:calc(100% - 28px)}
+.stp-page .hero{width:calc(100% - 20px);padding:30px 20px 22px;border-radius:18px;gap:24px}
+.stp-page .hero h1{font-size:clamp(38px,12vw,48px);line-height:1;letter-spacing:-.05em;margin:14px 0 16px}
+.stp-page .hero p{font-size:16px;line-height:1.55;margin-bottom:18px}
+.stp-page .updated{font-size:12px;line-height:1.4}
+.stp-page .summary{padding:18px;border-radius:15px}
+.stp-page .summary h2{font-size:18px}
+.stp-page .summary li{font-size:14px;line-height:1.4;padding:10px 0}
+.stp-page .policy-tabs, .stp-page .toc{margin-inline:-14px;padding-inline:14px}
+.stp-page .layout{gap:18px;padding:22px 0 64px}
+.stp-page .content{padding:26px 18px;border-radius:15px;box-shadow:0 10px 28px rgba(20,45,36,.055)}
+.stp-page .content>p:first-child{font-size:17px;line-height:1.65}
+.stp-page .content h2{font-size:24px;line-height:1.2;letter-spacing:-.025em;margin:42px 0 14px;padding-top:4px}
+.stp-page .content h2:first-of-type{margin-top:22px}
+.stp-page .content h3{font-size:19px;margin-top:28px}
+.stp-page .content p, .stp-page .content li{font-size:16px;line-height:1.7}
+.stp-page .content ul, .stp-page .content ol{padding-left:20px}
+.stp-page .content .support-cta, .stp-page .content [class*="cta"]{padding:20px 18px;border-radius:14px}}
+@media(max-width:380px){.stp-page .hero h1{font-size:36px}
+.stp-page .hero{padding-inline:17px}
+.stp-page .content{padding-inline:16px}
+.stp-page .toc a{min-width:82vw}}
+@media(prefers-reduced-motion:reduce){html:has(.stp-page){scroll-behavior:auto}
+.stp-page .to-top{transition:none}}
+.stp-page .acceptance-notice{background:#eef6cf;border:1px solid rgba(21,63,50,.18);border-radius:16px;padding:22px 24px;margin:0 0 34px}
+.stp-page .acceptance-notice strong{display:block;font:800 18px "Manrope";color:var(--deep);margin-bottom:7px}
+.stp-page .acceptance-notice p{margin:0;color:#415047!important;font-size:14px!important;line-height:1.65!important}
+.stp-page .term-note{background:#f7f8f5;border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:20px 0}
+.stp-page .content h4{font:700 16px/1.35 "Manrope";margin:24px 0 8px;color:var(--ink)}
+@media(max-width:560px){.stp-page .acceptance-notice{padding:18px 16px;border-radius:13px}
+.stp-page .acceptance-notice strong{font-size:17px}}
+@media (max-width:850px){html:has(.stp-page){scroll-padding-top:132px}
+.stp-page .legal-nav{padding:10px 0 2px;}
+.stp-page .layout{display:block;
+    padding:18px 0 72px;}
+.stp-page .sidebar{position:sticky !important;
+    top:0;
+    z-index:80;
+    height:auto !important;
+    overflow:visible !important;
+    padding:10px 0 9px !important;
+    margin:0 0 18px;
+    background:rgba(247,247,243,.96);
+    -webkit-backdrop-filter:blur(16px);
+    backdrop-filter:blur(16px);
+    border-bottom:1px solid rgba(24,33,30,.09);}
+.stp-page .sidebar .label{display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin:0 0 8px;
+    padding:0 2px;
+    font-size:10px;
+    letter-spacing:.13em;}
+.stp-page .sidebar .label:after{content:"Swipe sections →";
+    text-transform:none;
+    letter-spacing:0;
+    font:600 11px "DM Sans",sans-serif;
+    color:#8a938f;}
+.stp-page .toc{display:flex !important;
+    gap:8px;
+    width:100%;
+    margin:0;
+    padding:0 2px 3px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scroll-behavior:smooth;
+    scroll-snap-type:x proximity;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+    overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;}
+.stp-page .toc::-webkit-scrollbar{display:none}
+.stp-page .toc a{flex:0 0 auto;
+    min-width:auto !important;
+    max-width:220px;
+    min-height:42px !important;
+    padding:9px 13px !important;
+    display:flex !important;
+    align-items:center;
+    gap:7px;
+    border:1px solid rgba(24,33,30,.12) !important;
+    border-radius:999px !important;
+    background:#fff !important;
+    color:#606b66 !important;
+    font-size:12px !important;
+    font-weight:650;
+    line-height:1.15 !important;
+    white-space:nowrap;
+    box-shadow:none !important;
+    scroll-snap-align:center;
+    transition:
+      background .2s ease,
+      color .2s ease,
+      border-color .2s ease,
+      transform .2s ease;}
+.stp-page .toc a span{flex:0 0 auto;
+    font-size:9px !important;
+    font-weight:800;
+    color:#9ca5a1;
+    transition:color .2s ease;}
+.stp-page .toc a.current{background:var(--green) !important;
+    border-color:var(--green) !important;
+    color:#fff !important;
+    transform:translateY(-1px);}
+.stp-page .toc a.current span{color:var(--accent) !important}
+.stp-page .helpbox{display:none !important}
+.stp-page .content{margin-top:0;
+    padding:30px 26px;
+    border-radius:18px;}
+.stp-page .content h2{scroll-margin-top:132px;}
+.stp-page #ready-to-start-selling{scroll-margin-top:132px;}
+.stp-page .acceptance-notice{margin-bottom:28px;}}
+@media (max-width:560px){html:has(.stp-page){scroll-padding-top:118px}
+.stp-page .wrap{width:calc(100% - 24px);}
+.stp-page .hero{width:100%;
+    margin:0;
+    padding:28px 19px 20px;
+    border-radius:17px;
+    gap:20px;}
+.stp-page .hero h1{max-width:none;
+    font-size:clamp(38px,11vw,47px);
+    margin:12px 0 14px;}
+.stp-page .hero p{font-size:15px;
+    line-height:1.55;
+    margin:0 0 16px;}
+.stp-page .summary{padding:16px;
+    border-radius:14px;}
+.stp-page .summary h2{margin-bottom:10px;
+    font-size:17px;}
+.stp-page .summary li{padding:9px 0;
+    font-size:13px;}
+.stp-page .policy-tabs{margin-inline:-12px;
+    padding-inline:12px;}
+.stp-page .layout{padding-top:14px;}
+.stp-page .sidebar{margin-inline:-12px;
+    padding:9px 12px 8px !important;}
+.stp-page .sidebar .label{padding-inline:1px;
+    margin-bottom:7px;}
+.stp-page .toc{padding-inline:0;}
+.stp-page .toc a{min-height:40px !important;
+    padding:8px 11px !important;
+    font-size:11.5px !important;}
+.stp-page .content{padding:24px 17px 30px;
+    border-radius:15px;
+    box-shadow:0 8px 24px rgba(20,45,36,.05);}
+.stp-page .content>p:first-child{font-size:16px;}
+.stp-page .content h2{scroll-margin-top:118px;
+    font-size:23px;
+    line-height:1.18;
+    margin:39px 0 13px;}
+.stp-page .content h2:first-of-type{margin-top:18px;}
+.stp-page .content h3{font-size:18px;
+    margin:25px 0 9px;}
+.stp-page .content p, .stp-page .content li{font-size:15.5px;
+    line-height:1.68;}
+.stp-page .content ul, .stp-page .content ol{padding-left:19px;}
+.stp-page .acceptance-notice{padding:17px 15px;
+    margin:0 0 26px;
+    border-radius:13px;}
+.stp-page .acceptance-notice strong{font-size:16px;
+    line-height:1.3;}
+.stp-page .acceptance-notice p{font-size:14px !important;
+    line-height:1.55 !important;}
+.stp-page #ready-to-start-selling{scroll-margin-top:118px;}
+.stp-page .support-actions{margin-bottom:4px;}
+.stp-page .support-btn{min-height:50px !important;
+    border-radius:12px;}
+.stp-page .to-top{right:12px;
+    bottom:12px;
+    width:46px;
+    height:46px;}}
+@media (max-width:380px){.stp-page .sidebar .label:after{content:"Swipe →"}
+.stp-page .toc a{padding-inline:10px !important;
+    font-size:11px !important;}
+.stp-page .content{padding-inline:15px;}}
+@media(max-width:850px){.stp-page .sidebar{overscroll-behavior:none;
+    touch-action:pan-x pan-y;}
+.stp-page .toc{touch-action:pan-x;
+    overscroll-behavior-x:contain;
+    overscroll-behavior-y:none;}}
+/* ── App integration ──────────────────────────────────────────────────
+   The prototype opened with its own 78px static header; this route has
+   the app's fixed 64px Navbar instead, so the page is offset by it and
+   every viewport-clearance figure grows by the same 64px. */
+.stp-page {
+  padding-top: 64px;
+}
+
+/* Desktop: sidebar sticky under the navbar (prototype: 25px in a clear
+   viewport), and its height keeps the prototype's 25px bottom gap. */
+.stp-page .sidebar {
+  top: 89px;
+  height: calc(100vh - 114px);
+}
+
+/* Desktop anchors land below the navbar (prototype: 28px). */
+html:has(.stp-page) {
+  scroll-padding-top: 92px;
+}
+
+/* components/Hero.css also gives a bare `.hero` a `min-height:35vh` under
+   768px; the prototype's hero is content-sized. */
+.stp-page .hero {
+  min-height: 0;
+}
+
+/* The content markup reuses the app's support-* classes. Restated here
+   against the prototype's palette so the CTA renders as the app's
+   primary button without pulling SupportPages.css into this route. */
+.stp-page .support-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.stp-page .support-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 26px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--green);
+  color: #fff;
+  font-family: "DM Sans", sans-serif;
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  box-shadow: 0 8px 24px rgba(21, 63, 50, .28);
+  cursor: pointer;
+  transition: transform .2s ease, box-shadow .25s ease;
+}
+.stp-page .support-btn svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+}
+.stp-page .support-btn:active {
+  transform: scale(.97);
+}
+/* Beats `.content a` so the button keeps white text and no underline. */
+.stp-page .content a.support-btn,
+.stp-page .content a.support-btn:hover {
+  color: #fff;
+  text-decoration: none;
+}
+@media (hover: hover) {
+  .stp-page .support-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 32px rgba(21, 63, 50, .38);
+  }
+}
+
+/* ── Restoring the browser defaults index.css removes ────────────────
+   The app stylesheet sets a root line-height and resets paragraph/list
+   margins and list markers. The prototype's document text relies on the
+   browser defaults for all three, so they are restored here. */
+.stp-page {
+  line-height: normal;
+}
+
+.stp-page .content p,
+.stp-page .content ul,
+.stp-page .content ol,
+.stp-page .helpbox p {
+  margin: 1em 0;
+}
+
+.stp-page .content ul {
+  list-style: disc;
+}
+
+.stp-page .content ol {
+  list-style: decimal;
+}
+
+/* ── Mobile: the sticky section navigator sits under the fixed navbar,
+   and anchors clear navbar + navigator (prototype: 132/118px). ────── */
+@media (max-width: 850px) {
+  html:has(.stp-page) {
+    scroll-padding-top: 196px;
+  }
+  .stp-page .sidebar {
+    top: 64px;
+  }
+  .stp-page .content h2,
+  .stp-page #ready-to-start-selling {
+    scroll-margin-top: 196px;
+  }
+}
+
+@media (max-width: 560px) {
+  html:has(.stp-page) {
+    scroll-padding-top: 182px;
+  }
+  .stp-page .content h2,
+  .stp-page #ready-to-start-selling {
+    scroll-margin-top: 182px;
+  }
+}
