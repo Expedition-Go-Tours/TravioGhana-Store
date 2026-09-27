@@ -163,7 +163,7 @@
       font-size:11px;
       color:#78857d;
       text-align:center;
-    }.srp-page .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:#10271d;color:#fff;padding:11px 15px;border-radius:13px;font-size:11.5px;font-weight:700;opacity:0;pointer-events:none;transition:.25s ease;z-index:30;box-shadow:0 14px 34px rgba(0,0,0,.16)}.srp-page .toast.show{opacity:1;transform:translate(-50%,0)}@media (max-width:960px){.srp-page .shell{grid-template-columns:1fr;width:min(820px,calc(100% - 20px));margin:10px auto}.srp-page .sidebar{position:relative;top:auto;min-height:auto;padding:15px}.srp-page .intro-card, .srp-page .steps, .srp-page .sidebar-foot{display:none}.srp-page .brand{margin:0}.srp-page .main{padding:22px}.srp-page .topbar{align-items:flex-start;flex-direction:column}.srp-page .progress-wrap{width:100%;min-width:0}.srp-page .cards{grid-template-columns:1fr 1fr}}@media (max-width:680px){.srp-page{background:#f7f9f7;border-radius:0;border:0;padding:0;box-shadow:none}.srp-page .shell{width:100%;margin:0;gap:0}.srp-page .panel{border-radius:0;box-shadow:none;border-left:0;border-right:0}.srp-page .sidebar{border-top:0}.srp-page .main{padding:18px 16px 84px;min-height:calc(100vh - 76px)}.srp-page .grid, .srp-page .grid.three, .srp-page .summary{grid-template-columns:1fr}.srp-page .cards{grid-template-columns:1fr}.srp-page .heading h1{font-size:31px}.srp-page .heading{margin-top:4px}.srp-page .topbar{margin-bottom:12px}.srp-page .eyebrow{font-size:10.5px}.srp-page .actions{position:fixed;z-index:15;left:0;right:0;bottom:0;background:rgba(255,255,255,.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);margin:0;padding:12px 14px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);box-shadow:0 -10px 30px rgba(20,45,31,.06)}.srp-page .btn{flex:1}.srp-page .choice-card{min-height:124px}.srp-page .section{padding:15px}.srp-page .toast{bottom:84px;max-width:calc(100% - 28px)}}@media (prefers-reduced-motion:reduce){.srp-page *, .srp-page *::before, .srp-page *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}.srp-page .shell{
+    }.srp-page .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:#10271d;color:#fff;padding:11px 15px;border-radius:13px;font-size:11.5px;font-weight:700;opacity:0;pointer-events:none;transition:.25s ease;z-index:30;box-shadow:0 14px 34px rgba(0,0,0,.16)}.srp-page .toast.show{opacity:1;transform:translate(-50%,0)}@media (max-width:960px){.srp-page .shell{grid-template-columns:1fr;width:min(820px,calc(100% - 20px));margin:10px auto}.srp-page .sidebar{position:relative;top:auto;min-height:auto;padding:15px}.srp-page .intro-card, .srp-page .steps, .srp-page .sidebar-foot{display:none}.srp-page .brand{margin:0}.srp-page .main{padding:22px}.srp-page .topbar{align-items:flex-start;flex-direction:column}.srp-page .progress-wrap{width:100%;min-width:0}.srp-page .cards{grid-template-columns:1fr 1fr}}@media (max-width:680px){.srp-page{background:#f7f9f7;border-radius:20px;padding:10px}.srp-page .shell{width:100%;margin:0;gap:0}.srp-page .panel{border-radius:0;box-shadow:none;border-left:0;border-right:0}.srp-page .sidebar{border-top:0}.srp-page .main{padding:18px 16px 84px;min-height:calc(100vh - 76px)}.srp-page .grid, .srp-page .grid.three, .srp-page .summary{grid-template-columns:1fr}.srp-page .cards{grid-template-columns:1fr}.srp-page .heading h1{font-size:31px}.srp-page .heading{margin-top:4px}.srp-page .topbar{margin-bottom:12px}.srp-page .eyebrow{font-size:10.5px}.srp-page .actions{position:fixed;z-index:15;left:0;right:0;bottom:0;background:rgba(255,255,255,.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);margin:0;padding:12px 14px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);box-shadow:0 -10px 30px rgba(20,45,31,.06)}.srp-page .btn{flex:1}.srp-page .choice-card{min-height:124px}.srp-page .section{padding:15px}.srp-page .toast{bottom:84px;max-width:calc(100% - 28px)}}@media (prefers-reduced-motion:reduce){.srp-page *, .srp-page *::before, .srp-page *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}.srp-page .shell{
       width:min(1180px,calc(100% - 34px));
       margin:18px auto 30px;
       display:grid;
@@ -2024,5 +2024,40 @@
 @media (min-width:640px){
   .srp-page .phone-field{
     grid-template-columns:minmax(0,1.2fr) minmax(0,2fr);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Responsive polish — appended last so it wins the cascade.
+   1. The 7-step strip is a fixed-width grid. In the single-column shell its
+      track's `auto` minimum let it force the whole layout to 828px inside a
+      ~610px shell (then clipped). minmax(0,1fr) + min-width:0 lets it scroll.
+   2. The shell stays rounded on mobile (smaller radius/padding).
+   3. The action bar is a rounded card, not a square edge-to-edge strip.
+   ═══════════════════════════════════════════════════════════════════════ */
+@media (max-width: 960px) {
+  .srp-page .shell{ grid-template-columns:minmax(0,1fr); }
+  .srp-page .sidebar,
+  .srp-page .main,
+  .srp-page .steps{ min-width:0; }
+  .srp-page .steps{ max-width:100%; }
+}
+
+@media (max-width: 680px) {
+  /* The action bar now sits in the flow (rounded card), so it no longer needs
+     the 84-88px bottom gap reserved for a fixed bar. */
+  .srp-page .main{ padding-bottom:24px !important; }
+  .srp-page .actions{
+    left:12px;
+    right:12px;
+    bottom:12px;
+    margin:0;
+    padding:10px;
+    border:1px solid var(--line);
+    border-radius:18px;
+    background:rgba(255,255,255,.96);
+    -webkit-backdrop-filter:blur(18px);
+    backdrop-filter:blur(18px);
+    box-shadow:0 12px 34px rgba(20,45,31,.12);
   }
 }
