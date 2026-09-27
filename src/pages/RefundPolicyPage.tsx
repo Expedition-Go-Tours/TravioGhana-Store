@@ -1,8 +1,16 @@
 import { useTranslation } from 'react-i18next'
+import { motion } from 'framer-motion'
+import { FileText } from 'lucide-react'
 import Footer from '../components/Footer'
 import SEO, { buildBreadcrumbSchema } from '../components/SEO'
 import BackToHelpCentre from '../components/support/BackToHelpCentre'
+import { stagger, staggerItem } from '../components/support/motion'
 import './SupportPages.css'
+// The centred hero (.sh-hero-inner / .sh-title / .sh-sub / .sh-eyebrow) lives in
+// SupportHub.css — the same classes /faq and /help-centre use, so the three
+// support pages read as one family. Its only global rule is scoped to
+// .sh-mobile-contact-bar, which this page does not render.
+import './SupportHub.css'
 
 export default function RefundPolicyPage() {
   const { t } = useTranslation()
@@ -18,14 +26,25 @@ export default function RefundPolicyPage() {
           { name: 'Refund Policy', url: 'https://www.travioghana.com/refund-policy' },
         ])}
       />
-      <div className="support-hero">
-        <div className="support-container">
-          <div className="support-hero-inner">
-            <h1 className="support-title">{t('footer.refundPolicy')}</h1>
-            <p className="support-subtitle">{t('support.refundPolicySubtitle')}</p>
-          </div>
-        </div>
-      </div>
+      <header className="support-hero">
+        <motion.div
+          className="sh-hero-inner"
+          initial="hidden"
+          animate="visible"
+          variants={stagger}
+        >
+          <motion.div className="sh-eyebrow" variants={staggerItem}>
+            <FileText size={14} aria-hidden="true" />
+            <span>{t('supportHub.eyebrow')}</span>
+          </motion.div>
+          <motion.h1 className="sh-title" id="refund-policy-title" variants={staggerItem}>
+            {t('footer.refundPolicy')}
+          </motion.h1>
+          <motion.p className="sh-sub" variants={staggerItem}>
+            {t('support.refundPolicySubtitle')}
+          </motion.p>
+        </motion.div>
+      </header>
 
       <div className="support-container">
         <div className="support-article">
