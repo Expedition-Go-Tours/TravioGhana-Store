@@ -1,0 +1,331 @@
+/* ============================================================
+   Foundation — /foundation
+   ------------------------------------------------------------
+   Port of Expedition-Go_Foundation_Updated_Photo (1).html.
+
+   Scoped to .fnd-page: the template was a standalone document, so
+   its html/body/:root resets and its single-word class names
+   (.hero, .gallery, .mission, .focus, .commitment, .help, .cta,
+   .step, .label, .title, .btn, .primary, .actions, .proof,
+   .volunteer, .impact-* ...) would otherwise leak into every other
+   page.
+
+   Deliberate adaptations for this app:
+   1. The template's own topline, header and footer are dropped —
+      the app renders a global Navbar and Footer for this route.
+   2. rem values are resolved to px on a 16px base: this app sets
+      :root { font-size: 18px }, so the template's rem would render
+      12.5% larger than the design does standalone. The template
+      already assumed a 16px root.
+   3. Keyframes are prefixed fnd- so they cannot collide with the
+      other ported pages' animations in one bundle.
+   4. The template's runtime script (reveal observer + the impact
+      track's cloned set) is reimplemented in the component.
+   ============================================================ */
+
+.fnd-page{--ink:#10221a;--sub:#5e6b64;--green:#087747;--dark:#075634;--deep:#052d1d;--mint:#e9f8ef;--acid:#d8f676;--sand:#f5f6f1;--line:#dfe7e1;--orange:#ff7b38;--sky:#bdeff5;--shadow:0 24px 70px rgba(10,53,34,.13);--max:1200px}
+.fnd-page *{box-sizing:border-box}
+html:has(.fnd-page){scroll-behavior:smooth}
+.fnd-page{margin:0;color:var(--ink);background:#fff;font-family:"DM Sans",sans-serif;font-size:16px;line-height:1.65;overflow-x:hidden}
+.fnd-page img{display:block;max-width:100%}
+.fnd-page a{color:inherit;text-decoration:none}
+.fnd-page button{font:inherit}
+.fnd-page .container{width:min(calc(100% - 40px),var(--max));margin:auto}
+.fnd-page .label{display:inline-flex;align-items:center;gap:9px;color:var(--green);font-size:12px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+.fnd-page .label:before{content:"";width:24px;height:2px;background:var(--orange)}
+.fnd-page h1, .fnd-page h2, .fnd-page h3{font-family:"Manrope",sans-serif}
+.fnd-page .title{max-width:790px;margin:12px 0 16px;font-size:clamp(34.4px,4.7vw,72px);line-height:1.03;letter-spacing:-.055em}
+.fnd-page .lead{max-width:650px;color:var(--sub);font-size:17.28px}
+.fnd-page .hero{position:relative;min-height:720px;background:linear-gradient(180deg,#fff,#f7faf7);overflow:hidden}
+.fnd-page .hero:before{content:"";position:absolute;width:520px;height:520px;left:-290px;top:80px;border:100px solid #edf7f0;border-radius:50%}
+.fnd-page .hero:after{content:"";position:absolute;width:410px;height:410px;right:-280px;bottom:-240px;border:1px solid #cce7d4;border-radius:50%}
+.fnd-page .hero-grid{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 540px;gap:70px;align-items:center;min-height:720px;padding:62px 0}
+.fnd-page .hero-copy{position:relative;z-index:2}
+.fnd-page .kicker{display:inline-flex;align-items:center;gap:9px;margin-bottom:23px;padding:8px 13px;border:1px solid #cae3d3;border-radius:999px;background:var(--mint);color:var(--dark);font-size:12.48px;font-weight:800}
+.fnd-page .kicker span{width:8px;height:8px;border-radius:50%;background:var(--orange)}
+.fnd-page .hero h1{max-width:660px;margin:0;font-size:clamp(53.6px,6.7vw,108px);line-height:.91;letter-spacing:-.075em}
+.fnd-page .hero h1 em{display:block;color:var(--green);font-style:normal}
+.fnd-page .hero-copy>p{max-width:590px;margin:27px 0 30px;color:var(--sub);font-size:17.92px}
+.fnd-page .actions{display:flex;flex-wrap:wrap;gap:12px}
+.fnd-page .btn{min-height:54px;display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:0 22px;border:0;border-radius:14px;font-weight:800;transition:transform .2s,background .2s,box-shadow .2s}
+.fnd-page .btn svg{width:18px;height:18px}
+.fnd-page .primary{background:var(--green);color:#fff;box-shadow:0 12px 32px rgba(8,119,71,.2)}
+.fnd-page .primary:hover{transform:translateY(-2px);background:var(--dark)}
+.fnd-page .secondary{border:1px solid #cfdad2;background:#fff}
+.fnd-page .secondary:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(8,50,31,.08)}
+.fnd-page .micro{margin-top:28px;color:#607068;font-size:13.12px;font-weight:600}
+.fnd-page .gallery{position:relative;height:615px;display:grid;grid-template-columns:1.12fr .88fr;gap:14px;padding:14px;border:1px solid #dbe6df;border-radius:32px;background:#fff;box-shadow:var(--shadow);overflow:hidden;transform:rotate(1.2deg)}
+.fnd-page .gallery:after{content:"";position:absolute;inset:auto 0 0;height:115px;background:linear-gradient(transparent,rgba(8,42,27,.24));pointer-events:none}
+.fnd-page .lane{overflow:hidden;border-radius:21px}
+.fnd-page .strip{display:flex;flex-direction:column;animation:fnd-up 22s linear infinite}
+.fnd-page .lane:nth-child(2) .strip{animation:fnd-down 25s linear infinite}
+.fnd-page .set{display:flex;flex-direction:column;gap:12px;padding-bottom:12px}
+.fnd-page .photo{position:relative;height:262px;flex:none;margin:0;border-radius:19px;overflow:hidden;background:#dce8e0}
+.fnd-page .lane:nth-child(2) .photo{height:190px}
+.fnd-page .photo img{width:100%;height:100%;object-fit:cover;transition:.7s}
+.fnd-page .photo:hover img{transform:scale(1.05)}
+.fnd-page .photo span{position:absolute;left:12px;bottom:12px;padding:6px 9px;border-radius:9px;background:rgba(4,40,25,.76);color:#fff;font-size:11.2px;font-weight:800;backdrop-filter:blur(8px)}
+.fnd-page .gallery-badge{position:absolute;z-index:3;left:50%;bottom:25px;transform:translateX(-50%) rotate(-1.2deg);display:flex;align-items:center;gap:9px;padding:11px 15px;border-radius:13px;background:#fff;box-shadow:0 10px 30px rgba(4,35,22,.2);font-size:12.48px;font-weight:800;white-space:nowrap}
+.fnd-page .gallery-badge i{width:9px;height:9px;border-radius:50%;background:var(--orange)}
+@keyframes fnd-up{to{transform:translateY(-50%)}}
+@keyframes fnd-down{from{transform:translateY(-50%)}to{transform:translateY(0)}}
+.fnd-page .proof{position:relative;z-index:4;margin-top:-28px}
+.fnd-page .proof-inner{display:grid;grid-template-columns:1.15fr repeat(3,1fr);border:1px solid var(--line);border-radius:19px;background:#fff;box-shadow:0 16px 45px rgba(8,50,31,.09);overflow:hidden}
+.fnd-page .proof-item{min-height:88px;display:flex;align-items:center;justify-content:center;gap:11px;padding:12px;border-right:1px solid var(--line);font-size:13.6px;font-weight:800}
+.fnd-page .proof-item:last-child{border:0}
+.fnd-page .proof-item strong{font-family:"Manrope",sans-serif;color:var(--green);font-size:23.2px;letter-spacing:-.04em}
+.fnd-page .proof-mark{width:30px;height:30px;display:grid;place-items:center;border-radius:10px;background:var(--mint);color:var(--green);font-weight:900}
+.fnd-page .mission{padding:130px 0 105px}
+.fnd-page .mission-grid{display:grid;grid-template-columns:.92fr 1.08fr;gap:90px;align-items:start}
+.fnd-page .mission-side{position:sticky;top:32px}
+.fnd-page .mission-note{margin-top:34px;padding:25px 26px;border-left:4px solid var(--orange);border-radius:0 18px 18px 0;background:var(--sand);color:#31463c}
+.fnd-page .mission-note strong{display:block;margin-bottom:3px;color:var(--dark);font-family:"Manrope",sans-serif}
+.fnd-page .mission-content{display:grid;gap:18px}
+.fnd-page .mission-card{position:relative;padding:32px;border:1px solid var(--line);border-radius:24px;background:#fff;overflow:hidden}
+.fnd-page .mission-card:first-child{background:var(--green);color:#fff}
+.fnd-page .mission-card:first-child:after{content:"2%";position:absolute;right:-4px;bottom:-45px;color:rgba(255,255,255,.09);font-family:"Manrope",sans-serif;font-size:144px;font-weight:800;line-height:1}
+.fnd-page .step{display:grid;place-items:center;width:38px;height:38px;margin-bottom:30px;border-radius:12px;background:var(--mint);color:var(--green);font-weight:900}
+.fnd-page .mission-card:first-child .step{background:var(--acid);color:#24471f}
+.fnd-page .mission-card h3{margin:0 0 10px;font-size:21.6px}
+.fnd-page .mission-card p{position:relative;z-index:1;margin:0;color:var(--sub)}
+.fnd-page .mission-card:first-child p{color:#dceee3}
+.fnd-page .focus{padding:110px 0;background:var(--deep);color:#fff;overflow:hidden}
+.fnd-page .focus .label{color:#baf0cb}
+.fnd-page .focus .section-head{display:flex;align-items:end;justify-content:space-between;gap:40px;margin-bottom:42px}
+.fnd-page .focus .section-head .title{margin-bottom:0}
+.fnd-page .focus .section-head p{max-width:430px;margin:0;color:#bad0c3}
+.fnd-page .focus-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.fnd-page .focus-card{min-height:340px;display:flex;flex-direction:column;justify-content:space-between;padding:26px;border:1px solid rgba(255,255,255,.14);border-radius:23px;background:rgba(255,255,255,.06);transition:.25s}
+.fnd-page .focus-card:hover{transform:translateY(-6px);background:rgba(255,255,255,.1)}
+.fnd-page .focus-num{color:var(--acid);font-size:11.68px;font-weight:900;letter-spacing:.13em}
+.fnd-page .focus-icon{width:52px;height:52px;display:grid;place-items:center;margin-top:auto;border-radius:16px;background:rgba(216,246,118,.12);color:var(--acid);font-size:22.4px}
+.fnd-page .focus-card h3{margin:19px 0 8px;font-size:18.56px}
+.fnd-page .focus-card p{margin:0;color:#bad0c3;font-size:13.92px;line-height:1.55}
+.fnd-page .commitment{padding:115px 0;background:#fff}
+.fnd-page .commitment-shell{position:relative;display:grid;grid-template-columns:.78fr 1.22fr;gap:65px;align-items:center;padding:70px;border-radius:32px;background:var(--acid);overflow:hidden}
+.fnd-page .commitment-shell:before{content:"";position:absolute;width:390px;height:390px;right:-90px;top:-180px;border:1px solid rgba(7,86,52,.23);border-radius:50%}
+.fnd-page .commitment-shell:after{content:"";position:absolute;width:260px;height:260px;right:-25px;top:-115px;border:52px solid rgba(7,86,52,.08);border-radius:50%}
+.fnd-page .percent{position:relative;z-index:1;font-family:"Manrope",sans-serif;font-size:clamp(96px,15vw,176px);font-weight:800;line-height:.8;letter-spacing:-.09em;color:var(--dark)}
+.fnd-page .percent small{display:block;margin:25px 0 0 10px;font-family:"DM Sans",sans-serif;font-size:12px;line-height:1.4;letter-spacing:.13em;text-transform:uppercase}
+.fnd-page .commitment-copy{position:relative;z-index:1}
+.fnd-page .commitment-copy .title{max-width:630px}
+.fnd-page .commitment-copy p{max-width:590px;margin:0 0 22px;color:#31543f;font-size:16.64px}
+.fnd-page .commitment-copy .rule{display:flex;align-items:center;gap:12px;margin-top:28px;font-weight:800}
+.fnd-page .commitment-copy .rule i{width:38px;height:38px;display:grid;place-items:center;border-radius:50%;background:#fff;font-style:normal;color:var(--green)}
+.fnd-page .help{padding:15px 0 115px}
+.fnd-page .help-head{display:flex;justify-content:space-between;align-items:end;gap:40px;margin-bottom:42px}
+.fnd-page .help-head .title{margin-bottom:0}
+.fnd-page .help-head p{max-width:440px;margin:0;color:var(--sub)}
+.fnd-page .help-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.fnd-page .help-card{position:relative;min-height:480px;display:flex;align-items:flex-end;padding:34px;border-radius:28px;overflow:hidden;color:#fff}
+.fnd-page .help-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .7s}
+.fnd-page .help-card:hover img{transform:scale(1.04)}
+.fnd-page .help-card:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,35,22,.04) 25%,rgba(4,35,22,.9) 100%)}
+.fnd-page .help-copy{position:relative;z-index:2;max-width:480px}
+.fnd-page .help-tag{display:inline-block;margin-bottom:17px;padding:7px 10px;border:1px solid rgba(255,255,255,.35);border-radius:999px;background:rgba(4,40,25,.35);font-size:11.2px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;backdrop-filter:blur(8px)}
+.fnd-page .help-copy h3{margin:0 0 9px;font-size:clamp(25.6px,3vw,38.4px);letter-spacing:-.04em}
+.fnd-page .help-copy p{margin:0 0 23px;color:#e2efe8}
+.fnd-page .help-copy .btn{min-height:48px;background:#fff;color:var(--green)}
+.fnd-page .gallery-section{padding:105px 0;background:var(--sand);overflow:hidden}
+.fnd-page .gallery-head{text-align:center}
+.fnd-page .gallery-head .label:before{display:none}
+.fnd-page .gallery-head .title, .fnd-page .gallery-head .lead{margin-left:auto;margin-right:auto}
+.fnd-page .impact-track{display:grid;grid-template-columns:1.25fr .8fr 1fr .8fr;gap:14px;margin-top:48px}
+.fnd-page .impact-set{display:contents}
+.fnd-page .impact-set[aria-hidden="true"]{display:none}
+.fnd-page .impact-shot{position:relative;min-height:390px;margin:0;border-radius:24px;overflow:hidden;background:#dbe8df}
+.fnd-page .impact-shot:nth-child(even){transform:translateY(22px)}
+.fnd-page .impact-shot img{width:100%;height:100%;object-fit:cover;transition:.6s}
+.fnd-page .impact-shot:hover img{transform:scale(1.04)}
+.fnd-page .impact-shot:after{content:"";position:absolute;inset:50% 0 0;background:linear-gradient(transparent,rgba(4,38,24,.75))}
+.fnd-page .impact-shot figcaption{position:absolute;z-index:2;left:20px;right:20px;bottom:18px;color:#fff;font-weight:800}
+.fnd-page .volunteer{padding:120px 0}
+.fnd-page .volunteer-shell{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:30px;background:#fff;box-shadow:var(--shadow);overflow:hidden}
+.fnd-page .volunteer-photo{position:relative;min-height:520px}
+.fnd-page .volunteer-photo img{width:100%;height:100%;object-fit:cover}
+.fnd-page .volunteer-photo:after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,transparent 55%,rgba(7,86,52,.25))}
+.fnd-page .volunteer-copy{display:flex;flex-direction:column;justify-content:center;padding:65px}
+.fnd-page .volunteer-copy .title{font-size:clamp(36.8px,4vw,64px)}
+.fnd-page .volunteer-copy p{margin:0 0 28px;color:var(--sub);font-size:16.8px}
+.fnd-page .volunteer-points{display:grid;gap:10px;margin:0 0 30px;padding:0;list-style:none}
+.fnd-page .volunteer-points li{display:flex;align-items:center;gap:11px;font-weight:700}
+.fnd-page .volunteer-points i{width:25px;height:25px;display:grid;place-items:center;border-radius:50%;background:var(--mint);color:var(--green);font-style:normal;font-size:12px}
+.fnd-page .volunteer-copy .btn{align-self:flex-start}
+.fnd-page .cta{padding:0 0 110px}
+.fnd-page .cta-inner{position:relative;display:flex;align-items:center;justify-content:space-between;gap:35px;padding:46px 48px;border-radius:26px;background:var(--green);color:#fff;overflow:hidden}
+.fnd-page .cta-inner:after{content:"";position:absolute;width:260px;height:260px;right:170px;top:-185px;border:45px solid rgba(255,255,255,.08);border-radius:50%}
+.fnd-page .cta h2{position:relative;z-index:1;margin:0 0 5px;font-size:clamp(26.4px,3vw,40px)}
+.fnd-page .cta p{position:relative;z-index:1;margin:0;color:#d8ece0}
+.fnd-page .cta .btn{position:relative;z-index:1;background:#fff;color:var(--green);white-space:nowrap}
+.fnd-page .reveal{opacity:0;transform:translateY(18px);transition:.65s}
+.fnd-page .reveal.in{opacity:1;transform:none}
+@media(max-width:1050px){.fnd-page .hero-grid{grid-template-columns:1fr 470px;gap:35px}
+.fnd-page .mission-grid{gap:50px}
+.fnd-page .focus-grid{grid-template-columns:1fr 1fr}
+.fnd-page .commitment-shell{padding:55px}
+.fnd-page .volunteer-copy{padding:45px}}
+@media(max-width:820px){.fnd-page .hero-grid{grid-template-columns:1fr;padding-top:55px}
+.fnd-page .hero{padding-bottom:60px}
+.fnd-page .gallery{height:520px;width:min(100%,580px);margin:auto}
+.fnd-page .proof-inner{grid-template-columns:1fr 1fr}
+.fnd-page .proof-item:nth-child(2){border-right:0}
+.fnd-page .proof-item:nth-child(-n+2){border-bottom:1px solid var(--line)}
+.fnd-page .mission-grid{grid-template-columns:1fr}
+.fnd-page .mission-side{position:static}
+.fnd-page .focus .section-head, .fnd-page .help-head{display:block}
+.fnd-page .focus .section-head p, .fnd-page .help-head p{margin-top:20px}
+.fnd-page .commitment-shell{grid-template-columns:1fr}
+.fnd-page .help-grid{grid-template-columns:1fr}
+.fnd-page .impact-track{grid-template-columns:1fr 1fr}
+.fnd-page .volunteer-shell{grid-template-columns:1fr}
+.fnd-page .volunteer-photo{min-height:420px}}
+@media(max-width:560px){.fnd-page .container{width:min(calc(100% - 28px),var(--max))}
+.fnd-page .hero-grid{min-height:auto;padding:52px 0 0}
+.fnd-page .hero h1{font-size:clamp(48px,15vw,74.4px)}
+.fnd-page .hero-copy>p{font-size:16px}
+.fnd-page .actions{display:grid}
+.fnd-page .btn{width:100%}
+.fnd-page .gallery{height:450px;padding:10px;gap:9px;border-radius:24px}
+.fnd-page .set{gap:9px;padding-bottom:9px}
+.fnd-page .photo{height:210px;border-radius:15px}
+.fnd-page .lane:nth-child(2) .photo{height:155px}
+.fnd-page .proof-item{min-height:76px;justify-content:flex-start;padding:10px;font-size:11.52px}
+.fnd-page .proof-item strong{font-size:19.2px}
+.fnd-page .mission, .fnd-page .commitment, .fnd-page .volunteer{padding:84px 0}
+.fnd-page .mission-card{padding:25px}
+.fnd-page .focus{padding:84px 0}
+.fnd-page .focus-grid{grid-template-columns:1fr}
+.fnd-page .focus-card{min-height:250px}
+.fnd-page .commitment-shell{gap:40px;padding:38px 24px}
+.fnd-page .percent{font-size:112px}
+.fnd-page .help{padding-bottom:84px}
+.fnd-page .help-card{min-height:430px;padding:25px}
+.fnd-page .impact-track{display:flex;width:max-content}
+.fnd-page .impact-shot{width:76vw;min-height:370px}
+.fnd-page .impact-shot:nth-child(even){transform:none}
+.fnd-page .gallery-section{overflow-x:auto}
+.fnd-page .volunteer-photo{min-height:350px}
+.fnd-page .volunteer-copy{padding:34px 24px}
+.fnd-page .volunteer-copy .btn{width:100%}
+.fnd-page .cta-inner{align-items:flex-start;flex-direction:column;padding:33px 25px}
+.fnd-page .cta .btn{width:100%}}
+@media(prefers-reduced-motion:reduce){html:has(.fnd-page){scroll-behavior:auto}
+.fnd-page .strip{animation:none}
+.fnd-page .lane .set:nth-child(2){display:none}
+.fnd-page .reveal{opacity:1;transform:none;transition:none}
+.fnd-page .focus-card, .fnd-page .btn, .fnd-page .photo img, .fnd-page .help-card img, .fnd-page .impact-shot img{transition:none}}
+.fnd-page .focus-icon svg{width:25px;height:25px}
+.fnd-page .photo img{filter:saturate(.95)}
+.fnd-page .gallery .photo:first-child img{object-position:center 36%}
+.fnd-page .impact-shot img{filter:saturate(.94)}
+.fnd-page .photo-attribution{padding:0 0 35px;color:#617269;font-size:11.84px}
+.fnd-page .photo-attribution{border-top:1px solid var(--line);padding-top:14px}
+.fnd-page .photo-attribution strong{display:block;font-weight:800;color:#375745}
+.fnd-page .photo-attribution p{max-width:1100px;margin:10px 0 0;line-height:1.65}
+.fnd-page .photo-attribution a{text-decoration:underline;text-underline-offset:2px}
+.fnd-page .gallery:hover .strip, .fnd-page .gallery:focus-within .strip{animation-play-state:paused}
+@media(max-width:560px){.fnd-page .hero{padding-bottom:45px}
+.fnd-page .hero h1{font-size:clamp(45.6px,13.8vw,68.8px)}
+.fnd-page .gallery{height:420px;transform:none}
+.fnd-page .gallery-badge{transform:translateX(-50%);bottom:15px}
+.fnd-page .impact-track{gap:10px}
+.fnd-page .impact-shot{width:min(78vw,320px);min-height:340px}
+.fnd-page .gallery-section{padding:78px 0}
+.fnd-page .photo-attribution{padding-bottom:25px}}
+@media(max-width:820px){.fnd-page .impact-track{display:flex;width:max-content;gap:0;align-items:stretch}
+.fnd-page .impact-set, .fnd-page .impact-set[aria-hidden="true"]{display:flex;flex:none;gap:14px;padding-right:14px}
+.fnd-page .impact-shot{flex:none;width:clamp(220px,44vw,330px);min-height:340px}
+.fnd-page .impact-shot:nth-child(even){transform:translateY(14px)}
+.fnd-page .gallery-section{overflow:hidden}}
+@media(max-width:560px){.fnd-page .container{width:min(calc(100% - 32px),var(--max))}
+.fnd-page .hero-grid{gap:28px;padding-top:38px}
+.fnd-page .hero h1{font-size:clamp(44.8px,12vw,72px);line-height:.96}
+.fnd-page .hero-copy>p{margin:20px 0 22px}
+.fnd-page .actions{display:flex;gap:9px}
+.fnd-page .actions .btn{width:auto;min-height:48px;padding:0 15px;font-size:13.28px}
+.fnd-page .micro{margin-top:20px}
+.fnd-page .gallery{height:390px;width:100%;padding:9px;gap:9px;border-radius:24px;transform:rotate(.6deg)}
+.fnd-page .hero{padding-bottom:55px}
+.fnd-page .proof{margin-top:-27px}
+.fnd-page .proof-item{min-height:80px;gap:7px;font-size:11.52px}
+.fnd-page .proof-mark{flex:none;width:27px;height:27px}
+.fnd-page .mission, .fnd-page .commitment, .fnd-page .volunteer{padding:75px 0}
+.fnd-page .mission-grid{gap:28px}
+.fnd-page .mission-note{margin-top:20px}
+.fnd-page .mission-content{gap:12px}
+.fnd-page .mission-card{padding:24px}
+.fnd-page .focus{padding:75px 0}
+.fnd-page .focus-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.fnd-page .focus-card{min-height:275px;padding:17px;border-radius:18px}
+.fnd-page .focus-icon{width:43px;height:43px}
+.fnd-page .focus-card h3{font-size:16px;line-height:1.25}
+.fnd-page .focus-card p{font-size:12.48px}
+.fnd-page .commitment-shell{gap:28px;padding:34px 25px}
+.fnd-page .percent{font-size:clamp(96px,25vw,128px)}
+.fnd-page .help{padding:0 0 75px}
+.fnd-page .help-head{margin-bottom:28px}
+.fnd-page .help-card{min-height:375px}
+.fnd-page .impact-track{margin-top:32px;animation:fnd-impact-loop 28s linear infinite;will-change:transform}
+.fnd-page .impact-set, .fnd-page .impact-set[aria-hidden="true"]{gap:10px;padding-right:10px}
+.fnd-page .impact-shot{width:min(69vw,285px);min-height:320px;border-radius:20px}
+.fnd-page .impact-shot:nth-child(even){transform:translateY(10px)}
+.fnd-page .gallery-section{padding:75px 0 85px}
+.fnd-page .volunteer-photo{min-height:340px}
+.fnd-page .volunteer-copy{padding:35px 25px}
+.fnd-page .cta{padding-bottom:75px}
+.fnd-page .photo-attribution{padding-bottom:30px}}
+@keyframes fnd-impact-loop{to{transform:translateX(-50%)}}
+@media(min-width:561px) and (max-width:820px){.fnd-page .impact-track{animation:fnd-impact-loop 34s linear infinite;will-change:transform}}
+@media(max-width:820px){.fnd-page .impact-track:hover, .fnd-page .impact-track:focus-within{animation-play-state:paused}}
+@media(max-width:350px){.fnd-page .actions .btn{font-size:12px;padding:0 11px}
+.fnd-page .focus-card{padding:14px}}
+@media(max-width:820px) and (prefers-reduced-motion:reduce){.fnd-page .gallery-section{overflow-x:auto}
+.fnd-page .impact-track{animation:none;will-change:auto}
+.fnd-page .impact-set[aria-hidden="true"]{display:none}}
+
+/* ── Adaptations ──────────────────────────────────────────────────────
+   The template rendered its own 34px topline and 82px header above the
+   hero. This route uses the app's fixed 64px Navbar instead, so the page
+   is offset by the navbar height — the same approach ListExperience.css
+   uses. Everything below the navbar then matches the template. */
+.fnd-page {
+  padding-top: 64px;
+}
+
+/* Anchor jumps (#impact, #get-involved, #request-help) must clear the
+   app's fixed navbar. */
+.fnd-page section[id] {
+  scroll-margin-top: 80px;
+}
+
+.fnd-page a:focus-visible,
+.fnd-page button:focus-visible {
+  outline: 3px solid rgba(8, 119, 71, .45);
+  outline-offset: 3px;
+}
+
+/* ── Neutralising the app's global styles ─────────────────────────────
+   The template's class names are generic, so a few global rules land on
+   this page too. Each is pinned back to what the template intends. */
+
+/* index.css resets every heading to `font-weight: inherit`; the template
+   relies on the browser default (bold) for its h1–h3. */
+.fnd-page h1,
+.fnd-page h2,
+.fnd-page h3 {
+  font-weight: 700;
+}
+
+/* components/Hero.css targets a bare `.hero` to clear the fixed navbar.
+   This page clears it on .fnd-page instead, so the hero itself starts at
+   the top of the section exactly as the template draws it. */
+.fnd-page .hero {
+  padding-top: 0;
+}
+
+/* index.css ships Tailwind's `.container`, whose breakpoint max-widths
+   (640–1536px) would cap this page's 1200px column — at a 1000px viewport
+   it collapsed the column to 768px. */
+.fnd-page .container {
+  max-width: none;
+}

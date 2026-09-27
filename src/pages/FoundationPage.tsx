@@ -1,49 +1,66 @@
-import { useTranslation } from 'react-i18next'
-import { MotionConfig, motion } from 'framer-motion'
-import {
-  Heart,
-  Users,
-  Folder,
-  Handshake,
-  Check,
-  ChevronRight,
-  ArrowRight,
-} from 'lucide-react'
+/* ============================================================================
+   Foundation — /foundation
+   ----------------------------------------------------------------------------
+   Port of Expedition-Go_Foundation_Updated_Photo (1).html.
+
+   The template was a standalone document: its own topline, header and footer
+   are dropped (this app renders a global Navbar and Footer), and its runtime
+   script — the `.reveal` IntersectionObserver and the clone of the impact
+   track's photo set — is reimplemented below. The gallery marquee doubles up
+   its photo set in the markup instead of cloning it in JS. See
+   src/styles/FoundationPage.css for the CSS notes.
+   ========================================================================== */
+
+import { useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
 import SEO, { buildBreadcrumbSchema, buildOrganizationSchema } from '../components/SEO'
-import {
-  fadeUp,
-  revealViewport,
-  stagger,
-  staggerItem,
-} from '../components/support/motion'
-import help1 from '../assets/foundation/help1.avif'
-import help2 from '../assets/foundation/help2.avif'
-import help3 from '../assets/foundation/help3.avif'
-import help4 from '../assets/foundation/help4.avif'
-import help5 from '../assets/foundation/help5.avif'
-import help6 from '../assets/foundation/help6.avif'
-import help7 from '../assets/foundation/help7.avif'
-import help8 from '../assets/foundation/help8.avif'
-import help9 from '../assets/foundation/help9.avif'
-import './SupportPages.css'
-import './FoundationPage.css'
+import '@/styles/FoundationPage.css'
 
+const WIKIMEDIA = 'https://commons.wikimedia.org/wiki/Special:FilePath/'
+
+const CONTACT = '/contact-us'
+
+/** Hero gallery: two columns, each its own scrolling strip of three photos. */
 const GALLERY_LANE_1 = [
-  { src: help1, alt: 'Travio Ghana Foundation community activity', label: 'Community' },
-  { src: help3, alt: 'People taking part in a Foundation initiative', label: 'Support' },
-  { src: help5, alt: 'Local impact supported by Travio Ghana', label: 'Opportunity' },
+  {
+    file: 'Ghana%20school%20children%20%288203372110%29.jpg?width=1100',
+    alt: 'School children in an English class in Accra',
+    label: 'Learning',
+  },
+  {
+    file: 'Tree%20planting%20in%20Ghana%209.jpg?width=1100',
+    alt: 'Tree planting activity in Ghana',
+    label: 'Growing',
+  },
+  {
+    file: 'Community%20clean-up.jpg?width=1100',
+    alt: 'Community clean-up in Winneba, Ghana',
+    label: 'Community action',
+  },
 ]
 
 const GALLERY_LANE_2 = [
-  { src: help2, alt: 'Foundation volunteers in Ghana', label: 'Together' },
-  { src: help4, alt: 'Community-led Foundation work', label: 'Local action' },
-  { src: help6, alt: 'Making a positive impact', label: 'Impact' },
+  {
+    file: 'Market%20women%20in%20Ghana.jpg?width=1100',
+    alt: 'Market women in Ghana',
+    label: 'Livelihoods',
+  },
+  {
+    file: 'A%20village%20community%20development%20meeting%20in%20northern%20Ghana.jpg?width=1100',
+    alt: 'Community development meeting in northern Ghana',
+    label: 'Local voices',
+  },
+  {
+    file: 'A%20teacher%20assisting%20his%20student%20to%20read.jpg?width=1100',
+    alt: 'A teacher helping a student read in Northern Ghana',
+    label: 'Education',
+  },
 ]
 
 const MISSION_CARDS = [
   {
-    titleKey: 'foundation.missionTitle',
+    title: 'Every booking contributes',
     desc: 'We commit 2% of every booking revenue generated through the Travio Ghana platform to the Foundation.',
   },
   {
@@ -56,470 +73,535 @@ const MISSION_CARDS = [
   },
 ]
 
+/** The four focus marks, kept inline exactly as the template draws them. */
 const FOCUS_AREAS = [
   {
     num: '01 / PEOPLE',
-    Icon: Heart,
-    titleKey: 'foundation.area1Title',
-    descKey: 'foundation.area1Desc',
+    title: 'Individual Support',
+    desc: 'Helping people when they need it most, with space to share their situation and request support.',
+    icon: (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z" />
+      </svg>
+    ),
   },
   {
     num: '02 / PLACES',
-    Icon: Users,
-    titleKey: 'foundation.area2Title',
-    descKey: 'foundation.area2Desc',
+    title: 'Community Support',
+    desc: 'Working with communities, local leaders, schools, organisations and groups on the needs they identify.',
+    icon: (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M4 20v-8l8-7 8 7v8H4Z" />
+        <path d="M9 20v-6h6v6" />
+      </svg>
+    ),
   },
   {
     num: '03 / PROGRESS',
-    Icon: Folder,
-    titleKey: 'foundation.area3Title',
-    descKey: 'foundation.area3Desc',
+    title: 'Community Projects',
+    desc: 'Backing initiatives in education, environmental conservation, local development and community programmes.',
+    icon: (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M12 21V11M12 15c-4 0-6-2-6-6 4 0 6 2 6 6ZM12 12c0-4 2-6 6-6 0 4-2 6-6 6Z" />
+        <path d="M5 21h14" />
+      </svg>
+    ),
   },
   {
     num: '04 / TOGETHER',
-    Icon: Handshake,
-    titleKey: 'foundation.area4Title',
-    descKey: 'foundation.area4Desc',
+    title: 'Partner With Us',
+    desc: 'Welcoming charities, NGOs, businesses, community organisations and individuals who want to create impact.',
+    icon: (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <circle cx="8" cy="7" r="2" />
+        <circle cx="16" cy="7" r="2" />
+        <path d="M2.5 19v-3a5.5 5.5 0 0 1 11 0v3M10.5 19v-3a5.5 5.5 0 0 1 11 0v3" />
+      </svg>
+    ),
+  },
+]
+
+const HELP_CARDS = [
+  {
+    file: 'Students%20reading%20in%20a%20classroom.jpg?width=1100',
+    alt: 'Students reading in a classroom in Ghana',
+    tag: 'For individuals',
+    title: 'Share your situation.',
+    copy: 'If you or someone you know needs support, start by telling the Foundation what is happening and how help could make a difference.',
+    cta: 'Request help →',
+  },
+  {
+    file: 'Wali_physical_meeting.jpg?width=1100',
+    alt: 'Community group meeting in Wa, Ghana',
+    tag: 'For communities',
+    title: 'Bring a local need forward.',
+    copy: 'Community leaders, schools and organisations can share an initiative or need for the Foundation to consider.',
+    cta: 'Get support →',
   },
 ]
 
 const IMPACT_SHOTS = [
-  { src: help6, alt: 'Travio Ghana Foundation making an impact', caption: 'Making an impact' },
-  { src: help7, alt: 'Foundation individual support', caption: 'Supporting people' },
-  { src: help8, alt: 'Foundation community support', caption: 'Strengthening communities' },
-  { src: help9, alt: 'Foundation volunteers', caption: 'Moving together' },
+  {
+    file: 'Cleanup%20exercise%20in%20Ghana%209.jpg?width=1100',
+    alt: 'Volunteers cleaning a street in Accra',
+    caption: 'Local action',
+  },
+  {
+    file: 'Schoolgirl%20Ghana.jpg?width=1100',
+    alt: 'Schoolgirl photographed in northern Ghana',
+    caption: 'Education & opportunity',
+  },
+  {
+    file: 'Ghana%20tree%20planting.jpg?width=1100',
+    alt: 'Tree planting initiative in Ghana',
+    caption: 'Looking after our future',
+  },
+  {
+    file: 'Ghana%20young%20women%20%287250530402%29.jpg?width=1100',
+    alt: 'Young women at a community health event in Ghana',
+    caption: 'People working together',
+  },
 ]
 
-function GalleryLane({ images }: { images: typeof GALLERY_LANE_1 }) {
+const VOLUNTEER_POINTS = [
+  'Support community-led activities',
+  'Contribute skills and experience',
+  'Help meaningful projects move forward',
+]
+
+/** The hero's moving strip. The set is rendered twice so fnd-up/-down loop. */
+function GalleryLane({
+  images,
+  eager,
+}: {
+  images: typeof GALLERY_LANE_1
+  eager: boolean
+}) {
+  const set = (duplicate: boolean) => (
+    <div className="set" {...(duplicate ? { 'aria-hidden': 'true' } : {})}>
+      {images.map((img) => (
+        <figure className="photo" key={`${duplicate ? 'dup-' : ''}${img.label}`}>
+          <img
+            src={`${WIKIMEDIA}${img.file}`}
+            alt={duplicate ? '' : img.alt}
+            loading={eager && !duplicate ? 'eager' : 'lazy'}
+          />
+          <span>{img.label}</span>
+        </figure>
+      ))}
+    </div>
+  )
   return (
-    <div className="fn-lane">
-      <div className="fn-strip">
-        <div className="fn-set">
-          {images.map((img) => (
-            <figure key={img.label} className="fn-photo">
-              <img src={img.src} alt={img.alt} loading="lazy" />
-              <span>{img.label}</span>
-            </figure>
-          ))}
-        </div>
-        <div className="fn-set" aria-hidden="true">
-          {images.map((img) => (
-            <figure key={`dup-${img.label}`} className="fn-photo">
-              <img src={img.src} alt="" loading="lazy" />
-              <span>{img.label}</span>
-            </figure>
-          ))}
-        </div>
+    <div className="lane">
+      <div className="strip">
+        {set(false)}
+        {set(true)}
       </div>
     </div>
   )
 }
 
+/** The impact track's set. The duplicate exists only to close the loop. */
+function ImpactSet({ duplicate }: { duplicate: boolean }) {
+  return (
+    <div className="impact-set" {...(duplicate ? { 'aria-hidden': 'true' } : {})}>
+      {IMPACT_SHOTS.map((shot) => (
+        <figure className="impact-shot" key={`${duplicate ? 'dup-' : ''}${shot.caption}`}>
+          <img
+            src={`${WIKIMEDIA}${shot.file}`}
+            alt={duplicate ? '' : shot.alt}
+            loading="lazy"
+          />
+          <figcaption>{shot.caption}</figcaption>
+        </figure>
+      ))}
+    </div>
+  )
+}
+
 export default function FoundationPage() {
-  const { t } = useTranslation()
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  // The template's `.reveal` IntersectionObserver, scoped to this page.
+  useEffect(() => {
+    const root = pageRef.current
+    if (!root) return
+    const nodes = Array.from(root.querySelectorAll<HTMLElement>('.reveal'))
+    if (!('IntersectionObserver' in window)) {
+      nodes.forEach((n) => n.classList.add('in'))
+      return
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.12 },
+    )
+    nodes.forEach((n) => observer.observe(n))
+    return () => observer.disconnect()
+  }, [])
 
   return (
-    <MotionConfig reducedMotion="user">
-      <div className="support-page">
-        <SEO
-          title={t('foundation.pageTitle')}
-          description="The Travio Ghana Foundation turns every booking into positive impact for individuals, communities and community-led projects across Ghana."
-          keywords="Travio Ghana Foundation, Ghana community support, sustainable tourism Ghana, travel foundation Ghana, community impact Ghana"
-          jsonLd={[
-            buildBreadcrumbSchema([
-              { name: 'Home', url: 'https://www.travioghana.com/' },
-              { name: 'Foundation', url: 'https://www.travioghana.com/foundation' },
-            ]),
-            buildOrganizationSchema(),
-          ]}
-        />
+    <>
+      {/* The app's Footer is a sibling, not a child: .fnd-page sets its own
+          16px DM Sans context, and the footer should not inherit it. */}
+      <div className="fnd-page" ref={pageRef}>
+      <SEO
+        title="Travio Ghana Foundation | Every Journey Makes a Difference"
+        description="The Travio Ghana Foundation turns every booking into positive impact for individuals, communities and community-led projects across Ghana."
+        keywords="Travio Ghana Foundation, Ghana community support, sustainable tourism Ghana, travel foundation Ghana, community impact Ghana"
+        jsonLd={[
+          buildBreadcrumbSchema([
+            { name: 'Home', url: 'https://www.travioghana.com/' },
+            { name: 'Foundation', url: 'https://www.travioghana.com/foundation' },
+          ]),
+          buildOrganizationSchema(),
+        ]}
+      />
 
-        {/* ============================================================ */}
-        {/* 1. Hero                                                       */}
-        {/* ============================================================ */}
-        <section className="fn-hero">
-          <div className="support-container fn-hero-grid">
-            <motion.div
-              className="fn-hero-copy"
-              initial="hidden"
-              animate="visible"
-              variants={stagger}
-            >
-              <motion.div className="fn-kicker" variants={staggerItem}>
-                <span className="fn-kicker-dot" />
-                {t('foundation.heroLabel')}
-              </motion.div>
-              <motion.h1 variants={staggerItem}>
-                Every journey can make a <em>difference.</em>
-              </motion.h1>
-              <motion.p variants={staggerItem}>
-                We believe tourism should do more than create memorable
-                experiences. It should help build stronger communities, support
-                people in need and open new possibilities across Ghana.
-              </motion.p>
-              <motion.div className="fn-actions" variants={staggerItem}>
-                <a href="#impact" className="fn-btn fn-btn--primary">
-                  See how we help
-                  <ChevronRight size={18} />
-                </a>
-                <a href="#get-involved" className="fn-btn fn-btn--secondary">
-                  Get involved
-                </a>
-              </motion.div>
-              <motion.div className="fn-micro" variants={staggerItem}>
-                Every booking contributes &middot; Locally led support &middot; Shared impact
-              </motion.div>
-            </motion.div>
-
-            <motion.div
-              className="fn-gallery"
-              aria-label="Moving gallery of the Travio Ghana Foundation's community work"
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.7, delay: 0.3, ease: 'easeOut' }}
-            >
-              <GalleryLane images={GALLERY_LANE_1} />
-              <GalleryLane images={GALLERY_LANE_2} />
-              <div className="fn-gallery-badge">
-                <i />
-                Travel that gives back.
-              </div>
-            </motion.div>
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <section className="hero">
+        <div className="container hero-grid">
+          <div className="hero-copy">
+            <div className="kicker">
+              <span />
+              Travio Ghana Foundation
+            </div>
+            <h1>
+              Every journey can make a <em>difference.</em>
+            </h1>
+            <p>
+              We believe tourism should do more than create memorable experiences. It
+              should help build stronger communities, support people in need and open new
+              possibilities across Ghana.
+            </p>
+            <div className="actions">
+              <a className="btn primary" href="#impact">
+                See how we help
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
+              </a>
+              <a className="btn secondary" href="#get-involved">
+                Get involved
+              </a>
+            </div>
+            <div className="micro">
+              Every booking contributes • Locally led support • Shared impact
+            </div>
           </div>
-        </section>
 
-        {/* ============================================================ */}
-        {/* 2. Proof strip                                                */}
-        {/* ============================================================ */}
-        <div className="fn-proof">
-          <div className="support-container fn-proof-inner">
-            <div className="fn-proof-item">
-              <strong>2%</strong> of every booking revenue
-            </div>
-            <div className="fn-proof-item">
-              <span className="fn-proof-mark">01</span>
-              Individual support
-            </div>
-            <div className="fn-proof-item">
-              <span className="fn-proof-mark">02</span>
-              Community action
-            </div>
-            <div className="fn-proof-item">
-              <span className="fn-proof-mark">03</span>
-              Local projects
+          <div className="gallery" aria-label="Moving gallery of real photographs from Ghana">
+            <GalleryLane images={GALLERY_LANE_1} eager />
+            <GalleryLane images={GALLERY_LANE_2} eager />
+            <div className="gallery-badge">
+              <i />
+              Real moments from Ghana.
             </div>
           </div>
         </div>
+      </section>
 
-        {/* ============================================================ */}
-        {/* 3. Mission / Impact                                          */}
-        {/* ============================================================ */}
-        <section className="fn-mission" id="impact">
-          <div className="support-container fn-mission-grid">
-            <motion.div
-              className="fn-mission-side"
-              initial="hidden"
-              whileInView="visible"
-              viewport={revealViewport}
-              variants={fadeUp}
-            >
-              <span className="fn-label">Making a difference through travel</span>
-              <h2 className="fn-title">Travel should leave more behind than memories.</h2>
-              <p className="fn-lead">
-                A portion of each journey booked through Travio Ghana helps
-                support individuals, strengthen communities and move important
-                local projects forward.
-              </p>
-              <div className="fn-note">
-                <strong>Your journey becomes part of theirs.</strong>
-                When you travel with Travio Ghana, you are helping create
-                a better journey for someone else.
-              </div>
-            </motion.div>
-
-            <div className="fn-mission-content">
-              {MISSION_CARDS.map((card, i) => (
-                <motion.article
-                  key={i}
-                  className="fn-mission-card"
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={revealViewport}
-                  variants={fadeUp}
-                >
-                  <span className="fn-step">{`0${i + 1}`}</span>
-                  <h3>{card.titleKey ? t(card.titleKey) : card.title}</h3>
-                  <p>{card.desc}</p>
-                </motion.article>
-              ))}
-            </div>
+      {/* ── Proof strip ──────────────────────────────────────────────────── */}
+      <div className="proof">
+        <div className="container proof-inner">
+          <div className="proof-item">
+            <strong>2%</strong> of every booking revenue
           </div>
-        </section>
-
-        {/* ============================================================ */}
-        {/* 4. Focus areas (dark section)                                */}
-        {/* ============================================================ */}
-        <section className="fn-focus" id="focus">
-          <div className="support-container">
-            <motion.div
-              className="fn-section-head"
-              initial="hidden"
-              whileInView="visible"
-              viewport={revealViewport}
-              variants={fadeUp}
-            >
-              <div>
-                <span className="fn-label" style={{ color: '#baf0cb' }}>
-                  {t('foundation.howWeHelp')}
-                </span>
-                <h2 className="fn-title">Four ways we help change the journey.</h2>
-              </div>
-              <p>
-                Impact starts by listening. We work with people and partners to
-                direct support where it can genuinely make a difference.
-              </p>
-            </motion.div>
-
-            <div className="fn-focus-grid">
-              {FOCUS_AREAS.map((area) => (
-                <motion.article
-                  key={area.num}
-                  className="fn-focus-card"
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={revealViewport}
-                  variants={fadeUp}
-                >
-                  <span className="fn-focus-num">{area.num}</span>
-                  <div>
-                    <div className="fn-focus-icon">
-                      <area.Icon size={25} />
-                    </div>
-                    <h3>{t(area.titleKey)}</h3>
-                    <p>{t(area.descKey)}</p>
-                  </div>
-                </motion.article>
-              ))}
-            </div>
+          <div className="proof-item">
+            <span className="proof-mark">01</span>
+            Individual support
           </div>
-        </section>
-
-        {/* ============================================================ */}
-        {/* 5. Commitment shell                                           */}
-        {/* ============================================================ */}
-        <section className="fn-commitment">
-          <div className="support-container">
-            <motion.div
-              className="fn-commitment-shell"
-              initial="hidden"
-              whileInView="visible"
-              viewport={revealViewport}
-              variants={fadeUp}
-            >
-              <div className="fn-percent">
-                2%
-                <small>of every booking revenue</small>
-              </div>
-              <div className="fn-commitment-copy">
-                <span className="fn-label">One simple commitment</span>
-                <h2 className="fn-title">Your trip helps another journey begin.</h2>
-                <p>
-                  Every qualifying booking on the Travio Ghana platform
-                  contributes to the Foundation. It is a simple way to connect
-                  travel with real support — without asking travellers to add
-                  anything extra.
-                </p>
-                <div className="fn-rule">
-                  <span className="fn-rule-icon">
-                    <Check size={18} />
-                  </span>
-                  Book an experience. Explore Ghana. Help create impact.
-                </div>
-              </div>
-            </motion.div>
+          <div className="proof-item">
+            <span className="proof-mark">02</span>
+            Community action
           </div>
-        </section>
-
-        {/* ============================================================ */}
-        {/* 6. Help / Request support                                     */}
-        {/* ============================================================ */}
-        <section className="fn-help" id="request-help">
-          <div className="support-container">
-            <motion.div
-              className="fn-help-head"
-              initial="hidden"
-              whileInView="visible"
-              viewport={revealViewport}
-              variants={fadeUp}
-            >
-              <div>
-                <span className="fn-label">{t('foundation.needSupport')}</span>
-                <h2 className="fn-title">Tell us where help is needed.</h2>
-              </div>
-              <p>
-                Whether you are reaching out for yourself or on behalf of a
-                community, the Foundation is ready to listen.
-              </p>
-            </motion.div>
-
-            <div className="fn-help-grid">
-              <motion.article
-                className="fn-help-card"
-                initial="hidden"
-                whileInView="visible"
-                viewport={revealViewport}
-                variants={fadeUp}
-              >
-                <img src={help7} alt="Individual support through the Travio Ghana Foundation" loading="lazy" />
-                <div className="fn-help-copy">
-                  <span className="fn-help-tag">{t('foundation.forIndividuals')}</span>
-                  <h3>Share your situation.</h3>
-                  <p>
-                    If you or someone you know needs support, start by telling
-                    the Foundation what is happening and how help could make a
-                    difference.
-                  </p>
-                  <a href="/contact-us" className="fn-btn">
-                    {t('foundation.requestHelpBtn')}
-                    <ArrowRight size={16} />
-                  </a>
-                </div>
-              </motion.article>
-
-              <motion.article
-                className="fn-help-card"
-                initial="hidden"
-                whileInView="visible"
-                viewport={revealViewport}
-                variants={fadeUp}
-              >
-                <img src={help8} alt="Community support through the Travio Ghana Foundation" loading="lazy" />
-                <div className="fn-help-copy">
-                  <span className="fn-help-tag">{t('foundation.forCommunities')}</span>
-                  <h3>Bring a local need forward.</h3>
-                  <p>
-                    Community leaders, schools and organisations can share an
-                    initiative or need for the Foundation to consider.
-                  </p>
-                  <a href="/contact-us" className="fn-btn">
-                    {t('foundation.getSupport')}
-                    <ArrowRight size={16} />
-                  </a>
-                </div>
-              </motion.article>
-            </div>
+          <div className="proof-item">
+            <span className="proof-mark">03</span>
+            Local projects
           </div>
-        </section>
-
-        {/* ============================================================ */}
-        {/* 7. Gallery section                                            */}
-        {/* ============================================================ */}
-        <section className="fn-gallery-section">
-          <div className="support-container">
-            <motion.div
-              className="fn-gallery-head"
-              initial="hidden"
-              whileInView="visible"
-              viewport={revealViewport}
-              variants={fadeUp}
-            >
-              <span className="fn-label">{t('foundation.ourImpact')}</span>
-              <h2 className="fn-title">Impact is built side by side.</h2>
-              <p className="fn-lead">
-                People, communities, travellers and partners all have a part to
-                play in making tourism a force for good.
-              </p>
-            </motion.div>
-
-            <div className="fn-impact-track">
-              {IMPACT_SHOTS.map((shot) => (
-                <motion.figure
-                  key={shot.caption}
-                  className="fn-impact-shot"
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={revealViewport}
-                  variants={fadeUp}
-                >
-                  <img src={shot.src} alt={shot.alt} loading="lazy" />
-                  <figcaption>{shot.caption}</figcaption>
-                </motion.figure>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ============================================================ */}
-        {/* 8. Volunteer                                                  */}
-        {/* ============================================================ */}
-        <section className="fn-volunteer" id="get-involved">
-          <div className="support-container">
-            <motion.div
-              className="fn-volunteer-shell"
-              initial="hidden"
-              whileInView="visible"
-              viewport={revealViewport}
-              variants={fadeUp}
-            >
-              <div className="fn-volunteer-photo">
-                <img src={help9} alt="Volunteer with the Travio Ghana Foundation" loading="lazy" />
-              </div>
-              <div className="fn-volunteer-copy">
-                <span className="fn-label">{t('foundation.getInvolved')}</span>
-                <h2 className="fn-title">Give your time. Make a difference.</h2>
-                <p>
-                  Meaningful change takes people who are ready to show up. Join
-                  the Foundation's work and help turn care, experience and
-                  practical skills into local action.
-                </p>
-                <ul className="fn-volunteer-points">
-                  <li>
-                    <span className="fn-check"><Check size={14} /></span>
-                    Support community-led activities
-                  </li>
-                  <li>
-                    <span className="fn-check"><Check size={14} /></span>
-                    Contribute skills and experience
-                  </li>
-                  <li>
-                    <span className="fn-check"><Check size={14} /></span>
-                    Help meaningful projects move forward
-                  </li>
-                </ul>
-                <a href="/contact-us" className="fn-btn fn-btn--primary">
-                  {t('foundation.volunteerBtn')}
-                  <ArrowRight size={17} />
-                </a>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* ============================================================ */}
-        {/* 9. CTA                                                        */}
-        {/* ============================================================ */}
-        <section className="fn-cta">
-          <div className="support-container">
-            <motion.div
-              className="fn-cta-inner"
-              initial="hidden"
-              whileInView="visible"
-              viewport={revealViewport}
-              variants={fadeUp}
-            >
-              <div>
-                <h2>{t('foundation.ctaTitle')}</h2>
-                <p>{t('foundation.ctaText')}</p>
-              </div>
-              <a href="/contact-us" className="fn-btn">
-                {t('foundation.ctaGetInvolved')}
-              </a>
-            </motion.div>
-          </div>
-        </section>
-
-        <Footer />
+        </div>
       </div>
-    </MotionConfig>
+
+      <main>
+        {/* ── Mission ────────────────────────────────────────────────────── */}
+        <section className="mission" id="impact">
+          <div className="container mission-grid">
+            <div className="mission-side reveal">
+              <span className="label">Making a difference through travel</span>
+              <h2 className="title">Travel should leave more behind than memories.</h2>
+              <p className="lead">
+                A portion of each journey booked through Travio Ghana helps support
+                individuals, strengthen communities and move important local projects
+                forward.
+              </p>
+              <div className="mission-note">
+                <strong>Your journey becomes part of theirs.</strong>
+                When you travel with Travio Ghana, you are helping create a better journey
+                for someone else.
+              </div>
+            </div>
+            <div className="mission-content">
+              {MISSION_CARDS.map((card, i) => (
+                <article className="mission-card reveal" key={card.title}>
+                  <span className="step">{`0${i + 1}`}</span>
+                  <h3>{card.title}</h3>
+                  <p>{card.desc}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── What we focus on ───────────────────────────────────────────── */}
+        <section className="focus">
+          <div className="container">
+            <div className="section-head reveal">
+              <div>
+                <span className="label">What we focus on</span>
+                <h2 className="title">Four ways we help change the journey.</h2>
+              </div>
+              <p>
+                Impact starts by listening. We work with people and partners to direct
+                support where it can genuinely make a difference.
+              </p>
+            </div>
+            <div className="focus-grid">
+              {FOCUS_AREAS.map((area) => (
+                <article className="focus-card reveal" key={area.num}>
+                  <span className="focus-num">{area.num}</span>
+                  <div>
+                    <div className="focus-icon">{area.icon}</div>
+                    <h3>{area.title}</h3>
+                    <p>{area.desc}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Commitment ─────────────────────────────────────────────────── */}
+        <section className="commitment">
+          <div className="container commitment-shell reveal">
+            <div className="percent">
+              2%<small>of every booking revenue</small>
+            </div>
+            <div className="commitment-copy">
+              <span className="label">One simple commitment</span>
+              <h2 className="title">Your trip helps another journey begin.</h2>
+              <p>
+                Every qualifying booking on the Travio Ghana platform contributes to the
+                Foundation. It is a simple way to connect travel with real support—without
+                asking travellers to add anything extra.
+              </p>
+              <div className="rule">
+                <i>✓</i>Book an experience. Explore Ghana. Help create impact.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Request support ────────────────────────────────────────────── */}
+        <section className="help" id="request-help">
+          <div className="container">
+            <div className="help-head reveal">
+              <div>
+                <span className="label">Request support</span>
+                <h2 className="title">Tell us where help is needed.</h2>
+              </div>
+              <p>
+                Whether you are reaching out for yourself or on behalf of a community, the
+                Foundation is ready to listen.
+              </p>
+            </div>
+            <div className="help-grid">
+              {HELP_CARDS.map((card) => (
+                <article className="help-card reveal" key={card.tag}>
+                  <img src={`${WIKIMEDIA}${card.file}`} alt={card.alt} />
+                  <div className="help-copy">
+                    <span className="help-tag">{card.tag}</span>
+                    <h3>{card.title}</h3>
+                    <p>{card.copy}</p>
+                    <Link className="btn" to={CONTACT}>
+                      {card.cta}
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Scenes from across Ghana ───────────────────────────────────── */}
+        <section className="gallery-section">
+          <div className="container">
+            <div className="gallery-head reveal">
+              <span className="label">Scenes from across Ghana</span>
+              <h2 className="title">Change is built side by side.</h2>
+              <p className="lead">
+                Real photographs of everyday life and community action across Ghana,
+                reflecting the people and places behind our mission.
+              </p>
+            </div>
+            <div className="impact-track" aria-label="Photographs of community life in Ghana">
+              <ImpactSet duplicate={false} />
+              <ImpactSet duplicate />
+            </div>
+          </div>
+        </section>
+
+        {/* ── Volunteer ──────────────────────────────────────────────────── */}
+        <section className="volunteer" id="get-involved">
+          <div className="container volunteer-shell reveal">
+            <div className="volunteer-photo">
+              <img
+                src={`${WIKIMEDIA}Cleanup%20exercise%20in%20Ghana%204.jpg?width=1100`}
+                alt="Volunteers taking part in a clean-up in Accra"
+              />
+            </div>
+            <div className="volunteer-copy">
+              <span className="label">Volunteer with us</span>
+              <h2 className="title">Give your time. Make a difference.</h2>
+              <p>
+                Meaningful change takes people who are ready to show up. Join the
+                Foundation's work and help turn care, experience and practical skills into
+                local action.
+              </p>
+              <ul className="volunteer-points">
+                {VOLUNTEER_POINTS.map((point) => (
+                  <li key={point}>
+                    <i>✓</i>
+                    {point}
+                  </li>
+                ))}
+              </ul>
+              <Link className="btn primary" to={CONTACT}>
+                Get involved
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Closing CTA ────────────────────────────────────────────────── */}
+        <section className="cta">
+          <div className="container cta-inner reveal">
+            <div>
+              <h2>Ready to make a difference?</h2>
+              <p>Every booking helps. Every contribution moves a journey forward.</p>
+            </div>
+            <Link className="btn" to={CONTACT}>
+              Contact the Foundation
+            </Link>
+          </div>
+        </section>
+      </main>
+
+      {/* ── Photography credits ──────────────────────────────────────────── */}
+      <div className="photo-attribution container">
+        <strong>Photography credits and context</strong>
+        <p>
+          Photographs were taken in Ghana and cropped for the layout. They illustrate the
+          Foundation’s areas of interest; people pictured are not identified as Foundation
+          participants or beneficiaries.{' '}
+          <a href="https://commons.wikimedia.org/wiki/File:Ghana%20school%20children%20%288203372110%29.jpg">
+            Ghana school children (8203372110)
+          </a>{' '}
+          by USAID in Africa (Public domain);{' '}
+          <a href="https://commons.wikimedia.org/wiki/File:Tree%20planting%20in%20Ghana%209.jpg">
+            Tree planting in Ghana 9
+          </a>{' '}
+          by Fquasie (CC BY-SA 4.0);{' '}
+          <a href="https://commons.wikimedia.org/wiki/File:Community%20clean-up.jpg">
+            Community clean-up
+          </a>{' '}
+          by Tahiru Rajab (CC BY-SA 4.0);{' '}
+          <a href="https://commons.wikimedia.org/wiki/File:Market%20women%20in%20Ghana.jpg">
+            Market women in Ghana
+          </a>{' '}
+          by Fquasie (CC BY-SA 4.0);{' '}
+          <a href="https://commons.wikimedia.org/wiki/File:A%20village%20community%20development%20meeting%20in%20northern%20Ghana.jpg">
+            A village community development meeting in northern Ghana
+          </a>{' '}
+          by Qulat96 (CC BY-SA 4.0);{' '}
+          <a href="https://commons.wikimedia.org/wiki/File:A%20teacher%20assisting%20his%20student%20to%20read.jpg">
+            A teacher assisting his student to read
+          </a>{' '}
+          by Alhassan Musah Amk (CC BY-SA 4.0);{' '}
+          <a href="https://commons.wikimedia.org/wiki/File:Students%20reading%20in%20a%20classroom.jpg">
+            Students reading in a classroom
+          </a>{' '}
+          by Bright Kwame Ayisi (CC0 1.0);{' '}
+          <a href="https://commons.wikimedia.org/wiki/File:Wali_physical_meeting.jpg">
+            Wali physical meeting
+          </a>{' '}
+          by Zakaria Tunsung (CC0 1.0);{' '}
+          <a href="https://commons.wikimedia.org/wiki/File:Cleanup%20exercise%20in%20Ghana%209.jpg">
+            Cleanup exercise in Ghana 9
+          </a>{' '}
+          by Esthee2010 (CC BY-SA 4.0);{' '}
+          <a href="https://commons.wikimedia.org/wiki/File:Schoolgirl%20Ghana.jpg">
+            Schoolgirl Ghana
+          </a>{' '}
+          by Inonotus (CC BY 4.0);{' '}
+          <a href="https://commons.wikimedia.org/wiki/File:Ghana%20tree%20planting.jpg">
+            Ghana tree planting
+          </a>{' '}
+          by Antorsu10 (CC BY-SA 4.0);{' '}
+          <a href="https://commons.wikimedia.org/wiki/File:Ghana%20young%20women%20%287250530402%29.jpg">
+            Ghana young women (7250530402)
+          </a>{' '}
+          by USAID in Africa (Public domain);{' '}
+          <a href="https://commons.wikimedia.org/wiki/File:Cleanup%20exercise%20in%20Ghana%204.jpg">
+            Cleanup exercise in Ghana 4
+          </a>{' '}
+          by Esthee2010 (CC BY-SA 4.0). Individual licenses and source details are available
+          through the linked photo pages.
+        </p>
+      </div>
+
+      </div>
+      <Footer />
+    </>
   )
 }
