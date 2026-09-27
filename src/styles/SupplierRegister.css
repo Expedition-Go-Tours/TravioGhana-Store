@@ -60,7 +60,7 @@
       position:sticky;top:22px;align-self:start;padding:24px;min-height:calc(100vh - 44px);
       display:flex;flex-direction:column;overflow:hidden;
     }.srp-page .sidebar::before{
-      content:"";position:absolute;inset:0 0 auto 0;height:170px;
+      content:"";position:absolute;inset:0 0 auto 0;height:170px;border-radius:inherit;
       background:linear-gradient(145deg,rgba(8,119,71,.07),rgba(242,200,75,.05));pointer-events:none;
     }.srp-page .brand{display:flex;align-items:center;gap:12px;margin-bottom:24px;position:relative;z-index:1}.srp-page .brand-mark{
       width:44px;height:44px;border-radius:15px;display:grid;place-items:center;position:relative;overflow:hidden;
