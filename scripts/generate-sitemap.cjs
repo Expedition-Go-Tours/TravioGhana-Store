@@ -19,7 +19,32 @@ const https = require('https');
 const http = require('http');
 
 const SITE_URL = (process.env.SITE_URL || 'https://www.travioghana.com').replace(/\/+$/, '');
-const API_URL = (process.env.API_URL || process.env.VITE_API_URL || 'https://apiv1.travioafrica.com').replace(/\/+$/, '');
+const API_ROOT = (process.env.API_URL || process.env.VITE_API_URL || 'https://apiv1.travioafrica.com').replace(/\/+$/, '');
+const BRAND = 'travioghana';
+
+/**
+ * The brand-scoped catalogue base, e.g. https://apiv1.travioafrica.com/api/travioghana
+ *
+ * API_URL is not one shape. In production Vercel sets it to the brand-scoped
+ * value the app itself uses (`VITE_API_URL` =
+ * https://apiv1.travioafrica.com/api/travioghana), while the local default is a
+ * bare origin. Appending the brand path unconditionally to the former produced
+ * /api/travioghana/api/travioghana/tours/sitemap, which 404s — and because a
+ * failed fetch deliberately falls back to the last good sitemap rather than
+ * overwriting it, that failure was invisible: the build printed one ERROR line
+ * and shipped a sitemap frozen to whenever it was last written by hand. New
+ * tours were never discovered by Google.
+ *
+ * Normalise all three shapes (bare origin, /api, /api/<brand>) to the one the
+ * endpoints actually live at.
+ */
+function brandApiBase() {
+  if (new RegExp(`/api/${BRAND}$`, 'i').test(API_ROOT)) return API_ROOT;
+  if (/\/api$/i.test(API_ROOT)) return `${API_ROOT}/${BRAND}`;
+  return `${API_ROOT}/api/${BRAND}`;
+}
+
+const API_URL = brandApiBase();
 const OUTPUT = path.resolve(__dirname, '../public/sitemap.xml');
 
 function fetchJson(url) {
@@ -125,7 +150,7 @@ async function main() {
   let tourEntries = [];
   let places = [];
   try {
-    const data = await fetchJson(`${API_URL}/api/travioghana/tours/sitemap`);
+    const data = await fetchJson(`${API_URL}/tours/sitemap`);
     tourEntries = (data?.data?.urls || [])
       .filter((t) => t?.slug)
       .map((t) => ({
@@ -138,7 +163,7 @@ async function main() {
       }));
 
     // Destination pages — real, prerender-backed listings
-    const listData = await fetchJson(`${API_URL}/api/travioghana/tours?limit=50`);
+    const listData = await fetchJson(`${API_URL}/tours?limit=50`);
     const placeSet = new Set();
     for (const listing of listData?.data?.tours || []) {
       const tour = listing.tour || listing;
