@@ -13,6 +13,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
+import SEO from '../components/SEO'
 import travioLogoSrc from '../assets/TravioGhana_Logo.svg'
 import '../styles/partner-pages.css'
 import '../styles/TravelAgents.css'
@@ -164,6 +165,22 @@ export default function TravelAgentsPage() {
   return (
     <div className="ta-page" ref={pageRef}>
       <main>
+        <SEO
+          title="Travel Agent & Reseller Programme — Partner Rates on Ghana Tours"
+          description="Access reduced partner rates on Ghana tours and experiences. Plan trips, manage client bookings and keep your margins clear in one agent workspace."
+          keywords="travel agent Ghana, tour operator partner rates Ghana, Ghana resell tours, travel agent programme Ghana, wholesale Ghana tours, affiliate Ghana tours"
+          jsonLd={[
+            {
+              '@context': 'https://schema.org',
+              '@type': 'WebPage',
+              name: 'Travel Agent & Reseller Programme',
+              description:
+                'Access reduced partner rates on Ghana tours and experiences. Plan trips, manage client bookings and keep your margins clear in one agent workspace.',
+              url: 'https://www.travioghana.com/travel-agents',
+              about: { '@type': 'Organization', name: 'Travio Ghana', url: 'https://www.travioghana.com' },
+            },
+          ]}
+        />
         {/* ── Hero ───────────────────────────────────────────────────────── */}
         <section className="hero">
           <div className="container hero-grid">

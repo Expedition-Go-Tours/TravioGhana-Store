@@ -284,7 +284,7 @@ export default function FoundationPage() {
           16px DM Sans context, and the footer should not inherit it. */}
       <div className="fnd-page" ref={pageRef}>
       <SEO
-        title="Travio Ghana Foundation | Every Journey Makes a Difference"
+        title="Every Journey Makes a Difference"
         description="The Travio Ghana Foundation turns every booking into positive impact for individuals, communities and community-led projects across Ghana."
         keywords="Travio Ghana Foundation, Ghana community support, sustainable tourism Ghana, travel foundation Ghana, community impact Ghana"
         jsonLd={[

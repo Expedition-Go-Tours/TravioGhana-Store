@@ -12,6 +12,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Footer from '../components/Footer'
+import SEO from '../components/SEO'
 import '../styles/partner-pages.css'
 import '../styles/TransportProviders.css'
 
@@ -165,6 +166,22 @@ export default function TransportProviderPage() {
   return (
     <div ref={pageRef} className={motionPaused ? 'tp-page tp-motion-paused' : 'tp-page'}>
       <main>
+        <SEO
+          title="Become a Transport Partner in Ghana — List Your Fleet"
+          description="From an airport welcome in Accra to the road north, your fleet helps people experience more of Ghana. Bring your vehicles and local knowledge and grow with the travellers already planning their trip."
+          keywords="transport partner Ghana, list taxi Ghana, Ghana tour vehicle, airport transfer Ghana, transport provider Ghana, fleet partnership Ghana"
+          jsonLd={[
+            {
+              '@context': 'https://schema.org',
+              '@type': 'WebPage',
+              name: 'Transport Partners',
+              description:
+                'From an airport welcome in Accra to the road north, your fleet helps people experience more of Ghana. Bring your vehicles and local knowledge, and grow with the travellers already planning their trip.',
+              url: 'https://www.travioghana.com/transport-providers',
+              about: { '@type': 'Organization', name: 'Travio Ghana', url: 'https://www.travioghana.com' },
+            },
+          ]}
+        />
         {/* ── Hero ─────────────────────────────────────────────────────── */}
         <section className="hero ghana-hero">
           <div className="wrap hero-inner ghana-hero-grid">

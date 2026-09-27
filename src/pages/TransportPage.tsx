@@ -9,6 +9,7 @@ import {
 import heroBg from '../assets/images/IMG_3538.webp'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import SEO from '../components/SEO'
 import { useAuthUser } from '../hooks/useAuthUser'
 import { setAuthReturnTo } from '../lib/auth'
 import './TransportPage.css'
@@ -85,6 +86,22 @@ export default function TransportPage({ onOpenAuth }: TransportPageProps) {
 
   return (
     <div className="transport-page">
+      <SEO
+        title="Airport Transfers & Transport in Ghana — Seamless Travel"
+        description="Connect your fleet with thousands of travellers looking for reliable transport across every destination in Ghana. Airport transfers, intercity journeys and group movement, booked in one place."
+        keywords="Ghana airport transfer, Accra airport taxi, Ghana transport booking, intercity transport Ghana, group travel transport Ghana, reliable transport solutions Ghana"
+        jsonLd={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'WebPage',
+            name: 'Transport & Airport Transfers in Ghana',
+            description:
+              'Connect your fleet with thousands of travellers looking for reliable transport solutions across every destination.',
+            url: 'https://www.travioghana.com/transport',
+            about: { '@type': 'Organization', name: 'Travio Ghana', url: 'https://www.travioghana.com' },
+          },
+        ]}
+      />
       <Navbar onOpenAuth={onOpenAuth} />
 
       {/* Hero — full-width image background */}

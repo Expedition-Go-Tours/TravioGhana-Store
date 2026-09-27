@@ -22,6 +22,29 @@ const SKIP_PATHS = [
   '/payment-methods', '/supplier/register', '/supplier/list-experience',
 ]
 
+/**
+ * Routes served to crawlers from the build-time prerender (scripts/prerender-
+ * static.mjs) instead of the backend. Those files are the real app, rendered,
+ * so their copy cannot drift from what a visitor sees — the backend's
+ * hand-maintained fallback for these routes had drifted badly enough to
+ * contradict the live pages (it still called the foundation "Expedition-Go
+ * Foundation"), and thin body copy is what kept the site out of the index.
+ *
+ * Anything not in this list falls through to the backend prerenderer, which
+ * still owns /tour/<slug> (live prices and availability), /tours and the
+ * ?place= destination listings (live catalogue), and the 404.
+ *
+ * Kept in step with ROUTES in scripts/prerender-static.mjs and STATIC_PAGES in
+ * scripts/generate-sitemap.cjs; a unit test asserts the three agree.
+ */
+const PRERENDER_ROUTES = new Set([
+  '/', '/about-us', '/blog', '/reviews', '/foundation', '/careers',
+  '/partnerships', '/faq', '/help-centre', '/contact-us', '/transport',
+  '/content-creators', '/hotels', '/transport-providers', '/travel-agents',
+  '/refund-policy', '/privacy-policy', '/cookies-policy',
+  '/terms-and-conditions', '/supplier-terms',
+])
+
 const STATIC_EXTS = [
   '.xml', '.txt', '.json', '.png', '.jpg', '.jpeg', '.svg', '.gif',
   '.webp', '.ico', '.css', '.js', '.woff', '.woff2', '.ttf', '.eot',
@@ -75,6 +98,20 @@ export default function middleware(request) {
         status: 200,
         headers: {
           'x-middleware-rewrite': `/stories/${encodeURIComponent(storySlug)}.html`,
+          'X-Prerender-Bot': 'true',
+        },
+      })
+    }
+
+    // The real app, rendered at build time. Served only to bots; humans keep
+    // the SPA shell. Path shape mirrors what the prerenderer writes
+    // (dist/__seo/<route>/index.html, and dist/__seo/index.html for /).
+    if (PRERENDER_ROUTES.has(pathname)) {
+      const dir = pathname === '/' ? '/__seo' : `/__seo${pathname}`
+      return new Response(null, {
+        status: 200,
+        headers: {
+          'x-middleware-rewrite': `${dir}/index.html`,
           'X-Prerender-Bot': 'true',
         },
       })

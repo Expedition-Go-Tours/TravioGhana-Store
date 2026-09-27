@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { setAuthReturnTo } from '../lib/auth'
 import Footer from '../components/Footer'
+import SEO from '../components/SEO'
 import RevealOnScroll from '../components/shared/RevealOnScroll'
 import FAQAccordion from '../components/shared/FAQAccordion'
 import '../styles/partner-pages.css'
@@ -68,6 +69,22 @@ export default function ContentCreatorsPage({ onOpenAuth }: ContentCreatorsPageP
 
   return (
     <main>
+      <SEO
+        title="Ghana Content Creator Programme — Earn on Travel Content"
+        description="Join the Travio Ghana creator programme. Feature authentic Ghana travel experiences, earn commission on every booking your audience makes, and get transparent payouts plus dedicated creator support."
+        keywords="Ghana content creator programme, travel creator Ghana, Ghana travel influencer, earn from travel content Ghana, Ghana creator commission"
+        jsonLd={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'WebPage',
+            name: 'Ghana Content Creator Programme',
+            description:
+              'Join the Travio Ghana creator programme, feature authentic travel experiences in Ghana and earn commission on every booking your audience makes.',
+            url: 'https://www.travioghana.com/content-creators',
+            about: { '@type': 'Organization', name: 'Travio Ghana', url: 'https://www.travioghana.com' },
+          },
+        ]}
+      />
       {/* ── Hero (centred) ──────────────────────────────── */}
       <section className="cc-hero">
         <div className="cc-hero-copy">

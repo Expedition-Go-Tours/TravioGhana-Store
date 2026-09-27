@@ -11,6 +11,11 @@ Disallow: /payment-methods
 Disallow: /supplier/register
 Disallow: /supplier/list-experience
 
+# Build-time prerender output. middleware.ts serves these files to crawlers at
+# the real URL (/about-us etc.), so this prefix is never a page anyone should
+# fetch or index directly — it would be a duplicate of a live URL.
+Disallow: /__seo/
+
 User-agent: Googlebot
 Allow: /
 
