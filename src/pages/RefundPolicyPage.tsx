@@ -19,9 +19,11 @@ export default function RefundPolicyPage() {
         ])}
       />
       <div className="support-hero">
-        <div className="support-hero-content">
-          <h1 className="support-title">{t('footer.refundPolicy')}</h1>
-          <p className="support-subtitle">{t('support.refundPolicySubtitle')}</p>
+        <div className="support-container">
+          <div className="support-hero-inner">
+            <h1 className="support-title">{t('footer.refundPolicy')}</h1>
+            <p className="support-subtitle">{t('support.refundPolicySubtitle')}</p>
+          </div>
         </div>
       </div>
 
