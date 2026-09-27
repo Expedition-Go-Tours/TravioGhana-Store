@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from 'react'
+import { canAttemptChunkReload, markChunkReload } from '../lib/chunkReloadGuard'
 
 interface RouteErrorBoundaryProps {
   children: ReactNode
@@ -22,8 +23,10 @@ export function isChunkLoadError(error: unknown): boolean {
   return CHUNK_LOAD_ERROR.test(error.message)
 }
 
-// Auto-recover once per page life: after the reload the fresh manifest is in
-// place, so if a chunk error still surfaces it is a real bug (shown normally).
+// Auto-recover for a stale deploy. The budget lives in chunkReloadGuard so the
+// `vite:preloadError` handler and this boundary share one cooldown — a module
+// flag here reset on every reload, so a chunk that is genuinely gone would
+// reload forever instead of ever showing this screen.
 let chunkReloadAttempted = false
 
 /**
@@ -48,9 +51,11 @@ export default class RouteErrorBoundary extends Component<RouteErrorBoundaryProp
     console.error('[RouteErrorBoundary] Page crashed during navigation:', error, info)
 
     // Stale chunk after a redeploy: a reload fetches the current index.html
-    // manifest and the route works again. Guarded so it never loops.
-    if (isChunkLoadError(error) && !chunkReloadAttempted) {
+    // manifest and the route works again. `canAttemptChunkReload` is the shared
+    // cooldown, so this can never become a reload loop.
+    if (isChunkLoadError(error) && !chunkReloadAttempted && canAttemptChunkReload()) {
       chunkReloadAttempted = true
+      markChunkReload()
       window.location.reload()
     }
   }
