@@ -53,9 +53,13 @@ import { fileURLToPath } from 'node:url'
 import puppeteer from 'puppeteer'
 
 const require = createRequire(import.meta.url)
-const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)))
-const DIST = join(ROOT, 'dist')
-const OUT_ROOT = join(DIST, '__seo')
+// Resolved lazily rather than at module scope: the test suite imports this file
+// for its exported helpers, and vitest's transform gives import.meta a URL that
+// fileURLToPath rejects. Nothing here needs the filesystem until a build runs.
+let cachedRoot = null
+const ROOT_DIR = () => (cachedRoot ??= resolve(fileURLToPath(new URL('..', import.meta.url))))
+const DIST = () => join(ROOT_DIR(), 'dist')
+const OUT_ROOT = () => join(DIST(), '__seo')
 
 /**
  * Fixed marketing + legal routes. Must stay in step with the prerender route
@@ -138,10 +142,10 @@ function startServer() {
     }
 
     // Real files win; extensionless paths fall back to the SPA shell.
-    let file = join(DIST, pathname)
+    let file = join(DIST(), pathname)
     if (!isFile(file)) {
       const asIndex = join(file, 'index.html')
-      file = isFile(asIndex) ? asIndex : join(DIST, 'index.html')
+      file = isFile(asIndex) ? asIndex : join(DIST(), 'index.html')
     }
     if (!isFile(file)) {
       res.writeHead(404).end('not found')
@@ -194,6 +198,32 @@ function audit() {
   }
 }
 
+const escapeHtml = (s) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+/**
+ * Leave exactly one <title>, holding the page's real one.
+ *
+ * index.html ships a static fallback title, and Helmet adds its own on top
+ * rather than replacing it — so the serialised head came out with two. On the
+ * client that is invisible, because `document.title` reads the first element
+ * and the fallback is never displayed. In the prerendered HTML it is very
+ * visible: crawlers are handed a second, generic title for the page, which is
+ * how you end up with duplicate-title warnings in Search Console and a
+ * watered-down snippet on the one page you most wanted indexed.
+ *
+ * The first element is the Helmet one (that is what `document.title` returned,
+ * hence the value passed in), so keep that position and drop the rest.
+ */
+export function dedupeTitle(html, title) {
+  let kept = false
+  return html.replace(/<title[^>]*>[\s\S]*?<\/title>/gi, () => {
+    if (kept) return ''
+    kept = true
+    return `<title>${escapeHtml(title)}</title>`
+  })
+}
+
 async function renderRoute(browser, origin, route) {
   const page = await browser.newPage()
   try {
@@ -226,14 +256,18 @@ async function renderRoute(browser, origin, route) {
     })
     await new Promise((r) => setTimeout(r, 400))
 
-    return await page.evaluate(audit)
+    const result = await page.evaluate(audit)
+    // Applied here rather than inside evaluate(): this runs in Node, while
+    // evaluate()'s body runs in the browser and cannot reach module scope.
+    result.html = dedupeTitle(result.html, result.title)
+    return result
   } finally {
     await page.close()
   }
 }
 
 function writeRoute(route, html) {
-  const dir = route === '/' ? OUT_ROOT : join(OUT_ROOT, route.replace(/^\//, ''))
+  const dir = route === '/' ? OUT_ROOT() : join(OUT_ROOT(), route.replace(/^\//, ''))
   mkdirSync(dir, { recursive: true })
   const file = join(dir, 'index.html')
   writeFileSync(file, html, 'utf8')
@@ -412,7 +446,7 @@ async function main() {
     console.warn('[prerender] PRERENDER_SKIP=1 — skipped on purpose. Bots get the backend fallback.')
     return
   }
-  if (!existsSync(join(DIST, 'index.html'))) {
+  if (!existsSync(join(DIST(), 'index.html'))) {
     console.warn('[prerender] dist/index.html not found — run `vite build` first. Skipping.')
     return
   }
@@ -421,9 +455,9 @@ async function main() {
     : ROUTES
 
   // Clear a previous run so a removed route cannot survive as a stale file.
-  if (existsSync(OUT_ROOT)) {
-    for (const entry of readdirSync(OUT_ROOT)) {
-      rmSync(join(OUT_ROOT, entry), { recursive: true, force: true })
+  if (existsSync(OUT_ROOT())) {
+    for (const entry of readdirSync(OUT_ROOT())) {
+      rmSync(join(OUT_ROOT(), entry), { recursive: true, force: true })
     }
   }
 
@@ -466,9 +500,9 @@ async function main() {
   for (const r of results) {
     console.log(`[prerender] ${String(r.words).padStart(5)}w  ld:${r.jsonLd}  ${r.route}  — ${r.title}`)
   }
-  mkdirSync(OUT_ROOT, { recursive: true })
+  mkdirSync(OUT_ROOT(), { recursive: true })
   writeFileSync(
-    join(OUT_ROOT, 'manifest.json'),
+    join(OUT_ROOT(), 'manifest.json'),
     JSON.stringify({ generatedFor: routes.length, written: results.length, skipped: failures, routes: results }, null, 2),
     'utf8'
   )
@@ -485,26 +519,30 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  if (err instanceof BrowserUnavailableError) {
-    // Every other failure stays soft, because the backend prerenderer remains
-    // a correct fallback for each route. This one is different: no browser
-    // means no route is prerendered at all, and shipping that quietly is the
-    // failure mode that hid this in the first place. A red build is better
-    // than a green one that reverted the fix.
-    console.error(
-      [
-        '',
-        '[prerender] FAILED — no browser, so zero routes were prerendered.',
-        `  ${err.message}`,
-        '  dist/__seo/ is empty: every bot will be served the thin fallback and',
-        '  this deploy will undo the fix. Fix the browser, or set',
-        '  PRERENDER_SKIP=1 to opt out knowingly (the backend still prerenders).',
-        '',
-      ].join('\n')
-    )
-    process.exit(1)
-  }
-  // A single bad route must not block a release: the backend still covers it.
-  console.warn(`[prerender] aborted, continuing without static prerender: ${err.message}`)
-})
+// Only prerender when run as a script. Exporting the head helpers lets the
+// tests exercise them directly; importing this file must not launch a browser.
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch((err) => {
+    if (err instanceof BrowserUnavailableError) {
+      // Every other failure stays soft, because the backend prerenderer remains
+      // a correct fallback for each route. This one is different: no browser
+      // means no route is prerendered at all, and shipping that quietly is the
+      // failure mode that hid this in the first place. A red build is better
+      // than a green one that reverted the fix.
+      console.error(
+        [
+          '',
+          '[prerender] FAILED — no browser, so zero routes were prerendered.',
+          `  ${err.message}`,
+          '  dist/__seo/ is empty: every bot will be served the thin fallback and',
+          '  this deploy will undo the fix. Fix the browser, or set',
+          '  PRERENDER_SKIP=1 to opt out knowingly (the backend still prerenders).',
+          '',
+        ].join('\n')
+      )
+      process.exit(1)
+    }
+    // A single bad route must not block a release: the backend still covers it.
+    console.warn(`[prerender] aborted, continuing without static prerender: ${err.message}`)
+  })
+}

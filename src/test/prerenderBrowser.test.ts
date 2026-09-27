@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+// @ts-expect-error — plain .mjs build script, no type declarations
+import { dedupeTitle } from '../../scripts/prerender-static.mjs'
 
 /**
  * Guards the one prerender failure that must never be silent.
@@ -51,5 +53,44 @@ describe('prerender browser failure handling', () => {
 
   it('offers an explicit opt-out rather than failing by accident', () => {
     expect(source).toMatch(/PRERENDER_SKIP/)
+  })
+})
+
+/**
+ * index.html ships a static fallback <title>, and Helmet adds the real one
+ * without removing it, so the serialised head carried two. Crawlers were being
+ * handed a generic second title for pages whose whole point is their snippet.
+ */
+describe('dedupeTitle', () => {
+  const FALLBACK = 'Ghana Tours &amp; Activities | Discover Experiences'
+  const head = (inner: string) => `<html><head>${inner}</head><body></body></html>`
+
+  it('keeps only the first title, the one document.title reported', () => {
+    const out = dedupeTitle(
+      head(`<title>Real Page Title</title><title>${FALLBACK}</title>`),
+      'Real Page Title'
+    )
+    expect(out.match(/<title>/g)).toHaveLength(1)
+    expect(out).toContain('<title>Real Page Title</title>')
+    expect(out).not.toContain(FALLBACK)
+  })
+
+  it('drops every extra title when more than two are present', () => {
+    const out = dedupeTitle(
+      head(`<title>One</title><title>Two</title><title>${FALLBACK}</title>`),
+      'One'
+    )
+    expect(out.match(/<title>/g)).toHaveLength(1)
+  })
+
+  it('is a no-op when the page has a single title', () => {
+    const input = head('<title>Only One</title>')
+    expect(dedupeTitle(input, 'Only One')).toBe(input)
+  })
+
+  it('does not let a title break out of its own tag', () => {
+    const out = dedupeTitle(head('<title>a</title>'), '</title><script>x</script>')
+    expect(out).toContain('&lt;/title&gt;')
+    expect(out).not.toContain('<script>')
   })
 })
