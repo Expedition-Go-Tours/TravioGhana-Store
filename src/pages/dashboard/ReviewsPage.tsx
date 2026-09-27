@@ -1,4 +1,4 @@
-﻿import { useState, lazy, Suspense } from "react";
+﻿import { useState, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp } from "lucide-react";
@@ -6,10 +6,9 @@ import { Button } from "@/components/ui/button";
 import StarRating from "@/components/StarRating";
 import { useMyReviews } from "../../hooks/useExpeditionReviews";
 import OptimizedImage from "@/components/shared/OptimizedImage";
+import { safeLazy } from "@/lib/safeLazy";
 
-const DotLottieReact = lazy(() =>
-  import('@lottiefiles/dotlottie-react').then((m) => ({ default: m.DotLottieReact }))
-)
+const DotLottieReact = safeLazy(() => import('@lottiefiles/dotlottie-react'), 'DotLottieReact')
 
 export default function ReviewsPage() {
   const navigate = useNavigate();

@@ -1,4 +1,4 @@
-﻿import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+﻿import { Suspense, useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Info } from 'lucide-react'
 import { Button } from '../components/ui/button'
@@ -11,10 +11,9 @@ import { useSellOutContext } from '../context/SellOutContext'
 import { useHomepageOffers } from '../hooks/useHomepageSections'
 import type { SpecialOfferData } from '../hooks/useExpeditionTours'
 import './Wishlist.css'
+import { safeLazy } from '../lib/safeLazy'
 
-const DotLottieReact = lazy(() =>
-  import('@lottiefiles/dotlottie-react').then((m) => ({ default: m.DotLottieReact }))
-)
+const DotLottieReact = safeLazy(() => import('@lottiefiles/dotlottie-react'), 'DotLottieReact')
 
 /**
  * The dashboard column is max 1200px wide, so the saved grid is 3-up on

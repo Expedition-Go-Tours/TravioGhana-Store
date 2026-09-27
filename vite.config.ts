@@ -70,6 +70,10 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    // One React instance, always. A second copy (from a nested install or a
+    // duplicated chunk) breaks hooks and React.lazy in ways that surface as
+    // "reading 'default' of undefined" deep inside lazyInitializer.
+    dedupe: ['react', 'react-dom', 'react-router', 'react-router-dom'],
   },
   optimizeDeps: {
     // maplibre-gl spawns its render worker via `new URL('./maplibre-gl-worker.mjs',
@@ -85,7 +89,13 @@ export default defineConfig({
         manualChunks(id: string) {
           if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/') || id.includes('node_modules/react-router')) return 'vendor-react'
           if (id.includes('node_modules/framer-motion') || id.includes('node_modules/lucide-react')) return 'vendor-ui'
-          if (id.includes('node_modules/@tanstack/react-query') || id.includes('node_modules/zustand')) return 'vendor-data'
+          // react-query and zustand live in vendor-react, not their own chunk.
+          // Rolldown hoists React's shared CJS wrapper into whichever chunk
+          // requires it first; a separate vendor-data chunk made it emit React
+          // core there while react-dom imported it back, which is the layout
+          // behind the production "reading 'default' of undefined" crash in
+          // React.lazy. Keeping React and its consumers in one chunk removes it.
+          if (id.includes('node_modules/@tanstack/react-query') || id.includes('node_modules/zustand')) return 'vendor-react'
           if (id.includes('node_modules/i18next') || id.includes('node_modules/react-i18next')) return 'vendor-i18n'
         },
       },

@@ -1,9 +1,8 @@
-import { lazy, Suspense } from 'react'
+import { Suspense } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
+import { safeLazy } from '@/lib/safeLazy'
 
-const DotLottieReact = lazy(() =>
-  import('@lottiefiles/dotlottie-react').then((m) => ({ default: m.DotLottieReact }))
-)
+const DotLottieReact = safeLazy(() => import('@lottiefiles/dotlottie-react'), 'DotLottieReact')
 
 /**
  * On-brand static fallback (also used for prefers-reduced-motion): a little

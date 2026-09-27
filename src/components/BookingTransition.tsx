@@ -1,8 +1,9 @@
-import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
+import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
 import type { DotLottie } from '@lottiefiles/dotlottie-react'
 import { isMobileViewport, prefersReducedData, prefersReducedMotion } from '../lib/perfProfile'
+import { safeLazy } from '../lib/safeLazy'
 import './BookingTransition.css'
 
 /**
@@ -33,14 +34,25 @@ import './BookingTransition.css'
 // animation would never appear and the overlay would sit on the CSS fallback.
 // Only fetched when this chunk is actually used, versioned + cache-busted by
 // Vite, and served from our own origin.
-const DotLottieReact = lazy(() =>
-  Promise.all([
-    import('@lottiefiles/dotlottie-react'),
-    import('@lottiefiles/dotlottie-web/dotlottie-player.wasm?url'),
-  ]).then(([mod, wasm]) => {
-    mod.setWasmUrl(wasm.default)
-    return { default: mod.DotLottieReact }
-  }),
+const DotLottieReact = safeLazy(
+  () =>
+    Promise.all([
+      import('@lottiefiles/dotlottie-react'),
+      import('@lottiefiles/dotlottie-web/dotlottie-player.wasm?url'),
+    ]).then(([mod, wasm]) => {
+      // The side effect is best-effort: if the wasm URL or setWasmUrl is
+      // missing, the player falls back to its own CDN default rather than
+      // rejecting the whole import (which used to surface as a render crash).
+      try {
+        const wasmUrl = (wasm as { default?: string } | undefined)?.default
+        const setWasmUrl = (mod as { setWasmUrl?: (u?: string) => void } | undefined)?.setWasmUrl
+        if (wasmUrl && typeof setWasmUrl === 'function') setWasmUrl(wasmUrl)
+      } catch {
+        /* best effort — see above */
+      }
+      return mod
+    }),
+  'DotLottieReact',
 )
 
 const REDUCED_MOTION = prefersReducedMotion()
