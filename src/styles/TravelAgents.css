@@ -54,3 +54,50 @@
 .ta-page :is(h1, h2, h3, h4) {
   font-weight: 700;
 }
+
+/* ── FAQ rows ────────────────────────────────────────────────────────
+   The template renders the accordion as a flat list: every row is separated
+   by a 1px rule and carries no horizontal padding (faq-question is
+   "padding: 23px 0"), so the questions sit flush against the column edge.
+   Give each row the same card treatment the rest of this page uses
+   (.benefit-card / .step-card are 1px + 24px radius + 27px padding). */
+.ta-page .accordion {
+  display: grid;
+  gap: 14px;
+  border-top: 0;
+}
+.ta-page .faq-item {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+.ta-page .faq-item:hover {
+  border-color: #c6d9cd;
+}
+.ta-page .faq-item.open {
+  border-color: #bcd4c6;
+  box-shadow: 0 16px 40px rgba(8, 65, 40, 0.07);
+}
+.ta-page .faq-question {
+  padding: 20px 24px;
+}
+/* The index and the question share a baseline instead of the index floating at
+   the top of the row, which it did with the template's align-items:flex-start
+   once the two type sizes differ. */
+.ta-page .faq-question span:first-child {
+  align-items: baseline;
+}
+.ta-page .faq-answer p {
+  /* Indented under the question text, past the 01 index and its 12px gap. */
+  padding: 0 24px 22px 51px;
+}
+
+@media (max-width: 560px) {
+  .ta-page .faq-question {
+    padding: 17px 18px;
+  }
+  .ta-page .faq-answer p {
+    padding: 0 18px 19px 44px;
+  }
+}
