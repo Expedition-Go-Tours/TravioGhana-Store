@@ -45,11 +45,14 @@
  */
 
 import { createServer } from 'node:http'
+import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
-import { extname, join, resolve } from 'node:path'
+import { createRequire } from 'node:module'
+import { dirname, extname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import puppeteer from 'puppeteer'
 
+const require = createRequire(import.meta.url)
 const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const DIST = join(ROOT, 'dist')
 const OUT_ROOT = join(DIST, '__seo')
@@ -237,7 +240,75 @@ function writeRoute(route, html) {
   return file
 }
 
+const LAUNCH_ARGS = ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
+
+/**
+ * Raised when no browser could be obtained at all — the one prerender failure
+ * that must not be silent. See ensureBrowser().
+ */
+class BrowserUnavailableError extends Error {}
+
+function launch() {
+  return puppeteer.launch({ headless: true, args: LAUNCH_ARGS })
+}
+
+/** Path to puppeteer's own CLI, taken from its declared bin so it survives moves. */
+function puppeteerCli() {
+  const pkgPath = require.resolve('puppeteer/package.json')
+  const pkg = require('puppeteer/package.json')
+  const bin = typeof pkg.bin === 'string' ? pkg.bin : pkg.bin.puppeteer
+  return join(dirname(pkgPath), bin)
+}
+
+/**
+ * Get a usable browser, or fail loudly.
+ *
+ * npm 11 gates lifecycle scripts behind `allowScripts` and prints
+ *   npm warn install-scripts   puppeteer@25.11.0 (postinstall: node install.mjs)
+ * without running them. That postinstall is the step that downloads Chromium,
+ * so on a clean Vercel build puppeteer is installed but has no browser to
+ * launch. The first version of this script launched once and let the error
+ * escape to a catch-all that warned and returned 0 — so the build went green
+ * and shipped with dist/__seo/ empty, silently reintroducing the exact
+ * thin-content bug the prerender exists to fix. Nobody would have seen it
+ * except by reading the live word count.
+ *
+ * So: try, and on failure install the browser explicitly via the CLI (an
+ * explicit invocation is not gated by allowScripts), then retry. If there is
+ * still no browser, throw — a deploy that cannot prerender must say so rather
+ * than pretend it did.
+ */
+async function ensureBrowser() {
+  try {
+    return await launch()
+  } catch (firstErr) {
+    console.warn(`[prerender] no browser available (${firstErr.message.split('\n')[0]}) — installing one`)
+  }
+
+  try {
+    console.log('[prerender] running: puppeteer browsers install chrome')
+    execFileSync(process.execPath, [puppeteerCli(), 'browsers', 'install', 'chrome'], {
+      stdio: 'inherit',
+      env: process.env,
+    })
+  } catch (err) {
+    throw new BrowserUnavailableError(
+      `could not download a browser: ${err.message.split('\n')[0]}`
+    )
+  }
+
+  try {
+    return await launch()
+  } catch (err) {
+    throw new BrowserUnavailableError(`still cannot launch after install: ${err.message.split('\n')[0]}`)
+  }
+}
+
 async function main() {
+  if (process.env.PRERENDER_SKIP === '1') {
+    console.warn('[prerender] PRERENDER_SKIP=1 — skipped on purpose. Bots get the backend fallback.')
+    return
+  }
   if (!existsSync(join(DIST, 'index.html'))) {
     console.warn('[prerender] dist/index.html not found — run `vite build` first. Skipping.')
     return
@@ -255,10 +326,7 @@ async function main() {
 
   const { server, port } = await startServer()
   const origin = `http://127.0.0.1:${port}`
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
-  })
+  const browser = await ensureBrowser()
 
   const results = []
   let failures = 0
@@ -305,9 +373,35 @@ async function main() {
     `[prerender] wrote ${results.length}/${routes.length} routes to dist/__seo/` +
       (failures ? ` (${failures} skipped — the backend prerenderer still covers them)` : '')
   )
+  if (results.length === 0) {
+    console.warn(
+      '[prerender] WARNING — every route was rejected. If this is not an API\n' +
+      '             outage, the pages have genuinely gone thin and the site has\n' +
+      '             lost the content this prerender exists to give crawlers.'
+    )
+  }
 }
 
 main().catch((err) => {
-  // Never fail a deploy over this: the backend prerenderer is the fallback.
+  if (err instanceof BrowserUnavailableError) {
+    // Every other failure stays soft, because the backend prerenderer remains
+    // a correct fallback for each route. This one is different: no browser
+    // means no route is prerendered at all, and shipping that quietly is the
+    // failure mode that hid this in the first place. A red build is better
+    // than a green one that reverted the fix.
+    console.error(
+      [
+        '',
+        '[prerender] FAILED — no browser, so zero routes were prerendered.',
+        `  ${err.message}`,
+        '  dist/__seo/ is empty: every bot will be served the thin fallback and',
+        '  this deploy will undo the fix. Fix the browser, or set',
+        '  PRERENDER_SKIP=1 to opt out knowingly (the backend still prerenders).',
+        '',
+      ].join('\n')
+    )
+    process.exit(1)
+  }
+  // A single bad route must not block a release: the backend still covers it.
   console.warn(`[prerender] aborted, continuing without static prerender: ${err.message}`)
 })
