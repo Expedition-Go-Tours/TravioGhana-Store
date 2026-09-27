@@ -134,3 +134,37 @@ describe('sitemap catalogue paging', () => {
     expect(script).not.toMatch(/\$\{API_URL\}\/api\/travioghana/)
   })
 })
+
+/**
+ * Every rewrite in the middleware is gated on the request method.
+ *
+ * Both gates used to read `request.method === 'GET'`, so a HEAD matched no rule
+ * at all and fell through to the static file lookup — which only the homepage
+ * can satisfy. Every other path answered 404 to HEAD. Googlebot only uses GET,
+ * so indexing was never affected, and that is exactly why it went unnoticed:
+ * the site looked correct to every crawler-based check. HEAD is what link
+ * checkers, uptime monitors and chat unfurlers use, and to all of them the
+ * whole site looked broken.
+ */
+describe('middleware method gates', () => {
+  const middleware = read('middleware.ts')
+
+  it('routes HEAD through the rewrites, not around them', () => {
+    expect(middleware).toMatch(/function isReadMethod\(method\)/)
+    expect(middleware).toMatch(/method === 'GET' \|\| method === 'HEAD'/)
+  })
+
+  it('gates no rewrite on GET alone', () => {
+    // The exact string that caused the 404. Any new rewrite must use the
+    // helper; this fails if someone reintroduces the bare check.
+    expect(middleware).not.toMatch(/request\.method === 'GET'/)
+  })
+
+  it('still rewrites bots before the SPA fallback, so a HEAD bot gets content', () => {
+    const bot = middleware.indexOf('isReadMethod(request.method) && isBot(ua)')
+    const spa = middleware.indexOf('isReadMethod(request.method) && !pathname.includes')
+    expect(bot).toBeGreaterThan(-1)
+    expect(spa).toBeGreaterThan(-1)
+    expect(bot, 'the bot branch must be evaluated first').toBeLessThan(spa)
+  })
+})

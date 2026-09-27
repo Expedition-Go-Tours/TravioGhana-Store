@@ -64,6 +64,22 @@ function isStatic(pathname) {
   return STATIC_EXTS.some((ext) => pathname.endsWith(ext))
 }
 
+/**
+ * Methods that resolve a request to a file. HEAD asks the same question as GET
+ * and differs only in the body, so it must reach the same rewrites.
+ *
+ * Both branches below used to be `GET`-only, which meant a HEAD fell through
+ * every rule and landed on a static lookup that only `/` can satisfy: every
+ * other path answered 404. Googlebot only ever uses GET so this never affected
+ * indexing, but link checkers, uptime monitors and the Slack/Discord/iMessage
+ * unfurlers all probe with HEAD, and each saw a site where every internal link
+ * was broken. It has been this way since the infrastructure was adopted, so it
+ * is a long-standing bug rather than a regression from the prerender work.
+ */
+function isReadMethod(method) {
+  return method === 'GET' || method === 'HEAD'
+}
+
 export default function middleware(request) {
   const url = new URL(request.url)
   const pathname = url.pathname
@@ -73,7 +89,7 @@ export default function middleware(request) {
   if (isStatic(pathname)) return
 
   // Bot detection: rewrite to prerender endpoint
-  if (request.method === 'GET' && isBot(ua) && !shouldSkip(pathname)) {
+  if (isReadMethod(request.method) && isBot(ua) && !shouldSkip(pathname)) {
     const target = `${pathname}${url.search}`
 
     // Stories are client-side data the backend cannot read, so the prerenderer
@@ -135,7 +151,7 @@ export default function middleware(request) {
   }
 
   // SPA routing: rewrite non-file requests to index.html
-  if (request.method === 'GET' && !pathname.includes('.')) {
+  if (isReadMethod(request.method) && !pathname.includes('.')) {
     const indexUrl = new URL('/index.html', request.url)
     return new Response(null, {
       status: 200,
