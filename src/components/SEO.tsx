@@ -183,6 +183,21 @@ export function buildBreadcrumbSchema(items: { name: string; url: string }[]) {
   }
 }
 
+/**
+ * The brand entity for a product, with the social profiles that connect it to
+ * the brand. A tour page has no top-level Organization of its own, so this
+ * nested node is the only place a crawler learns who sells the tour — and a
+ * bare name ties to nothing. Mirrors `brandOrganization` in the backend's
+ * prerenderController; the two must agree.
+ */
+function brandOrganization(): Record<string, unknown> {
+  return {
+    '@type': 'Organization',
+    name: SITE_NAME,
+    sameAs: [...BRAND_SOCIAL_URLS],
+  }
+}
+
 export function buildProductSchema(tour: {
   title: string
   description: string
@@ -205,13 +220,13 @@ export function buildProductSchema(tour: {
     url: tour.id
       ? `${SITE_URL}/tour/${encodeURIComponent(tour.id)}/${encodeURIComponent(tour.slug)}`
       : `${SITE_URL}/tour/${tour.slug}`,
-    brand: { '@type': 'Organization', name: SITE_NAME },
+    brand: brandOrganization(),
     offers: {
       '@type': 'Offer',
       price: tour.price,
       priceCurrency: tour.currency || 'USD',
       availability: 'https://schema.org/InStock',
-      seller: { '@type': 'Organization', name: SITE_NAME },
+      seller: brandOrganization(),
     },
   }
 

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { BRAND_SOCIAL_PROFILES, BRAND_SOCIAL_URLS } from '../lib/brandSocial'
-import { buildOrganizationSchema } from '../components/SEO'
+import { buildOrganizationSchema, buildProductSchema } from '../components/SEO'
 
 /**
  * A brand's `sameAs` and its footer links are the same claim made twice.
@@ -91,6 +91,43 @@ describe('sameAs agrees with the brand profiles', () => {
       expect(() => new URL(url)).not.toThrow()
       expect(url.startsWith('https://')).toBe(true)
     }
+  })
+})
+
+/**
+ * A tour page has no top-level Organization, so the nested `brand` (and the
+ * offer's `seller`) is the only place the brand is named. Left as a bare name
+ * they tied to nothing, and 32 tour pages — the most numerous on the site —
+ * carried no social identity at all. Mirrors `brandOrganization` in the
+ * backend's prerenderController.
+ */
+describe('the product schema names the brand', () => {
+  const product = buildProductSchema({
+    title: 'Kakum Canopy Walk',
+    description: 'Walk the canopy.',
+    image: 'https://www.travioghana.com/canopy.jpg',
+    price: 45,
+    currency: 'USD',
+    slug: 'kakum-canopy-walk',
+  }) as {
+    brand: { name: string; sameAs?: string[] }
+    offers: { seller: { name: string; sameAs?: string[] } }
+  }
+
+  it('gives the product brand the brand profiles', () => {
+    expect(product.brand.name).toBe('Travio Ghana')
+    expect(product.brand.sameAs).toEqual([...BRAND_SOCIAL_URLS])
+  })
+
+  it('gives the offer seller them too, so both references resolve', () => {
+    expect(product.offers.seller.name).toBe('Travio Ghana')
+    expect(product.offers.seller.sameAs).toEqual([...BRAND_SOCIAL_URLS])
+  })
+
+  it('names no other brand', () => {
+    const json = JSON.stringify(product)
+    expect(json).not.toMatch(/expeditiongo/i)
+    expect(json).toContain('travioghana')
   })
 })
 
