@@ -47,6 +47,10 @@ function brandApiBase() {
 const API_URL = brandApiBase();
 const OUTPUT = path.resolve(__dirname, '../public/sitemap.xml');
 
+/** Catalogue paging, for the destination list. See the loop in main(). */
+const CATALOGUE_PAGE_SIZE = 50; // the API rejects limit above 50
+const MAX_CATALOGUE_PAGES = 20;
+
 function fetchJson(url) {
   return new Promise((resolve, reject) => {
     const mod = url.startsWith('https') ? https : http;
@@ -162,13 +166,37 @@ async function main() {
         lastmod: isoDate(t.updatedAt),
       }));
 
-    // Destination pages — real, prerender-backed listings
-    const listData = await fetchJson(`${API_URL}/tours?limit=50`);
+    // Destination pages — real, prerender-backed listings.
+    //
+    // This used to read a single `?limit=50` page. The catalogue is 32 tours
+    // today so nothing was lost, but that is luck, not design: there is no
+    // `total` in the response to notice the overflow by, and the moment the
+    // catalogue passes 50 the sitemap would quietly stop listing the
+    // destinations that only exist on tours 51+. New pages would then be
+    // undiscoverable except by crawling, which is the same class of silent
+    // truncation as the frozen-sitemap bug above.
+    //
+    // So page through it. The API paginates by 1-indexed `page` (`offset` and
+    // `skip` are accepted and ignored), and the loop stops on the first short
+    // page, which is the last page.
     const placeSet = new Set();
-    for (const listing of listData?.data?.tours || []) {
-      const tour = listing.tour || listing;
-      if (tour.city) placeSet.add(tour.city);
-      if (tour.region) placeSet.add(tour.region);
+    let truncated = false;
+    for (let page = 1; page <= MAX_CATALOGUE_PAGES; page++) {
+      const listData = await fetchJson(`${API_URL}/tours?limit=${CATALOGUE_PAGE_SIZE}&page=${page}`);
+      const rows = listData?.data?.tours || [];
+      for (const listing of rows) {
+        const tour = listing.tour || listing;
+        if (tour.city) placeSet.add(tour.city);
+        if (tour.region) placeSet.add(tour.region);
+      }
+      if (rows.length < CATALOGUE_PAGE_SIZE) break;
+      if (page === MAX_CATALOGUE_PAGES) truncated = true;
+    }
+    if (truncated) {
+      console.warn(
+        `WARN: catalogue still full after ${MAX_CATALOGUE_PAGES} pages of ${CATALOGUE_PAGE_SIZE} ` +
+          `tours — the destination list below is incomplete. Raise MAX_CATALOGUE_PAGES.`
+      );
     }
     places = [...placeSet];
   } catch (err) {

@@ -93,3 +93,44 @@ describe('crawler route lists agree', () => {
     }
   })
 })
+
+/**
+ * The destination list in the sitemap is derived from the tour catalogue, so
+ * it can only be as complete as the catalogue read behind it.
+ *
+ * That read was a single `?limit=50` page. Nothing reported a total, so once
+ * the catalogue passed 50 the sitemap would have quietly stopped listing every
+ * destination that only appears on tours 51+, and those pages would have been
+ * discoverable only by crawling. A silent, invisible truncation of the
+ * sitemap is precisely the failure that kept this site out of the index.
+ */
+describe('sitemap catalogue paging', () => {
+  const script = read('scripts/generate-sitemap.cjs')
+
+  it('pages through the catalogue instead of reading one fixed page', () => {
+    expect(script).toMatch(/MAX_CATALOGUE_PAGES/)
+    expect(script).toMatch(/page=\$\{/)
+  })
+
+  it('stops on the first short page, so the last page is not a full read', () => {
+    expect(script).toMatch(/rows\.length < CATALOGUE_PAGE_SIZE/)
+  })
+
+  it('stays within the limit the API accepts', () => {
+    // The API rejects limit > 50 outright, which fails the whole fetch.
+    const size = Number(/CATALOGUE_PAGE_SIZE = (\d+)/.exec(script)?.[1])
+    expect(size).toBeGreaterThan(0)
+    expect(size).toBeLessThanOrEqual(50)
+  })
+
+  it('warns when it runs out of pages rather than truncating quietly', () => {
+    expect(script).toMatch(/incomplete/)
+  })
+
+  it('resolves the brand-scoped API base instead of double-prefixing it', () => {
+    // The production VITE_API_URL already ends in /api/travioghana; appending
+    // the brand again 404'd and froze the sitemap to its last good copy.
+    expect(script).toMatch(/function brandApiBase\(\)/)
+    expect(script).not.toMatch(/\$\{API_URL\}\/api\/travioghana/)
+  })
+})
