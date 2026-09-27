@@ -231,6 +231,7 @@ export default function Footer() {
         { to: '/partnerships', label: t('footer.partnerships') },
         { to: '/foundation', label: t('footer.ourFoundation') },
         { to: '/supplier-terms', label: t('footer.supplierTerms') },
+        { to: '/refund-policy', label: t('footer.refundPolicy') },
       ],
     },
     {
@@ -379,9 +380,6 @@ export default function Footer() {
             </FooterLink>
             <FooterLink to="/privacy-policy" className="footer-legal-link">
               {t('footer.privacyPolicy')}
-            </FooterLink>
-            <FooterLink to="/refund-policy" className="footer-legal-link">
-              {t('footer.refundPolicy')}
             </FooterLink>
             <FooterLink to="/cookies-policy" className="footer-legal-link">
               {t('footer.cookiesPolicy')}
