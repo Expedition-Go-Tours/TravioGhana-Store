@@ -1,253 +1,56 @@
 /* ============================================================
-   Travel Agents — extracted from the HTML template.
+   Travel Agents — /travel-agents
+   ------------------------------------------------------------
+   Port of Travio_Ghana_Travel_Agents_Rates_Mobile.html.
+
+   Scoped to .ta-page: the template was a standalone document, so its
+   html/body/:root/* resets and generic class names (.hero, .stats,
+   .benefits, .selling, .steps, .portal, .faq, .cta, .container, .btn,
+   .label, .title, .lead, .kicker, .micro, .stat, .step-card, .faq-item)
+   would otherwise leak into every other page.
+
+   Deliberate adaptations for this app:
+   1. The template's .topline strip, its .header brand bar and its
+      .footer are dropped — this route already renders the app's global
+      Navbar and Footer.
+   2. rem values are resolved to px on a 16px base, because this app sets
+      :root{font-size:18px} and rem would render 12.5% larger. em units are
+      left alone, being relative to each element's own font-size.
+   3. .container is kept (not swapped for the shared .wrap): it is already
+      min(100% - 40px, 1200px), the same measure, and its narrower mobile
+      gutters are part of the design.
    ============================================================ */
 
-/* ── Hero ─────────────────────────────────────────────────── */
-.ta-hero {
-  position: relative;
-  min-height: 720px;
-  background: linear-gradient(180deg, #fff, #f5f8f6);
-  overflow: hidden;
-}
-.ta-hero:before {
-  content: '';
-  position: absolute;
-  width: 540px;
-  height: 540px;
-  left: -320px;
-  top: 70px;
-  border: 95px solid #edf2ee;
-  border-radius: 50%;
-}
-.ta-hero:after {
-  content: '';
-  position: absolute;
-  width: 420px;
-  height: 420px;
-  right: -290px;
-  bottom: -200px;
-  border: 1px solid #c8dad0;
-  border-radius: 50%;
-}
-.ta-hero-grid {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1.02fr .98fr;
-  gap: 78px;
-  align-items: center;
-  min-height: 720px;
-  padding: 68px 0;
-}
-.ta-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  margin-bottom: 24px;
-  padding: 8px 13px;
-  border: 1px solid #d1dfd6;
-  border-radius: 999px;
-  background: #edf4ef;
-  color: #123f31;
-  font-size: .78rem;
-  font-weight: 800;
-}
-.ta-kicker span { width: 8px; height: 8px; border-radius: 50%; background: var(--eg-orange); }
-.ta-hero h1 {
-  max-width: 670px;
-  margin: 0;
-  font-size: clamp(3.45rem, 6.65vw, 6.75rem);
-  line-height: .91;
-  letter-spacing: -.075em;
-  font-family: var(--font-display);
-  font-weight: 800;
-}
-.ta-hero h1 em { display: block; color: var(--eg-green); font-style: normal; }
-.ta-hero-copy { max-width: 600px; margin: 27px 0 30px; color: #5e6b64; font-size: 1.1rem; }
-.ta-hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
-.ta-btn {
-  min-height: 55px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 0 23px;
-  border: 0;
-  border-radius: 14px;
-  font-weight: 800;
-  transition: transform .2s, box-shadow .2s;
-  cursor: pointer;
-  text-decoration: none;
-  font-size: 15px;
-}
-.ta-btn:hover { transform: translateY(-2px); }
-.ta-btn-primary { background: var(--eg-green); color: #fff; box-shadow: 0 12px 30px rgba(28,101,73,.2); }
-.ta-btn-secondary { border: 1px solid #cfdad2; background: #fff; color: #10221a; }
-.ta-btn-secondary:hover { box-shadow: 0 10px 25px rgba(8,50,31,.08); }
-.ta-micro { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 27px; color: #586b61; font-size: .8rem; font-weight: 700; }
-.ta-micro span { display: flex; align-items: center; gap: 8px; }
-.ta-micro i { width: 6px; height: 6px; border-radius: 50%; background: var(--eg-orange); display: block; }
-
-/* ── Portrait ─────────────────────────────────────────────── */
-.ta-portrait-stage { position: relative; height: 610px; }
-.ta-portrait-frame {
-  position: absolute;
-  inset: 20px 40px 5px 40px;
-  border-radius: 220px 220px 34px 34px;
-  background: #dce8e0;
-  box-shadow: 0 24px 70px rgba(10,53,34,.14);
-  overflow: hidden;
-}
-.ta-portrait-frame img { width: 100%; height: 100%; object-fit: cover; }
-.ta-portrait-frame:after {
-  content: '';
-  position: absolute;
-  inset: 55% 0 0;
-  background: linear-gradient(transparent, rgba(6,43,32,.55));
-}
-.ta-agent-badge {
-  position: absolute;
-  z-index: 3;
-  left: 0;
-  top: 110px;
-  width: 166px;
-  padding: 17px;
-  border: 1px solid #d8e4dc;
-  border-radius: 18px;
-  background: rgba(255,255,255,.94);
-  box-shadow: 0 17px 44px rgba(8,50,31,.18);
-}
-.ta-agent-badge span { display: block; color: #5e6b64; font-size: .71rem; font-weight: 700; }
-.ta-agent-badge strong { display: block; margin-top: 2px; color: var(--eg-green); font-family: var(--font-display); font-size: 1.08rem; }
-.ta-booking-card {
-  position: absolute;
-  z-index: 3;
-  right: 0;
-  bottom: 38px;
-  width: 250px;
-  padding: 19px;
-  border-radius: 19px;
-  background: #092b22;
-  color: #fff;
-  box-shadow: 0 20px 50px rgba(5,38,28,.28);
-}
-.ta-booking-top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 18px; color: #acc9b9; font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-.ta-booking-status { color: #d5e5a8; }
-.ta-booking-card h3 { margin: 0 0 4px; font-size: 1rem; font-family: var(--font-display); }
-.ta-booking-card p { margin: 0 0 17px; color: #bed3c6; font-size: .75rem; line-height: 1.45; }
-.ta-booking-meta { display: flex; justify-content: space-between; padding-top: 13px; border-top: 1px solid rgba(255,255,255,.12); font-size: .7rem; }
-.ta-booking-meta strong { color: #d5e5a8; }
-
-/* ── Stats strip ──────────────────────────────────────────── */
-.ta-stats { background: #092b22; color: #fff; }
-.ta-stats-inner {
-  min-height: 210px;
-  display: grid;
-  grid-template-columns: 1.25fr repeat(3, .75fr);
-  align-items: center;
-  gap: 25px;
-}
-.ta-stats-intro h2 {
-  max-width: 380px;
-  margin: 0;
-  font-size: clamp(1.75rem, 3.2vw, 2.8rem);
-  line-height: 1.12;
-  letter-spacing: -.045em;
-  font-family: var(--font-display);
-}
-.ta-stat { padding: 23px; border-left: 1px solid rgba(255,255,255,.14); }
-.ta-stat strong { display: block; color: #d5e5a8; font-family: var(--font-display); font-size: 2.2rem; letter-spacing: -.05em; }
-.ta-stat span { display: block; color: #bcd1c4; font-size: .8rem; font-weight: 700; }
-
-/* ── Benefits ─────────────────────────────────────────────── */
-.ta-benefits { padding: 125px 0; }
-.ta-benefit-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: end;
-  gap: 30px;
-  margin-bottom: 54px;
-}
-.ta-benefit-head p { max-width: 420px; color: #5e6b64; line-height: 1.6; }
-.ta-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.ta-card {
-  border: 1px solid #dfe7e1;
-  border-radius: 22px;
-  padding: 28px;
-  min-height: 330px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background: #fff;
-  transition: transform .3s, box-shadow .3s;
-}
-.ta-card:hover { transform: translateY(-8px); box-shadow: 0 20px 45px rgba(20,35,30,.08); }
-.ta-card:first-child { background: #3463e8; color: #fff; border-color: #3463e8; }
-.ta-card-icon { font-size: 28px; }
-.ta-card h3 { font: 700 26px/1.08 var(--font-display); letter-spacing: -.03em; margin: 0 0 12px; }
-.ta-card p { line-height: 1.6; color: #5e6b64; margin: 0; }
-.ta-card:first-child p { color: rgba(255,255,255,.75); }
-.ta-mini-tag {
-  align-self: flex-start;
-  padding: 7px 10px;
-  border: 1px solid currentColor;
-  border-radius: 99px;
-  font-size: 12px;
-  opacity: .7;
+.ta-page{--ink:#10221a;--sub:#5e6b64;--green:#1c6549;--green2:#2a775a;--dark:#123f31;--deep:#092b22;--mint:#edf4ef;--acid:#d5e5a8;--sand:#f5f6f1;--line:#dfe7e1;--orange:#d77842;--sky:#d4e6e7;--gold:#efd276;--shadow:0 24px 70px rgba(10,53,34,.14);--max:1200px}.ta-page *{box-sizing:border-box}html:has(.ta-page){scroll-behavior:smooth}.ta-page{margin:0;color:var(--ink);background:#fff;font-family:"DM Sans",sans-serif;font-size:16px;line-height:1.65;overflow-x:hidden}.ta-page img{display:block;max-width:100%}.ta-page a{color:inherit;text-decoration:none}.ta-page button{font:inherit}.ta-page .container{width:min(calc(100% - 40px),var(--max));margin:auto}.ta-page h1, .ta-page h2, .ta-page h3, .ta-page h4{font-family:"Manrope",sans-serif}.ta-page .label{display:inline-flex;align-items:center;gap:9px;color:var(--green);font-size:12.16px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}.ta-page .label:before{content:"";width:24px;height:2px;background:var(--orange)}.ta-page .title{max-width:800px;margin:12px 0 16px;font-size:clamp(34.4px,4.7vw,72px);line-height:1.03;letter-spacing:-.055em}.ta-page .lead{max-width:650px;color:var(--sub);font-size:17.28px}.ta-page .btn{min-height:55px;display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:0 23px;border:0;border-radius:14px;font-weight:800;transition:transform .2s,background .2s,box-shadow .2s}.ta-page .btn svg{width:18px;height:18px}.ta-page .primary{background:var(--green);color:#fff;box-shadow:0 12px 30px rgba(28,101,73,.2)}.ta-page .primary:hover{transform:translateY(-2px);background:var(--dark)}.ta-page .secondary{border:1px solid #cfdad2;background:#fff}.ta-page .secondary:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(8,50,31,.08)}.ta-page .hero{position:relative;min-height:720px;background:linear-gradient(180deg,#fff,#f5f8f6);overflow:hidden}.ta-page .hero:before{content:"";position:absolute;width:540px;height:540px;left:-320px;top:70px;border:95px solid #edf2ee;border-radius:50%}.ta-page .hero:after{content:"";position:absolute;width:420px;height:420px;right:-290px;bottom:-200px;border:1px solid #c8dad0;border-radius:50%}.ta-page .hero-grid{position:relative;display:grid;grid-template-columns:1.02fr .98fr;gap:78px;align-items:center;min-height:720px;padding:68px 0}.ta-page .hero-copy{position:relative;z-index:3}.ta-page .kicker{display:inline-flex;align-items:center;gap:9px;margin-bottom:24px;padding:8px 13px;border:1px solid #d1dfd6;border-radius:999px;background:var(--mint);color:var(--dark);font-size:12.48px;font-weight:800}.ta-page .kicker span{width:8px;height:8px;border-radius:50%;background:var(--orange)}.ta-page .hero h1{max-width:670px;margin:0;font-size:clamp(55.2px,6.65vw,108px);line-height:.91;letter-spacing:-.075em}.ta-page .hero h1 em{display:block;color:var(--green);font-style:normal}.ta-page .hero-copy>p{max-width:600px;margin:27px 0 30px;color:var(--sub);font-size:17.6px}.ta-page .hero-actions{display:flex;flex-wrap:wrap;gap:12px}.ta-page .micro{display:flex;flex-wrap:wrap;gap:18px;margin-top:27px;color:#586b61;font-size:12.8px;font-weight:700}.ta-page .micro span{display:flex;align-items:center;gap:8px}.ta-page .micro i{width:6px;height:6px;border-radius:50%;background:var(--orange)}.ta-page .portrait-stage{position:relative;height:610px}.ta-page .portrait-frame{position:absolute;inset:20px 40px 5px 40px;border-radius:220px 220px 34px 34px;background:#dce8e0;box-shadow:var(--shadow);overflow:hidden}.ta-page .portrait-frame img{width:100%;height:100%;object-fit:cover;transition:transform .75s}.ta-page .portrait-frame:hover img{transform:scale(1.03)}.ta-page .portrait-frame:after{content:"";position:absolute;inset:55% 0 0;background:linear-gradient(transparent,rgba(6,43,32,.55))}.ta-page .agent-badge{position:absolute;z-index:3;left:0;top:110px;width:166px;padding:17px;border:1px solid #d8e4dc;border-radius:18px;background:rgba(255,255,255,.94);box-shadow:0 17px 44px rgba(8,50,31,.18);backdrop-filter:blur(8px)}.ta-page .agent-badge span{display:block;color:var(--sub);font-size:11.36px;font-weight:700}.ta-page .agent-badge strong{display:block;margin-top:2px;color:var(--green);font-family:"Manrope",sans-serif;font-size:17.28px}.ta-page .booking-card{position:absolute;z-index:3;right:0;bottom:38px;width:250px;padding:19px;border-radius:19px;background:var(--deep);color:#fff;box-shadow:0 20px 50px rgba(5,38,28,.28)}.ta-page .booking-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:18px;color:#acc9b9;font-size:11.2px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.ta-page .booking-status{color:var(--acid)}.ta-page .booking-card h3{margin:0 0 4px;font-size:16px}.ta-page .booking-card p{margin:0 0 17px;color:#bed3c6;font-size:12px;line-height:1.45}.ta-page .booking-meta{display:flex;justify-content:space-between;padding-top:13px;border-top:1px solid rgba(255,255,255,.12);font-size:11.2px}.ta-page .booking-meta strong{color:var(--acid)}.ta-page .stats{background:var(--deep);color:#fff}.ta-page .stats-inner{min-height:210px;display:grid;grid-template-columns:1.25fr repeat(3,.75fr);align-items:center;gap:25px}.ta-page .stats-intro h2{max-width:380px;margin:0;font-size:clamp(28px,3.2vw,44.8px);line-height:1.12;letter-spacing:-.045em}.ta-page .stat{padding:23px;border-left:1px solid rgba(255,255,255,.14)}.ta-page .stat strong{display:block;color:var(--acid);font-family:"Manrope",sans-serif;font-size:35.2px;letter-spacing:-.05em}.ta-page .stat span{display:block;color:#bcd1c4;font-size:12.8px;font-weight:700}.ta-page .benefits{padding:125px 0}.ta-page .benefit-head{display:flex;justify-content:space-between;align-items:end;gap:40px;margin-bottom:45px}.ta-page .benefit-head .title{margin-bottom:0}.ta-page .benefit-head p{max-width:430px;margin:0;color:var(--sub)}.ta-page .benefit-grid{display:grid;grid-template-columns:1.1fr .9fr;grid-template-rows:repeat(3,1fr);gap:16px}.ta-page .benefit-card{min-height:180px;display:flex;flex-direction:column;padding:29px;border:1px solid var(--line);border-radius:25px;background:#fff;transition:transform .25s,box-shadow .25s}.ta-page .benefit-card:hover{transform:translateY(-5px);box-shadow:0 20px 45px rgba(8,65,40,.09)}.ta-page .benefit-card:first-child{grid-row:1/4;min-height:570px;background:var(--mint)}.ta-page .benefit-card:nth-child(4){background:var(--acid)}.ta-page .benefit-icon{width:50px;height:50px;display:grid;place-items:center;border-radius:16px;background:#fff;color:var(--green);font-size:19.2px;font-weight:900}.ta-page .benefit-card:not(:first-child) .benefit-icon{background:var(--mint)}.ta-page .benefit-card:first-child .benefit-icon, .ta-page .benefit-card:nth-child(4) .benefit-icon{background:rgba(255,255,255,.72)}.ta-page .benefit-card h3{margin:auto 0 9px;font-size:20.8px;letter-spacing:-.03em}.ta-page .benefit-card:first-child h3{font-size:clamp(28px,3vw,40px)}.ta-page .benefit-card p{margin:0;color:var(--sub)}.ta-page .inventory{display:flex;align-items:end;gap:7px;height:150px;margin:22px 0 38px;padding:20px;border-radius:19px;background:#fff}.ta-page .inventory i{flex:1;border-radius:5px 5px 2px 2px;background:#cfe2d5}.ta-page .inventory i:nth-child(1){height:28%}.ta-page .inventory i:nth-child(2){height:48%}.ta-page .inventory i:nth-child(3){height:72%;background:var(--green)}.ta-page .inventory i:nth-child(4){height:58%}.ta-page .inventory i:nth-child(5){height:88%;background:var(--acid)}.ta-page .inventory i:nth-child(6){height:67%}.ta-page .selling{padding:110px 0;background:var(--sand)}.ta-page .selling-head{text-align:center}.ta-page .selling-head .label:before{display:none}.ta-page .selling-head .title, .ta-page .selling-head .lead{margin-left:auto;margin-right:auto}.ta-page .selling-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px;margin-top:48px}.ta-page .sell-card{position:relative;min-height:420px;display:flex;flex-direction:column;justify-content:space-between;padding:34px;border-radius:28px;overflow:hidden}.ta-page .sell-card:first-child{background:var(--green);color:#fff}.ta-page .sell-card:last-child{border:1px solid var(--line);background:#fff}.ta-page .sell-card:after{content:"";position:absolute;width:280px;height:280px;right:-125px;top:-145px;border:48px solid currentColor;border-radius:50%;opacity:.06}.ta-page .sell-num{position:relative;z-index:1;color:var(--acid);font-size:11.68px;font-weight:900;letter-spacing:.12em}.ta-page .sell-card:last-child .sell-num{color:var(--green)}.ta-page .sell-body{position:relative;z-index:1}.ta-page .sell-icon{width:58px;height:58px;display:grid;place-items:center;margin-bottom:27px;border-radius:18px;background:rgba(255,255,255,.12);color:var(--acid);font-size:21.6px}.ta-page .sell-card:last-child .sell-icon{background:var(--mint);color:var(--green)}.ta-page .sell-card h3{margin:0 0 10px;font-size:clamp(27.2px,3vw,39.2px);letter-spacing:-.04em}.ta-page .sell-card p{max-width:480px;margin:0;color:#dcece3}.ta-page .sell-card:last-child p{color:var(--sub)}.ta-page .steps{padding:120px 0}.ta-page .steps-shell{display:grid;grid-template-columns:.72fr 1.28fr;gap:70px;align-items:start}.ta-page .steps-copy{position:sticky;top:35px}.ta-page .time-pill{display:inline-flex;align-items:center;gap:10px;margin-top:20px;padding:12px 15px;border-radius:14px;background:var(--acid);color:#29452f;font-weight:800}.ta-page .time-pill span{width:31px;height:31px;display:grid;place-items:center;border-radius:50%;background:#fff}.ta-page .step-list{display:grid;gap:14px}.ta-page .step-card{display:grid;grid-template-columns:68px 1fr;gap:23px;align-items:center;min-height:170px;padding:27px;border:1px solid var(--line);border-radius:24px;background:#fff}.ta-page .step-card:nth-child(2){background:var(--mint)}.ta-page .step-num{width:58px;height:58px;display:grid;place-items:center;border-radius:18px;background:var(--green);color:#fff;font-family:"Manrope",sans-serif;font-weight:800}.ta-page .step-card:nth-child(2) .step-num{background:var(--acid);color:#29452f}.ta-page .step-card h3{margin:0 0 7px;font-size:19.84px}.ta-page .step-card p{margin:0;color:var(--sub);font-size:14.72px}.ta-page .portal{padding:110px 0;background:var(--deep);color:#fff}.ta-page .portal-grid{display:grid;grid-template-columns:.88fr 1.12fr;gap:65px;align-items:center}.ta-page .portal .label{color:#b8dfc8}.ta-page .portal-copy p{max-width:530px;color:#bdd0c4}.ta-page .portal-points{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:28px}.ta-page .portal-point{padding:15px;border:1px solid rgba(255,255,255,.13);border-radius:15px;background:rgba(255,255,255,.055);font-size:13.12px;font-weight:750}.ta-page .portal-point span{display:block;color:var(--acid);font-size:10.88px;font-weight:900;letter-spacing:.1em}.ta-page .dashboard{padding:12px;border:1px solid rgba(255,255,255,.13);border-radius:29px;background:rgba(255,255,255,.06);box-shadow:0 30px 70px rgba(2,25,18,.3)}.ta-page .dash-window{overflow:hidden;border-radius:20px;background:#fff;color:var(--ink)}.ta-page .dash-nav{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid var(--line)}.ta-page .dash-brand{font-family:"Manrope",sans-serif;font-size:12.48px;font-weight:900}.ta-page .dash-user{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:var(--mint);color:var(--green);font-size:11.2px;font-weight:900}.ta-page .dash-body{padding:20px}.ta-page .dash-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.ta-page .dash-card{padding:13px;border:1px solid var(--line);border-radius:12px;background:#fafcfb}.ta-page .dash-card span{display:block;color:var(--sub);font-size:9.92px;font-weight:700}.ta-page .dash-card strong{display:block;margin-top:4px;font-family:"Manrope",sans-serif;font-size:16px}.ta-page .dash-card:first-child strong{color:var(--green)}.ta-page .dash-title{margin:22px 0 10px;font-size:12.48px;font-weight:900}.ta-page .dash-row{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.ta-page .dash-thumb{height:34px;border-radius:9px;background:linear-gradient(135deg,#bfd8c8,#e9f1eb)}.ta-page .dash-row strong{display:block;font-size:11.52px}.ta-page .dash-row span{display:block;color:var(--sub);font-size:9.6px}.ta-page .dash-amount{color:var(--green)!important;font-size:11.2px!important;font-weight:900}.ta-page .faq{padding:120px 0}.ta-page .faq-grid{display:grid;grid-template-columns:.76fr 1.24fr;gap:75px;align-items:start}.ta-page .faq-side{position:sticky;top:35px}.ta-page .faq-side .title{font-size:clamp(39.2px,4.6vw,72px)}.ta-page .faq-side p{color:var(--sub)}.ta-page .faq-side .btn{margin-top:12px}.ta-page .accordion{border-top:1px solid var(--line)}.ta-page .faq-item{border-bottom:1px solid var(--line)}.ta-page .faq-question{width:100%;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:23px 0;border:0;background:transparent;color:var(--ink);text-align:left;font-weight:800;cursor:pointer}.ta-page .faq-question span:first-child{display:flex;align-items:flex-start;gap:12px}.ta-page .faq-question b{color:var(--green);font-size:11.52px;letter-spacing:.09em}.ta-page .toggle{width:31px;height:31px;flex:none;display:grid;place-items:center;border:1px solid #cddad1;border-radius:50%;color:var(--green);transition:.25s}.ta-page .faq-item.open .toggle{transform:rotate(45deg);background:var(--green);color:#fff}.ta-page .faq-answer{max-height:0;overflow:hidden;transition:max-height .35s ease}.ta-page .faq-answer p{margin:0;padding:0 43px 23px 0;color:var(--sub);font-size:15.04px}.ta-page .faq-item.open .faq-answer{max-height:260px}.ta-page .cta{padding:0 0 110px}.ta-page .cta-inner{position:relative;display:flex;align-items:center;justify-content:space-between;gap:35px;padding:50px;border-radius:28px;background:var(--acid);overflow:hidden}.ta-page .cta-inner:after{content:"";position:absolute;width:330px;height:330px;right:165px;top:-230px;border:55px solid rgba(18,63,49,.07);border-radius:50%}.ta-page .cta h2{position:relative;z-index:1;margin:0 0 6px;font-size:clamp(28.8px,3.6vw,48px);letter-spacing:-.04em}.ta-page .cta p{position:relative;z-index:1;margin:0;color:#3a5945}.ta-page .cta .btn{position:relative;z-index:1;background:var(--dark);color:#fff;white-space:nowrap}.ta-page .reveal{opacity:0;transform:translateY(18px);transition:.65s}.ta-page .reveal.in{opacity:1;transform:none}@media(max-width:1050px){.ta-page .hero-grid{gap:35px}.ta-page .portrait-frame{inset:40px 20px 5px}.ta-page .benefit-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto}.ta-page .benefit-card:first-child{grid-row:auto;min-height:300px}.ta-page .stats-inner{grid-template-columns:1fr repeat(3,.7fr)}
+}@media(max-width:850px){.ta-page .hero-grid{grid-template-columns:1fr;padding-top:58px}.ta-page .portrait-stage{width:min(100%,610px);margin:auto}.ta-page .stats-inner{grid-template-columns:1fr 1fr;padding:55px 0}.ta-page .stats-intro{grid-column:1/-1}.ta-page .stat:nth-child(3){border-left:0}.ta-page .benefit-head{display:block}.ta-page .benefit-head p{margin-top:18px}.ta-page .selling-grid{grid-template-columns:1fr}.ta-page .steps-shell, .ta-page .portal-grid, .ta-page .faq-grid{grid-template-columns:1fr}.ta-page .steps-copy, .ta-page .faq-side{position:static}
+}@media(max-width:560px){.ta-page .container{width:min(calc(100% - 28px),var(--max))}.ta-page .hero-grid{min-height:auto;padding:52px 0 80px}.ta-page .hero h1{font-size:clamp(48px,15vw,74.4px)}.ta-page .hero-copy>p{font-size:16px}.ta-page .hero-actions{display:grid}.ta-page .btn{width:100%}.ta-page .micro{display:grid;gap:9px}.ta-page .portrait-stage{height:510px}.ta-page .portrait-frame{inset:10px 12px 0;border-radius:160px 160px 28px 28px}.ta-page .agent-badge{left:0;top:75px;width:145px}.ta-page .booking-card{right:0;bottom:25px;width:215px}.ta-page .stats-inner{grid-template-columns:1fr;padding:50px 0}.ta-page .stats-intro{grid-column:auto}.ta-page .stat, .ta-page .stat:nth-child(3){border-left:0;border-top:1px solid rgba(255,255,255,.13);padding:19px 0}.ta-page .benefits, .ta-page .selling, .ta-page .steps, .ta-page .portal, .ta-page .faq{padding:84px 0}.ta-page .benefit-grid{grid-template-columns:1fr}.ta-page .benefit-card{min-height:255px}.ta-page .benefit-card:first-child{min-height:420px}.ta-page .sell-card{min-height:360px;padding:27px}.ta-page .steps-shell{gap:40px}.ta-page .step-card{grid-template-columns:55px 1fr;gap:15px;padding:22px}.ta-page .step-num{width:50px;height:50px}.ta-page .portal-points{grid-template-columns:1fr}.ta-page .dash-body{padding:14px}.ta-page .dash-cards{grid-template-columns:1fr}.ta-page .faq-question{font-size:14.72px}.ta-page .faq-answer p{padding-right:0}.ta-page .cta-inner{align-items:flex-start;flex-direction:column;padding:35px 25px}.ta-page .cta .btn{width:100%}
+}@media(prefers-reduced-motion:reduce){html:has(.ta-page){scroll-behavior:auto}.ta-page .reveal{opacity:1;transform:none;transition:none}.ta-page .btn, .ta-page .portrait-frame img, .ta-page .benefit-card, .ta-page .toggle, .ta-page .faq-answer{transition:none}
+}.ta-page .hero .portrait-frame{border-radius:30px;inset:18px 22px 18px 22px}.ta-page .hero .portrait-frame img{object-position:center}.ta-page .agent-badge{top:34px;left:-10px}.ta-page .stats-inner{min-height:168px}.ta-page .stats .stat strong{font-size:23.2px}.ta-page .benefit-feature{background:var(--mint)!important}.ta-page .rate-sample{display:grid;gap:7px;margin:25px 0 auto;padding:21px;border:1px solid #d7e5d9;border-radius:20px;background:#fff}.ta-page .rate-sample span{font-size:11.2px;font-weight:800;letter-spacing:.12em;color:var(--sub)}.ta-page .rate-sample i{height:8px;width:72%;border-radius:20px;background:#d7e2d8}.ta-page .rate-sample strong{color:var(--green);font-size:25.6px;line-height:1.1}.ta-page .benefit-feature h3{margin:22px 0 9px}.ta-page .destination-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px;margin-top:42px}.ta-page .destination-card{position:relative;display:flex;align-items:flex-end;min-height:440px;padding:25px;border-radius:24px;overflow:hidden;color:#fff;background:var(--deep)}.ta-page .destination-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .55s}.ta-page .destination-card:hover img{transform:scale(1.04)}.ta-page .destination-card:after{content:"";position:absolute;inset:30% 0 0;background:linear-gradient(transparent,rgba(2,26,18,.9))}.ta-page .destination-card>div{position:relative;z-index:1}.ta-page .destination-card span{font-size:10.88px;font-weight:900;letter-spacing:.14em;color:var(--acid)}.ta-page .destination-card h3{margin:6px 0 2px;font-size:24.8px;line-height:1.15}.ta-page .destination-card p{margin:0;color:#dbe8df;font-size:13.92px}.ta-page .portal-grid{grid-template-columns:.78fr 1.22fr;gap:42px}.ta-page .portal-copy .title{font-size:clamp(35.2px,4.25vw,64px)}.ta-page .demo-disclaimer{font-size:11.52px!important;color:#a9c4b2!important}.ta-page .dashboard{padding:10px}.ta-page .dash-nav{height:64px}.ta-page .dash-brand{display:flex;align-items:center;gap:7px}.ta-page .dash-brand small{margin-left:6px;color:#799085;font-size:10.08px;letter-spacing:.08em}.ta-page .dash-dot{display:inline-block;width:12px;height:12px;border-radius:4px;background:var(--green)}.ta-page .dash-layout{display:grid;grid-template-columns:116px minmax(0,1fr);min-height:350px}.ta-page .dash-menu{display:flex;flex-direction:column;gap:5px;padding:15px 7px;background:#f6faf7;border-right:1px solid var(--line)}.ta-page .dash-tab{padding:10px 8px;border:0;border-radius:9px;background:transparent;text-align:left;color:#60756b;font-size:10.88px;font-weight:800;cursor:pointer}.ta-page .dash-tab.active, .ta-page .dash-tab:hover{background:#e4f2e9;color:var(--dark)}.ta-page .dash-body{min-width:0;padding:20px 18px}.ta-page .dash-context{color:#768d7b;font-size:9.44px;font-weight:900;letter-spacing:.13em}.ta-page .dash-panel{display:none}.ta-page .dash-panel.active{display:block}.ta-page .dash-panel h3{margin:10px 0 0;font-size:19.2px;letter-spacing:-.04em}.ta-page .dash-sub{margin:0 0 16px;color:var(--sub);font-size:11.68px}.ta-page .dash-card strong{font-size:13.28px;line-height:1.2}.ta-page .dash-row{grid-template-columns:34px minmax(0,1fr) auto}.ta-page .dash-thumb{display:grid;place-items:center;color:var(--green);font-size:9.12px;font-weight:900}.ta-page .dash-amount{white-space:nowrap}.ta-page .rate-calculator{display:grid;gap:8px;padding:13px;border:1px solid var(--line);border-radius:14px;background:#fafcfb}.ta-page .rate-calculator label{display:flex;justify-content:space-between;gap:10px;font-size:12.16px;font-weight:800}.ta-page .rate-calculator input{width:100%;padding:9px 11px;border:1px solid #becdc3;border-radius:9px;font:inherit;font-size:13.28px}.ta-page .margin-result{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:6px;padding:10px;border-radius:9px;background:var(--mint);font-size:11.52px}.ta-page .margin-result strong{color:var(--green);font-size:16px}.ta-page .rate-calculator small{color:var(--sub);font-size:9.76px}.ta-page .photo-credits{padding:20px 0 30px;border-top:1px solid var(--line);color:var(--sub);font-size:11.68px}.ta-page .photo-credits strong{color:var(--dark)}.ta-page .photo-credits p{max-width:920px;margin:6px 0 0}.ta-page .photo-credits a{text-decoration:underline;text-underline-offset:2px}@media(max-width:1050px){.ta-page .portal-grid{grid-template-columns:1fr}.ta-page .dashboard{max-width:760px;width:100%;margin:auto}}@media(max-width:850px){.ta-page .destination-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.ta-page .destination-card{min-height:330px;padding:15px}.ta-page .destination-card h3{font-size:18.72px}}@media(max-width:560px){.ta-page .hero-grid{padding-bottom:55px}.ta-page .hero h1{font-size:clamp(44px,12vw,68.8px)}.ta-page .hero-actions{display:flex;gap:9px}.ta-page .hero-actions .btn{width:auto;min-height:48px;padding:0 13px;font-size:12.16px}.ta-page .portrait-stage{height:390px}.ta-page .portrait-frame{inset:12px 18px!important}.ta-page .agent-badge{width:147px;left:0;top:18px;padding:13px}.ta-page .booking-card{right:0;bottom:0;width:218px;padding:14px}.ta-page .stats-inner{gap:8px;padding:30px 0}.ta-page .stats-intro{margin-bottom:8px}.ta-page .stats .stat{padding:12px 7px}.ta-page .stats .stat span{font-size:11.52px}.ta-page .benefits, .ta-page .selling, .ta-page .portal{padding:76px 0}.ta-page .benefit-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ta-page .benefit-card{min-height:210px;padding:17px;border-radius:18px}.ta-page .benefit-card:first-child{grid-column:1/-1;min-height:400px}.ta-page .benefit-card h3{font-size:16.96px}.ta-page .benefit-card p{font-size:13.28px}.ta-page .benefit-card:first-child h3{font-size:25.6px}.ta-page .destination-grid{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;gap:12px;margin-top:30px}.ta-page .destination-card{flex:0 0 min(78vw,300px);min-height:360px;scroll-snap-align:center}.ta-page .destination-card h3{font-size:23.2px}.ta-page .portal-points{gap:8px}.ta-page .dashboard{padding:6px;border-radius:21px}.ta-page .dash-nav{height:52px;padding:0 10px}.ta-page .dash-brand{font-size:10.4px}.ta-page .dash-brand small{font-size:8.32px}.ta-page .dash-layout{grid-template-columns:1fr;min-height:345px}.ta-page .dash-menu{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:7px}.ta-page .dash-tab{flex:none;padding:7px;font-size:9.92px;white-space:nowrap}.ta-page .dash-body{padding:12px}.ta-page .dash-cards{gap:5px}.ta-page .dash-card{padding:8px}.ta-page .dash-card span{font-size:8.8px}.ta-page .dash-card strong{font-size:11.52px}.ta-page .dash-row{gap:6px}.ta-page .dash-row strong{font-size:10.4px}.ta-page .dash-row span{font-size:8.96px}.ta-page .steps, .ta-page .faq{padding:76px 0}.ta-page .photo-credits{font-size:10.88px}
+}.ta-page .portal-grid{grid-template-columns:minmax(0,.98fr) minmax(0,1.02fr);gap:48px}.ta-page .dashboard{width:100%;max-width:570px;margin-left:auto;padding:8px;border-radius:22px}.ta-page .dash-window{border-radius:15px}.ta-page .dash-nav{height:53px;padding:0 14px}.ta-page .dash-brand img{width:142px;height:42px;object-fit:contain;object-position:left center}.ta-page .dash-brand small{padding:5px 7px;border-radius:6px;background:var(--mint);color:var(--green);white-space:nowrap}.ta-page .dash-layout{grid-template-columns:103px minmax(0,1fr);min-height:335px}.ta-page .dash-menu{gap:3px;padding:11px 6px}.ta-page .dash-tab{padding:8px 7px;font-size:10.24px}.ta-page .dash-body{padding:14px 13px}.ta-page .dash-panel h3{font-size:16.8px}.ta-page .dash-sub{font-size:10.88px}.ta-page .dash-tour{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:8px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}.ta-page .dash-tour:hover strong{text-decoration:underline}.ta-page .tour-dot{width:36px;height:36px;object-fit:cover;border-radius:8px;background:#e6f0ea}.ta-page .dash-tour strong, .ta-page .dash-tour small{display:block;line-height:1.25}.ta-page .dash-tour strong{font-size:10.72px}.ta-page .dash-tour small{margin-top:3px;color:var(--sub);font-size:9.28px}.ta-page .dash-tour b{color:var(--green);font-size:9.92px;white-space:nowrap}.ta-page .dash-tour-note{margin:14px 0 0;color:var(--sub);font-size:9.92px}@media(max-width:1050px){.ta-page .portal-grid{grid-template-columns:1fr}.ta-page .dashboard{margin:auto}}@media(max-width:560px){.ta-page .dash-brand img{width:122px;height:37px}.ta-page .dash-brand small{font-size:8.32px}.ta-page .dash-layout{grid-template-columns:1fr}.ta-page .dash-body{padding:12px}.ta-page .dash-tour strong{font-size:10.4px}.ta-page .dash-tour b{font-size:9.44px}}.ta-page .dash-booking{color:inherit;text-decoration:none;grid-template-columns:42px minmax(0,1fr) auto}.ta-page .dash-booking:hover strong{text-decoration:underline}.ta-page .dash-booking .dash-thumb{width:42px;height:38px;object-fit:cover;border-radius:8px}.ta-page .dash-booking strong{line-height:1.25}@media(max-width:560px){.ta-page .dash-booking{grid-template-columns:36px minmax(0,1fr) auto}.ta-page .dash-booking .dash-thumb{width:36px;height:36px}.ta-page .dash-booking strong{font-size:9.6px}}@media(max-width:560px){.ta-page .container{width:min(calc(100% - 32px),var(--max))}.ta-page .hero-grid{padding:39px 0 58px;gap:27px}.ta-page .hero h1{font-size:clamp(44.8px,11.5vw,68.8px);line-height:.96}.ta-page .hero-copy>p{margin:19px 0 23px;line-height:1.55}.ta-page .hero-actions{display:flex;flex-wrap:wrap;gap:8px}.ta-page .hero-actions .btn{flex:1 1 auto;min-height:46px;padding:0 12px;font-size:11.68px;white-space:nowrap}.ta-page .micro{display:flex;gap:8px 16px;margin-top:21px;font-size:11.52px}.ta-page .portrait-stage{height:365px}.ta-page .portrait-frame{inset:8px 16px 7px!important}.ta-page .agent-badge{top:16px;width:143px;padding:12px}.ta-page .agent-badge strong{font-size:14.56px}.ta-page .booking-card{width:202px;padding:13px;bottom:4px}.ta-page .booking-card p{margin-bottom:9px}.ta-page .stats-inner{grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:29px 0}.ta-page .stats-intro{grid-column:1/-1;margin-bottom:17px}.ta-page .stats-intro h2{max-width:310px;font-size:25.6px}.ta-page .stats .stat, .ta-page .stats .stat:nth-child(3){min-height:85px;padding:8px 9px;border-top:0;border-left:1px solid rgba(255,255,255,.15)}.ta-page .stats .stat:nth-child(2){border-left:0;padding-left:0}.ta-page .stats .stat strong{font-size:19.68px}.ta-page .stats .stat span{font-size:10.56px;line-height:1.35}.ta-page .benefits, .ta-page .selling, .ta-page .steps, .ta-page .portal, .ta-page .faq{padding:74px 0}.ta-page .benefit-grid{gap:10px}.ta-page .benefit-card{min-height:225px;padding:17px}.ta-page .benefit-feature{min-height:390px!important}.ta-page .benefit-icon{width:42px;height:42px}.ta-page .benefit-card h3{font-size:16px;line-height:1.28}.ta-page .benefit-card p{font-size:12.8px;line-height:1.5}.ta-page .rate-sample{margin:19px 0 auto;padding:16px}.ta-page .destination-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible;gap:10px}.ta-page .destination-card{min-width:0;min-height:270px;padding:14px;border-radius:18px}.ta-page .destination-card:last-child{grid-column:1/-1;min-height:240px}.ta-page .destination-card h3{font-size:17.44px}.ta-page .destination-card:last-child h3{font-size:21.6px}.ta-page .destination-card p{font-size:11.52px}.ta-page .portal-grid{gap:29px}.ta-page .portal-points{grid-template-columns:repeat(2,minmax(0,1fr))}.ta-page .portal-point{padding:11px;font-size:11.68px}.ta-page .dashboard{padding:5px;max-width:100%;border-radius:20px}.ta-page .dash-window{border-radius:15px}.ta-page .dash-nav{height:48px;padding:0 9px}.ta-page .dash-brand{gap:3px}.ta-page .dash-brand img{width:106px;height:35px}.ta-page .dash-brand small{margin-left:2px;padding:3px 5px;font-size:7.52px}.ta-page .dash-user{width:25px;height:25px;font-size:9.44px}.ta-page .dash-layout{grid-template-columns:83px minmax(0,1fr);min-height:335px}.ta-page .dash-menu{flex-direction:column;overflow:visible;gap:2px;padding:8px 4px;border-right:1px solid var(--line);border-bottom:0}.ta-page .dash-tab{width:100%;padding:8px 5px;font-size:9.28px;line-height:1.2;white-space:normal}.ta-page .dash-body{padding:10px 8px}.ta-page .dash-context{font-size:7.52px;letter-spacing:.06em;line-height:1.2}.ta-page .dash-panel h3{font-size:14.56px;line-height:1.2}.ta-page .dash-sub{font-size:9.92px;line-height:1.35}.ta-page .dash-cards{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.ta-page .dash-card{min-width:0;padding:6px 5px;border-radius:8px}.ta-page .dash-card span{font-size:7.68px;line-height:1.2}.ta-page .dash-card strong{font-size:9.92px;line-height:1.15;overflow-wrap:anywhere}.ta-page .dash-title{margin:17px 0 5px}.ta-page .dash-row, .ta-page .dash-booking{grid-template-columns:29px minmax(0,1fr) auto;gap:5px;padding:8px 0}.ta-page .dash-booking .dash-thumb, .ta-page .dash-thumb{width:29px;height:29px}.ta-page .dash-booking strong, .ta-page .dash-row strong{font-size:9.12px;line-height:1.17}.ta-page .dash-row span{font-size:8.16px}.ta-page .dash-amount{font-size:8.48px!important}.ta-page .dash-tour{grid-template-columns:29px minmax(0,1fr) auto;gap:5px}.ta-page .tour-dot{width:29px;height:29px}.ta-page .dash-tour strong{font-size:8.96px}.ta-page .dash-tour small, .ta-page .dash-tour b{font-size:8px}.ta-page .rate-calculator{padding:8px;gap:6px}.ta-page .rate-calculator label{font-size:9.92px}.ta-page .margin-result{font-size:9.28px}.ta-page .margin-result strong{font-size:12.16px}.ta-page .step-card{min-height:140px}.ta-page .cta-inner{padding:29px 23px}
+}@media(max-width:350px){.ta-page .hero-actions .btn{font-size:11.04px;padding:0 9px}.ta-page .dash-layout{grid-template-columns:72px minmax(0,1fr)}.ta-page .dash-tab{font-size:8.64px;padding:8px 3px}.ta-page .dash-brand img{width:94px}.ta-page .dash-brand small{display:none}.ta-page .dash-card span{font-size:6.88px}
+}@media(max-width:560px){.ta-page .benefit-head{margin-bottom:26px}.ta-page .benefit-head .title{max-width:440px;margin:12px 0 0;font-size:clamp(32.8px,9.1vw,40.8px);line-height:1.06;letter-spacing:-.055em}.ta-page .benefit-head .title span{color:var(--green)}.ta-page .benefit-head p{margin:14px 0 0;font-size:15.2px;line-height:1.55}.ta-page .benefit-grid{gap:11px;align-items:stretch}.ta-page .benefit-feature{display:flex;flex-direction:column;min-height:0!important;padding:23px!important;border-radius:22px}.ta-page .benefit-feature .benefit-icon{order:0;margin-bottom:2px}.ta-page .benefit-feature h3{order:1;margin:14px 0 8px;font-size:23.68px!important;line-height:1.16}.ta-page .benefit-feature p{order:2;font-size:14.24px;line-height:1.55}.ta-page .benefit-feature .rate-sample{order:3;display:grid;grid-template-columns:1fr auto;align-items:center;gap:7px 12px;margin:19px 0 0;padding:15px;border-radius:15px}.ta-page .benefit-feature .rate-sample i{width:70px;height:7px;justify-self:end}.ta-page .benefit-feature .rate-sample strong{font-size:18.08px;text-align:right}.ta-page .benefit-card:not(:first-child){min-height:205px}.ta-page .benefit-card:not(:first-child) h3{margin:auto 0 7px}.ta-page .benefit-card:last-child{grid-column:1/-1;display:grid;grid-template-columns:44px minmax(0,1fr);column-gap:14px;align-content:center;min-height:118px;padding:18px}.ta-page .benefit-card:last-child .benefit-icon{grid-column:1;grid-row:1/3;align-self:start}.ta-page .benefit-card:last-child h3{grid-column:2;grid-row:1;margin:0 0 5px}.ta-page .benefit-card:last-child p{grid-column:2;grid-row:2}
 }
 
-/* ── Features sidebar ─────────────────────────────────────── */
-.ta-features { display: grid; grid-template-columns: .9fr 1.1fr; gap: 80px; align-items: start; }
-.ta-sticky { position: sticky; top: 30px; height: max-content; }
-.ta-sticky p { line-height: 1.65; color: #5e6b64; max-width: 420px; }
-.ta-feature-list { display: grid; gap: 12px; }
-.ta-feature {
-  background: #fff;
-  border: 1px solid #dfe7e1;
-  border-radius: 18px;
-  padding: 24px;
-  display: grid;
-  grid-template-columns: 48px 1fr;
-  gap: 18px;
-  transition: transform .25s;
+/* ── Adaptations ─────────────────────────────────────────────────────
+   The template switched the agent-desk panels with a click handler that
+   toggled .active. The port drives both from React state, so these only
+   need to describe the two visual states. */
+.ta-page .dash-panel {
+  display: none;
 }
-.ta-feature:hover { transform: translateX(8px); }
-.ta-feature-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: #d77842;
-  color: #fff;
-  display: grid;
-  place-items: center;
-  font-size: 18px;
-  font-weight: 800;
+.ta-page .dash-panel.active {
+  display: block;
 }
-.ta-feature h3 { margin: 2px 0 8px; font: 700 21px var(--font-display); }
-.ta-feature p { margin: 0; color: #5e6b64; line-height: 1.55; font-size: 15px; }
 
-/* ── Section spacing ──────────────────────────────────────── */
-.ta-section { padding: 120px 0; }
+/* Anchor jumps (#benefits, #agent-desk, …) land below the fixed navbar. */
+.ta-page section[id] {
+  scroll-margin-top: 90px;
+}
 
-/* ── Responsive ───────────────────────────────────────────── */
-@media (max-width: 900px) {
-  .ta-hero-grid, .ta-features { grid-template-columns: 1fr; }
-  .ta-portrait-stage { height: 480px; margin-top: 20px; }
-  .ta-stats-inner { grid-template-columns: 1fr 1fr; }
-  .ta-cards { grid-template-columns: 1fr 1fr; }
-  .ta-sticky { position: static; }
-}
-@media (max-width: 600px) {
-  .ta-hero { min-height: auto; padding: 48px 0 74px; }
-  .ta-hero h1 { font-size: 52px; }
-  .ta-hero-copy { font-size: 16px; }
-  .ta-portrait-stage { height: 390px; }
-  .ta-section { padding: 80px 0; }
-  .ta-cards { grid-template-columns: 1fr; }
-  .ta-card { min-height: 260px; }
-  .ta-stats-inner { grid-template-columns: 1fr 1fr; }
-  .ta-agent-badge, .ta-booking-card { display: none; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ta-feature { transition: none; }
-  .ta-card { transition: none; }
+/* The template relies on the browser's bold default for headings; the app's
+   Tailwind preflight resets them to font-weight:inherit, which rendered h1-h4
+   at 400 and changed the hero headline's line wrap. Only affects headings that
+   no more specific rule already weights. */
+.ta-page :is(h1, h2, h3, h4) {
+  font-weight: 700;
 }

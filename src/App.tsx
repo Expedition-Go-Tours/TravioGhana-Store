@@ -338,7 +338,7 @@ function AppContent() {
             <ContentCreatorsPage onOpenAuth={handleOpenAuth} />
           } />
           <Route path="/travel-agents" element={
-            <TravelAgentsPage onOpenAuth={handleOpenAuth} />
+            <TravelAgentsPage />
           } />
           <Route path="/hotels" element={
             <HotelsProviderPage onOpenAuth={handleOpenAuth} />
