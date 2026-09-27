@@ -240,7 +240,12 @@ function writeRoute(route, html) {
   return file
 }
 
-const LAUNCH_ARGS = ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
+const LAUNCH_ARGS = [
+  '--no-sandbox',
+  '--disable-setuid-sandbox',
+  '--disable-gpu',
+  '--disable-dev-shm-usage',
+]
 
 /**
  * Raised when no browser could be obtained at all — the one prerender failure
@@ -248,9 +253,7 @@ const LAUNCH_ARGS = ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
  */
 class BrowserUnavailableError extends Error {}
 
-function launch() {
-  return puppeteer.launch({ headless: true, args: LAUNCH_ARGS })
-}
+const firstLine = (err) => String(err?.message || err).split('\n')[0]
 
 /** Path to puppeteer's own CLI, taken from its declared bin so it survives moves. */
 function puppeteerCli() {
@@ -260,48 +263,148 @@ function puppeteerCli() {
   return join(dirname(pkgPath), bin)
 }
 
-/**
- * Get a usable browser, or fail loudly.
- *
- * npm 11 gates lifecycle scripts behind `allowScripts` and prints
- *   npm warn install-scripts   puppeteer@25.11.0 (postinstall: node install.mjs)
- * without running them. That postinstall is the step that downloads Chromium,
- * so on a clean Vercel build puppeteer is installed but has no browser to
- * launch. The first version of this script launched once and let the error
- * escape to a catch-all that warned and returned 0 — so the build went green
- * and shipped with dist/__seo/ empty, silently reintroducing the exact
- * thin-content bug the prerender exists to fix. Nobody would have seen it
- * except by reading the live word count.
- *
- * So: try, and on failure install the browser explicitly via the CLI (an
- * explicit invocation is not gated by allowScripts), then retry. If there is
- * still no browser, throw — a deploy that cannot prerender must say so rather
- * than pretend it did.
- */
-async function ensureBrowser() {
+/** Try one launch. Returns the browser, or null with the reason logged. */
+async function attempt(overrides, label) {
   try {
-    return await launch()
-  } catch (firstErr) {
-    console.warn(`[prerender] no browser available (${firstErr.message.split('\n')[0]}) — installing one`)
+    const browser = await puppeteer.launch({ headless: true, args: LAUNCH_ARGS, ...overrides })
+    console.log(`[prerender] browser ready via ${label}`)
+    return browser
+  } catch (err) {
+    console.warn(`[prerender] ${label}: ${firstLine(err)}`)
+    return null
   }
+}
 
-  try {
-    console.log('[prerender] running: puppeteer browsers install chrome')
-    execFileSync(process.execPath, [puppeteerCli(), 'browsers', 'install', 'chrome'], {
+/**
+ * Shared libraries Chrome links against but a slim CI image does not ship.
+ * These are the lists from puppeteertroubleshooting.com, which Vercel's
+ * Amazon Linux build image needs almost in full.
+ */
+const RPM_DEPS = [
+  'nss', 'atk', 'at-spi2-atk', 'at-spi2-core', 'cups-libs', 'libdrm', 'libxkbcommon',
+  'libXcomposite', 'libXdamage', 'libXext', 'libXfixes', 'libXrandr', 'libXi', 'libXtst',
+  'libX11', 'libxshmfence', 'mesa-libgbm', 'alsa-lib', 'pango', 'ca-certificates',
+]
+const APT_DEPS = [
+  'ca-certificates', 'fonts-liberation', 'libasound2', 'libatk-bridge2.0-0', 'libatk1.0-0',
+  'libcups2', 'libdbus-1-3', 'libdrm2', 'libgbm1', 'libglib2.0-0', 'libnspr4', 'libnss3',
+  'libpango-1.0-0', 'libx11-6', 'libx11-xcb1', 'libxcb1', 'libxcomposite1', 'libxdamage1',
+  'libxext6', 'libxfixes3', 'libxkbcommon0', 'libxrandr2', 'libxshmfence1', 'libxtst6',
+]
+
+/**
+ * Chrome exiting 127 means a shared library is missing, not that the binary is
+ * absent. Install them, then let the caller retry. Best-effort by design: if
+ * the image has no package manager or no privileges, the caller simply moves
+ * on to the next strategy.
+ */
+function installSystemDeps() {
+  const root = typeof process.getuid !== 'function' || process.getuid() === 0
+  const run = (cmd, args) =>
+    execFileSync(root ? cmd : 'sudo', root ? args : ['-n', cmd, ...args], {
       stdio: 'inherit',
       env: process.env,
     })
+
+  for (const [cmd, deps, prep] of [
+    ['dnf', RPM_DEPS, null],
+    ['yum', RPM_DEPS, null],
+    ['apt-get', APT_DEPS, ['apt-get', 'update']],
+  ]) {
+    try {
+      run('sh', ['-c', `command -v ${cmd} >/dev/null 2>&1`])
+    } catch {
+      continue // package manager not present — try the next one
+    }
+    try {
+      console.log(`[prerender] installing browser system libraries with ${cmd}`)
+      if (prep) run(prep[0], prep.slice(1))
+      run(cmd, [...(cmd === 'apt-get' ? ['install', '-y', '--no-install-recommends'] : ['install', '-y']), ...deps])
+      return true
+    } catch (err) {
+      console.warn(`[prerender] ${cmd} install failed: ${firstLine(err)}`)
+    }
+  }
+  return false
+}
+
+function installBrowserBinary(product) {
+  try {
+    console.log(`[prerender] running: puppeteer browsers install ${product}`)
+    execFileSync(process.execPath, [puppeteerCli(), 'browsers', 'install', product], {
+      stdio: 'inherit',
+      env: process.env,
+    })
+    return true
   } catch (err) {
-    throw new BrowserUnavailableError(
-      `could not download a browser: ${err.message.split('\n')[0]}`
-    )
+    console.warn(`[prerender] could not download ${product}: ${firstLine(err)}`)
+    return false
+  }
+}
+
+/** Chrome that a CI image may already provide, deps and all. */
+const SYSTEM_CHROME = [
+  '/usr/bin/google-chrome-stable',
+  '/usr/bin/google-chrome',
+  '/usr/bin/chromium',
+  '/usr/bin/chromium-browser',
+]
+
+/**
+ * Get a usable browser, or fail loudly.
+ *
+ * Two separate things have to be true on a Vercel build, and both have already
+ * been false in production:
+ *
+ * 1. A browser exists. npm 11 gates lifecycle scripts behind `allowScripts` and
+ *    prints "npm warn install-scripts puppeteer@25.11.0 (postinstall: ...)"
+ *    without running them, and that postinstall is the step that downloads
+ *    Chromium. So puppeteer can be installed with nothing to launch.
+ *
+ * 2. That browser can start. Chrome for Testing links against libnss3, atk,
+ *    libgbm and friends; a slim CI image has none of them, and the failure
+ *    surfaces only as "Failed to launch the browser process: Code: 127".
+ *
+ * The first version of this script launched once and let the error reach a
+ * catch-all that warned and returned 0, so the build went green with
+ * dist/__seo/ empty and every bot served the thin fallback — reintroducing the
+ * exact bug the prerender exists to fix, invisibly.
+ *
+ * So each obstacle is handled in turn — cached browser, download, system
+ * libraries, the image's own Chrome, and finally the lighter headless shell —
+ * and if none work the build fails. Per-route failures stay soft, because the
+ * backend prerenderer still covers them; only "no browser at all" is fatal.
+ */
+async function ensureBrowser() {
+  const cached = await attempt({}, 'cached browser')
+  if (cached) return cached
+
+  if (installBrowserBinary('chrome')) {
+    const fresh = await attempt({}, 'downloaded chrome')
+    if (fresh) return fresh
+
+    // Downloaded fine but would not start: that is a missing-library problem.
+    if (installSystemDeps()) {
+      const withDeps = await attempt({}, 'downloaded chrome + system libraries')
+      if (withDeps) return withDeps
+    }
   }
 
-  try {
-    return await launch()
-  } catch (err) {
-    throw new BrowserUnavailableError(`still cannot launch after install: ${err.message.split('\n')[0]}`)
+  for (const path of SYSTEM_CHROME) {
+    if (!existsSync(path)) continue
+    const sys = await attempt({ executablePath: path }, `system chrome at ${path}`)
+    if (sys) return sys
   }
+
+  // Last resort: the headless shell links against a smaller set of libraries.
+  if (installBrowserBinary('chrome-headless-shell')) {
+    const shell = await attempt({ headless: 'shell' }, 'chrome-headless-shell')
+    if (shell) return shell
+  }
+
+  throw new BrowserUnavailableError(
+    'no strategy produced a launchable browser (cached, downloaded, system chrome, headless shell)'
+  )
 }
 
 async function main() {
