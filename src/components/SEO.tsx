@@ -271,6 +271,12 @@ export function buildItemListSchema(items: { name: string; url: string; image?: 
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     numberOfItems: items.length,
+    // `sameAs` exists only on Organization/Person/WebSite, so the brand's
+    // profiles have no slot on a list. ItemList inherits from CreativeWork,
+    // whose `publisher` takes an Organization — the only place a listing page
+    // can name the brand it is publishing. Mirrors the backend's
+    // buildItemListSchema equivalent in prerenderController.
+    publisher: brandOrganization(),
     itemListElement: items.map((item, i) => ({
       '@type': 'ListItem',
       position: i + 1,

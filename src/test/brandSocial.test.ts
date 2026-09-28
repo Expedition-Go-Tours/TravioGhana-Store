@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { BRAND_SOCIAL_PROFILES, BRAND_SOCIAL_URLS } from '../lib/brandSocial'
-import { buildOrganizationSchema, buildProductSchema } from '../components/SEO'
+import { buildOrganizationSchema, buildProductSchema, buildItemListSchema } from '../components/SEO'
 
 /**
  * A brand's `sameAs` and its footer links are the same claim made twice.
@@ -128,6 +128,40 @@ describe('the product schema names the brand', () => {
     const json = JSON.stringify(product)
     expect(json).not.toMatch(/expeditiongo/i)
     expect(json).toContain('travioghana')
+  })
+})
+
+/**
+ * A list of tours has nowhere to carry the brand: `sameAs` exists only on
+ * Organization/Person/WebSite. `publisher` is the correct slot — ItemList
+ * inherits from CreativeWork, and a publisher is a CreativeWork's Organization.
+ * Without it, the storefront's listing pages named no brand at all.
+ */
+describe('the list schema names its publisher', () => {
+  const list = buildItemListSchema([
+    { name: 'Accra City Tour', url: 'https://www.travioghana.com/tour/accra-1/accra-city-tour' },
+    { name: 'Kwame Nkrumah Tour', url: 'https://www.travioghana.com/tour/accra-2/nkrumah' },
+  ]) as unknown as {
+    numberOfItems: number
+    itemListElement: unknown[]
+    publisher: { '@type': string; name: string; sameAs: string[] }
+  }
+
+  it('publishes the list under the brand, with its profiles', () => {
+    expect(list.publisher['@type']).toBe('Organization')
+    expect(list.publisher.name).toBe('Travio Ghana')
+    expect(list.publisher.sameAs).toEqual([...BRAND_SOCIAL_URLS])
+  })
+
+  it('leaves the count and entries untouched', () => {
+    // The publisher must not disturb the count/entries pairing the structured
+    // data validator checks.
+    expect(list.numberOfItems).toBe(2)
+    expect(list.itemListElement).toHaveLength(2)
+  })
+
+  it('names no other brand', () => {
+    expect(JSON.stringify(list.publisher)).not.toMatch(/expeditiongo/i)
   })
 })
 
