@@ -2,6 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- Search Console HTML-ownership verification for www.travioghana.com.
+         Google's fetcher identifies as Googlebot, and this repo serves crawlers
+         the build-time prerender rather than this file, so what GSC actually
+         reads is dist/__seo/index.html — which inherits this <head> (the
+         manifest, theme-color and preconnect tags all survive the prerender).
+         Verified present in the prerendered output of all 20 routes, which is
+         harmless: GSC only reads it from the domain root, and this shell <head>
+         is the single source every prerendered page is built from.
+         Delete once GSC reports the property as verified. -->
+    <meta name="google-site-verification" content="ZSON1kHi17YrGQoqR3qgfw9sE8jgVmfePnmtT2EYWYs" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Icons. The /icons/v2/ paths are versioned because browsers cache
          favicons in their own stores keyed by URL, not by Cache-Control: a new
