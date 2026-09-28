@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
+import type { Page } from 'puppeteer'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-// @ts-expect-error — plain .mjs build script, no type declarations
+// Typed by scripts/prerender-static.d.mts — the build script itself is plain .mjs
+// and sits outside every tsconfig include.
 import {
   dedupeTitle,
   relativizeOrigin,
@@ -20,10 +22,10 @@ import {
  * through untouched. Lets the proxy be tested as behaviour rather than as a
  * regex over its own source.
  */
-function fakePage(respond: ReturnType<typeof vi.fn>) {
+function fakePage(respond: RespondSpy) {
   const continued: string[] = []
   let handler: ((request: unknown) => void) | null = null
-  return {
+  const page = {
     interception: false,
     continued,
     async setRequestInterception(value: boolean) {
@@ -45,7 +47,20 @@ function fakePage(respond: ReturnType<typeof vi.fn>) {
       await new Promise((r) => setTimeout(r, 0))
     },
   }
+  return page
 }
+
+/** What installApiProxy hands to request.respond(), plus the recorded call. */
+interface ProxyResponse {
+  status: number
+  headers?: Record<string, string>
+  contentType?: string
+  body?: Buffer | string
+}
+type RespondSpy = ReturnType<typeof vi.fn<(r: ProxyResponse) => Promise<void>>>
+
+/** The double satisfies the two Page members the proxy touches, and no more. */
+const asPage = (page: ReturnType<typeof fakePage>) => page as unknown as Page
 
 /**
  * Guards the one prerender failure that must never be silent.
@@ -370,29 +385,29 @@ describe('prerender API proxy', () => {
         headers: { 'content-type': 'application/json' },
       })
     try {
-      const respond = vi.fn(async () => {})
+      const respond = vi.fn<(r: ProxyResponse) => Promise<void>>(async () => {})
       const page = fakePage(respond)
       const origins = resolveApiOrigins(['https://apiv1.travioafrica.com/api/travioghana'])
-      await installApiProxy(page, origins, 'http://127.0.0.1:41999')
+      await installApiProxy(asPage(page), origins, 'http://127.0.0.1:41999')
 
       expect(page.interception).toBe(true)
       await page.fire('https://apiv1.travioafrica.com/api/travioghana/tours')
 
       expect(respond).toHaveBeenCalledTimes(1)
-      const arg = respond.mock.calls[0][0]
+      const arg = respond.mock.calls[0]![0]
       expect(arg.status).toBe(200)
-      expect(arg.headers['access-control-allow-origin']).toBe('http://127.0.0.1:41999')
-      expect(arg.body.toString()).toBe('{"tours":[{"id":"t1"}]}')
+      expect(arg.headers!['access-control-allow-origin']).toBe('http://127.0.0.1:41999')
+      expect(arg.body!.toString()).toBe('{"tours":[{"id":"t1"}]}')
     } finally {
       globalThis.fetch = realFetch
     }
   })
 
   it('lets non-API requests through untouched', async () => {
-    const respond = vi.fn(async () => {})
+    const respond = vi.fn<(r: ProxyResponse) => Promise<void>>(async () => {})
     const page = fakePage(respond)
     const origins = resolveApiOrigins(['https://apiv1.travioafrica.com'])
-    await installApiProxy(page, origins, 'http://127.0.0.1:41999')
+    await installApiProxy(asPage(page), origins, 'http://127.0.0.1:41999')
 
     await page.fire('https://fonts.gstatic.com/s/x.woff2')
 
@@ -406,15 +421,15 @@ describe('prerender API proxy', () => {
       throw new Error('ECONNREFUSED')
     }
     try {
-      const respond = vi.fn(async () => {})
+      const respond = vi.fn<(r: ProxyResponse) => Promise<void>>(async () => {})
       const page = fakePage(respond)
       const origins = resolveApiOrigins(['https://apiv1.travioafrica.com'])
-      await installApiProxy(page, origins, 'http://127.0.0.1:41999')
+      await installApiProxy(asPage(page), origins, 'http://127.0.0.1:41999')
 
       await page.fire('https://apiv1.travioafrica.com/api/travioghana/tours')
 
       expect(respond).toHaveBeenCalledTimes(1)
-      expect(respond.mock.calls[0][0].status).toBe(502)
+      expect(respond.mock.calls[0]![0].status).toBe(502)
       expect(page.continued).toEqual([])
     } finally {
       globalThis.fetch = realFetch
@@ -427,14 +442,14 @@ describe('prerender API proxy', () => {
     const realFetch = globalThis.fetch
     globalThis.fetch = async () => new Response('nope', { status: 404 })
     try {
-      const respond = vi.fn(async () => {})
+      const respond = vi.fn<(r: ProxyResponse) => Promise<void>>(async () => {})
       const page = fakePage(respond)
-      await installApiProxy(page, resolveApiOrigins(['https://apiv1.travioafrica.com']), 'http://127.0.0.1:41999')
+      await installApiProxy(asPage(page), resolveApiOrigins(['https://apiv1.travioafrica.com']), 'http://127.0.0.1:41999')
 
       await page.fire('https://apiv1.travioafrica.com/api/travioghana/tours')
 
-      expect(respond.mock.calls[0][0].status).toBe(404)
-      expect(respond.mock.calls[0][0].headers['access-control-allow-origin']).toBeUndefined()
+      expect(respond.mock.calls[0]![0].status).toBe(404)
+      expect(respond.mock.calls[0]![0].headers?.['access-control-allow-origin']).toBeUndefined()
     } finally {
       globalThis.fetch = realFetch
     }

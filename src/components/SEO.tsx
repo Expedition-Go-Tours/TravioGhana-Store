@@ -1,6 +1,7 @@
 import { Helmet } from 'react-helmet-async'
 import { useLocation } from 'react-router-dom'
 import { BRAND_SOCIAL_URLS } from '../lib/brandSocial'
+import { tourPath } from '../lib/tourPath'
 
 const SITE_NAME = 'Travio Ghana'
 const DEFAULT_TITLE = 'Ghana Tours & Experiences | Book Authentic African Adventures'
@@ -329,6 +330,95 @@ export function buildItemListSchema(items: { name: string; url: string; image?: 
     })),
   }
 }
+
+/**
+ * The homepage's catalogue, as structured data.
+ *
+ * The homepage is the landing page for the brand query, and it was publishing
+ * 51 cards, 130 price elements and 33 crawlable tour links with only
+ * Organization and WebSite in its JSON-LD. Every rating the visitor can read was
+ * absent from the structured data, so the page could not qualify for a rating
+ * treatment even with the reviews it carries.
+ *
+ * Items are `Product` rather than bare `ListItem`s, because a `ListItem` with
+ * only a name and URL tells a crawler nothing it did not already get from the
+ * HTML. `Product` carries the offer and the rating, which is the part that is
+ * worth stating twice.
+ *
+ * The same tour can appear in several homepage sections (top-rated and
+ * sell-out routinely overlap), so entries are de-duplicated by id and the
+ * richest copy kept — otherwise one tour would be listed two or three times at
+ * different positions.
+ */
+export function buildHomepageItemListSchema(
+  tours: {
+    id: string
+    title: string
+    slug: string
+    coverPhoto?: string | null
+    averageRating?: number | null
+    reviewCount?: number
+    startingPrice?: number | null
+    currency?: string
+    city?: string | null
+  }[]
+) {
+  const seen = new Map<string, (typeof tours)[number]>()
+  for (const tour of tours) {
+    if (!tour?.id || !tour.title) continue
+    const existing = seen.get(tour.id)
+    // Keep whichever copy carries more: a section that projects price and
+    // rating beats one that does not.
+    if (!existing || score(tour) > score(existing)) seen.set(tour.id, tour)
+  }
+
+  const items = [...seen.values()]
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Ghana tours and experiences',
+    numberOfItems: items.length,
+    publisher: brandOrganization(),
+    itemListElement: items.map((tour, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      item: {
+        '@type': 'Product',
+        name: tour.title,
+        url: `${SITE_URL}${tourPath(tour.id, tour.slug)}`,
+        ...(tour.coverPhoto && { image: tour.coverPhoto }),
+        ...(tour.city && { description: `${tour.title} in ${tour.city}, Ghana` }),
+        offers: {
+          '@type': 'Offer',
+          // No price means no Offer. A zero would be a false claim that the
+          // tour is free, and a wrong currency is worse than no offer at all.
+          ...(tour.startingPrice ? { price: tour.startingPrice, priceCurrency: tour.currency || 'USD' } : {}),
+          availability: 'https://schema.org/InStock',
+          url: `${SITE_URL}${tourPath(tour.id, tour.slug)}`,
+          seller: brandOrganization(),
+        },
+        // `averageRating && reviewCount` rather than either alone: a rating with
+        // no count, or a count of zero, is not an AggregateRating and Google
+        // treats a malformed one as a manual-action risk. Mirrors the gate in
+        // buildProductSchema.
+        ...(tour.averageRating && tour.reviewCount
+          ? {
+              aggregateRating: {
+                '@type': 'AggregateRating',
+                ratingValue: tour.averageRating,
+                reviewCount: tour.reviewCount,
+                bestRating: 5,
+                worstRating: 1,
+              },
+            }
+          : {}),
+      },
+    })),
+  }
+}
+
+const score = (tour: { averageRating?: number | null; reviewCount?: number; startingPrice?: number | null }) =>
+  (tour.startingPrice ? 1 : 0) + (tour.averageRating && tour.reviewCount ? 1 : 0)
 
 export function buildFAQSchema(questions: { question: string; answer: string }[]) {
   return {

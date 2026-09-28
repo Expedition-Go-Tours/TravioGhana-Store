@@ -19,7 +19,7 @@ import PreviousSearchSections from './components/PreviousSearchSections'
 
 import Footer from './components/Footer'
 import MountOnView from './components/MountOnView'
-import SEO, { buildWebSiteSchema } from './components/SEO'
+import SEO, { buildWebSiteSchema, buildHomepageItemListSchema } from './components/SEO'
 import { WishlistProvider } from './context/WishlistContext'
 import { ContinuePlanningProvider } from './context/ContinuePlanningContext'
 import { SellOutProvider } from './context/SellOutContext'
@@ -140,7 +140,21 @@ function HomePage() {
           ? `${currentLocation} tours, things to do in ${currentLocation}, ${currentLocation} Ghana, Ghana tours, book tours in ${currentLocation}`
           : 'Ghana tours, things to do in Ghana, Ghana experiences, Accra tours, Cape Coast tours, Ghana safari, Ghana food tour, Ghana cultural tour, West Africa tours, African vacation, Ghana travel'
         }
-        jsonLd={[buildWebSiteSchema()]}
+        jsonLd={[
+          buildWebSiteSchema(),
+          // The catalogue, as structured data. The cards and their 33 crawlable
+          // links are in the HTML either way; this is what puts the prices and
+          // ratings in front of a crawler that does not execute the JS. Empty
+          // before the homepage fetch resolves, which buildItemList correctly
+          // renders as numberOfItems: 0 rather than omitting the block.
+          buildHomepageItemListSchema([
+            ...(data?.recommended ?? []),
+            ...(data?.topRated ?? []),
+            ...(data?.sellOut ?? []),
+            ...(data?.new ?? []),
+            ...(data?.offers ?? []),
+          ]),
+        ]}
       />
       <GoogleOneTapPrompt />
       <Hero />
