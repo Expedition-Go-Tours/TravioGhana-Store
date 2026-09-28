@@ -11,6 +11,7 @@ import { useLocationSearch } from '../context/LocationSearchContext'
 import SEO, { buildItemListSchema, buildBreadcrumbSchema } from '../components/SEO'
 import { useAllExpeditionTours, useTourFilterOptions, type TourCardData } from '../hooks/useExpeditionTours'
 import { useSectionTourIds, useHomepageOffers, useAttractionTours, useLikelySellOut, type HomepageOfferTour } from '../hooks/useHomepageSections'
+import Footer from '../components/Footer'
 import './AllToursPage.css'
 
 const PAGE_SIZE = 12
@@ -811,6 +812,10 @@ export default function AllToursPage() {
           </>
         )}
       </AnimatePresence>
+
+      {/* Every other page ends with the footer; without it this page was the
+          only inventory route with no internal links out of it at all. */}
+      <Footer />
     </div>
   )
 }

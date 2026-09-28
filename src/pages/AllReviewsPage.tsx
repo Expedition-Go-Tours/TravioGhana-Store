@@ -6,6 +6,7 @@ import ExternalReviewCard from '../components/ExternalReviewCard'
 import StarRating from '../components/StarRating'
 import { useAllExternalReviews, useExternalReviewStats } from '../hooks/useExternalReviews'
 import SEO, { buildBreadcrumbSchema, SITE_URL } from '../components/SEO'
+import Footer from '../components/Footer'
 import './AllReviewsPage.css'
 
 const PAGE_SIZE = 20
@@ -440,6 +441,10 @@ export default function AllReviewsPage() {
           </>
         )}
       </AnimatePresence>
+
+      {/* Every other page ends with the footer; without it this page was the
+          only inventory route with no internal links out of it at all. */}
+      <Footer />
     </div>
   )
 }
