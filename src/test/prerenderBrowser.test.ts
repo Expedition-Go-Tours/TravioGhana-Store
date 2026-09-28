@@ -12,6 +12,8 @@ import {
   isApiRequest,
   toOrigin,
   resolveApiOrigins,
+  prerenderApiOrigins,
+  DEFAULT_API_ORIGIN,
   readDotEnvValue,
   routeProblems,
 } from '../../scripts/prerender-static.mjs'
@@ -459,5 +461,69 @@ describe('prerender API proxy', () => {
     expect([...resolveApiOrigins([undefined, '', 'not a url', '   '])]).toEqual([])
     expect(toOrigin('not a url')).toBeNull()
     expect(toOrigin(undefined)).toBeNull()
+  })
+})
+
+/**
+ * The homepage prerender failed on Vercel because the script resolved no API
+ * origin at all: no .env (gitignored, so absent on a build machine) and
+ * VITE_API_URL never set as a project env var. With no origin the proxy could
+ * not forward the product calls, the page captured zero cards, and the
+ * inventory gate failed the build.
+ *
+ * These are written as the CI condition rather than as a general property,
+ * because the general property is what made the bug invisible in the first
+ * place: reading env from inside the function would have been untestable.
+ */
+describe('picking the API origin in a build environment', () => {
+  const CI = { env: {}, dotEnv: '' }
+
+  it('still resolves the production API when nothing at all is set', () => {
+    // The exact state of a Vercel build machine before the fallback existed.
+    expect([...prerenderApiOrigins(CI)]).toEqual([DEFAULT_API_ORIGIN])
+  })
+
+  it('resolves something that is a usable origin, not just any string', () => {
+    const [origin] = [...prerenderApiOrigins(CI)]
+    expect(toOrigin(origin)).toBe(DEFAULT_API_ORIGIN)
+  })
+
+  it('prefers an explicit PRERENDER_API_ORIGIN over the default', () => {
+    const origins = prerenderApiOrigins({
+      env: { PRERENDER_API_ORIGIN: 'https://staging.example.com' },
+      dotEnv: '',
+    })
+    expect(origins.has('https://staging.example.com')).toBe(true)
+    expect(origins.has(DEFAULT_API_ORIGIN)).toBe(true)
+  })
+
+  it('prefers VITE_API_URL over the default', () => {
+    const origins = prerenderApiOrigins({
+      env: { VITE_API_URL: 'https://api.example.com/api/travioghana' },
+      dotEnv: '',
+    })
+    expect(origins.has('https://api.example.com')).toBe(true)
+  })
+
+  it('reads a local .env when the environment says nothing', () => {
+    const dotEnv = 'VITE_API_URL="https://local.example.com/api/travioghana"\n'
+    const origins = prerenderApiOrigins({ env: {}, dotEnv })
+    expect(origins.has('https://local.example.com')).toBe(true)
+  })
+
+  it('keeps the default when .env holds junk instead of a URL', () => {
+    const origins = prerenderApiOrigins({ env: {}, dotEnv: 'VITE_API_URL=not a url\n' })
+    expect([...origins]).toEqual([DEFAULT_API_ORIGIN])
+  })
+
+  it('agrees with the sitemap script, whose step kept passing on Vercel', () => {
+    // generate-sitemap.cjs fell back to this same host. If the two drift, the
+    // sitemap can advertise tours the prerender never captured, and the gate
+    // stays green about it.
+    const sitemap = readFileSync(
+      resolve(__dirname, '..', '..', 'scripts', 'generate-sitemap.cjs'),
+      'utf8',
+    )
+    expect(sitemap).toContain(DEFAULT_API_ORIGIN)
   })
 })

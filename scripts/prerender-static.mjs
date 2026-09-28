@@ -108,6 +108,16 @@ const CARD_TIMEOUT_MS = 15_000
  */
 const INVENTORY_ROUTES = new Set(['/'])
 
+/**
+ * Where the API lives when nothing says otherwise.
+ *
+ * The same fallback generate-sitemap.cjs has carried all along, and for the
+ * same reason: a build machine has no .env, so a value that is only ever read
+ * from .env is a value CI does not have. Without this the homepage captured
+ * zero cards on Vercel and the inventory gate failed the deploy.
+ */
+export const DEFAULT_API_ORIGIN = 'https://apiv1.travioafrica.com'
+
 export function isInventoryRoute(route) {
   return INVENTORY_ROUTES.has(route)
 }
@@ -137,6 +147,30 @@ export function resolveApiOrigins(values) {
     }
   }
   return out
+}
+
+/**
+ * The API origins a real prerender run proxies, from the sources it actually
+ * has, most specific first: PRERENDER_API_ORIGIN, then the build-time
+ * VITE_API_URL, then .env for a local run, then DEFAULT_API_ORIGIN.
+ *
+ * The default is not a convenience — it is what makes CI work. A build machine
+ * has no .env (it is gitignored) and VITE_API_URL was never set as a Vercel
+ * project env var, so with only the first three sources the script resolved
+ * nothing, captured zero product cards, and the inventory gate failed the
+ * deploy. generate-sitemap.cjs has carried the same fallback all along, which
+ * is why its step kept passing while this one did not.
+ *
+ * Taking env and dotEnv as arguments rather than reading them here is what
+ * makes the CI case — everything absent — a thing a test can state.
+ */
+export function prerenderApiOrigins({ env, dotEnv }) {
+  return resolveApiOrigins([
+    env.PRERENDER_API_ORIGIN,
+    env.VITE_API_URL,
+    readDotEnvValue(dotEnv, 'VITE_API_URL'),
+    DEFAULT_API_ORIGIN,
+  ])
 }
 
 /**
@@ -684,29 +718,18 @@ async function main() {
   const origin = `http://127.0.0.1:${port}`
   const browser = await ensureBrowser()
 
-  // The API origin the proxy answers for. VITE_API_URL is a build-time variable,
-  // so it is normally in the environment by the time this runs; .env is the
-  // fallback for a local run. A miss is not fatal here — the inventory gate in
-  // routeProblems() turns it into a loud, specific failure rather than the
-  // silent empty capture this replaces.
-  let apiOrigins = new Set()
+  let dotEnv = ''
   try {
-    apiOrigins = resolveApiOrigins([
-      process.env.PRERENDER_API_ORIGIN,
-      process.env.VITE_API_URL,
-      readDotEnvValue(readFileSync(join(ROOT_DIR(), '.env'), 'utf8'), 'VITE_API_URL'),
-    ])
+    dotEnv = readFileSync(join(ROOT_DIR(), '.env'), 'utf8')
   } catch {
-    // No .env on disk is normal in CI; the env vars above still apply.
+    // No .env on disk is the normal case in CI; the env vars and the default
+    // below still apply.
   }
-  if (apiOrigins.size === 0) {
-    console.warn(
-      '[prerender] WARNING — no API origin resolved, so / will capture zero product\n' +
-        '             cards and be skipped. Set VITE_API_URL or PRERENDER_API_ORIGIN.'
-    )
-  } else {
-    console.log(`[prerender] proxying API origin(s) via node: ${[...apiOrigins].join(', ')}`)
-  }
+  const apiOrigins = prerenderApiOrigins({
+    env: process.env,
+    dotEnv,
+  })
+  console.log(`[prerender] proxying API origin(s) via node: ${[...apiOrigins].join(', ')}`)
 
   const results = []
   const skipped = []

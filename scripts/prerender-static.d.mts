@@ -21,6 +21,18 @@ export function relativizeOrigin(html: string, origin: string | undefined): stri
 /** Routes required to carry product cards, not just text. */
 export function isInventoryRoute(route: string): boolean
 
+/** Where the API lives when no env var, .env file or CLI flag says otherwise. */
+export const DEFAULT_API_ORIGIN: string
+
+/**
+ * The origins a real prerender run proxies, from the sources it actually has.
+ * Every source may be absent — that is the CI case, and the default covers it.
+ */
+export function prerenderApiOrigins(sources: {
+  env: Record<string, string | undefined>
+  dotEnv: string
+}): Set<string>
+
 /** Bare origin from a base URL, or null if it is not a URL at all. */
 export function toOrigin(value: unknown): string | null
 
