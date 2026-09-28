@@ -162,6 +162,7 @@ function renderStory(story, siblings) {
     <meta name="twitter:image" content="${escapeHtml(image)}" />
     <link rel="alternate" hrefLang="x-default" href="${escapeHtml(url)}" />
     <link rel="alternate" hrefLang="en" href="${escapeHtml(url)}" />
+    <script type="application/ld+json">${JSON.stringify(brandOrganization())}</script>
     <script type="application/ld+json">${JSON.stringify(articleSchema)}</script>
     <script type="application/ld+json">${JSON.stringify(breadcrumbSchema)}</script>
     <style>
@@ -302,6 +303,7 @@ function renderIndex(stories) {
     <meta name="twitter:title" content="${escapeHtml(title)}" />
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${escapeHtml(image)}" />
+    <script type="application/ld+json">${JSON.stringify(brandOrganization())}</script>
     <script type="application/ld+json">${JSON.stringify(breadcrumbSchema)}</script>
     <script type="application/ld+json">${JSON.stringify(itemListSchema)}</script>
     <style>

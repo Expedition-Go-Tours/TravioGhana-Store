@@ -242,7 +242,33 @@ describe('the story generator agrees with the brand module', () => {
   it('gives the Article publisher and the hub ItemList the brand', () => {
     expect(generator).toMatch(/publisher: brandOrganization\(\)/)
     // Once for the Article, once for the /stories hub ItemList.
-    expect(generator.match(/brandOrganization\(\)/g)).toHaveLength(3)
+    expect(generator.match(/publisher: brandOrganization\(\)/g)).toHaveLength(2)
+  })
+
+  it('emits a top-level Organization on every page it generates', () => {
+    // The same invariant the React SEO component now holds. These pages reach
+    // the brand twice over — the list's publisher, and this — and that is the
+    // same duplication the tour pages already have in Product.brand and
+    // offers.seller. What matters is that the site-wide rule is now actually
+    // true everywhere, not true of the pages that remembered.
+    //
+    // Checked per template rather than by counting occurrences: a count is
+    // satisfied by adding a fourth call to a helper nobody renders, whereas
+    // this asks whether the first thing each page emits is the brand.
+    const EMIT = /<script type="application\/ld\+json">\$\{JSON\.stringify\((\w+)\(.*?\)\}<\/script>/g
+    const templates = [
+      // The story page template, and the /stories hub template. Each starts at
+      // the schema it is built around and runs to the next one.
+      generator.slice(0, generator.indexOf('const itemListSchema')),
+      generator.slice(generator.indexOf('const itemListSchema')),
+    ]
+
+    expect(templates).toHaveLength(2)
+    for (const [i, source] of templates.entries()) {
+      const first = [...source.matchAll(EMIT)].map((m) => m[1])
+      expect(first.length, `template ${i} emits no JSON-LD at all`).toBeGreaterThan(0)
+      expect(first[0], `template ${i} does not open with the brand`).toBe('brandOrganization')
+    }
   })
 
   it('no longer hand-rolls a publisher that names no profile', () => {
