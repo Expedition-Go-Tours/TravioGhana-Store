@@ -27,61 +27,93 @@
       "source": "TRIPADVISOR",
       "tourTitle": "Cape Coast Castle, Elmina Castle & Kakum National Park Day Tour",
       "tourUrl": "https://www.tripadvisor.com/AttractionProductReview-g293797-d24189724-Cape_Coast_Castle_Elmina_Castle_Kakum_National_Park_Day_Tour-Accra_Greater_Accra.html",
-      "rating": null,
-      "reviewCount": null,
-      "distribution": null
+      "rating": 4.9,
+      "reviewCount": 588,
+      "distribution": {
+        "2": 2,
+        "3": 5,
+        "4": 33,
+        "5": 548
+      }
     },
     {
       "id": "tripadvisor-25225851",
       "source": "TRIPADVISOR",
       "tourTitle": "From Accra: Waterfalls, Aburi Gardens & Cocoa Farm Day Tour",
       "tourUrl": "https://www.tripadvisor.com/AttractionProductReview-g293797-d25225851-From_Accra_Waterfalls_Aburi_Gardens_Cocoa_Farm_Day_Tour-Accra_Greater_Accra.html",
-      "rating": null,
-      "reviewCount": null,
-      "distribution": null
+      "rating": 4.8,
+      "reviewCount": 104,
+      "distribution": {
+        "2": 2,
+        "3": 1,
+        "4": 8,
+        "5": 93
+      }
     },
     {
       "id": "tripadvisor-25217516",
       "source": "TRIPADVISOR",
       "tourTitle": "Accra Guided City Tour: Cultural and Historical Experience",
       "tourUrl": "https://www.tripadvisor.com/AttractionProductReview-g293797-d25217516-Accra_Guided_City_Tour_Cultural_and_Historical_Experience-Accra_Greater_Accra.html",
-      "rating": null,
-      "reviewCount": null,
-      "distribution": null
+      "rating": 4.9,
+      "reviewCount": 173,
+      "distribution": {
+        "2": 0,
+        "3": 4,
+        "4": 6,
+        "5": 163
+      }
     },
     {
       "id": "tripadvisor-25275033",
       "source": "TRIPADVISOR",
       "tourTitle": "Shai Hills Safari & Akosombo Boat Cruise Day Tour",
       "tourUrl": "https://www.tripadvisor.com/AttractionProductReview-g293797-d25275033-Shia_Hills_Safari_Akosombo_Boat_Cruise_Day_Tour-Accra_Greater_Accra.html",
-      "rating": null,
-      "reviewCount": null,
-      "distribution": null
+      "rating": 4.8,
+      "reviewCount": 39,
+      "distribution": {
+        "2": 0,
+        "3": 2,
+        "4": 3,
+        "5": 34
+      }
     },
     {
       "id": "tripadvisor-25225556",
       "source": "TRIPADVISOR",
       "tourTitle": "From Accra: Private Airport Transfer Pickup & Drop off Services",
       "tourUrl": "https://www.tripadvisor.com/AttractionProductReview-g293797-d25225556-From_Accra_Private_Airport_Transfer_Pickup_Drop_off_Services-Accra_Greater_Accra.html",
-      "rating": null,
-      "reviewCount": null,
-      "distribution": null
+      "rating": 5,
+      "reviewCount": 6,
+      "distribution": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 6
+      }
     },
     {
       "id": "tripadvisor-25225555",
       "source": "TRIPADVISOR",
       "tourTitle": "The Kumasi Cultural and Heritage Day Tour",
       "tourUrl": "https://www.tripadvisor.com/AttractionProductReview-g293797-d25225555-The_Kumasi_Cultural_and_Heritage_Day_Tour-Accra_Greater_Accra.html",
-      "rating": null,
-      "reviewCount": null,
-      "distribution": null
+      "rating": 5,
+      "reviewCount": 1,
+      "distribution": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 1
+      }
     },
     {
       "id": "tripadvisor-34552807",
       "source": "TRIPADVISOR",
       "tourTitle": "Ghanaian Cultural Art Tour and Scented Candle Making Experience",
       "tourUrl": "https://www.tripadvisor.com/AttractionProductReview-g293797-d34552807-Ghanaian_Cultural_Art_Tour_and_Scented_Candle_Making_Experience-Accra_Greater_Accr.html",
-      "rating": null,
+      "rating": 4.9,
       "reviewCount": null,
       "distribution": null
     },
@@ -90,9 +122,14 @@
       "source": "TRIPADVISOR",
       "tourTitle": "Waterfalls Massage with Aburi Gardens and Cocoa Farm Tour",
       "tourUrl": "https://www.tripadvisor.com/AttractionProductReview-g293797-d34552809-Waterfalls_Massage_with_Aburi_Gardens_and_Cocoa_Farm_Tour-Accra_Greater_Accra.html",
-      "rating": null,
-      "reviewCount": null,
-      "distribution": null
+      "rating": 1,
+      "reviewCount": 0,
+      "distribution": {
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      }
     },
     {
       "id": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",

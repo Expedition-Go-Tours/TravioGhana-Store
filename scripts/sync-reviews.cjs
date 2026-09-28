@@ -198,29 +198,109 @@ function keepPreviousForEmptySources(newRows, previousRows) {
   return out
 }
 
-/** Keep previous per-product totals for products this run did not re-scrape. */
+/**
+ * Keep previous per-product totals for products this run did not re-scrape, and
+ * for products whose header this run FAILED to read.
+ *
+ * The second case is the one that bit us. The product header is scraped from a
+ * platform's own summary badge; when the platform blocks the request, changes
+ * its markup, or renders the badge late, the read returns nulls while the
+ * per-review rows still scrape fine (they come from the review cards, not the
+ * badge). A product re-scraped in that state was previously overwritten with
+ * rating: null / reviewCount: null, silently deleting a good number that the
+ * previous run had — and because `buildProductSchema` only emits
+ * aggregateRating when BOTH values are truthy, the page then published no
+ * review markup at all. Rows kept accumulating (1,125 -> 1,243) while every
+ * TripAdvisor total sat at null, so nothing looked wrong except the SEO.
+ *
+ * A null header means "we did not learn it this run", not "it is zero". Keep
+ * the last known value, and only ever let a fresh non-null value win.
+ */
 function mergeProducts(newProducts, previousProducts) {
-  const seen = new Set(newProducts.map((p) => `${p.source}:${p.id}`))
-  const out = [...newProducts]
+  const previousByKey = new Map(previousProducts.map((p) => [`${p.source}:${p.id}`, p]))
+  const seen = new Set()
+
+  const out = newProducts.map((p) => {
+    const key = `${p.source}:${p.id}`
+    seen.add(key)
+    const previous = previousByKey.get(key)
+    if (!previous) return p
+
+    // Only carry forward the header fields this run could not read. Any field
+    // the new run DID read wins, so a genuine rating correction still lands.
+    const recovered = { ...p }
+    const carried = []
+    for (const field of ['rating', 'reviewCount', 'distribution']) {
+      if (recovered[field] != null) continue
+      if (previous[field] == null) continue
+      recovered[field] = previous[field]
+      carried.push(field)
+    }
+    if (carried.length > 0) {
+      console.log(
+        `    ${key}: header unavailable this run — keeping previous ${carried.join(', ')}`
+      )
+    }
+    return recovered
+  })
+
   for (const p of previousProducts) {
     if (!seen.has(`${p.source}:${p.id}`)) out.push(p)
   }
   return out
 }
 
-/** Read the product header (rating / official review count / distribution). */
+const EMPTY_HEADER = { rating: null, reviewCount: null, distribution: null }
+
+/**
+ * Read the product header (rating / official review count / distribution).
+ *
+ * The badge is the platform's own summary element and it is frequently the
+ * LAST thing on the page to render, while the review cards the rest of the
+ * scrape depends on appear early. Reading it once, on the same tick as the
+ * navigation resolving, therefore returns an empty string on a slow render and
+ * the whole header silently degrades to nulls even though every individual
+ * review below it scraped fine. So: read, and if we got nothing usable, wait
+ * for it to appear and read again before giving up.
+ *
+ * `document.body.innerText` is kept as a secondary source because the badge
+ * markup is renamed far more often than the human-readable summary text is.
+ */
 async function readProductHeader(page, source) {
-  const texts = await page.evaluate(() => {
+  const parse = (texts) => {
+    const merged = `${texts.badge}\n${texts.body}`
+    const header = source === 'TRIPADVISOR'
+      ? parseTripAdvisorProductHeader(merged)
+      : parseGetYourGuideProductHeader(merged)
+    return header
+  }
+
+  const read = () => page.evaluate(() => {
     const badge = document.querySelector('[data-automation="apr-review-rating-badge"]')
     return {
       badge: badge ? (badge.innerText || '').trim() : '',
       body: document.body.innerText || '',
     }
   }).catch(() => ({ badge: '', body: '' }))
-  const merged = `${texts.badge}\n${texts.body}`
-  return source === 'TRIPADVISOR'
-    ? parseTripAdvisorProductHeader(merged)
-    : parseGetYourGuideProductHeader(merged)
+
+  const first = parse(await read())
+  if (first.reviewCount != null || first.rating != null) return first
+
+  // Nothing usable yet. Give the badge a bounded window to show up rather than
+  // recording a null that will be carried forward by mergeProducts.
+  try {
+    await page.waitForFunction(
+      () => {
+        const el = document.querySelector('[data-automation="apr-review-rating-badge"]')
+        return Boolean(el && (el.innerText || '').trim())
+      },
+      { timeout: 8000 }
+    )
+  } catch {
+    // Never appeared; fall through and take the second read regardless.
+  }
+  const second = parse(await read())
+  return second.reviewCount != null || second.rating != null ? second : first
 }
 
 // ─── TripAdvisor Scraper ─────────────────────────────────────────────────────
