@@ -6,7 +6,6 @@ import {
   hasToursService,
   hasTransportService,
   isValidEmail,
-  laterDocumentsFor,
   normalizeWebsite,
   primaryDocumentType,
   requiredSupplierDocuments,
@@ -162,38 +161,30 @@ describe('required + later documents', () => {
     })
   })
 
-  it('lists the documents TravioGhana may ask for later', () => {
-    // Individual guide selling tours → GTA licence only.
-    expect(laterDocumentsFor('individual_guide', ['tours']).map((doc) => doc.name)).toEqual([
-      'Ghana Tourism Authority licence',
-    ])
-    // Independent driver → the vehicle set, regardless of services.
-    expect(laterDocumentsFor('independent_driver', []).map((doc) => doc.name)).toEqual([
-      "Driver's licence",
-      'Vehicle registration',
-      'Vehicle insurance',
-      'Roadworthiness',
-    ])
-    // Transport company → the vehicle set (certificate is required up front now).
-    expect(laterDocumentsFor('transport_company', ['airport_transfers']).map((doc) => doc.name)).toEqual([
-      "Driver's licence",
-      'Vehicle registration',
-      'Vehicle insurance',
-      'Roadworthiness',
-    ])
-    // Registered company with transfers → vehicle registration/insurance.
-    expect(laterDocumentsFor('registered_company', ['airport_transfers']).map((doc) => doc.name)).toEqual([
-      'Vehicle registration',
-      'Vehicle insurance',
-    ])
-    // Registered company selling tours only → GTA licence + liability insurance.
-    expect(laterDocumentsFor('registered_company', ['tours']).map((doc) => doc.name)).toEqual([
-      'Ghana Tourism Authority licence',
-      'Public liability / activity insurance',
-    ])
-    // Nothing further to ask for yet.
-    expect(laterDocumentsFor('sole_proprietor', [])).toEqual([])
-    expect(laterDocumentsFor('experience_host', [])).toEqual([])
+  it('keeps the storefront free of a local "later documents" copy', async () => {
+    // The "later, if needed" list is fetched from GET /suppliers/requirements —
+    // a local copy here would be able to drift from the backend again.
+    const registrationModule = await import('./supplierRegistration')
+    expect('laterDocumentsFor' in registrationModule).toBe(false)
+  })
+
+  it('matches the six wizard cards to the backend enum mapping served by /requirements', () => {
+    // Mirrors SUPPLIER_CHOICES in the backend requirements engine. The wizard
+    // sends supplierChoice + services to GET /suppliers/requirements, and the
+    // answer drives both the step-5 list and the dashboard checklist.
+    const expectedMapping: Record<string, { supplierType: string; businessType: 'company' | 'individual' }> = {
+      registered_company: { supplierType: 'TOUR_COMPANY', businessType: 'company' },
+      sole_proprietor: { supplierType: 'TOUR_COMPANY', businessType: 'individual' },
+      individual_guide: { supplierType: 'TOUR_GUIDE', businessType: 'individual' },
+      experience_host: { supplierType: 'OTHER_SERVICE_PROVIDER', businessType: 'individual' },
+      transport_company: { supplierType: 'TRANSPORTATION_PROVIDER', businessType: 'company' },
+      independent_driver: { supplierType: 'VEHICLE_OPERATOR', businessType: 'individual' },
+    }
+    expect(SUPPLIER_TYPE_OPTIONS.map((option) => option.id)).toEqual(Object.keys(expectedMapping))
+    for (const option of SUPPLIER_TYPE_OPTIONS) {
+      expect(option.supplierType).toBe(expectedMapping[option.id].supplierType)
+      expect(option.businessType).toBe(expectedMapping[option.id].businessType)
+    }
   })
 })
 
@@ -360,6 +351,9 @@ describe('buildSupplierPayload', () => {
     const payload = buildSupplierPayload(filledIndividualForm())
 
     expect(payload.get('supplierType')).toBe('TOUR_GUIDE')
+    // The six-way choice travels with the application so the backend can store
+    // it and re-derive the exact "later" requirements for the dashboard.
+    expect(payload.get('supplierChoice')).toBe('individual_guide')
 
     const business = json(payload, 'businessInfo')
     expect(business).toMatchObject({

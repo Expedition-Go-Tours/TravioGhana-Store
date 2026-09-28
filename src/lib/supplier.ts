@@ -128,6 +128,62 @@ export function documentTypeLabel(type?: string | null): string {
 }
 
 /**
+ * One document in the per-operator requirements matrix, as computed by the
+ * backend (GET /suppliers/requirements). The label and detail strings ARE the
+ * copy the wizard and the supplier dashboard both render — there is no
+ * storefront-side copy anymore, which is what keeps them identical.
+ */
+export interface RequirementDocument {
+  type: string
+  label: string
+  detail: string
+  required: boolean
+  timing: 'upfront' | 'later' | 'per_vehicle' | 'per_guide'
+  ownerType: 'SUPPLIER' | 'VEHICLE' | 'GUIDE'
+  enforced: boolean
+}
+
+export interface SupplierRequirements {
+  supplierType: string
+  supplierChoice: string | null
+  supplierChoiceLabel: string | null
+  // The 30-day window for the non-required documents, counted from when the
+  // account goes live. Served by the backend so the signup promise and the
+  // dashboard countdown can never drift apart.
+  documentationGraceDays: number
+  documents: RequirementDocument[]
+  vehicleDocuments: RequirementDocument[]
+  guideDocuments: RequirementDocument[]
+  vehicles: 'required' | 'optional' | 'hidden'
+  guides: 'required' | 'optional' | 'hidden'
+}
+
+/**
+ * Fetch the verification matrix for a PROPOSED supplier choice + services.
+ *
+ * This is the single source of the wizard's "later, if needed" list (and the
+ * up-front set while it is loading). It calls the backend's requirements
+ * endpoint rather than keeping a copy, so what an applicant is told at signup
+ * is exactly what the dashboard will later ask for. Returns null on any
+ * failure so the form can degrade (the up-front docs are also enforced
+ * server-side, and the local kind-based fallback matches them exactly).
+ */
+export async function fetchSupplierRequirements(
+  params: { supplierChoice?: string | null; services?: string[] }
+): Promise<SupplierRequirements | null> {
+  try {
+    const query = new URLSearchParams()
+    if (params.supplierChoice) query.set('supplierChoice', params.supplierChoice)
+    ;(params.services ?? []).forEach((service) => query.append('services', service))
+    return (await apiFetch<{ requirements: SupplierRequirements }>(
+      `/suppliers/requirements?${query.toString()}`
+    ))?.requirements ?? null
+  } catch {
+    return null
+  }
+}
+
+/**
  * Submit a supplier application.
  * The payload must be multipart/form-data: each JSON section is appended as a
  * JSON-string field, and documents as file fields (matches the backend route

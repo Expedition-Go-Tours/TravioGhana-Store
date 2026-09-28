@@ -6,6 +6,7 @@ import {
   createEmptySupplierApplicationForm,
   saveSupplierApplicationDraft,
 } from '@/lib/supplierApplicationDraft'
+import { fetchSupplierRequirements } from '@/lib/supplier'
 
 const mocks = vi.hoisted(() => ({
   user: null as null | { id: string; name?: string; email?: string; hasPassword?: boolean },
@@ -36,6 +37,9 @@ vi.mock('@/lib/auth', () => ({
 vi.mock('@/lib/supplier', () => ({
   applyAsSupplier: mocks.applyAsSupplier,
   getSupplierApplicationStatus: mocks.getSupplierApplicationStatus,
+  // Requirements come from the backend; the test env has no API, so the fetch
+  // degrades to null and the wizard uses its identical kind-based fallback.
+  fetchSupplierRequirements: vi.fn(async () => null),
   MAX_SUPPLIER_APPLICATION_FILES: 30,
   MAX_SUPPLIER_DOCUMENT_BYTES: 10 * 1024 * 1024,
 }))
@@ -106,6 +110,11 @@ describe('SupplierApplicationForm', () => {
     mocks.applyAsSupplier.mockResolvedValue({})
     mocks.getSupplierApplicationStatus.mockReset()
     mocks.getSupplierApplicationStatus.mockResolvedValue(null)
+    // Requirements come from the backend; default to "no requirements served"
+    // so the wizard uses its identical kind-based fallback unless a test
+    // explicitly serves a requirements payload.
+    vi.mocked(fetchSupplierRequirements).mockReset()
+    vi.mocked(fetchSupplierRequirements).mockResolvedValue(null)
     confettiMock.mockClear()
     confettiMock.reset.mockClear()
     localStorage.clear()
@@ -283,6 +292,37 @@ describe('SupplierApplicationForm', () => {
     expect(activeStepText()).toContain('1 document required')
     expect(activeStepText()).not.toContain('Business registration certificate')
     expect(document.querySelectorAll('.form-step.active .quick-upload-card')).toHaveLength(1)
+  })
+
+  it('promises the server-driven 30-day window for later documents', async () => {
+    // The grace period is a backend value — the wizard must promise exactly
+    // what the dashboard will later demand, not a local copy of the number.
+    vi.mocked(fetchSupplierRequirements).mockResolvedValue({
+      supplierType: 'TOUR_GUIDE',
+      supplierChoice: 'individual_guide',
+      supplierChoiceLabel: 'Individual Tour Guide',
+      documentationGraceDays: 30,
+      documents: [
+        { type: 'GHANA_CARD', label: 'Ghana Card', detail: 'Goes here at registration.', required: true, timing: 'upfront', ownerType: 'SUPPLIER', enforced: true },
+        { type: 'PROFILE_PHOTO', label: 'Profile photograph', detail: 'A clear recent photo.', required: true, timing: 'later', ownerType: 'SUPPLIER', enforced: false },
+        { type: 'TOUR_GUIDE_LICENCE', label: 'Tour guide licence', detail: 'Required to lead tours.', required: true, timing: 'later', ownerType: 'SUPPLIER', enforced: false },
+      ],
+      vehicleDocuments: [],
+      guideDocuments: [],
+      vehicles: 'hidden',
+      guides: 'hidden',
+    })
+    seedVerificationStep()
+    render(<SupplierApplicationForm />)
+    await waitFor(() => expect(activeStepText()).toContain('Quick verification'))
+
+    expect(screen.getByText('Documents to provide within 30 days of your account going live')).toBeInTheDocument()
+    // The server list arrives async — wait for its labels before asserting them.
+    await waitFor(() => expect(screen.getByText('Tour guide licence')).toBeInTheDocument())
+    expect(screen.getByText('Profile photograph')).toBeInTheDocument()
+    expect(screen.getByText(/you have 30 days to provide the rest from your supplier dashboard/)).toBeInTheDocument()
+    // Only the ID is required up front; the rest stay within the grace window.
+    expect(activeStepText()).toContain('1 document required')
   })
 
   it('shows a spinner while a photo is read, then a preview with remove', async () => {
