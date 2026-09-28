@@ -48,8 +48,15 @@ type SocialItem = {
 /**
  * Instagram/TikTok/YouTube hrefs come from `lib/brandSocial` so they cannot
  * drift from the Organization schema. Facebook and Tripadvisor stay inline:
- * the Facebook page is shared with the Expedition-Go brand and its slug is
- * unconfirmed, and Tripadvisor is a review profile rather than a brand handle.
+ * Tripadvisor is a review profile rather than a brand handle, and Facebook is
+ * deliberately kept out of the schema rather than merely out of the module.
+ *
+ * The Facebook link points at Expedition Go Tours LTD's page, which the
+ * business controls and which is worth sending visitors to. It is not in
+ * `sameAs` and must not be added there: the schema claims the brand *owns* that
+ * profile, and it does not — both slugs resolve to the same page id and it is
+ * the parent company's. A link is a link; `sameAs` is an identity claim, and
+ * only one of the two is true here.
  */
 const SOCIALS: SocialItem[] = [
   {

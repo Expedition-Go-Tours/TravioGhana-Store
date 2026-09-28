@@ -95,6 +95,55 @@ describe('sameAs agrees with the brand profiles', () => {
 })
 
 /**
+ * `sameAs` may only name a profile the brand actually owns.
+ *
+ * Facebook is the case that made this a rule. Facebook's `/p/` form is
+ * `name-slug-<numeric page id>`: the id is authoritative and the name is
+ * cosmetic. Two slugs — one reading "Travio Ghana", one "Expedition Go" —
+ * carried the same id, 61567042001418, and both served the page titled
+ * "Expedition Go Tours LTD | Accra". So the Organization was asserting that
+ * Travio Ghana and Expedition Go Tours LTD are the same entity, which is the
+ * exact failure these lists were rebuilt to fix.
+ *
+ * Unlike the Instagram handle, this one was checked rather than taken on trust:
+ * Facebook server-renders the real page title, so the answer is definitive.
+ */
+describe('sameAs names only profiles the brand owns', () => {
+  /** Every schema the storefront builds that carries a `sameAs`. */
+  const schemas = () => [
+    buildOrganizationSchema(),
+    buildItemListSchema([]),
+    buildProductSchema({
+      title: 'Kakum Canopy Walk',
+      description: 'Walk the canopy.',
+      image: 'https://www.travioghana.com/canopy.jpg',
+      price: 45,
+      currency: 'USD',
+      slug: 'kakum-canopy-walk',
+    }),
+  ]
+
+  it('names no Facebook page, anywhere', () => {
+    for (const schema of schemas()) {
+      const found = JSON.stringify(schema).match(/https:\/\/[^"]*facebook\.com[^"]*/gi) ?? []
+      expect(found, 'a schema claims a Facebook profile the brand does not own').toEqual([])
+    }
+  })
+
+  it('does not carry the parent company\u2019s page id', () => {
+    for (const schema of schemas()) {
+      expect(JSON.stringify(schema)).not.toContain('61567042001418')
+    }
+  })
+
+  it('is not merely emptied to satisfy the rule', () => {
+    // The exact list, so deleting the whole `sameAs` fails too. A test that
+    // only checks for absence passes on a schema that asserts nothing.
+    expect(buildOrganizationSchema().sameAs).toEqual([...BRAND_SOCIAL_URLS])
+  })
+})
+
+/**
  * A tour page has no top-level Organization, so the nested `brand` (and the
  * offer's `seller`) is the only place the brand is named. Left as a bare name
  * they tied to nothing, and 32 tour pages — the most numerous on the site —
@@ -292,10 +341,20 @@ describe('footer links agree with the schema', () => {
   })
 
   it('carries no hardcoded social handle to drift', () => {
-    // The literal URLs are what drifted. Only the unconfirmed Facebook page and
-    // the Tripadvisor review profile are still allowed to be inline.
+    // The literal URLs are what drifted. Only the Facebook link and the
+    // Tripadvisor review profile are still allowed to be inline.
     const hardcoded = footer.match(/https?:\/\/(www\.)?(instagram|tiktok|youtube)\.[^'"]*/g) ?? []
     expect(hardcoded, 'a social handle is hardcoded in the footer').toEqual([])
+  })
+
+  it('keeps the Facebook link, which is a link and not an identity claim', () => {
+    // Removing the parent's page from `sameAs` says nothing about whether the
+    // footer should still send visitors there — it should, the business
+    // controls it. What would be wrong is moving it into the schema, which
+    // the tests above forbid. Pinned so the two are not conflated.
+    expect(footer, 'the footer lost its Facebook link').toMatch(
+      /key: 'facebook'[\s\S]{0,160}?href: 'https:\/\/web\.facebook\.com\/p\/Expedition-Go-Tours-LTD-61567042001418\//,
+    )
   })
 
   it('still links every brand profile, so nothing is dropped from the UI', () => {

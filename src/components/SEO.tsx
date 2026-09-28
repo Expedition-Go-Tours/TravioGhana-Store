@@ -171,9 +171,24 @@ export function buildOrganizationSchema() {
     // entity's signals. These were three accounts belonging to the
     // Expedition-Go brand; see `lib/brandSocial` for the full account of it.
     sameAs: [
-      // Facebook stays inline: shared with the Expedition-Go brand, slug
-      // unconfirmed. Move it into brandSocial once it has a page of its own.
-      'https://www.facebook.com/p/Expedition-Go-Tours-LTD-61567042001418/',
+      // No Facebook, and the absence is deliberate.
+      //
+      // This brand has no Facebook page of its own. The URL that used to be
+      // here was not a near-miss — it was the parent company's page, which
+      // `sameAs` rendered as "Travio Ghana and Expedition Go Tours LTD are the
+      // same entity". Facebook's /p/ form is `name-slug-<numeric page id>`: the
+      // id is authoritative, the name is cosmetic, and both slugs in
+      // circulation carried id 61567042001418 and served the same page, titled
+      // "Expedition Go Tours LTD | Accra".
+      //
+      // A wrong sameAs is worse than a missing one. An absent profile is an
+      // absence; a wrong one is a falsehood in the field a knowledge panel acts
+      // on. The footer still links the page, which is honest — linking somewhere
+      // the business controls is not claiming to own it.
+      //
+      // To restore this, create a real Travio Ghana page and add it to
+      // `lib/brandSocial.ts` and to the backend's BRANDS config. One list or
+      // the other drifts, which is how this happened.
       ...BRAND_SOCIAL_URLS,
     ],
     contactPoint: {
