@@ -28,10 +28,10 @@ function copyMapboxWorker(): Plugin {
   return {
     name: 'copy-mapbox-worker',
     configResolved() {
-      const outDir = resolve(__dirname, 'public/mapbox-gl')
+      const outDir = resolve(import.meta.dirname, 'public/mapbox-gl')
       mkdirSync(outDir, { recursive: true })
       for (const f of files) {
-        copyFileSync(resolve(__dirname, 'node_modules/mapbox-gl/dist/esm', f), resolve(outDir, f))
+        copyFileSync(resolve(import.meta.dirname, 'node_modules/mapbox-gl/dist/esm', f), resolve(outDir, f))
       }
     },
   }
@@ -49,10 +49,10 @@ function copyMaplibreWorker(): Plugin {
   return {
     name: 'copy-maplibre-worker',
     configResolved() {
-      const outDir = resolve(__dirname, 'public/maplibre-gl')
+      const outDir = resolve(import.meta.dirname, 'public/maplibre-gl')
       mkdirSync(outDir, { recursive: true })
       for (const f of files) {
-        copyFileSync(resolve(__dirname, 'node_modules/maplibre-gl/dist', f), resolve(outDir, f))
+        copyFileSync(resolve(import.meta.dirname, 'node_modules/maplibre-gl/dist', f), resolve(outDir, f))
       }
     },
   }
@@ -68,7 +68,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(import.meta.dirname, './src'),
     },
     // One React instance, always. A second copy (from a nested install or a
     // duplicated chunk) breaks hooks and React.lazy in ways that surface as

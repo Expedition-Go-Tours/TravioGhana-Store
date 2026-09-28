@@ -1,0 +1,89 @@
+{
+  "label": "partnerships-after",
+  "profile": "midrange-4g",
+  "generatedAt": "2026-09-28T14:22:36.704Z",
+  "base": "http://localhost:4173",
+  "results": [
+    {
+      "route": "/partnerships",
+      "url": "http://localhost:4173/partnerships",
+      "wallClockMs": 10322,
+      "navigationError": null,
+      "metrics": {
+        "fcp": 1272,
+        "lcp": 1636,
+        "cls": 0,
+        "ttfb": 2,
+        "domContentLoaded": 1182,
+        "load": 1186,
+        "tbt": 61,
+        "longTasks": 4,
+        "longTaskDetail": [
+          {
+            "start": 3928,
+            "dur": 70
+          },
+          {
+            "start": 1117,
+            "dur": 66
+          },
+          {
+            "start": 1545,
+            "dur": 65
+          },
+          {
+            "start": 1186,
+            "dur": 60
+          }
+        ],
+        "domNodes": 907,
+        "layoutCount": 30,
+        "recalcStyleCount": 802,
+        "scriptDurationMs": 238,
+        "scrollLongTasks": 0,
+        "scrollMaxTask": 0,
+        "scrollTaskDetail": [],
+        "scrollBlockingMs": 0,
+        "scrollHeight": 9051
+      },
+      "network": {
+        "totalKB": 2642.1,
+        "totalRequests": 59,
+        "byType": {
+          "Document": {
+            "kb": 2.1,
+            "requests": 1
+          },
+          "Script": {
+            "kb": 419.6,
+            "requests": 29
+          },
+          "Font": {
+            "kb": 86.1,
+            "requests": 2
+          },
+          "Stylesheet": {
+            "kb": 59.7,
+            "requests": 7
+          },
+          "Manifest": {
+            "kb": 1,
+            "requests": 1
+          },
+          "Image": {
+            "kb": 2062.7,
+            "requests": 17
+          },
+          "Other": {
+            "kb": 8.8,
+            "requests": 1
+          },
+          "Fetch": {
+            "kb": 2.1,
+            "requests": 1
+          }
+        }
+      }
+    }
+  ]
+}

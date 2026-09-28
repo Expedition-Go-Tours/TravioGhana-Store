@@ -9,12 +9,34 @@
    the effects below. See src/styles/PartnershipsPage.css for the CSS notes.
    ========================================================================== */
 
-import { useEffect, useRef, useState, Fragment, type CSSProperties } from 'react'
+import { useCallback, useEffect, useRef, useState, Fragment, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
 import SEO, { buildBreadcrumbSchema } from '../components/SEO'
 import '@/styles/partner-pages.css'
 import '@/styles/PartnershipsPage.css'
+
+/**
+ * Rail photos come from `scripts/generate-partnership-images.cjs`, which
+ * resizes the Wikimedia Commons originals to their display footprint (2x) and
+ * ships them from this origin — the page used to hot-link 3.8 MB of Commons
+ * JPEGs through two redirects per image. The photography credits at the foot
+ * of the page carry the attribution.
+ */
+import capeCoastCastle from '../assets/partnerships/cape-coast-castle.webp'
+import accraSkyline from '../assets/partnerships/accra-skyline.webp'
+import makolaMarket from '../assets/partnerships/makola-market.webp'
+import kakumCanopy from '../assets/partnerships/kakum-canopy-walkway.webp'
+import accraTaxi from '../assets/partnerships/accra-taxi.webp'
+import wliWaterfall from '../assets/partnerships/wli-waterfall.webp'
+import bojoBeach from '../assets/partnerships/bojo-beach.webp'
+import kenteWeaving from '../assets/partnerships/kente-weaving.webp'
+import shaiHills from '../assets/partnerships/shai-hills.webp'
+import waakye from '../assets/partnerships/waakye.webp'
+import aburiGardens from '../assets/partnerships/aburi-gardens.webp'
+import voltaLake from '../assets/partnerships/volta-lake.webp'
+import elminaCastle from '../assets/partnerships/elmina-castle.webp'
+import materialImage from '../assets/partnerships/material.webp'
 
 /** The template's external-link arrow, repeated on nearly every CTA. */
 function LinkIcon({ className = 'link-icon' }: { className?: string }) {
@@ -80,22 +102,20 @@ const BENEFITS = [
   },
 ]
 
-const WIKIMEDIA = 'https://commons.wikimedia.org/wiki/Special:FilePath/'
-
 /** The rail's twelve cards — the five programmes told twice over, as the template has them. */
 const ROUTE_CARDS = [
-  { file: 'Cape_Coast_Castle.jpg?width=900', alt: 'Cape Coast Castle in Ghana', to: '/supplier/list-experience', label: 'Tour & activity suppliers', no: '01', h3: 'List tours, activities and experiences for travellers discovering Ghana.', cta: 'List your experience' },
-  { file: 'Accra_Skyline_-_Ghana.jpg?width=900', alt: 'Accra skyline in Ghana', to: '/hotels', label: 'Hotels & stays', no: '02', h3: 'List rooms or properties and connect guests with Ghana experiences.', cta: 'Explore stays partnership' },
-  { file: 'Street_Outside_Makola_Market%2C_Accra%2C_Ghana.JPG?width=900', alt: 'Street outside Makola Market in Accra', to: '/travel-agents', label: 'Travel agents', no: '03', h3: 'Recommend curated Ghana experiences and manage bookings for your clients.', cta: 'Explore agent network' },
-  { file: 'Canopy_Walkway_Kakum_National_Park.jpg?width=900', alt: 'Canopy walkway at Kakum National Park', to: '/content-creators', label: 'Content creators', no: '04', h3: 'Choose experiences, tell their stories and share your own booking link.', cta: 'Explore creator programme' },
-  { file: 'Taxi-accra.jpg?width=900', alt: 'Taxi travelling in Accra', to: '/transport-providers', label: 'Transport providers', no: '05', h3: 'Show your fleet and respond to suitable journey requests.', cta: 'Explore transport partnership' },
-  { file: 'Wli_Agumatse_Waterfall_aerial_view.jpg?width=900', alt: 'Wli waterfall in Ghana', to: '/supplier/list-experience', label: 'Tour & activity suppliers', no: '06', h3: 'List tours, activities and experiences for travellers discovering Ghana.', cta: 'List your experience' },
-  { file: 'People_at_the_bojo_beach_resort.jpg?width=900', alt: 'Visitors at Bojo Beach Resort near Accra', to: '/hotels', label: 'Hotels & stays', no: '07', h3: 'List rooms or properties and connect guests with Ghana experiences.', cta: 'Explore stays partnership' },
-  { file: 'Kente_weaving_in_Ghana.jpg?width=900', alt: 'A Ghanaian craft maker weaving kente', to: '/content-creators', label: 'Content creators', no: '08', h3: 'Choose experiences, tell their stories and share your own booking link.', cta: 'Explore creator programme' },
-  { file: 'Shai_Hills_Ghana.jpg?width=900', alt: 'Landscape at Shai Hills in Ghana', to: '/transport-providers', label: 'Transport providers', no: '09', h3: 'Show your fleet and respond to suitable journey requests.', cta: 'Explore transport partnership' },
-  { file: 'Waakye%2C_a_delicious_delicacy_in_Ghana.jpg?width=900', alt: 'A Ghanaian waakye dish', to: '/travel-agents', label: 'Travel agents', no: '10', h3: 'Recommend curated Ghana experiences and manage bookings for your clients.', cta: 'Explore agent network' },
-  { file: 'Aburi_Botanical_Gardens.jpg?width=900', alt: 'Palm trees at Aburi Botanical Gardens', to: '/hotels', label: 'Hotels & stays', no: '11', h3: 'List rooms or properties and connect guests with Ghana experiences.', cta: 'Explore stays partnership' },
-  { file: 'Volta_Lake_01.jpg?width=900', alt: 'Lake Volta near Sogakope in Ghana', to: '/supplier/list-experience', label: 'Tour & activity suppliers', no: '12', h3: 'List tours, activities and experiences for travellers discovering Ghana.', cta: 'List your experience' },
+  { img: capeCoastCastle, alt: 'Cape Coast Castle in Ghana', to: '/supplier/list-experience', label: 'Tour & activity suppliers', no: '01', h3: 'List tours, activities and experiences for travellers discovering Ghana.', cta: 'List your experience' },
+  { img: accraSkyline, alt: 'Accra skyline in Ghana', to: '/hotels', label: 'Hotels & stays', no: '02', h3: 'List rooms or properties and connect guests with Ghana experiences.', cta: 'Explore stays partnership' },
+  { img: makolaMarket, alt: 'Street outside Makola Market in Accra', to: '/travel-agents', label: 'Travel agents', no: '03', h3: 'Recommend curated Ghana experiences and manage bookings for your clients.', cta: 'Explore agent network' },
+  { img: kakumCanopy, alt: 'Canopy walkway at Kakum National Park', to: '/content-creators', label: 'Content creators', no: '04', h3: 'Choose experiences, tell their stories and share your own booking link.', cta: 'Explore creator programme' },
+  { img: accraTaxi, alt: 'Taxi travelling in Accra', to: '/transport-providers', label: 'Transport providers', no: '05', h3: 'Show your fleet and respond to suitable journey requests.', cta: 'Explore transport partnership' },
+  { img: wliWaterfall, alt: 'Wli waterfall in Ghana', to: '/supplier/list-experience', label: 'Tour & activity suppliers', no: '06', h3: 'List tours, activities and experiences for travellers discovering Ghana.', cta: 'List your experience' },
+  { img: bojoBeach, alt: 'Visitors at Bojo Beach Resort near Accra', to: '/hotels', label: 'Hotels & stays', no: '07', h3: 'List rooms or properties and connect guests with Ghana experiences.', cta: 'Explore stays partnership' },
+  { img: kenteWeaving, alt: 'A Ghanaian craft maker weaving kente', to: '/content-creators', label: 'Content creators', no: '08', h3: 'Choose experiences, tell their stories and share your own booking link.', cta: 'Explore creator programme' },
+  { img: shaiHills, alt: 'Landscape at Shai Hills in Ghana', to: '/transport-providers', label: 'Transport providers', no: '09', h3: 'Show your fleet and respond to suitable journey requests.', cta: 'Explore transport partnership' },
+  { img: waakye, alt: 'A Ghanaian waakye dish', to: '/travel-agents', label: 'Travel agents', no: '10', h3: 'Recommend curated Ghana experiences and manage bookings for your clients.', cta: 'Explore agent network' },
+  { img: aburiGardens, alt: 'Palm trees at Aburi Botanical Gardens', to: '/hotels', label: 'Hotels & stays', no: '11', h3: 'List rooms or properties and connect guests with Ghana experiences.', cta: 'Explore stays partnership' },
+  { img: voltaLake, alt: 'Lake Volta near Sogakope in Ghana', to: '/supplier/list-experience', label: 'Tour & activity suppliers', no: '12', h3: 'List tours, activities and experiences for travellers discovering Ghana.', cta: 'List your experience' },
 ]
 
 const JOINS = [
@@ -173,6 +193,44 @@ export default function PartnershipsPage() {
   const progressRef = useRef<HTMLDivElement>(null)
   const artRef = useRef<HTMLDivElement>(null)
   const [loaded, setLoaded] = useState(false)
+  const railRef = useRef<HTMLDivElement>(null)
+  const railImages = useRef<(HTMLImageElement | null)[]>([])
+  // Without IntersectionObserver there is nothing to wait for: arm immediately.
+  const [railArmed, setRailArmed] = useState(
+    () => typeof window !== 'undefined' && !('IntersectionObserver' in window),
+  )
+  const [railReady, setRailReady] = useState(false)
+
+  // Horizontal lazy loading never reaches the cards parked to the right of the
+  // viewport, and the marquee waits for them — a deadlock. So arm the strip as
+  // soon as it is within a viewport: `loading` flips to eager, which also
+  // re-renders the <img> (key change) so no browser has to honour a lazy→eager
+  // attribute change. Both sets arm together; they request the same URLs, so
+  // the duplicate is a cache hit and the loop's second half is never blank.
+  useEffect(() => {
+    const rail = railRef.current
+    if (!rail || !('IntersectionObserver' in window)) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setRailArmed(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '1200px 0px' },
+    )
+    observer.observe(rail)
+    return () => observer.disconnect()
+  }, [])
+
+  // Hold the marquee still until the first set has actually decoded, so it
+  // never animates over blank cards. `complete` is true for failed loads too,
+  // so one broken photo cannot freeze the rail.
+  const settleRailImage = useCallback(() => {
+    const images = railImages.current
+    if (images.length < ROUTE_CARDS.length) return
+    if (images.every((img) => img?.complete)) setRailReady(true)
+  }, [])
 
   // The template adds `loaded` to <body> on window load to slide the hero
   // headline up from its overflow-clipped resting position.
@@ -255,7 +313,16 @@ export default function PartnershipsPage() {
     <div className="route-set" {...(duplicate ? { 'aria-hidden': 'true' } : {})}>
       {ROUTE_CARDS.map((card, i) => (
         <article className="route-card" style={{ '--i': i } as CSSProperties} key={`${card.no}-${card.label}`}>
-          <img src={`${WIKIMEDIA}${card.file}`} alt={card.alt} loading="lazy" />
+          <img
+            key={`${duplicate ? 'duplicate' : 'primary'}-${railArmed ? 'eager' : 'lazy'}`}
+            ref={duplicate ? undefined : (el) => { railImages.current[i] = el }}
+            src={card.img}
+            alt={card.alt}
+            loading={railArmed ? 'eager' : 'lazy'}
+            decoding="async"
+            onLoad={duplicate ? undefined : settleRailImage}
+            onError={duplicate ? undefined : settleRailImage}
+          />
           <Link
             className="card-photo-link"
             to={card.to}
@@ -286,6 +353,7 @@ export default function PartnershipsPage() {
         title="Partner with Travio Ghana | Five Ways to Join"
         description="Become a partner with Travio Ghana. Join Ghana's leading tourism platform as a tour operator, hotel, travel agent, content creator, or transport provider."
         keywords="Travio Ghana partnership, Ghana tourism partnership, tour operator partnership Ghana, travel partner Ghana, become a supplier Ghana"
+        preloadImage={elminaCastle}
         jsonLd={[
           buildBreadcrumbSchema([
             { name: 'Home', url: 'https://www.travioghana.com/' },
@@ -329,7 +397,12 @@ export default function PartnershipsPage() {
               <path d="M90 450c100-195 238-292 415-285 92 4 161 37 207 97" />
             </svg>
             <div className="hero-shot">
-              <img src={`${WIKIMEDIA}Elmina_Castle_-_Ghana.jpg?width=1400`} alt="Elmina Castle on the Ghana coast" />
+              <img
+                src={elminaCastle}
+                alt="Elmina Castle on the Ghana coast"
+                fetchPriority="high"
+                decoding="async"
+              />
               <div className="shot-label">
                 <div>
                   <span>Travio Ghana partner network</span>
@@ -425,7 +498,7 @@ export default function PartnershipsPage() {
                 audience or service.
               </p>
             </div>
-            <div className="route-rail">
+            <div ref={railRef} className={`route-rail${railReady ? ' is-ready' : ''}`}>
               {routeSet(false)}
               {routeSet(true)}
             </div>
@@ -521,9 +594,10 @@ export default function PartnershipsPage() {
             <div className="process-grid">
               <div className="process-image" data-reveal>
                 <img
-                  src="/partnerships/material.jpg"
+                  src={materialImage}
                   alt="Two people smiling and greeting one another with a fist bump"
                   loading="lazy"
+                  decoding="async"
                 />
                 <div className="process-caption">
                   <small>From conversation to collaboration</small>

@@ -43,11 +43,6 @@
   padding-inline: max(20px, calc((100% - 1200px) / 2));
 }
 
-.page-support-1280 .footer-container {
-  max-width: none;
-  padding-inline: max(24px, calc((100% - 1280px) / 2));
-}
-
 .page-hotel .footer-container,
 .page-travel-agents .footer-container,
 .page-transport-providers .footer-container {

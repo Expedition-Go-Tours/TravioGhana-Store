@@ -16,8 +16,12 @@ interface LegalPageShellProps {
   updated: string
   summary: { icon: string; text: string }[]
   toc: TOCItem[]
-  /** The active tab on the policy-tab bar. */
-  activeTab: 'supplier-terms' | 'terms' | 'privacy' | 'cookies'
+  /**
+   * The active tab on the policy-tab bar. Omit it for policy pages that are
+   * not one of the four rail entries (e.g. Refund Policy): the rail still
+   * renders, with no pill highlighted.
+   */
+  activeTab?: 'supplier-terms' | 'terms' | 'privacy' | 'cookies'
   children: ReactNode
 }
 

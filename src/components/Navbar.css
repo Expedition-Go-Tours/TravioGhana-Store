@@ -1515,14 +1515,9 @@ body:has(.story-detail) .navbar-compact-search {
   padding-right: max(20px, calc((100% - 1180px) / 2));
 }
 
-/* 1280px column + 24px gutters — .pp-container (Partnerships) */
-.page-support-1280 .navbar {
-  padding-left: max(24px, calc((100% - 1280px) / 2));
-  padding-right: max(24px, calc((100% - 1280px) / 2));
-}
-
 /* 1200px column + 20px gutters — .leg-wrap (Terms, Privacy, Supplier Terms),
-   .cp-wrap (Cookies Policy), .about-container, .blog-container */
+   .cp-wrap (Cookies Policy), .about-container, .blog-container,
+   .wrap (Partnerships) */
 .page-support-1200 .navbar {
   padding-left: max(20px, calc((100% - 1200px) / 2));
   padding-right: max(20px, calc((100% - 1200px) / 2));

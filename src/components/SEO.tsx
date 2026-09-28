@@ -39,6 +39,12 @@ interface SEOProps {
   jsonLd?: Record<string, unknown> | Record<string, unknown>[]
   /** Alternate language URLs for hreflang */
   alternateLocales?: { lang: string; href: string }[]
+  /**
+   * Optional page hero to preload (`<link rel="preload" as="image">`). Pass
+   * the hashed asset URL of the page's LCP image so the browser starts it at
+   * head-parse time instead of discovering it further down the body.
+   */
+  preloadImage?: string
 }
 
 /**
@@ -81,6 +87,7 @@ export default function SEO({
   author,
   jsonLd,
   alternateLocales,
+  preloadImage,
 }: SEOProps) {
   const location = useLocation()
 
@@ -105,6 +112,8 @@ export default function SEO({
       {keywords && <meta name="keywords" content={keywords} />}
       <link rel="canonical" href={canonicalUrl} />
       <meta name="robots" content={robots} />
+      {/* Discovered at head-parse time rather than when the <img> mounts. */}
+      {preloadImage && <link rel="preload" as="image" href={preloadImage} fetchPriority="high" />}
 
       {/* Open Graph */}
       <meta property="og:type" content={type} />
