@@ -10,7 +10,7 @@ import './LastMinuteDealsSection.css'
 const CARD_WIDTH = 295
 const GAP = 16
 
-function mapOfferToCardProps(t: HomepageOfferTour): TourCardData {
+export function mapOfferToCardProps(t: HomepageOfferTour): TourCardData {
   const durationStr = t.durationMinutes
     ? t.durationMinutes >= 1440
       ? `${Math.round(t.durationMinutes / 1440)} days`
@@ -28,7 +28,35 @@ function mapOfferToCardProps(t: HomepageOfferTour): TourCardData {
   }
 
   return {
-    id: t.offerId,
+    // The **tour** id, not `t.offerId`.
+    //
+    // `id` is the card's identity everywhere downstream: TourCard builds its
+    // link with tourPath(id, slug), keys the sell-out tag off it, and stores it
+    // as the wishlist item's tourId. offerId is the id of the *offer row* — a
+    // different entity, and never equal to the tour id (0 of 10 in the live
+    // /homepage/offers response).
+    //
+    // What that cost, in order of severity:
+    //
+    // 1. The card linked to /tour/{offerId}/{slug} while the page self-
+    //    canonicals to /tour/{tourId}/{slug}. Both render the same tour (the
+    //    route resolves the slug), so the link worked — but it pointed at a
+    //    URL the site itself says is not the canonical one, and the mismatch
+    //    was repeated in the homepage JSON-LD, which listed the tourId while
+    //    the HTML linked the offerId.
+    // 2. The wishlist stored tourId = offerId, so the same tour saved from
+    //    this rail and from any other section became two separate entries.
+    // 3. The sell-out tag matched on title only, since the id could never
+    //    match the provider's list.
+    //
+    // Note what this is *not*: the links were not 404s. An earlier read of the
+    // API said they were, but GET /tours/:id returns "Tour not found" for every
+    // id on this prefix — valid tours included — so that check could not tell a
+    // good id from a bad one and proved nothing.
+    //
+    // Nothing needs the offer id here: the offer's own data already arrives as
+    // `discount` and `specialOffers` below.
+    id: t.id,
     title: t.title,
     slug: t.slug,
     category: t.category || '',
