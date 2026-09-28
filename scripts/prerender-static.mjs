@@ -96,6 +96,90 @@ const ROUTES = [
 /** A page with less than this many body words is a failed render, not a page. */
 const MIN_WORDS = 120
 
+/** How long an inventory route waits for real product cards before giving up. */
+const CARD_TIMEOUT_MS = 15_000
+
+/**
+ * Routes whose whole job is to present the product inventory.
+ *
+ * Only the homepage does. The other nineteen are marketing, legal and editorial
+ * pages with no tours on them, so zero cards is the correct result there and
+ * must not trip the gate.
+ */
+const INVENTORY_ROUTES = new Set(['/'])
+
+export function isInventoryRoute(route) {
+  return INVENTORY_ROUTES.has(route)
+}
+
+/** Bare origin from a base URL, or null if it is not a URL at all. */
+export function toOrigin(value) {
+  try {
+    return new URL(String(value).trim()).origin
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Origins the prerender proxies through Node, from the values it was given in
+ * order — so an explicit process env beats the .env file. Accepts a comma- or
+ * whitespace-separated list, and tolerates a base URL that carries a path
+ * (`https://api.example.com/api/travioghana`), which is the shape VITE_API_URL
+ * has.
+ */
+export function resolveApiOrigins(values) {
+  const out = new Set()
+  for (const value of values) {
+    for (const part of String(value ?? '').split(/[,\s]+/)) {
+      const origin = toOrigin(part)
+      if (origin) out.add(origin)
+    }
+  }
+  return out
+}
+
+/**
+ * One key out of a .env file. Not a parser and not trying to be: quotes and
+ * trailing blanks are the only real-world variation, and a dependency here
+ * would be a dependency in the build path of every deploy.
+ */
+export function readDotEnvValue(text, key) {
+  // [ \t] rather than \s: \s matches newlines, so a leading \s* lets the pattern
+  // start on a previous line and swallow a comment or the line above as the
+  // value. With /m, `^\s*KEY=` on this file returned "# Travio Ghana API".
+  const match = new RegExp(`^[ \\t]*${key}[ \\t]*=[ \\t]*(.*)$`, 'm').exec(String(text ?? ''))
+  if (!match) return undefined
+  return match[1].trim().replace(/^["']|["']$/g, '') || undefined
+}
+
+export function isApiRequest(url, origins) {
+  const origin = toOrigin(url)
+  return origin !== null && origins.has(origin)
+}
+
+/**
+ * Everything that disqualifies a capture from being published.
+ *
+ * The product-card check is the one `words` cannot make. A page clears 120
+ * words easily on nav, footer and 1,199 bundled reviews while carrying no
+ * product at all — and it did, which is how a homepage with no catalogue, no
+ * prices and no links to any tour page shipped green and got crawled that way.
+ * The word count measures text; only the card count measures inventory.
+ */
+export function routeProblems(route, audit) {
+  const problems = []
+  if (audit.words < MIN_WORDS) problems.push(`thin (${audit.words} words < ${MIN_WORDS})`)
+  if (!audit.h1.length) problems.push('no <h1>')
+  if (!audit.canonical) problems.push('no canonical')
+  if (!audit.description) problems.push('no meta description')
+  if (/noindex/i.test(audit.robots)) problems.push(`robots=${audit.robots}`)
+  if (isInventoryRoute(route) && audit.cards === 0) {
+    problems.push('no product cards captured')
+  }
+  return problems
+}
+
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -163,6 +247,56 @@ function startServer() {
 }
 
 /**
+ * Serves API requests to the page from Node, bypassing the CORS check.
+ *
+ * Why this is needed
+ * ------------------
+ * The content API's CORS policy is an exact-match allowlist of the two
+ * production domains. Asked with `Origin: https://www.travioghana.com` it
+ * answers with a matching `Access-Control-Allow-Origin`; asked with any other
+ * origin — including the `http://127.0.0.1:<port>` this script serves from — it
+ * answers 200 with the full body and *no* CORS header, and the browser then
+ * withholds that body from JavaScript. The request looks successful in the
+ * network log and delivers nothing to the app.
+ *
+ * That is exactly what was happening. All five homepage carousels mounted,
+ * showed skeletons, and resolved to empty; the capture held zero tour cards and
+ * zero links to any tour page. The reviews section rendered regardless, because
+ * it reads a bundled JSON file and never touches the network — which is why the
+ * page looked healthy and cleared a 120-word check while holding no catalogue.
+ *
+ * Node sends no Origin and so is subject to no CORS check: the same URL fetched
+ * from here returns the real body. Re-emitting it to the page with an
+ * allow-origin of the local origin completes the handshake the API declined to
+ * perform. Side benefit: the capture no longer races the API.
+ */
+export async function installApiProxy(page, apiOrigins, pageOrigin) {
+  if (apiOrigins.size === 0) return
+  await page.setRequestInterception(true)
+  page.on('request', (request) => {
+    if (!isApiRequest(request.url(), apiOrigins)) {
+      request.continue().catch(() => {})
+      return
+    }
+    fetch(request.url(), { headers: { accept: request.headers().accept || 'application/json' } })
+      .then(async (res) => {
+        const body = Buffer.from(await res.arrayBuffer())
+        const headers = { 'content-type': res.headers.get('content-type') || 'application/json' }
+        if (res.ok) headers['access-control-allow-origin'] = pageOrigin
+        await request.respond({ status: res.status, headers, body })
+      })
+      .catch(async (err) => {
+        // Answer 502 rather than a plausible empty payload. A silent fallback to
+        // `request.continue()` here would let the browser do the CORS-blocked
+        // fetch again, reproducing the original silent failure exactly.
+        await request
+          .respond({ status: 502, contentType: 'text/plain', body: String(err?.message || err) })
+          .catch(() => {})
+      })
+  })
+}
+
+/**
  * Reads the rendered page. Counts words from the app's own content area (the
  * chrome is stripped so the number reflects the page, not the nav) and pulls
  * the tags that decide whether the page can be indexed.
@@ -194,6 +328,15 @@ function audit() {
     robots: meta('meta[name="robots"]', 'content'),
     h1: Array.from(document.querySelectorAll('h1')).map((h) => (h.innerText || '').replace(/\s+/g, ' ').trim()),
     jsonLd: document.querySelectorAll('script[type="application/ld+json"]').length,
+    // Product inventory, counted separately from `words` on purpose. A route can
+    // clear MIN_WORDS on nav, footer and reviews alone while carrying no
+    // product at all, so the word count cannot tell you the inventory made it
+    // into the capture. `tourLinks` is the number that matters for crawling:
+    // TourCard emits exactly one crawlable <a href="/tour/{id}/{slug}"> per
+    // card, so it is the count of product pages this HTML can actually reach.
+    cards: document.querySelectorAll('.tour-card').length,
+    skeletons: document.querySelectorAll('.tour-card-skeleton').length,
+    tourLinks: document.querySelectorAll('a[href^="/tour/"]').length,
     html: '<!doctype html>\n' + document.documentElement.outerHTML,
   }
 }
@@ -224,9 +367,12 @@ export function dedupeTitle(html, title) {
   })
 }
 
-async function renderRoute(browser, origin, route) {
+async function renderRoute(browser, origin, route, { apiOrigins = new Set(), requireCards = false } = {}) {
   const page = await browser.newPage()
   try {
+    // Before any navigation: with interception on, every request must be
+    // continued or answered explicitly, or the page stalls outright.
+    await installApiProxy(page, apiOrigins, origin)
     // Desktop viewport: the widest layout is the one that exercises every
     // breakpoint's content, and it is what a crawler is judged on.
     await page.setViewport({ width: 1280, height: 900 })
@@ -256,14 +402,87 @@ async function renderRoute(browser, origin, route) {
     })
     await new Promise((r) => setTimeout(r, 400))
 
+    // Wait for the inventory itself, where the page is supposed to have some.
+    // The fixed settle above is a guess, and the guess was wrong: the carousels
+    // are behind MountOnView, so they mount only when the scroll reaches them,
+    // and then need another round trip to render their cards. Timed out rather
+    // than thrown, because a missing API should still produce an auditable
+    // capture that routeProblems() rejects by card count — not an exception
+    // that reads as a browser crash.
+    if (requireCards) {
+      await page
+        .waitForFunction(() => document.querySelectorAll('.tour-card').length > 0, {
+          timeout: CARD_TIMEOUT_MS,
+        })
+        .catch(() => {})
+    }
+
+    // Diagnostic: sample the product inventory over time, so a run tells us
+    // whether the capture is merely early (counts climb, then plateau) or the
+    // API genuinely returns nothing (counts pinned at 0 the whole way). That
+    // distinction decides whether the fix is "wait for real content" or
+    // "the tour data never arrives at build time" — the two look identical
+    // from a single snapshot. Off unless PRERENDER_DIAG=1, since it costs
+    // ~DIAG_MS of wall clock per route.
+    if (process.env.PRERENDER_DIAG === '1') {
+      const budget = Number(process.env.PRERENDER_DIAG_MS || 24_000)
+      const step = 750
+      for (let waited = 0; waited <= budget; waited += step) {
+        const snap = await page.evaluate(() => ({
+          cards: document.querySelectorAll('.tour-card').length,
+          skeletons: document.querySelectorAll('.tour-card-skeleton').length,
+          tourLinks: document.querySelectorAll('a[href^="/tour/"]').length,
+        }))
+        console.log(
+          `[prerender][diag] ${route.padEnd(16)} +${String(waited).padStart(6)}ms  ` +
+            `cards=${String(snap.cards).padStart(3)}  skeletons=${String(snap.skeletons).padStart(3)}  tourLinks=${snap.tourLinks}`
+        )
+        if (snap.cards > 0) break
+        await new Promise((r) => setTimeout(r, step))
+      }
+    }
+
     const result = await page.evaluate(audit)
     // Applied here rather than inside evaluate(): this runs in Node, while
     // evaluate()'s body runs in the browser and cannot reach module scope.
-    result.html = dedupeTitle(result.html, result.title)
+    result.html = relativizeOrigin(dedupeTitle(result.html, result.title), origin)
     return result
   } finally {
     await page.close()
   }
+}
+
+/**
+ * Strip the preview server's own origin out of the serialised HTML.
+ *
+ * index.html ships its asset links root-relative (`/assets/index-*.js`), and
+ * those survive the round trip untouched because the markup was already
+ * relative in the source. Vite's runtime-injected links are not: the module
+ * preload and stylesheet tags it adds while the page boots are built from the
+ * document's current origin, which during the prerender is the ephemeral
+ * `http://127.0.0.1:<port>` this script listens on.
+ *
+ * So the published file carried URLs pointing at a port that no longer exists
+ * by the time anyone reads it. On the homepage that was 38 dead references —
+ * ten stylesheets that never load and every JS chunk the deferred sections
+ * need — so crawlers were handed a page that renders unstyled and cannot
+ * execute, and the served HTML advertised build infrastructure. The port
+ * differed per build (52362 locally, 38753 in production, 42863 in the copy
+ * Search Console had cached), which is what pinned it as a build-time
+ * artefact rather than a one-off.
+ *
+ * Only this server's own origin is rewritten. Any other absolute URL in the
+ * page — a real CDN, an image on a supplier's domain, the canonical, an
+ * hreflang sibling — is correct as written and must survive: replacing one
+ * host with another would be worse than the bug.
+ */
+export function relativizeOrigin(html, origin) {
+  // Defensive, and not provable by a test: `split(undefined).join('')` happens
+  // to be the identity on a string, so removing this guard changes no
+  // observable behaviour. It stays because it documents the intent — an empty
+  // origin must not be treated as a match-everything needle.
+  if (!origin) return html
+  return html.split(origin).join('')
 }
 
 function writeRoute(route, html) {
@@ -465,31 +684,64 @@ async function main() {
   const origin = `http://127.0.0.1:${port}`
   const browser = await ensureBrowser()
 
+  // The API origin the proxy answers for. VITE_API_URL is a build-time variable,
+  // so it is normally in the environment by the time this runs; .env is the
+  // fallback for a local run. A miss is not fatal here — the inventory gate in
+  // routeProblems() turns it into a loud, specific failure rather than the
+  // silent empty capture this replaces.
+  let apiOrigins = new Set()
+  try {
+    apiOrigins = resolveApiOrigins([
+      process.env.PRERENDER_API_ORIGIN,
+      process.env.VITE_API_URL,
+      readDotEnvValue(readFileSync(join(ROOT_DIR(), '.env'), 'utf8'), 'VITE_API_URL'),
+    ])
+  } catch {
+    // No .env on disk is normal in CI; the env vars above still apply.
+  }
+  if (apiOrigins.size === 0) {
+    console.warn(
+      '[prerender] WARNING — no API origin resolved, so / will capture zero product\n' +
+        '             cards and be skipped. Set VITE_API_URL or PRERENDER_API_ORIGIN.'
+    )
+  } else {
+    console.log(`[prerender] proxying API origin(s) via node: ${[...apiOrigins].join(', ')}`)
+  }
+
   const results = []
+  const skipped = []
   let failures = 0
 
   try {
     for (const route of routes) {
       const label = route === '/' ? '/' : route
       try {
-        const audit = await renderRoute(browser, origin, route)
-        const problems = []
-        if (audit.words < MIN_WORDS) problems.push(`thin (${audit.words} words < ${MIN_WORDS})`)
-        if (!audit.h1.length) problems.push('no <h1>')
-        if (!audit.canonical) problems.push('no canonical')
-        if (!audit.description) problems.push('no meta description')
-        if (/noindex/i.test(audit.robots)) problems.push(`robots=${audit.robots}`)
+        const audit = await renderRoute(browser, origin, route, {
+          apiOrigins,
+          requireCards: isInventoryRoute(route),
+        })
+        const problems = routeProblems(route, audit)
 
         if (problems.length) {
           failures++
+          skipped.push({ route: label, problems })
           console.warn(`[prerender] SKIP ${label} — ${problems.join('; ')}`)
         } else {
           writeRoute(route, audit.html)
-          results.push({ route: label, words: audit.words, title: audit.title, jsonLd: audit.jsonLd })
+          results.push({
+            route: label,
+            words: audit.words,
+            title: audit.title,
+            jsonLd: audit.jsonLd,
+            cards: audit.cards,
+            tourLinks: audit.tourLinks,
+          })
         }
       } catch (err) {
         failures++
-        console.warn(`[prerender] SKIP ${label} — ${String(err.message || err).split('\n')[0]}`)
+        const reason = String(err.message || err).split('\n')[0]
+        skipped.push({ route: label, problems: [reason] })
+        console.warn(`[prerender] SKIP ${label} — ${reason}`)
       }
     }
   } finally {
@@ -498,18 +750,49 @@ async function main() {
   }
 
   for (const r of results) {
-    console.log(`[prerender] ${String(r.words).padStart(5)}w  ld:${r.jsonLd}  ${r.route}  — ${r.title}`)
+    console.log(
+      `[prerender] ${String(r.words).padStart(5)}w  ld:${r.jsonLd}  ` +
+        `cards:${String(r.cards).padStart(3)}  links:${String(r.tourLinks).padStart(3)}  ${r.route}  — ${r.title}`
+    )
   }
   mkdirSync(OUT_ROOT(), { recursive: true })
   writeFileSync(
     join(OUT_ROOT(), 'manifest.json'),
-    JSON.stringify({ generatedFor: routes.length, written: results.length, skipped: failures, routes: results }, null, 2),
+    JSON.stringify(
+      { generatedFor: routes.length, written: results.length, skipped: failures, routes: results, rejected: skipped },
+      null,
+      2
+    ),
     'utf8'
   )
   console.log(
     `[prerender] wrote ${results.length}/${routes.length} routes to dist/__seo/` +
       (failures ? ` (${failures} skipped — the backend prerenderer still covers them)` : '')
   )
+
+  // An inventory route that reached this point has no product cards. Publishing
+  // it would hand crawlers a homepage with no catalogue — the exact state this
+  // run's gate exists to prevent — so the deploy is failed rather than the
+  // empty file. The backend prerenderer still serves the route meanwhile, which
+  // is why this is a hard stop and not a crash: the site stays up, but nobody
+  // can ship an empty homepage by not looking at the log again.
+  const emptyInventory = skipped.filter((s) => isInventoryRoute(s.route))
+  if (emptyInventory.length) {
+    console.error(
+      [
+        '',
+        `[prerender] FAILED — ${emptyInventory.map((s) => s.route).join(', ')} captured no product cards.`,
+        '  The page would be published with no tours, no prices and no links to',
+        '  any tour page. Usual causes:',
+        '    - the API origin was not resolved (see the warning above)',
+        '    - the API rejected the request, or is down',
+        '    - a section stopped rendering cards (MountOnView, carousel, skeleton)',
+        '  Set PRERENDER_SKIP=1 to bypass knowingly; the backend still prerenders.',
+        '',
+      ].join('\n')
+    )
+    process.exit(1)
+  }
   if (results.length === 0) {
     console.warn(
       '[prerender] WARNING — every route was rejected. If this is not an API\n' +
