@@ -178,13 +178,13 @@
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/cmt9t1gbh00ynp4sb5l3gpcf6/the-despite-automobile-museum</loc>
+  <loc>https://www.travioghana.com/tour/cmt8ij61a00oc646p0sq1d8xq/accra-guided-city-tour-cultural-and-historical-experience</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/cmt8ij61a00oc646p0sq1d8xq/accra-guided-city-tour-cultural-and-historical-experience</loc>
+  <loc>https://www.travioghana.com/tour/cmt9t1gbh00ynp4sb5l3gpcf6/the-despite-automobile-museum</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
@@ -198,12 +198,6 @@
 <url>
   <loc>https://www.travioghana.com/tour/cmu90hgn302xooi0726tqsbcv/akosombo-african-spirituality-shrine-experience</loc>
   <lastmod>2026-09-20</lastmod>
-  <changefreq>weekly</changefreq>
-  <priority>0.8</priority>
-</url>
-<url>
-  <loc>https://www.travioghana.com/tour/cmt9sch1q00vdp4sblo4zfm5k/accra-culture-walk-fantasy-coffins-art-gallery-beaches</loc>
-  <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
@@ -298,13 +292,19 @@
   <priority>0.8</priority>
 </url>
 <url>
+  <loc>https://www.travioghana.com/tour/cmt8obfhc02kc646pu2xai7qc/the-shia-hills-safari-quad-bike-tour</loc>
+  <lastmod>2026-08-29</lastmod>
+  <changefreq>weekly</changefreq>
+  <priority>0.8</priority>
+</url>
+<url>
   <loc>https://www.travioghana.com/tour/cmta3gpsb004kf1ed0ftvhand/accra-flying-dress-experience</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tour/cmt8obfhc02kc646pu2xai7qc/the-shia-hills-safari-quad-bike-tour</loc>
+  <loc>https://www.travioghana.com/tour/cmt9sch1q00vdp4sblo4zfm5k/accra-culture-walk-fantasy-coffins-art-gallery-beaches</loc>
   <lastmod>2026-08-29</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.8</priority>
@@ -394,12 +394,6 @@
   <priority>0.7</priority>
 </url>
 <url>
-  <loc>https://www.travioghana.com/tours?place=Bonwire</loc>
-  <lastmod>2026-09-23</lastmod>
-  <changefreq>weekly</changefreq>
-  <priority>0.7</priority>
-</url>
-<url>
   <loc>https://www.travioghana.com/tours?place=Hwakpo</loc>
   <lastmod>2026-09-23</lastmod>
   <changefreq>weekly</changefreq>
@@ -413,12 +407,6 @@
 </url>
 <url>
   <loc>https://www.travioghana.com/tours?place=Ada%20Foah</loc>
-  <lastmod>2026-09-23</lastmod>
-  <changefreq>weekly</changefreq>
-  <priority>0.7</priority>
-</url>
-<url>
-  <loc>https://www.travioghana.com/tours?place=Kintampo%20South%20District</loc>
   <lastmod>2026-09-23</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.7</priority>
@@ -442,6 +430,12 @@
   <priority>0.7</priority>
 </url>
 <url>
+  <loc>https://www.travioghana.com/tours?place=Bonwire</loc>
+  <lastmod>2026-09-23</lastmod>
+  <changefreq>weekly</changefreq>
+  <priority>0.7</priority>
+</url>
+<url>
   <loc>https://www.travioghana.com/tours?place=Okaikwei%20North%20Municipal%20District</loc>
   <lastmod>2026-09-23</lastmod>
   <changefreq>weekly</changefreq>
@@ -449,6 +443,12 @@
 </url>
 <url>
   <loc>https://www.travioghana.com/tours?place=Nyankumasi%20Ahenkro</loc>
+  <lastmod>2026-09-23</lastmod>
+  <changefreq>weekly</changefreq>
+  <priority>0.7</priority>
+</url>
+<url>
+  <loc>https://www.travioghana.com/tours?place=Kintampo%20South%20District</loc>
   <lastmod>2026-09-23</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.7</priority>

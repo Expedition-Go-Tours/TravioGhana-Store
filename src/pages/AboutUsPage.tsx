@@ -15,7 +15,7 @@ import {
   Waves,
 } from 'lucide-react'
 import Footer from '../components/Footer'
-import SEO, { buildBreadcrumbSchema, buildOrganizationSchema } from '../components/SEO'
+import SEO, { buildBreadcrumbSchema } from '../components/SEO'
 import PartnersSection from '../components/PartnersSection'
 import DeferredMap from '../components/support/DeferredMap'
 import { OFFICE_DIRECTIONS_URL, OFFICE_MAP_EMBED, SUPPORT_EMAIL } from '../lib/support'
@@ -180,7 +180,6 @@ export default function AboutUsPage() {
               { name: 'Home', url: 'https://www.travioghana.com/' },
               { name: 'About Us', url: 'https://www.travioghana.com/about-us' },
             ]),
-            buildOrganizationSchema(),
           ]}
         />
 

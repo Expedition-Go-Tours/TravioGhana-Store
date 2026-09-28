@@ -12,7 +12,7 @@
 import { useEffect, useRef, useState, Fragment, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
-import SEO, { buildBreadcrumbSchema, buildOrganizationSchema } from '../components/SEO'
+import SEO, { buildBreadcrumbSchema } from '../components/SEO'
 import '@/styles/partner-pages.css'
 import '@/styles/PartnershipsPage.css'
 
@@ -291,7 +291,6 @@ export default function PartnershipsPage() {
             { name: 'Home', url: 'https://www.travioghana.com/' },
             { name: 'Partnerships', url: 'https://www.travioghana.com/partnerships' },
           ]),
-          buildOrganizationSchema(),
         ]}
       />
 

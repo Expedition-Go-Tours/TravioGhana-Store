@@ -14,7 +14,7 @@
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
-import SEO, { buildBreadcrumbSchema, buildOrganizationSchema } from '../components/SEO'
+import SEO, { buildBreadcrumbSchema } from '../components/SEO'
 import '@/styles/FoundationPage.css'
 
 const WIKIMEDIA = 'https://commons.wikimedia.org/wiki/Special:FilePath/'
@@ -292,7 +292,6 @@ export default function FoundationPage() {
             { name: 'Home', url: 'https://www.travioghana.com/' },
             { name: 'Foundation', url: 'https://www.travioghana.com/foundation' },
           ]),
-          buildOrganizationSchema(),
         ]}
       />
 

@@ -29,10 +29,40 @@ interface SEOProps {
   publishedTime?: string
   modifiedTime?: string
   author?: string
-  /** JSON-LD structured data (raw object or array of objects) */
+  /**
+   * JSON-LD structured data (raw object or array of objects).
+   *
+   * The Organization is added to this automatically — it is not this prop's
+   * job, and never was a page's job to remember. See `withOrganization`.
+   */
   jsonLd?: Record<string, unknown> | Record<string, unknown>[]
   /** Alternate language URLs for hreflang */
   alternateLocales?: { lang: string; href: string }[]
+}
+
+/**
+ * The Organization node, on every page.
+ *
+ * It used to be a per-page opt-in: three pages passed `buildOrganizationSchema()`
+ * in their `jsonLd` and the other eighteen did not, so 18 of the 22 static
+ * pages in the sitemap named the brand's logo and nothing else — no `sameAs`,
+ * no entity. A page that forgets an optional prop is invisible, which is
+ * exactly how the three-competing-Instagram-handles drift got started.
+ *
+ * So it is no longer optional. Pages describe what is *on* them; this describes
+ * who publishes all of it.
+ *
+ * A caller-supplied Organization is dropped rather than duplicated: two
+ * identical nodes in one array is noise a validator flags and a reader has to
+ * reconcile.
+ */
+export function withOrganization(
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[],
+): Record<string, unknown>[] {
+  const rest = (Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : []).filter(
+    (schema) => schema['@type'] !== 'Organization',
+  )
+  return [buildOrganizationSchema(), ...rest]
 }
 
 export default function SEO({
@@ -110,10 +140,8 @@ export default function SEO({
         <link key={lang} rel="alternate" hrefLang={lang} href={href} />
       ))}
 
-      {/* JSON-LD Structured Data */}
-      {jsonLd && (
-        Array.isArray(jsonLd) ? jsonLd : [jsonLd]
-      ).map((schema, i) => (
+      {/* JSON-LD Structured Data. The Organization is injected, not optional. */}
+      {withOrganization(jsonLd).map((schema, i) => (
         <script key={i} type="application/ld+json">
           {JSON.stringify(schema)}
         </script>

@@ -26,6 +26,33 @@ const SOURCE = path.join(ROOT, 'src', 'components', 'travelStories.json')
 const OUT_DIR = path.join(ROOT, 'public', 'stories')
 const SITE_URL = (process.env.SITE_URL || 'https://www.travioghana.com').replace(/\/+$/, '')
 const SITE_NAME = 'Travio Ghana'
+
+/**
+ * The brand's social profiles.
+ *
+ * These pages are generated as standalone HTML, so they never pass through the
+ * React `SEO` component that injects the Organization on every other page —
+ * which is why they were the one page type left asserting a publisher with no
+ * `sameAs`. Duplicated from `src/lib/brandSocial.ts` because a .cjs build
+ * script cannot import a TypeScript module; `src/test/brandSocial.test.ts`
+ * asserts the two lists are identical, so they cannot drift.
+ */
+const BRAND_SAME_AS = [
+  'https://www.instagram.com/travioghana',
+  'https://www.tiktok.com/@travio.ghana',
+  'https://www.youtube.com/@TravioGhana',
+]
+
+/** The brand entity, as the React side builds it. */
+function brandOrganization() {
+  return {
+    '@type': 'Organization',
+    name: SITE_NAME,
+    url: SITE_URL,
+    logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo.png`, width: 512, height: 512 },
+    sameAs: [...BRAND_SAME_AS],
+  }
+}
 const YEAR = new Date().getFullYear()
 
 const escapeHtml = (value) => String(value ?? '')
@@ -80,12 +107,9 @@ function renderStory(story, siblings) {
     datePublished: published,
     dateModified: published,
     author: { '@type': 'Person', name: story.author || SITE_NAME },
-    publisher: {
-      '@type': 'Organization',
-      name: SITE_NAME,
-      url: SITE_URL,
-      logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo.png`, width: 512, height: 512 },
-    },
+    // The node existed but named no profile, so the six story pages asserted a
+    // publisher that connected to nothing. Same fix as /tours' ItemList.
+    publisher: brandOrganization(),
     mainEntityOfPage: url,
   }
 
@@ -230,6 +254,10 @@ function renderIndex(stories) {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     numberOfItems: stories.length,
+    // `sameAs` lives only on Organization/Person/WebSite, so a list has nowhere
+    // to put the brand's profiles. ItemList inherits `publisher` from
+    // CreativeWork. Mirrors the React SEO component and the backend.
+    publisher: brandOrganization(),
     itemListElement: stories.map((story, i) => ({
       '@type': 'ListItem',
       position: i + 1,

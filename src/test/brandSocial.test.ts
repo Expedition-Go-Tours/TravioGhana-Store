@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { BRAND_SOCIAL_PROFILES, BRAND_SOCIAL_URLS } from '../lib/brandSocial'
-import { buildOrganizationSchema, buildProductSchema, buildItemListSchema } from '../components/SEO'
+import { buildOrganizationSchema, buildProductSchema, buildItemListSchema, withOrganization } from '../components/SEO'
 
 /**
  * A brand's `sameAs` and its footer links are the same claim made twice.
@@ -162,6 +162,94 @@ describe('the list schema names its publisher', () => {
 
   it('names no other brand', () => {
     expect(JSON.stringify(list.publisher)).not.toMatch(/expeditiongo/i)
+  })
+})
+
+/**
+ * The Organization is no longer a page's responsibility.
+ *
+ * It used to be a per-page opt-in: three pages passed `buildOrganizationSchema()`
+ * in their `jsonLd`, eighteen did not. So 18 of the 22 static pages in the
+ * sitemap — every policy page, /faq, /contact-us, and all six stories — named
+ * the brand's logo and nothing else: no `sameAs`, no entity, nothing to connect
+ * them to. A page that forgets an optional prop fails silently and invisibly,
+ * which is how this keeps happening.
+ *
+ * These tests cover the injection itself, because that is the only place the
+ * guarantee can now live.
+ */
+describe('every page gets the Organization', () => {
+  const organization = () => buildOrganizationSchema()
+
+  it('adds it to a page that passes nothing at all', () => {
+    // The policy pages: BreadcrumbList is the only schema most of them emit.
+    expect(withOrganization(undefined)).toEqual([organization()])
+  })
+
+  it('adds it alongside a single schema', () => {
+    const breadcrumb = { '@type': 'BreadcrumbList', itemListElement: [] }
+    expect(withOrganization(breadcrumb)).toEqual([organization(), breadcrumb])
+  })
+
+  it('adds it alongside an array, keeping order', () => {
+    const a = { '@type': 'BreadcrumbList' }
+    const b = { '@type': 'FAQPage' }
+    expect(withOrganization([a, b])).toEqual([organization(), a, b])
+  })
+
+  it('drops a caller-supplied Organization rather than duplicating it', () => {
+    // Two identical nodes is noise a validator flags. A page that still opts in
+    // gets the same result as one that does not.
+    const result = withOrganization([organization(), { '@type': 'BreadcrumbList' }])
+    expect(result).toEqual([organization(), { '@type': 'BreadcrumbList' }])
+    expect(result.filter((s) => s['@type'] === 'Organization')).toHaveLength(1)
+  })
+
+  it('leaves nothing without the brand behind', () => {
+    // The single property that makes it an entity, not just a logo.
+    for (const schema of withOrganization({ '@type': 'Article' })) {
+      if (schema['@type'] === 'Organization') {
+        expect(schema.sameAs, 'the injected Organization has no sameAs').toEqual(
+          expect.arrayContaining([...BRAND_SOCIAL_URLS]),
+        )
+      }
+    }
+  })
+})
+
+/**
+ * The story pages are generated as standalone HTML by a .cjs build script, so
+ * they never reach the React `SEO` component that now injects the Organization
+ * everywhere else. They carry their own copies of the brand, which is why they
+ * were the last page type asserting a publisher that connected to nothing.
+ *
+ * A .cjs script cannot import a TypeScript module, so the list is necessarily
+ * written twice. These tests are the tie between the two copies.
+ */
+describe('the story generator agrees with the brand module', () => {
+  const generator = read('scripts/generate-story-pages.cjs')
+
+  it('declares the same profiles the shared module does', () => {
+    const body = generator.match(/const BRAND_SAME_AS = \[(.*?)\]/s)?.[1] ?? ''
+    // Single-quoted, so pull the literals rather than handing them to JSON.
+    const list = [...body.matchAll(/'([^']+)'/g)].map((m) => m[1])
+    expect(list.length, 'could not read BRAND_SAME_AS out of the generator').toBeGreaterThan(0)
+    expect(list, 'the generator\\u2019s sameAs has drifted from brandSocial.ts').toEqual([
+      ...BRAND_SOCIAL_URLS,
+    ])
+  })
+
+  it('gives the Article publisher and the hub ItemList the brand', () => {
+    expect(generator).toMatch(/publisher: brandOrganization\(\)/)
+    // Once for the Article, once for the /stories hub ItemList.
+    expect(generator.match(/brandOrganization\(\)/g)).toHaveLength(3)
+  })
+
+  it('no longer hand-rolls a publisher that names no profile', () => {
+    const handRolled = generator.match(/'@type': 'Organization',[\s\S]{0,400}?\n\s*\}/g) ?? []
+    for (const block of handRolled) {
+      expect(block, 'a hand-rolled Organization has no sameAs').toContain('sameAs')
+    }
   })
 })
 

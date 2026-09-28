@@ -19,7 +19,7 @@ import PreviousSearchSections from './components/PreviousSearchSections'
 
 import Footer from './components/Footer'
 import MountOnView from './components/MountOnView'
-import SEO, { buildOrganizationSchema, buildWebSiteSchema } from './components/SEO'
+import SEO, { buildWebSiteSchema } from './components/SEO'
 import { WishlistProvider } from './context/WishlistContext'
 import { ContinuePlanningProvider } from './context/ContinuePlanningContext'
 import { SellOutProvider } from './context/SellOutContext'
@@ -140,7 +140,7 @@ function HomePage() {
           ? `${currentLocation} tours, things to do in ${currentLocation}, ${currentLocation} Ghana, Ghana tours, book tours in ${currentLocation}`
           : 'Ghana tours, things to do in Ghana, Ghana experiences, Accra tours, Cape Coast tours, Ghana safari, Ghana food tour, Ghana cultural tour, West Africa tours, African vacation, Ghana travel'
         }
-        jsonLd={[buildOrganizationSchema(), buildWebSiteSchema()]}
+        jsonLd={[buildWebSiteSchema()]}
       />
       <GoogleOneTapPrompt />
       <Hero />
