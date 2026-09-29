@@ -18,9 +18,12 @@ const path = require('path');
 const https = require('https');
 const http = require('http');
 
+const { execFileSync } = require('child_process');
+
 const SITE_URL = (process.env.SITE_URL || 'https://www.travioghana.com').replace(/\/+$/, '');
 const API_ROOT = (process.env.API_URL || process.env.VITE_API_URL || 'https://apiv1.travioafrica.com').replace(/\/+$/, '');
 const BRAND = 'travioghana';
+const REPO_ROOT = path.resolve(__dirname, '..');
 
 /**
  * The brand-scoped catalogue base, e.g. https://apiv1.travioafrica.com/api/travioghana
@@ -96,6 +99,157 @@ function isoDate(value) {
   return d.toISOString().split('T')[0];
 }
 
+/** Newest of a set of YYYY-MM-DD strings; undefined if none survived. */
+function latestDate(...sets) {
+  const all = sets.flat().filter(Boolean).sort();
+  return all[all.length - 1] || undefined;
+}
+
+/**
+ * The date a marketing page last actually changed, read from git.
+ *
+ * These pages are app-rendered routes: their content changed when their source
+ * changed, and git already recorded exactly when. Handing every static page
+ * the newest catalogue date instead meant /privacy-policy claimed to change
+ * every time a price did — 21 pages all reporting one number, which is how a
+ * crawler learns that this sitemap's lastmod is noise and starts discounting
+ * the site-wide signal the comment above warns about.
+ *
+ * Returns undefined rather than guessing when git cannot answer. Vercel does
+ * not always ship a .git to the build container, and a shallow checkout has no
+ * history to find; in both cases the caller falls back to the catalogue date,
+ * which is the old behaviour rather than a fabricated one.
+ */
+function gitLastModified(files) {
+  const existing = files.filter((f) => fs.existsSync(path.join(REPO_ROOT, f)));
+  if (existing.length === 0) return undefined;
+  try {
+    const out = execFileSync('git', ['log', '-1', '--format=%as', '--', ...existing], {
+      cwd: REPO_ROOT,
+      stdio: ['ignore', 'pipe', 'ignore'],
+      encoding: 'utf8',
+      timeout: 15000,
+    }).trim();
+    return /^\d{4}-\d{2}-\d{2}$/.test(out) ? out : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Tracked source files, memoised — one `git ls-files` for all 21 routes. */
+let trackedCache = null;
+function trackedSrcFiles() {
+  if (trackedCache) return trackedCache;
+  try {
+    trackedCache = execFileSync('git', ['ls-files', 'src'], {
+      cwd: REPO_ROOT,
+      stdio: ['ignore', 'pipe', 'ignore'],
+      encoding: 'utf8',
+      timeout: 15000,
+    }).split('\n').filter(Boolean);
+  } catch {
+    trackedCache = [];
+  }
+  return trackedCache;
+}
+
+/**
+ * Shared files that change the rendered page of *every* route: App.tsx owns
+ * the layout the header and footer render into, and Footer is precisely what
+ * the 2026-09-28 fix added to /tours and /reviews. Leave these out and a
+ * change to the shared chrome never moves a marketing page's lastmod — the
+ * reverse failure of the over-claim above, and the more damaging one, since it
+ * hides a real change.
+ */
+const SHARED_PAGE_SOURCES = ['src/App.tsx', 'src/components/Footer.tsx', 'src/components/Footer.css'];
+
+/**
+ * Pages that render the catalogue (or its derived review stats), so they also
+ * change when it does. These take the later of their git date and the newest
+ * content date; everything else answers only for itself.
+ */
+const CATALOGUE_BACKED_PAGES = new Set(['/', '/tours', '/reviews']);
+
+/**
+ * path -> the source files whose change changes that page.
+ *
+ * Resolved from App.tsx's own route table rather than a hand-written map: a
+ * map rots the moment a route is renamed, and a date that silently stops
+ * tracking is the same quiet failure as the frozen-sitemap bug noted above.
+ * Resolves nothing when App.tsx cannot be read, so the caller falls back.
+ */
+function staticPageSources() {
+  let app;
+  try {
+    app = fs.readFileSync(path.join(REPO_ROOT, 'src/App.tsx'), 'utf8');
+  } catch (err) {
+    console.warn(`WARN: cannot read App.tsx to resolve routes (${err.message}) — static pages fall back to the newest content date`);
+    return new Map();
+  }
+
+  // component basename -> every tracked file sharing it, so `AllToursPage`
+  // picks up its .css as well as its .tsx.
+  const byBase = new Map();
+  for (const f of trackedSrcFiles()) {
+    const base = path.basename(f).replace(/\.[a-z]+$/i, '');
+    if (!byBase.has(base)) byBase.set(base, []);
+    byBase.get(base).push(f);
+  }
+
+  // Brace-count the element expression so a nested `fallback={<X />}` cannot
+  // end it early, then take the innermost component: for
+  // `<Suspense fallback={<Skel/>}><HelpCentrePage/></Suspense>` that skips both
+  // the Suspense wrapper and the fallback skeleton.
+  const componentFor = (expr) => {
+    const names = [...expr.matchAll(/<([A-Z][A-Za-z0-9_]*)/g)].map((m) => m[1]);
+    if (names.length === 0) return undefined;
+    const candidate = names[names.length - 1];
+    return candidate === 'Navigate' ? undefined : candidate;
+  };
+
+  const map = new Map();
+  // '/' too: the homepage is not in STATIC_PAGES, and relying on the caller's
+  // shared-source default to date it is exactly the kind of accidental
+  // correctness that hides a route from the resolution pass.
+  for (const route of ['/', ...STATIC_PAGES.map((p) => p.path)]) {
+    const start = app.indexOf(`<Route path="${route}"`);
+    if (start < 0) {
+      console.warn(`WARN: ${route} has no route in App.tsx — falling back to the newest content date`);
+      continue;
+    }
+    const open = app.indexOf('{', app.indexOf('element=', start));
+    if (open < 0) continue;
+    let depth = 0;
+    let end = open;
+    for (; end < app.length; end++) {
+      if (app[end] === '{') depth++;
+      else if (app[end] === '}') {
+        depth--;
+        if (depth === 0) break;
+      }
+    }
+    const component = componentFor(app.slice(open + 1, end));
+    const own = (component && byBase.get(component)) || [];
+    map.set(route, [...new Set([...own, ...SHARED_PAGE_SOURCES])]);
+  }
+  return map;
+}
+
+/**
+ * lastmod for an app-rendered route: its own git date, upgraded to the
+ * catalogue date where the page actually renders the catalogue.
+ *
+ * Falls back to the catalogue date when git cannot answer, which is what every
+ * static page did before — a deliberate downgrade of the fix to a safe default
+ * rather than an invented date.
+ */
+function marketingLastmod(route, sources, catalogueDate) {
+  const gitDate = gitLastModified(sources.get(route) || SHARED_PAGE_SOURCES);
+  return CATALOGUE_BACKED_PAGES.has(route)
+    ? latestDate(gitDate, catalogueDate) || catalogueDate
+    : gitDate || catalogueDate;
+}
+
 // Static pages — kept in sync with the prerender templates in
 // Backendv2/controllers/prerenderController.js (handleStaticPage). A URL listed
 // here without a matching template renders as a homepage duplicate, which is
@@ -135,6 +289,10 @@ async function main() {
   // Every entry gets a <lastmod> from actual data (never a build timestamp):
   // Google uses lastmod to decide what to re-crawl, and an inaccurate date is
   // ignored — or worse, discounted for the whole sitemap.
+  //
+  // "Actual data" is read per source: tours and stories carry their API /
+  // publish date, and the marketing pages carry the git history of the files
+  // that render them (gitLastModified).
 
   // Travel stories — the same travelStories.json the app renders and
   // scripts/generate-story-pages.cjs prerenders, so a story is only listed if
@@ -212,21 +370,35 @@ async function main() {
   const contentDates = [...stories.map((s) => s.lastmod), ...tourEntries.map((t) => t.lastmod)]
     .filter(Boolean)
     .sort();
-  // Pages whose body is the catalogue itself (home, /tours, /reviews, …) change
-  // whenever the catalogue does, so they share the newest content date.
+  // Pages whose body is the catalogue itself (home, /tours, /reviews) change
+  // whenever the catalogue does, so they take the newest content date as a
+  // floor. Every other static page answers for its own source — see
+  // marketingLastmod() — rather than inheriting this number by default.
   const newestContentDate = contentDates[contentDates.length - 1] || new Date().toISOString().split('T')[0];
   const newestTourDate = tourEntries.map((t) => t.lastmod).filter(Boolean).sort().pop() || newestContentDate;
 
   // ── 3. Entries ───────────────────────────────────────────────────────
   const urls = [];
 
+  // Marketing pages: the date their source last changed, taken from git.
+  // HomePage is defined inline in App.tsx, so App.tsx *is* its source.
+  const sources = staticPageSources();
+
   // Homepage
-  urls.push(urlEntry(`${SITE_URL}/`, { priority: 1.0, changefreq: 'daily', lastmod: newestContentDate }));
+  urls.push(urlEntry(`${SITE_URL}/`, {
+    priority: 1.0,
+    changefreq: 'daily',
+    lastmod: marketingLastmod('/', sources, newestContentDate),
+  }));
 
   // Static pages
   for (const p of STATIC_PAGES) {
     urls.push(
-      urlEntry(`${SITE_URL}${p.path}`, { priority: p.priority, changefreq: p.changefreq, lastmod: newestContentDate })
+      urlEntry(`${SITE_URL}${p.path}`, {
+        priority: p.priority,
+        changefreq: p.changefreq,
+        lastmod: marketingLastmod(p.path, sources, newestContentDate),
+      })
     );
   }
 
@@ -310,7 +482,26 @@ Sitemap: ${SITE_URL}/sitemap.xml
   console.log(`robots.txt written (Sitemap: ${SITE_URL}/sitemap.xml)`);
 }
 
-main().catch((err) => {
-  console.error('FATAL:', err.message);
-  process.exit(1);
-});
+/**
+ * Exported for src/test/generateSitemap.test.ts. `main()` only runs when this
+ * file is the entrypoint — requiring it from a test would otherwise fire the
+ * live API fetch and overwrite public/sitemap.xml as a side effect of running
+ * the unit suite.
+ */
+module.exports = {
+  STATIC_PAGES,
+  SHARED_PAGE_SOURCES,
+  CATALOGUE_BACKED_PAGES,
+  isoDate,
+  latestDate,
+  gitLastModified,
+  staticPageSources,
+  marketingLastmod,
+};
+
+if (require.main === module) {
+  main().catch((err) => {
+    console.error('FATAL:', err.message);
+    process.exit(1);
+  });
+}
