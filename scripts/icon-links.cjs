@@ -22,6 +22,12 @@ const ICON_LINKS = [
   { rel: 'icon', type: 'image/png', sizes: '32x32', href: `/icons/${ICON_VERSION}/favicon-32x32.png` },
   { rel: 'icon', type: 'image/png', sizes: '48x48', href: `/icons/${ICON_VERSION}/favicon-48x48.png` },
   { rel: 'icon', type: 'image/png', sizes: '64x64', href: `/icons/${ICON_VERSION}/favicon-64.png` },
+  // Google's guideline is a square larger than 48x48. The .ico tops out at 48
+  // and the largest link was 64, so the 192/512 artwork existed only behind
+  // site.webmanifest — which is not read for the search-result favicon.
+  // Declaring them puts the big candidate where the crawler actually looks.
+  { rel: 'icon', type: 'image/png', sizes: '192x192', href: `/icons/${ICON_VERSION}/android-chrome-192x192.png` },
+  { rel: 'icon', type: 'image/png', sizes: '512x512', href: `/icons/${ICON_VERSION}/android-chrome-512x512.png` },
   {
     rel: 'apple-touch-icon',
     sizes: '180x180',
