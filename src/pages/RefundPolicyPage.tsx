@@ -54,6 +54,7 @@ export default function RefundPolicyPage() {
         updated={`${t('support.updatedDate')} · August 2026`}
         summary={SUMMARY}
         toc={TOC}
+        activeTab="refund"
       >
         <h2>Summary</h2>
         <p>

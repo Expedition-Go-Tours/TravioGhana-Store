@@ -15,16 +15,10 @@ import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react
 import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
 import SEO, { buildBreadcrumbSchema, SITE_URL } from '../components/SEO'
+import { POLICY_TABS } from '../lib/policyTabs'
 import '@/styles/SupplierTermsPage.css'
 
 const SUPPLIER_DASHBOARD = 'https://supplier.travioghana.com/'
-
-const POLICY_TABS = [
-  { label: 'Supplier Terms', to: '/supplier-terms' },
-  { label: 'Terms & Conditions', to: '/terms-and-conditions' },
-  { label: 'Privacy Policy', to: '/privacy-policy' },
-  { label: 'Cookies Policy', to: '/cookies-policy' },
-]
 
 const SUMMARY = [
   'Free to list and maintain',
@@ -181,11 +175,11 @@ export default function SupplierTermsPage() {
           {/* ── Policy tabs ───────────────────────────────────────────── */}
           <div className="legal-nav">
             <div className="wrap policy-tabs">
-              {POLICY_TABS.map((tab, i) => (
+              {POLICY_TABS.map((tab) => (
                 <Link
-                  key={tab.to}
+                  key={tab.key}
                   to={tab.to}
-                  className={i === 0 ? 'active' : undefined}
+                  className={tab.key === 'supplier-terms' ? 'active' : undefined}
                 >
                   {tab.label}
                 </Link>

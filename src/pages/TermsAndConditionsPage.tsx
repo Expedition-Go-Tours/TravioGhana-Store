@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Footer from '@/components/Footer'
 import SEO, { buildBreadcrumbSchema, SITE_URL } from '@/components/SEO'
+import { POLICY_TABS } from '@/lib/policyTabs'
 import '../styles/LegalPage.css'
 
 const SUMMARY = [
@@ -35,13 +36,6 @@ const TOC = [
   { id: '21-governing-law-and-disputes', num: '21', label: 'Governing law and disputes' },
   { id: '22-general-provisions', num: '22', label: 'General provisions' },
   { id: '23-contact-us', num: '23', label: 'Contact us' },
-]
-
-const POLICY_TABS = [
-  { key: 'supplier-terms', label: 'Supplier Terms', to: '/supplier-terms' },
-  { key: 'terms', label: 'Terms & Conditions', to: '/terms-and-conditions' },
-  { key: 'privacy', label: 'Privacy Policy', to: '/privacy-policy' },
-  { key: 'cookies', label: 'Cookies Policy', to: '/cookies-policy' },
 ]
 
 export default function TermsAndConditionsPage() {

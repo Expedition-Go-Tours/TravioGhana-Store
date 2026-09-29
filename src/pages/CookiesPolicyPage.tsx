@@ -5,6 +5,7 @@ import { ArrowUp, Check, Cookie, LifeBuoy } from 'lucide-react'
 import Footer from '../components/Footer'
 import SEO, { buildBreadcrumbSchema } from '../components/SEO'
 import { useCookieConsent } from '../context/CookieConsentContext'
+import { POLICY_TABS } from '../lib/policyTabs'
 import './CookiesPolicyPage.css'
 
 /* ------------------------------------------------------------------ */
@@ -24,13 +25,6 @@ const SECTIONS = [
   { id: '9-children', num: '09', label: 'Children' },
   { id: '10-updates-to-this-policy', num: '10', label: 'Updates to this policy' },
   { id: '11-contact-us', num: '11', label: 'Contact us' },
-]
-
-const POLICY_TABS = [
-  { label: 'Supplier Terms', to: '/supplier-terms' },
-  { label: 'Terms & Conditions', to: '/terms-and-conditions' },
-  { label: 'Privacy Policy', to: '/privacy-policy' },
-  { label: 'Cookies Policy', to: '/cookies-policy', active: true },
 ]
 
 const COOKIE_CONTROLS = [
@@ -146,12 +140,12 @@ export default function CookiesPolicyPage() {
         {/* ===== Legal policy tabs ===== */}
         <nav className="cp-tabs" aria-label="Legal policies" ref={tabsRef}>
           {POLICY_TABS.map((tab) =>
-            tab.active ? (
-              <span key={tab.label} className="cp-tab cp-tab--active" aria-current="page">
+            tab.key === 'cookies' ? (
+              <span key={tab.key} className="cp-tab cp-tab--active" aria-current="page">
                 {tab.label}
               </span>
             ) : (
-              <Link key={tab.label} to={tab.to} className="cp-tab">
+              <Link key={tab.key} to={tab.to} className="cp-tab">
                 {tab.label}
               </Link>
             ),

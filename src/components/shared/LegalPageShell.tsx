@@ -1,6 +1,7 @@
 import { useState, useEffect, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import Footer from '../Footer'
+import { POLICY_TABS, type PolicyTabKey } from '../../lib/policyTabs'
 import '../../styles/LegalPage.css'
 
 interface TOCItem {
@@ -17,20 +18,13 @@ interface LegalPageShellProps {
   summary: { icon: string; text: string }[]
   toc: TOCItem[]
   /**
-   * The active tab on the policy-tab bar. Omit it for policy pages that are
-   * not one of the four rail entries (e.g. Refund Policy): the rail still
-   * renders, with no pill highlighted.
+   * The active pill on the policy-tab rail. Every legal page is in the rail
+   * (the list lives in src/lib/policyTabs.ts), so policy pages pass their key;
+   * it stays optional for any future document that isn't a rail entry.
    */
-  activeTab?: 'supplier-terms' | 'terms' | 'privacy' | 'cookies'
+  activeTab?: PolicyTabKey
   children: ReactNode
 }
-
-const POLICY_TABS = [
-  { key: 'supplier-terms' as const, label: 'Supplier Terms', to: '/supplier-terms' },
-  { key: 'terms' as const, label: 'Terms & Conditions', to: '/terms-and-conditions' },
-  { key: 'privacy' as const, label: 'Privacy Policy', to: '/privacy-policy' },
-  { key: 'cookies' as const, label: 'Cookies Policy', to: '/cookies-policy' },
-]
 
 /**
  * Shared layout for legal/policy pages — the green hero card, policy-tab bar,

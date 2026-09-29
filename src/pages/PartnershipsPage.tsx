@@ -102,7 +102,12 @@ const BENEFITS = [
   },
 ]
 
-/** The rail's twelve cards — the five programmes told twice over, as the template has them. */
+/**
+ * The rail's twelve cards. The marquee renders this set three times — one
+ * interactive copy flanked by two decorative ones — so a full period of strip
+ * always sits on both sides of the viewport and the loop point never exposes
+ * an edge (see the Adaptations block in PartnershipsPage.css).
+ */
 const ROUTE_CARDS = [
   { img: capeCoastCastle, alt: 'Cape Coast Castle in Ghana', to: '/supplier/list-experience', label: 'Tour & activity suppliers', no: '01', h3: 'List tours, activities and experiences for travellers discovering Ghana.', cta: 'List your experience' },
   { img: accraSkyline, alt: 'Accra skyline in Ghana', to: '/hotels', label: 'Hotels & stays', no: '02', h3: 'List rooms or properties and connect guests with Ghana experiences.', cta: 'Explore stays partnership' },
@@ -205,8 +210,8 @@ export default function PartnershipsPage() {
   // viewport, and the marquee waits for them — a deadlock. So arm the strip as
   // soon as it is within a viewport: `loading` flips to eager, which also
   // re-renders the <img> (key change) so no browser has to honour a lazy→eager
-  // attribute change. Both sets arm together; they request the same URLs, so
-  // the duplicate is a cache hit and the loop's second half is never blank.
+  // attribute change. All three copies arm together; they request the same URLs,
+  // so the extra copies are cache hits and the rest of the loop is never blank.
   useEffect(() => {
     const rail = railRef.current
     if (!rail || !('IntersectionObserver' in window)) return
@@ -499,6 +504,10 @@ export default function PartnershipsPage() {
               </p>
             </div>
             <div ref={railRef} className={`route-rail${railReady ? ' is-ready' : ''}`}>
+              {/* Decorative lead-in copy, the interactive set, then the trailing
+                  copy. The loop travels exactly one period, so the strip always
+                  continues past the twelfth image and wraps unseen. */}
+              {routeSet(true)}
               {routeSet(false)}
               {routeSet(true)}
             </div>
