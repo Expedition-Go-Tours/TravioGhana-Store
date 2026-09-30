@@ -24,8 +24,10 @@ AUTH_SETUP.md
 BEHAVIOUR_ANALYSIS.md
 CAROUSEL_ANALYSIS.md
 IMPLEMENTATION_SUMMARY.md
-README.md
 *.md
+# The repo README is the one markdown file that must be tracked; the
+# analysis notes above stay ignored by the blanket *.md rule.
+!README.md
 # Logs
 logs/
 *.log
