@@ -91,7 +91,24 @@ export default function SEO({
 }: SEOProps) {
   const location = useLocation()
 
-  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${DEFAULT_TITLE} | ${SITE_NAME}`
+  // The homepage leads with the brand; inner pages lead with their subject.
+  //
+  // This used to be `${DEFAULT_TITLE} | ${SITE_NAME}` on both paths, which put
+  // the brand last in a three-segment string:
+  //
+  //   Ghana Tours & Experiences | Book Authentic African Adventures | Travio Ghana
+  //
+  // Google renders about 60 characters of a title, so everything after the
+  // second pipe was cut and the brand never appeared in the result at all —
+  // on the query the brand should win outright, "travio ghana". A page whose
+  // title only mentions the brand in its last third reads as a page about
+  // generic Ghana tours, which is how the domain ended up losing its own name
+  // to a YouTube channel and two GitHub repos.
+  //
+  // Ordering stays as it is for a caller-supplied title: `Privacy Policy |
+  // Travio Ghana` is right, because nobody searches "travio ghana" to reach the
+  // privacy policy — those pages compete on their subject, not the brand.
+  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} | ${DEFAULT_TITLE}`
   // `place` is the only query parameter that names a real page: /tours?place=Accra
   // is its own destination and its own sitemap entry, and the prerendered copy
   // self-canonicalises to it. Every other parameter (filters, sort, tracking) is

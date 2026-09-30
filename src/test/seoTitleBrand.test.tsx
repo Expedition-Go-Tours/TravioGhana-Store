@@ -55,6 +55,19 @@ describe('every title tag carries the brand', () => {
     expect(twitterTitle).toBe(pageTitle)
   })
 
+  it('on the homepage, the brand leads instead of trailing', () => {
+    // The homepage used to build `${DEFAULT_TITLE} | ${SITE_NAME}`, which put
+    // the brand last in a three-segment string — past the ~60 characters
+    // Google renders. The result for "travio ghana" therefore carried no brand
+    // in it at all, and the query went to a YouTube channel and some GitHub
+    // repos. Leading with the brand is what makes the page a candidate for it.
+    renderSEO(<SEO description="Discover authentic Ghana tours and experiences." />)
+
+    expect(document.title.startsWith('Travio Ghana | ')).toBe(true)
+    expect(metaContent('meta[property="og:title"]')?.startsWith('Travio Ghana | ')).toBe(true)
+    expect(metaContent('meta[name="twitter:title"]')?.startsWith('Travio Ghana | ')).toBe(true)
+  })
+
   it('on a page that passes its own title', () => {
     renderSEO(<SEO title="Privacy Policy" description="How we handle data." />)
 
