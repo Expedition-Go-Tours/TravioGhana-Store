@@ -581,6 +581,60 @@ export interface CombinedStatsTour extends MatchableTour {
  * review stats are displayed (detail page and cards) so the headline numbers
  * always agree with the review cards on screen.
  */
+/**
+ * The combined headline numbers for a tour, given the already-loaded stats payload.
+ *
+ * Split out of `useCombinedTourStats` so the homepage JSON-LD can compute the
+ * same figures the cards render. The schema builder receives raw tour rows, and
+ * the homepage endpoints return `averageRating: null, reviewCount: 0` for every
+ * one of them — so reading those fields straight off the row published no rating
+ * at all while the card beside it was showing 4.8 from the scraped platforms. A
+ * schema that disagrees with the number printed on screen is worse than one that
+ * omits it, hence one function and two callers.
+ */
+export function combinedStatsFor(
+  tour:
+    | {
+        title?: string | null
+        location?: string | null
+        supplierName?: string | null
+        rating?: number | string | null
+        reviewCount?: number | null
+      }
+    | null
+    | undefined,
+  data: ExternalReviewStatsData | undefined,
+): CombinedReviewStats {
+  const title = tour?.title
+  const location = tour?.location
+  const supplierName = tour?.supplierName
+  const rating = tour?.rating
+  const reviewCount = tour?.reviewCount
+
+  if (!data || !title) return combineReviewStats({ rating, reviewCount }, [])
+  // Scraped social proof is scoped to the scraped operator's own tours;
+  // everyone else shows their in-app numbers only.
+  if (!isScrapedReviewSupplier(supplierName)) {
+    return combineReviewStats({ rating, reviewCount }, [])
+  }
+  const matched = selectMatchedProducts(data.products, { title, location, supplierName })
+  const aggregate = aggregateProducts(matched)
+  if (aggregate) return combineReviewStats({ rating, reviewCount }, [], aggregate)
+
+  // No official totals on any matched product: count the pre-aggregated
+  // visible counted rows instead of downloading the raw dataset.
+  let count = 0
+  let sum = 0
+  for (const product of matched) {
+    const entry = data.productAggregates[product.id]
+    if (!entry) continue
+    count += entry.count
+    sum += entry.sum
+  }
+  const fallback = count > 0 ? { rating: roundOne(sum / count), reviewCount: count } : null
+  return combineReviewStats({ rating, reviewCount }, [], fallback)
+}
+
 export function useCombinedTourStats(tour: CombinedStatsTour | null | undefined): CombinedReviewStats {
   const { data } = useExternalReviewStatsData()
   const title = tour?.title
@@ -589,30 +643,48 @@ export function useCombinedTourStats(tour: CombinedStatsTour | null | undefined)
   const rating = tour?.rating
   const reviewCount = tour?.reviewCount
 
-  return useMemo(() => {
-    if (!data || !title) return combineReviewStats({ rating, reviewCount }, [])
-    // Scraped social proof is scoped to the scraped operator's own tours;
-    // everyone else shows their in-app numbers only.
-    if (!isScrapedReviewSupplier(supplierName)) {
-      return combineReviewStats({ rating, reviewCount }, [])
-    }
-    const matched = selectMatchedProducts(data.products, { title, location, supplierName })
-    const aggregate = aggregateProducts(matched)
-    if (aggregate) return combineReviewStats({ rating, reviewCount }, [], aggregate)
+  return useMemo(
+    () => combinedStatsFor({ title, location, supplierName, rating, reviewCount }, data),
+    [data, title, location, supplierName, rating, reviewCount],
+  )
+}
 
-    // No official totals on any matched product: count the pre-aggregated
-    // visible counted rows instead of downloading the raw dataset.
-    let count = 0
-    let sum = 0
-    for (const product of matched) {
-      const entry = data.productAggregates[product.id]
-      if (!entry) continue
-      count += entry.count
-      sum += entry.sum
-    }
-    const fallback = count > 0 ? { rating: roundOne(sum / count), reviewCount: count } : null
-    return combineReviewStats({ rating, reviewCount }, [], fallback)
-  }, [data, title, location, supplierName, rating, reviewCount])
+/** Tour rows as the homepage endpoints hand them over. */
+type HomepageRow = {
+  title: string
+  city?: string | null
+  country?: string | null
+  supplier?: { name?: string | null } | null
+  averageRating?: number | null
+  reviewCount?: number | null
+}
+
+/**
+ * Replaces each row's null/0 rating fields with the figure `TourCard` renders
+ * for that same row, so `buildHomepageItemListSchema` publishes what is already
+ * on screen instead of nothing. Rows with no recovered rating pass through
+ * untouched, which `buildHomepageItemListSchema` then correctly skips.
+ */
+export function enrichToursWithCombinedStats<T extends HomepageRow>(
+  rows: T[],
+  data: ExternalReviewStatsData | undefined,
+): T[] {
+  if (!data) return rows
+  return rows.map((tour) => {
+    const stats = combinedStatsFor(
+      {
+        title: tour.title,
+        location: [tour.city, tour.country].filter(Boolean).join(', '),
+        supplierName: tour.supplier?.name ?? null,
+        rating: tour.averageRating,
+        reviewCount: tour.reviewCount,
+      },
+      data,
+    )
+    return stats.reviewCount > 0
+      ? { ...tour, averageRating: stats.rating, reviewCount: stats.reviewCount }
+      : tour
+  })
 }
 
 // ─── Supplier-level reviews ──────────────────────────────────────────────────

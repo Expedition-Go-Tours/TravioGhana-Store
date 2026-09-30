@@ -34,6 +34,7 @@ import { AuthProvider } from './context/AuthContext'
 import { startSessionWatchdog, stopSessionWatchdog } from './auth/sessionManager'
 import { trackPageView } from './lib/analytics'
 import { useHomepage, useHomepageByCity } from './hooks/useHomepageSections'
+import { enrichToursWithCombinedStats, useExternalReviewStatsData } from './hooks/useExternalReviews'
 
 // Route-level code splitting
 const AuthForm = lazy(() => import('./pages/AuthForm'))
@@ -97,6 +98,27 @@ function HomePage() {
 
   // Use city-scoped data when a location search is active, fall back to global on error
   const data = hasActiveSearch && !isCityError ? (cityHomepage ?? homepage) : homepage
+
+  // Every homepage endpoint returns `averageRating: null, reviewCount: 0`, so
+  // reading those fields off the row published no rating at all — while the card
+  // beside it rendered 4.8 from the scraped platforms via useCombinedTourStats.
+  // Run the same function here (same cached payload, no extra request) so the
+  // JSON-LD agrees with the number printed on screen.
+  const { data: reviewStats } = useExternalReviewStatsData()
+  const itemListTours = useMemo(
+    () =>
+      enrichToursWithCombinedStats(
+        [
+          ...(data?.recommended ?? []),
+          ...(data?.topRated ?? []),
+          ...(data?.sellOut ?? []),
+          ...(data?.new ?? []),
+          ...(data?.offers ?? []),
+        ],
+        reviewStats,
+      ),
+    [data, reviewStats],
+  )
   const loading = hasActiveSearch ? isCityLoading : isLoading
 
   // Below-fold section chunks are imported by MountOnView when the user
@@ -147,13 +169,7 @@ function HomePage() {
           // ratings in front of a crawler that does not execute the JS. Empty
           // before the homepage fetch resolves, which buildItemList correctly
           // renders as numberOfItems: 0 rather than omitting the block.
-          buildHomepageItemListSchema([
-            ...(data?.recommended ?? []),
-            ...(data?.topRated ?? []),
-            ...(data?.sellOut ?? []),
-            ...(data?.new ?? []),
-            ...(data?.offers ?? []),
-          ]),
+          buildHomepageItemListSchema(itemListTours),
         ]}
       />
       <GoogleOneTapPrompt />
