@@ -98,6 +98,24 @@ describe('the SEO component names the brand on every page', () => {
     expect(org.sameAs).toEqual(expect.arrayContaining([...BRAND_SOCIAL_URLS]))
   })
 
+  it('states the registered company name, distinct from the trading brand', () => {
+    // Google's advice for a brand query that does not surface: where other
+    // brands or sellers share a similar name, it may lean on the full legal
+    // company name to confirm which site is the real one, and stating it helps.
+    // The footer has printed "Travio Ghana by Expedition-Go Tours Ltd" since
+    // launch — so the claim existed for a reader and not for a knowledge panel.
+    renderSEO(<SEO title="Terms & Conditions" description="The rules." />)
+
+    const [org] = organization()
+    expect(org.legalName).toBe('Expedition-Go Tours Ltd')
+
+    // The distinction is the entire reason the field exists. A legalName that
+    // merely repeats `name` passes a presence check while saying nothing the
+    // brand field had not already said — so assert they differ.
+    expect(org.name).toBe('Travio Ghana')
+    expect(org.legalName).not.toBe(org.name)
+  })
+
   it('names no other brand', () => {
     renderSEO(<SEO title="Contact Us" description="Reach us." />)
 

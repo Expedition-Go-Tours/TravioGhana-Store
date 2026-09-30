@@ -4,6 +4,23 @@ import { BRAND_SOCIAL_URLS } from '../lib/brandSocial'
 import { tourPath } from '../lib/tourPath'
 
 const SITE_NAME = 'Travio Ghana'
+// The incorporated company behind the brand — deliberately not a second copy of
+// SITE_NAME. `schema.org/legalName` asks for the name the business is
+// *registered* under, not the trading name it trades under, so both belong here
+// side by side.
+//
+// Google's guidance for sites that don't surface for their own brand is that
+// when other brands or sellers share a similar name, it may lean on the full
+// legal company name to confirm which site is the real one — and that stating it
+// on the about/contact pages helps. This site already printed it in the footer
+// and on every legal page since launch ("© … Travio Ghana by Expedition-Go Tours
+// Ltd"); what was missing was the structured form of the same claim, which is
+// the form a knowledge panel acts on.
+//
+// The literal is also repeated ~140 times across `src/` (every policy page,
+// bookingTour.ts, the supplier forms) with no shared constant behind them. This
+// is the copy the schema reads, not yet the single source for all of them.
+const LEGAL_NAME = 'Expedition-Go Tours Ltd'
 const DEFAULT_TITLE = 'Ghana Tours & Experiences | Book Authentic African Adventures'
 const DEFAULT_DESCRIPTION = 'Discover authentic Ghana tours and experiences. Book cultural tours, wildlife safaris, food tours, and adventure activities across Accra, Cape Coast, Volta Region, and more. Free cancellation, best prices guaranteed.'
 // Canonical host. MUST match the domain the site actually serves (the other
@@ -184,6 +201,9 @@ export function buildOrganizationSchema() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: SITE_NAME,
+    // Distinct from `name`: the registered entity rather than the trading brand.
+    // Same claim the footer prints in words.
+    legalName: LEGAL_NAME,
     url: SITE_URL,
     // Must resolve: /src/... paths never survive the build (404 for Google).
     // ImageObject with the intrinsic size, matching what the prerender serves.
