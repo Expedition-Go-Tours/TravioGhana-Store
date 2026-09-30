@@ -150,7 +150,10 @@ describe('middleware method gates', () => {
   const middleware = read('middleware.ts')
 
   it('routes HEAD through the rewrites, not around them', () => {
-    expect(middleware).toMatch(/function isReadMethod\(method\)/)
+    // Matches on the helper's existence rather than its exact spelling: the
+    // parameter is typed (`method: string`) and pinning the closing paren
+    // would fail on any annotation.
+    expect(middleware).toMatch(/function isReadMethod\(method/)
     expect(middleware).toMatch(/method === 'GET' \|\| method === 'HEAD'/)
   })
 

@@ -60,17 +60,17 @@ const STATIC_EXTS = [
   '.webp', '.ico', '.css', '.js', '.woff', '.woff2', '.ttf', '.eot',
 ]
 
-export function isBot(ua) {
+export function isBot(ua: string | null | undefined) {
   if (!ua) return false
   const lower = ua.toLowerCase()
   return BOT_AGENTS.some((b) => lower.includes(b))
 }
 
-function shouldSkip(pathname) {
+function shouldSkip(pathname: string) {
   return SKIP_PATHS.some((p) => pathname.startsWith(p))
 }
 
-function isStatic(pathname) {
+function isStatic(pathname: string) {
   return STATIC_EXTS.some((ext) => pathname.endsWith(ext))
 }
 
@@ -86,11 +86,11 @@ function isStatic(pathname) {
  * was broken. It has been this way since the infrastructure was adopted, so it
  * is a long-standing bug rather than a regression from the prerender work.
  */
-function isReadMethod(method) {
+function isReadMethod(method: string) {
   return method === 'GET' || method === 'HEAD'
 }
 
-export default function middleware(request) {
+export default function middleware(request: Request) {
   const url = new URL(request.url)
   const pathname = url.pathname
   const ua = request.headers.get('user-agent') || ''
