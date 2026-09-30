@@ -8,6 +8,15 @@
    Footer), its html/body/:root resets live on the `.ta-page` wrapper, and its
    four click handlers are reimplemented as React state. See
    src/styles/TravelAgents.css for the CSS notes.
+
+   The page used to hot-link four Wikimedia Commons photos through
+   Special:FilePath. Production's Content-Security-Policy whitelists
+   commons.wikimedia.org but not the thumb.wikimedia.org host that FilePath
+   redirects to, so the hero frame and all three destination cards were blocked
+   there and rendered empty. `scripts/generate-travel-agent-images.cjs`
+   downloads those originals once and writes WebPs into src/assets/travel-agents
+   at their real display footprint (2x); the credits at the foot of the page
+   carry the attribution.
    ========================================================================== */
 
 import { useEffect, useRef, useState } from 'react'
@@ -15,12 +24,18 @@ import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
 import SEO from '../components/SEO'
 import travioLogoSrc from '../assets/TravioGhana_Logo.svg'
+
+/**
+ * Photos from `scripts/generate-travel-agent-images.cjs` — see the header note.
+ */
+import accraSkyline from '../assets/travel-agents/accra-skyline.webp'
+import aburiBotanicalGardens from '../assets/travel-agents/aburi-botanical-gardens.webp'
+import capeCoastCastle from '../assets/travel-agents/cape-coast-castle.webp'
+import kakumCanopyWalkway from '../assets/travel-agents/kakum-canopy-walkway.webp'
 import '../styles/partner-pages.css'
 import '../styles/TravelAgents.css'
 
 const CONTACT = 'https://www.expeditiongotours.com/contact-us?subject=Travel%20agent%20partnership'
-
-const WIKIMEDIA = 'https://commons.wikimedia.org/wiki/Special:FilePath/'
 
 /** The three real Travio Ghana products the agent-desk preview links to. */
 const TOURS = {
@@ -83,9 +98,9 @@ const BENEFITS = [
 ]
 
 const DESTINATIONS = [
-  { img: `${WIKIMEDIA}The_Cape_Coast_Castle_located_in_Cape_Coast_Ghana.jpg?width=1100`, alt: "Cape Coast Castle on Ghana's coast", region: 'CENTRAL REGION', title: 'Cape Coast heritage', body: 'Stories, culture and the coast.' },
-  { img: `${WIKIMEDIA}Canopy_walkway_in_Kakum_National_Park.jpg?width=1100`, alt: 'Canopy walkway at Kakum National Park, Ghana', region: 'CENTRAL REGION', title: 'Kakum adventures', body: 'Nature from a new perspective.' },
-  { img: `${WIKIMEDIA}Aburi_Botanical_Gardens_11.jpg?width=1100`, alt: 'Aburi Botanical Gardens in Ghana', region: 'EASTERN REGION', title: 'Aburi escapes', body: 'Green spaces and slower moments.' },
+  { img: capeCoastCastle, alt: "Cape Coast Castle on Ghana's coast", region: 'CENTRAL REGION', title: 'Cape Coast heritage', body: 'Stories, culture and the coast.' },
+  { img: kakumCanopyWalkway, alt: 'Canopy walkway at Kakum National Park, Ghana', region: 'CENTRAL REGION', title: 'Kakum adventures', body: 'Nature from a new perspective.' },
+  { img: aburiBotanicalGardens, alt: 'Aburi Botanical Gardens in Ghana', region: 'EASTERN REGION', title: 'Aburi escapes', body: 'Green spaces and slower moments.' },
 ]
 
 const STEPS = [
@@ -212,7 +227,7 @@ export default function TravelAgentsPage() {
 
             <div className="portrait-stage">
               <div className="portrait-frame">
-                <img src={`${WIKIMEDIA}Accra_Skyline_-_Ghana.jpg?width=1280`} alt="Accra Airport City skyline in Ghana" />
+                <img src={accraSkyline} alt="Accra Airport City skyline in Ghana" decoding="async" fetchPriority="high" />
               </div>
               <div className="agent-badge">
                 <span>Made for travel professionals</span>
@@ -547,9 +562,10 @@ export default function TravelAgentsPage() {
           <a href="https://commons.wikimedia.org/wiki/File:The_Cape_Coast_Castle_located_in_Cape_Coast_Ghana.jpg">Cape Coast Castle</a>{' '}
           by Treysam (CC BY-SA 4.0);{' '}
           <a href="https://commons.wikimedia.org/wiki/File:Canopy_walkway_in_Kakum_National_Park.jpg">Kakum canopy walkway</a>{' '}
-          by Ibnali1 (see source license);{' '}
+          by Ibnali1 (CC BY-SA 4.0);{' '}
           <a href="https://commons.wikimedia.org/wiki/File:Aburi_Botanical_Gardens_11.jpg">Aburi Botanical Gardens</a>{' '}
-          (see source license). Photos cropped for layout.
+          by Nkansahrexford (CC BY-SA 4.0). Photos cropped for layout; each crop is shared under the licence of its
+          source photo.
         </p>
       </div>
 
