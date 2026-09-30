@@ -4,6 +4,16 @@ const BOT_AGENTS = [
   // Search crawlers
   'googlebot', 'bingbot', 'slurp', 'duckduckbot', 'baiduspider',
   'yandexbot', 'sogou', 'duckassist',
+  // Google's other fetchers. None of them contain the substring "googlebot",
+  // so each failed isBot() and was served the SPA shell instead of the
+  // prerender. Google-InspectionTool is what Search Console's "Test live URL"
+  // uses: the live test was fetching a 5 KB shell with no canonical, no meta
+  // robots and a different <title> from the page Google had indexed, while
+  // Googlebot itself was served 571 KB of real content. AdsBot-Google decides
+  // how ad landing pages are scored, Storebot-Google feeds merchant listings
+  // and Mediapartners-Google is AdSense's crawler.
+  'google-inspectiontool', 'adsbot-google', 'mediapartners-google',
+  'storebot-google', 'apis-google', 'googleother',
   // Social / chat scrapers
   'facebot', 'facebookexternalhit', 'twitterbot', 'linkedinbot',
   'slackbot', 'whatsapp', 'telegrambot', 'discordbot', 'pinterest',
@@ -50,7 +60,7 @@ const STATIC_EXTS = [
   '.webp', '.ico', '.css', '.js', '.woff', '.woff2', '.ttf', '.eot',
 ]
 
-function isBot(ua) {
+export function isBot(ua) {
   if (!ua) return false
   const lower = ua.toLowerCase()
   return BOT_AGENTS.some((b) => lower.includes(b))
