@@ -251,7 +251,7 @@ describe('prerender inventory gate', () => {
   }
 
   it('only holds the homepage to an inventory requirement', () => {
-    // The other 19 routes are marketing/legal pages with no tours on them;
+    // The other 21 routes are marketing/legal pages with no tours on them;
     // holding them to a card count would skip the entire prerender.
     expect(isInventoryRoute('/')).toBe(true)
     for (const route of ['/about-us', '/faq', '/privacy-policy', '/careers']) {

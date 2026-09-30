@@ -549,6 +549,17 @@ export default function TravelAgentsPage() {
             <a className="btn" href={CONTACT} target="_blank" rel="noopener noreferrer">Apply as a travel agent</a>
           </div>
         </section>
+
+        {/* Partner resources cross-link — badges and link snippets for live partners. */}
+        <div className="container" style={{ padding: '4px 0 42px', textAlign: 'center' }}>
+          <p style={{ margin: 0, color: '#5e6b64', fontSize: 14.5 }}>
+            Already a partner? Badges and copy-paste link snippets live on the{' '}
+            <Link to="/partner-resources" style={{ color: '#179237', fontWeight: 700 }}>
+              partner resources
+            </Link>{' '}
+            page.
+          </p>
+        </div>
       </main>
 
       {/* ── Photography credits ──────────────────────────────────────────── */}

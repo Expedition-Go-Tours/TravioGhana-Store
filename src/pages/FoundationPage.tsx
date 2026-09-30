@@ -9,6 +9,15 @@
    track's photo set — is reimplemented below. The gallery marquee doubles up
    its photo set in the markup instead of cloning it in JS. See
    src/styles/FoundationPage.css for the CSS notes.
+
+   The page used to hot-link all thirteen photographs from Wikimedia Commons
+   through Special:FilePath. Production's Content-Security-Policy whitelists
+   commons.wikimedia.org but not the thumb.wikimedia.org host that FilePath
+   redirects to, so every photograph on the page was blocked there. They also
+   cost 5.45 MB over the wire, behind two redirects each.
+   `scripts/generate-foundation-images.cjs` downloads those originals once and
+   writes WebPs into src/assets/foundation at their real display footprint; the
+   credits at the foot of the page carry the attribution.
    ========================================================================== */
 
 import { useEffect, useRef } from 'react'
@@ -17,24 +26,39 @@ import Footer from '../components/Footer'
 import SEO, { buildBreadcrumbSchema } from '../components/SEO'
 import '@/styles/FoundationPage.css'
 
-const WIKIMEDIA = 'https://commons.wikimedia.org/wiki/Special:FilePath/'
+/**
+ * Photos from `scripts/generate-foundation-images.cjs` — see the header note.
+ */
+import cleanup4 from '../assets/foundation/cleanup-4.webp'
+import cleanup9 from '../assets/foundation/cleanup-9.webp'
+import communityCleanUp from '../assets/foundation/community-clean-up.webp'
+import marketWomen from '../assets/foundation/market-women.webp'
+import schoolChildren from '../assets/foundation/school-children.webp'
+import schoolgirl from '../assets/foundation/schoolgirl.webp'
+import studentsReading from '../assets/foundation/students-reading.webp'
+import teacherReading from '../assets/foundation/teacher-reading.webp'
+import treePlanting from '../assets/foundation/tree-planting.webp'
+import treePlanting9 from '../assets/foundation/tree-planting-9.webp'
+import villageMeeting from '../assets/foundation/village-meeting.webp'
+import waliMeeting from '../assets/foundation/wali-meeting.webp'
+import youngWomen from '../assets/foundation/young-women.webp'
 
 const CONTACT = '/contact-us'
 
 /** Hero gallery: two columns, each its own scrolling strip of three photos. */
 const GALLERY_LANE_1 = [
   {
-    file: 'Ghana%20school%20children%20%288203372110%29.jpg?width=1100',
+    img: schoolChildren,
     alt: 'School children in an English class in Accra',
     label: 'Learning',
   },
   {
-    file: 'Tree%20planting%20in%20Ghana%209.jpg?width=1100',
+    img: treePlanting9,
     alt: 'Tree planting activity in Ghana',
     label: 'Growing',
   },
   {
-    file: 'Community%20clean-up.jpg?width=1100',
+    img: communityCleanUp,
     alt: 'Community clean-up in Winneba, Ghana',
     label: 'Community action',
   },
@@ -42,17 +66,17 @@ const GALLERY_LANE_1 = [
 
 const GALLERY_LANE_2 = [
   {
-    file: 'Market%20women%20in%20Ghana.jpg?width=1100',
+    img: marketWomen,
     alt: 'Market women in Ghana',
     label: 'Livelihoods',
   },
   {
-    file: 'A%20village%20community%20development%20meeting%20in%20northern%20Ghana.jpg?width=1100',
+    img: villageMeeting,
     alt: 'Community development meeting in northern Ghana',
     label: 'Local voices',
   },
   {
-    file: 'A%20teacher%20assisting%20his%20student%20to%20read.jpg?width=1100',
+    img: teacherReading,
     alt: 'A teacher helping a student read in Northern Ghana',
     label: 'Education',
   },
@@ -155,7 +179,7 @@ const FOCUS_AREAS = [
 
 const HELP_CARDS = [
   {
-    file: 'Students%20reading%20in%20a%20classroom.jpg?width=1100',
+    img: studentsReading,
     alt: 'Students reading in a classroom in Ghana',
     tag: 'For individuals',
     title: 'Share your situation.',
@@ -163,7 +187,7 @@ const HELP_CARDS = [
     cta: 'Request help →',
   },
   {
-    file: 'Wali_physical_meeting.jpg?width=1100',
+    img: waliMeeting,
     alt: 'Community group meeting in Wa, Ghana',
     tag: 'For communities',
     title: 'Bring a local need forward.',
@@ -174,22 +198,22 @@ const HELP_CARDS = [
 
 const IMPACT_SHOTS = [
   {
-    file: 'Cleanup%20exercise%20in%20Ghana%209.jpg?width=1100',
+    img: cleanup9,
     alt: 'Volunteers cleaning a street in Accra',
     caption: 'Local action',
   },
   {
-    file: 'Schoolgirl%20Ghana.jpg?width=1100',
+    img: schoolgirl,
     alt: 'Schoolgirl photographed in northern Ghana',
     caption: 'Education & opportunity',
   },
   {
-    file: 'Ghana%20tree%20planting.jpg?width=1100',
+    img: treePlanting,
     alt: 'Tree planting initiative in Ghana',
     caption: 'Looking after our future',
   },
   {
-    file: 'Ghana%20young%20women%20%287250530402%29.jpg?width=1100',
+    img: youngWomen,
     alt: 'Young women at a community health event in Ghana',
     caption: 'People working together',
   },
@@ -214,7 +238,7 @@ function GalleryLane({
       {images.map((img) => (
         <figure className="photo" key={`${duplicate ? 'dup-' : ''}${img.label}`}>
           <img
-            src={`${WIKIMEDIA}${img.file}`}
+            src={img.img}
             alt={duplicate ? '' : img.alt}
             loading={eager && !duplicate ? 'eager' : 'lazy'}
           />
@@ -240,7 +264,7 @@ function ImpactSet({ duplicate }: { duplicate: boolean }) {
       {IMPACT_SHOTS.map((shot) => (
         <figure className="impact-shot" key={`${duplicate ? 'dup-' : ''}${shot.caption}`}>
           <img
-            src={`${WIKIMEDIA}${shot.file}`}
+            src={shot.img}
             alt={duplicate ? '' : shot.alt}
             loading="lazy"
           />
@@ -454,7 +478,7 @@ export default function FoundationPage() {
             <div className="help-grid">
               {HELP_CARDS.map((card) => (
                 <article className="help-card reveal" key={card.tag}>
-                  <img src={`${WIKIMEDIA}${card.file}`} alt={card.alt} />
+                  <img src={card.img} alt={card.alt} />
                   <div className="help-copy">
                     <span className="help-tag">{card.tag}</span>
                     <h3>{card.title}</h3>
@@ -492,7 +516,7 @@ export default function FoundationPage() {
           <div className="container volunteer-shell reveal">
             <div className="volunteer-photo">
               <img
-                src={`${WIKIMEDIA}Cleanup%20exercise%20in%20Ghana%204.jpg?width=1100`}
+                src={cleanup4}
                 alt="Volunteers taking part in a clean-up in Accra"
               />
             </div>

@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { setAuthReturnTo } from '../lib/auth'
+import { useAuthUser } from '../hooks/useAuthUser'
 import Footer from '../components/Footer'
 import SEO from '../components/SEO'
 import RevealOnScroll from '../components/shared/RevealOnScroll'
@@ -61,11 +63,26 @@ const FAQ_ITEMS = [
 ]
 
 export default function ContentCreatorsPage({ onOpenAuth }: ContentCreatorsPageProps) {
+  const navigate = useNavigate()
+  const user = useAuthUser()
+
   useEffect(() => {
     setAuthReturnTo('/content-creators')
   }, [])
 
-  const handleApply = () => { onOpenAuth?.('signup') }
+  /**
+   * Signed-in creators go straight to the creator application form; everyone
+   * else signs up first and is returned to it. Without the user check a
+   * signed-in creator was shown the sign-up overlay again.
+   */
+  const handleApply = () => {
+    if (!user) {
+      setAuthReturnTo('/partners/content-creators/apply')
+      onOpenAuth?.('signup')
+      return
+    }
+    navigate('/partners/content-creators/apply')
+  }
 
   return (
     <main>
@@ -214,6 +231,17 @@ export default function ContentCreatorsPage({ onOpenAuth }: ContentCreatorsPageP
             </button>
           </div>
         </RevealOnScroll>
+      </div>
+
+      {/* Partner resources cross-link — for creators who are already live. */}
+      <div className="wrap" style={{ padding: '4px 0 46px', textAlign: 'center' }}>
+        <p style={{ margin: 0, color: '#5e6b64', fontSize: 14.5 }}>
+          Already a partner? Badges and copy-paste link snippets live on the{' '}
+          <Link to="/partner-resources" style={{ color: '#179237', fontWeight: 700 }}>
+            partner resources
+          </Link>{' '}
+          page.
+        </p>
       </div>
       <Footer />
     </main>

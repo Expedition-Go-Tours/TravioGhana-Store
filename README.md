@@ -91,7 +91,7 @@ AI/SEO fetchers — and rewrites those requests to prerendered HTML instead of t
                          └──────────────────────────┘
    crawler  ───────────► middleware.ts (UA match)
                               │
-                              ├─ 20 static routes ─► dist/__seo/<route>/index.html   (build time)
+                              ├─ 22 static routes ─► dist/__seo/<route>/index.html   (build time)
                               ├─ /tour/* , /tours ─► apiv1 …/api/prerender           (live data)
                               └─ /stories/* ───────► static HTML from scripts/
 ```
@@ -112,7 +112,7 @@ Three files must agree on which routes are static, and a unit test enforces it:
 
 | Route class | Served by | Why |
 | --- | --- | --- |
-| `/`, `/about-us`, `/blog`, `/faq`, policies (20) | build-time `dist/__seo/` | static copy, cannot drift from the app |
+| `/`, `/about-us`, `/blog`, `/faq`, policies (22) | build-time `dist/__seo/` | static copy, cannot drift from the app |
 | `/tour/:id/:slug`, `/tours`, `/tours?place=…` | backend prerender | needs live prices and availability |
 | `/stories`, `/stories/:slug` | `scripts/generate-story-pages.cjs` | client-side data a crawler cannot read |
 | `/dashboard/*`, `/booking/*`, `/auth/*`, `/api/*` | never prerendered | private; excluded in `SKIP_PATHS` |
@@ -188,7 +188,7 @@ static files.
 | `npm test` | full Vitest suite |
 | `npm run test:watch` | Vitest in watch mode |
 | `npm run lint` | ESLint across the repo |
-| `npm run build` | `tsc -b` → `vite build` → prerender the 20 static routes |
+| `npm run build` | `tsc -b` → `vite build` → prerender the 22 static routes |
 | `npm run preview` | preview the production build locally |
 | `npm run sitemap` | regenerate `public/sitemap.xml` |
 | `npm run prerender` | regenerate `dist/__seo/` only |
@@ -223,8 +223,8 @@ TravioGhana-Store/
 │   ├── data/                  # external review stats, shipped at build time
 │   └── icons/v2/              # versioned favicons (browsers cache by URL)
 ├── scripts/
-│   ├── prerender-static.mjs   # renders 20 routes → dist/__seo/
-│   ├── generate-sitemap.cjs   # 76-URL sitemap
+│   ├── prerender-static.mjs   # renders 22 routes → dist/__seo/
+│   ├── generate-sitemap.cjs   # 78-URL sitemap
 │   ├── generate-story-pages.cjs
 │   ├── build-review-stats.cjs
 │   ├── verify-build-links.mjs # production link gate

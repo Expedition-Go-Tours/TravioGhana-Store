@@ -587,6 +587,9 @@ export default function PartnershipsPage() {
               >
                 Read traveller reviews <LinkIcon />
               </a>
+              <Link to="/partner-resources">
+                Partner resources <LinkIcon />
+              </Link>
             </div>
           </div>
         </section>

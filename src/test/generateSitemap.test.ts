@@ -71,10 +71,10 @@ describe('marketing pages take their own date, not the catalogue\'s', () => {
 })
 
 describe('the route table resolves every static page', () => {
-  it('finds a source file for all 21 static pages', () => {
+  it('finds a source file for all 23 static pages', () => {
     const missing = STATIC_PAGES.map((p) => p.path).filter((p) => !sources.has(p))
     expect(missing, `no source resolved for: ${missing.join(', ')}`).toEqual([])
-    // 21 static pages plus the homepage, which is not in STATIC_PAGES but is
+    // 23 static pages plus the homepage, which is not in STATIC_PAGES but is
     // still dated through the same path.
     expect(sources.size).toBe(STATIC_PAGES.length + 1)
     expect(sources.has('/')).toBe(true)

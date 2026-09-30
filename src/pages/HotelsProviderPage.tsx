@@ -1,5 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, type MouseEvent } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { setAuthReturnTo } from '../lib/auth'
+import { useAuthUser } from '../hooks/useAuthUser'
 import Footer from '../components/Footer'
 import SEO from '../components/SEO'
 import RevealOnScroll from '../components/shared/RevealOnScroll'
@@ -39,11 +41,36 @@ const FAQ_ITEMS = [
 ]
 
 export default function HotelsProviderPage({ onOpenAuth }: HotelsProviderPageProps) {
+  const navigate = useNavigate()
+  const user = useAuthUser()
+
   useEffect(() => {
     setAuthReturnTo('/hotels')
   }, [])
 
-  const handleApply = () => { onOpenAuth?.('signup') }
+  /**
+   * Signed-in visitors go straight to the supplier registration form; everyone
+   * else signs up first and is returned to it. Without the user check a
+   * signed-in visitor was shown the sign-up overlay again.
+   */
+  const handleApply = () => {
+    if (!user) {
+      setAuthReturnTo('/supplier/register')
+      onOpenAuth?.('signup')
+      return
+    }
+    navigate('/supplier/register')
+  }
+
+  /**
+   * The hero and steps CTAs are anchors that scroll to #apply for signed-out
+   * visitors; signed-in ones are routed to the registration form instead.
+   */
+  const handleApplyAnchor = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (!user) return
+    event.preventDefault()
+    navigate('/supplier/register')
+  }
 
   return (
     <main>
@@ -73,7 +100,7 @@ export default function HotelsProviderPage({ onOpenAuth }: HotelsProviderPagePro
               List your hotel, guesthouse, apartment or resort with Travio Ghana. Manage rooms, rates and reservations while helping travellers experience more of Ghana.
             </p>
             <div className="hs-buttons">
-              <a className="hs-btn hs-btn-dark" href="#apply">List your property <i>↗</i></a>
+              <a className="hs-btn hs-btn-dark" href="#apply" onClick={handleApplyAnchor}>List your property <i>↗</i></a>
               <a className="hs-btn hs-btn-ghost" href="#how">Explore the dashboard <i>↓</i></a>
             </div>
           </div>
@@ -214,7 +241,7 @@ export default function HotelsProviderPage({ onOpenAuth }: HotelsProviderPagePro
                 <div className="hs-eyebrow">How it works</div>
                 <h2 className="eg-section-title" style={{ marginTop: 22 }}>From property to published.</h2>
                 <p>Share the essentials, prepare your inventory and start welcoming travellers through the Travio Ghana network.</p>
-                <a className="hs-btn hs-btn-dark" href="#apply" style={{ marginTop: 20 }}>Start your listing <i>↗</i></a>
+                <a className="hs-btn hs-btn-dark" href="#apply" style={{ marginTop: 20 }} onClick={handleApplyAnchor}>Start your listing <i>↗</i></a>
               </div>
               <div className="hs-step-stack">
                 {STEPS.map((s) => (
@@ -277,6 +304,17 @@ export default function HotelsProviderPage({ onOpenAuth }: HotelsProviderPagePro
             </button>
           </div>
         </RevealOnScroll>
+      </div>
+
+      {/* Partner resources cross-link — for properties that are already live. */}
+      <div className="wrap" style={{ padding: '4px 0 46px', textAlign: 'center' }}>
+        <p style={{ margin: 0, color: '#5e6b64', fontSize: 14.5 }}>
+          Already a partner? Badges and copy-paste link snippets live on the{' '}
+          <Link to="/partner-resources" style={{ color: '#179237', fontWeight: 700 }}>
+            partner resources
+          </Link>{' '}
+          page.
+        </p>
       </div>
       <Footer />
     </main>

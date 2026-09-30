@@ -1,0 +1,545 @@
+/* ============================================================
+   Press & Media Kit — /press
+   Scoped to .press-page so nothing leaks into other routes.
+   ============================================================ */
+
+.press-page {
+  --press-ink: #10221a;
+  --press-sub: #5b6b64;
+  --press-green: #179237;
+  --press-dark: #075634;
+  --press-line: #e2e8e4;
+  --press-tint: #f6faf7;
+  color: var(--press-ink);
+  background: #fff;
+  font-family: 'DM Sans', sans-serif;
+  overflow-x: hidden;
+}
+
+.press-page * {
+  box-sizing: border-box;
+}
+
+.press-wrap {
+  width: min(calc(100% - 48px), 1080px);
+  margin: 0 auto;
+}
+
+/* ── Hero ────────────────────────────────────────────────── */
+
+.press-hero {
+  padding: 76px 0 60px;
+  background:
+    radial-gradient(880px 320px at 12% -10%, #eaf6ee 0%, rgba(234, 246, 238, 0) 70%),
+    linear-gradient(180deg, #ffffff 0%, #fbfdfb 100%);
+  border-bottom: 1px solid var(--press-tint);
+}
+
+.press-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 14px;
+  border: 1px solid #cae3d3;
+  border-radius: 999px;
+  background: #e9f8ef;
+  color: var(--press-dark);
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.press-kicker span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--press-green);
+}
+
+.press-hero h1 {
+  margin: 26px 0 0;
+  font-family: 'Manrope', sans-serif;
+  font-size: clamp(38px, 5.4vw, 62px);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+}
+
+.press-hero h1 em {
+  color: var(--press-green);
+  font-style: normal;
+}
+
+.press-lead {
+  max-width: 660px;
+  margin: 20px 0 0;
+  color: var(--press-sub);
+  font-size: 17.5px;
+  line-height: 1.65;
+}
+
+.press-lead a {
+  color: var(--press-green);
+  font-weight: 600;
+}
+
+.press-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.press-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 22px;
+  border-radius: 13px;
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.press-btn--primary {
+  background: var(--press-green);
+  color: #fff;
+  box-shadow: 0 14px 32px rgba(23, 146, 55, 0.22);
+}
+
+.press-btn--primary:hover {
+  transform: translateY(-2px);
+  background: #137a2e;
+}
+
+.press-btn--secondary {
+  border: 1px solid #cfdad2;
+  background: #fff;
+  color: var(--press-ink);
+}
+
+.press-btn--secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(8, 50, 31, 0.08);
+}
+
+/* ── Sections ────────────────────────────────────────────── */
+
+.press-section {
+  padding: 72px 0;
+}
+
+.press-section--tint {
+  background: var(--press-tint);
+}
+
+.press-section-head {
+  max-width: 680px;
+  margin-bottom: 36px;
+}
+
+.press-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--press-green);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.press-label::before {
+  content: '';
+  width: 24px;
+  height: 2px;
+  background: var(--press-green);
+}
+
+.press-label--light {
+  color: #9fd8b8;
+}
+
+.press-label--light::before {
+  background: #9fd8b8;
+}
+
+.press-section-head h2 {
+  margin: 12px 0 10px;
+  font-family: 'Manrope', sans-serif;
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.press-section-head p {
+  margin: 0;
+  color: var(--press-sub);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+/* ── Fast facts ──────────────────────────────────────────── */
+
+.press-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  border: 1px solid var(--press-line);
+  border-radius: 18px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.press-fact {
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--press-line);
+}
+
+.press-fact:nth-child(odd) {
+  border-right: 1px solid var(--press-line);
+}
+
+.press-fact:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.press-fact dt {
+  margin-bottom: 6px;
+  color: var(--press-green);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.press-fact dd {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+/* ── Boilerplate ─────────────────────────────────────────── */
+
+.press-boilerplates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.press-boilerplate {
+  display: flex;
+  flex-direction: column;
+  padding: 26px;
+  border: 1px solid var(--press-line);
+  border-radius: 18px;
+  background: #fff;
+}
+
+.press-boilerplate h3 {
+  margin: 0 0 12px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.press-boilerplate p {
+  flex: 1;
+  margin: 0 0 20px;
+  color: #33463d;
+  font-size: 15.5px;
+  line-height: 1.65;
+}
+
+.press-copy-btn {
+  align-self: flex-start;
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid #bcd9c7;
+  border-radius: 11px;
+  background: #eef8f1;
+  color: var(--press-dark);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.press-copy-btn:hover {
+  background: #e2f3e8;
+  transform: translateY(-1px);
+}
+
+.press-copy-btn[data-copied] {
+  border-color: var(--press-green);
+  background: var(--press-green);
+  color: #fff;
+}
+
+/* ── Brand assets ────────────────────────────────────────── */
+
+.press-assets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.press-asset {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--press-line);
+  border-radius: 18px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.press-asset-preview {
+  display: grid;
+  place-items: center;
+  min-height: 168px;
+  padding: 22px;
+  background:
+    linear-gradient(45deg, #f2f5f3 25%, transparent 25%, transparent 75%, #f2f5f3 75%) 0 0 / 22px 22px,
+    linear-gradient(45deg, #f2f5f3 25%, #fbfcfb 25%, #fbfcfb 75%, #f2f5f3 75%) 11px 11px / 22px 22px;
+  border-bottom: 1px solid var(--press-line);
+}
+
+.press-asset-preview img {
+  max-width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+}
+
+.press-asset-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px 22px 22px;
+}
+
+.press-asset-body h3 {
+  margin: 0;
+  font-family: 'Manrope', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.press-asset-meta {
+  margin: 0 0 14px;
+  color: var(--press-sub);
+  font-size: 13.5px;
+}
+
+.press-asset-download {
+  margin-top: auto;
+  align-self: flex-start;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 18px;
+  border-radius: 11px;
+  background: var(--press-ink);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.press-asset-download:hover {
+  background: #1f3a2e;
+  transform: translateY(-1px);
+}
+
+/* ── Usage guidelines ────────────────────────────────────── */
+
+.press-guidelines {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 46px;
+}
+
+.press-guidelines-col {
+  padding: 26px;
+  border-radius: 18px;
+}
+
+.press-guidelines-col--use {
+  border: 1px solid #cfe7d8;
+  background: #f2faf5;
+}
+
+.press-guidelines-col--avoid {
+  border: 1px solid #f0dfda;
+  background: #fdf7f5;
+}
+
+.press-guidelines-col h3 {
+  margin: 0 0 16px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.press-guidelines-col ul {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.press-guidelines-col li {
+  display: flex;
+  gap: 11px;
+  color: #33463d;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+.press-guidelines-col li i {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.press-guidelines-col--use li i {
+  background: #d8f0e0;
+  color: #137a2e;
+}
+
+.press-guidelines-col--avoid li i {
+  background: #f6e2dc;
+  color: #b04226;
+}
+
+/* ── Press contact ───────────────────────────────────────── */
+
+.press-contact {
+  padding: 72px 0;
+  background: linear-gradient(180deg, #075634 0%, #053f26 100%);
+  color: #fff;
+}
+
+.press-contact-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 40px;
+  align-items: center;
+}
+
+.press-contact h2 {
+  margin: 14px 0 12px;
+  font-family: 'Manrope', sans-serif;
+  font-size: clamp(26px, 3.2vw, 38px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.press-contact p {
+  max-width: 560px;
+  margin: 0;
+  color: #cfe6d8;
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.press-contact-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.press-btn--light {
+  background: #fff;
+  color: var(--press-dark);
+  word-break: break-all;
+}
+
+.press-btn--light:hover {
+  transform: translateY(-2px);
+}
+
+.press-contact-secondary {
+  color: #bfe3cd;
+  font-size: 14.5px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.press-contact-secondary:hover {
+  color: #fff;
+}
+
+/* ── Partner cross-link ──────────────────────────────────── */
+
+.press-partner-note {
+  padding: 34px 0 46px;
+  background: #fff;
+  text-align: center;
+}
+
+.press-partner-note p {
+  margin: 0;
+  color: var(--press-sub);
+  font-size: 15px;
+}
+
+.press-partner-note a {
+  color: var(--press-green);
+  font-weight: 700;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .press-assets {
+    grid-template-columns: 1fr;
+  }
+
+  .press-contact-inner {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
+
+@media (max-width: 720px) {
+  .press-hero {
+    padding: 56px 0 46px;
+  }
+
+  .press-section {
+    padding: 52px 0;
+  }
+
+  .press-facts,
+  .press-boilerplates,
+  .press-guidelines {
+    grid-template-columns: 1fr;
+  }
+
+  .press-fact,
+  .press-fact:nth-child(odd) {
+    border-right: 0;
+    border-bottom: 1px solid var(--press-line);
+  }
+
+  .press-fact:last-child {
+    border-bottom: 0;
+  }
+}

@@ -79,6 +79,8 @@ const HotelsProviderPage = lazy(() => import('./pages/HotelsProviderPage'))
 const TransportPage = lazy(() => import('./pages/TransportPage'))
 const TransportProviderPage = lazy(() => import('./pages/TransportProviderPage'))
 const BlogPage = lazy(() => import('./pages/BlogPage'))
+const PressPage = lazy(() => import('./pages/PressPage'))
+const PartnerResourcesPage = lazy(() => import('./pages/PartnerResourcesPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
 // Below-fold homepage sections (lazy loaded, mounted on scroll)
@@ -364,6 +366,8 @@ function AppContent() {
           <Route path="/about-us" element={<AboutUsPage />} />
           <Route path="/careers" element={<CareersPage />} />
           <Route path="/partnerships" element={<PartnershipsPage />} />
+          <Route path="/press" element={<PressPage />} />
+          <Route path="/partner-resources" element={<PartnerResourcesPage />} />
           <Route path="/content-creators" element={
             <ContentCreatorsPage onOpenAuth={handleOpenAuth} />
           } />

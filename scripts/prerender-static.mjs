@@ -78,6 +78,8 @@ const ROUTES = [
   '/foundation',
   '/careers',
   '/partnerships',
+  '/press',
+  '/partner-resources',
   '/faq',
   '/help-centre',
   '/contact-us',
@@ -102,7 +104,7 @@ const CARD_TIMEOUT_MS = 15_000
 /**
  * Routes whose whole job is to present the product inventory.
  *
- * Only the homepage does. The other nineteen are marketing, legal and editorial
+ * Only the homepage does. The other twenty-one are marketing, legal and editorial
  * pages with no tours on them, so zero cards is the correct result there and
  * must not trip the gate.
  */

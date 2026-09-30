@@ -263,6 +263,10 @@ const STATIC_PAGES = [
   { path: '/foundation', priority: 0.4, changefreq: 'monthly' },
   { path: '/careers', priority: 0.4, changefreq: 'monthly' },
   { path: '/partnerships', priority: 0.4, changefreq: 'monthly' },
+  // Press & partner resources: low priority as pages, high value as link
+  // targets — the two pages journalists and partners are asked to cite.
+  { path: '/press', priority: 0.4, changefreq: 'monthly' },
+  { path: '/partner-resources', priority: 0.4, changefreq: 'monthly' },
   { path: '/faq', priority: 0.5, changefreq: 'monthly' },
   { path: '/help-centre', priority: 0.4, changefreq: 'monthly' },
   { path: '/contact-us', priority: 0.4, changefreq: 'monthly' },

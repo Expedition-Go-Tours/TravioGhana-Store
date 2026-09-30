@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="232" height="64" viewBox="0 0 232 64" role="img" aria-label="Book on Travio Ghana">
+  <title>Book on Travio Ghana</title>
+  <rect width="232" height="64" rx="14" fill="#179237"/>
+  <text x="24" y="26" font-family="Manrope, 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="10" font-weight="700" letter-spacing="2.4" fill="#bde6c8">BOOK ON</text>
+  <text x="24" y="49" font-family="Manrope, 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="21" font-weight="800" fill="#ffffff">Travio Ghana</text>
+  <path d="M200 26l8 6-8 6" fill="none" stroke="#ffffff" stroke-opacity="0.9" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
