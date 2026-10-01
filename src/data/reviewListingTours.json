@@ -1,0 +1,15 @@
+{
+  "_comment": "Which of our tours each scraped third-party listing IS. Read by src/lib/reviewTourIdentity.ts (matching) and scripts/sync-reviews.cjs (the backend sync POST). See that module for why this is a curated map rather than a fuzzy match.",
+  "tripadvisor-24189724": "Cape Coast Castle, Elmina Castle & Kakum National Park Tour",
+  "tripadvisor-25225851": "From Accra : Waterfalls, Aburi Gardens & Cocoa Farm Tour",
+  "tripadvisor-25217516": "Accra Guided City Tour: Cultural and Historical Experience",
+  "tripadvisor-25275033": "Accra: Shai Hills Safari & Akosombo Boat Cruise Day Tour",
+  "tripadvisor-25225556": "Private Accra International Airport Pickup & Dropoff",
+  "tripadvisor-25225555": "The Kumasi Cultural and Heritage Day Tour",
+  "tripadvisor-34552809": "Waterfalls Massage With Aburi Gardens & Cocoa Farm Activity",
+  "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942": "Cape Coast Castle, Elmina Castle & Kakum National Park Tour",
+  "getyourguide-accra-guided-city-tour-experience-t839108": "Accra Guided City Tour: Cultural and Historical Experience",
+  "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545": "From Accra : Waterfalls, Aburi Gardens & Cocoa Farm Tour",
+  "getyourguide-accra-mini-safari-rock-climbing-museum-boat-cruise-tour-t1170966": "Accra: Shai Hills Safari & Akosombo Boat Cruise Day Tour",
+  "getyourguide-accra-sankofa-gallery-art-tour-candle-making-workshop-t1404702": "Accra: Sankofa Art Gallery Tour & Candle-Making Workshop"
+}

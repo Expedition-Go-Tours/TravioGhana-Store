@@ -685,6 +685,33 @@ function computeStats(reviews) {
  * being written and committed (the display reads the JSON), but it is logged
  * loudly so the failure is visible in the Action run.
  */
+/**
+ * Re-title every listing to the tour it actually is, before the backend sees it.
+ *
+ * The config `title` above is the listing's original URL slug, which the
+ * platform renames whenever it rotates one — so `From Accra: The Cape Coast Day
+ * Tour Guided Experience` (211 reviews) was matched against `Transport form
+ * Accra to Cape Coast` and won, because a short title out-scores a long one on
+ * Dice. The curated map (src/data/reviewListingTours.json) is the authority on
+ * which tour a listing is, and an exact title wins `matchTourForTitle` outright
+ * at score 1.
+ *
+ * Applied here rather than to the file written below: the storefront keeps
+ * showing the platform's own wording, while the backend's per-tour totals —
+ * which feed the structured data — get attributed correctly. The storefront
+ * reads the same map (src/lib/reviewTourIdentity) for its own matching.
+ *
+ * Pure, and exported, so the test in src/lib/reviewListingTours.test.ts can pin
+ * the behaviour without performing a scrape.
+ */
+function declareTourTitles(products) {
+  const LISTING_TOURS = require('../src/data/reviewListingTours.json')
+  return products.map((product) => {
+    const tourTitle = LISTING_TOURS[product.id]
+    return typeof tourTitle === 'string' && tourTitle ? { ...product, tourTitle } : product
+  })
+}
+
 async function pushToBackend(products) {
   const url = process.env.EXTERNAL_REVIEWS_SYNC_URL
   const token = process.env.EXTERNAL_REVIEWS_SYNC_TOKEN
@@ -700,7 +727,7 @@ async function pushToBackend(products) {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ products }),
+      body: JSON.stringify({ products: declareTourTitles(products) }),
     })
     const body = await res.json().catch(() => ({}))
     if (!res.ok) throw new Error(body?.message || `HTTP ${res.status}`)
@@ -857,4 +884,6 @@ module.exports = {
   keepPreviousForEmptySources,
   mergeProducts,
   computeStats,
+  declareTourTitles,
+  pushToBackend,
 }

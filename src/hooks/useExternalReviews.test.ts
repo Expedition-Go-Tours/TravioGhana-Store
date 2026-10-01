@@ -389,7 +389,11 @@ describe('isVisibleExternalReview', () => {
  */
 describe('scraped review supplier scope', () => {
   const ENTITY = 'Expedition-Go Tours LTD'
-  const capeCoastTitle = 'Cape Coast Castle and Kakum National Park Day Tour'
+  // The tour this listing actually is. It used to name the *other* Cape Coast
+  // tour on the site ("...and Kakum...") — harmless while matching only asked
+  // whether the titles resembled each other, and wrong now that they must be
+  // the same tour. The TripAdvisor listing's own URL carries the Elmina slug.
+  const capeCoastTitle = 'Cape Coast Castle, Elmina Castle & Kakum National Park Tour'
 
   const kadeloTour = { title: capeCoastTitle, location: 'Accra, Ghana', supplierName: 'Kadelo Travels' }
   const entityTour = { title: capeCoastTitle, location: 'Accra, Ghana', supplierName: ENTITY }
@@ -428,7 +432,8 @@ describe('scraped review supplier scope', () => {
 
 describe('scraped headline numbers with the real dataset', () => {
   const ENTITY = 'Expedition-Go Tours LTD'
-  const title = 'Cape Coast Castle and Kakum National Park Day Tour'
+  // As above: the tour the scraped Cape Coast listing is, not its near-twin.
+  const title = 'Cape Coast Castle, Elmina Castle & Kakum National Park Tour'
   const local = { title, location: 'Accra, Ghana' }
 
   function headline(supplierName: string, inApp: { rating: number; reviewCount: number }) {
@@ -535,6 +540,27 @@ describe('selectSupplierReviewData', () => {
 
     expect(result.summary).toEqual({ rating: 4.5, count: 10, distribution: null })
     expect(result.reviews).toEqual([])
+  })
+
+  /**
+   * A row whose listing is not one of this supplier's stays out even when its
+   * wording happens to name one of these tours — the listing is the gate, and a
+   * title match must not be able to overrule it afterwards.
+   */
+  it('does not let a ruled-out row back in on its wording', () => {
+    const data = statsData({
+      products: [statsProduct({ id: 'p1', tourTitle: 'Accra City Tour', rating: 4.8, reviewCount: 100 })],
+      featuredReviews: [
+        review({ id: 'r-mine', source: 'TRIPADVISOR', rating: 5, tourTitle: 'Accra City Tour', productId: 'p1' }),
+        review({ id: 'r-other', source: 'TRIPADVISOR', rating: 5, tourTitle: 'Accra City Tour', productId: 'not-ours' }),
+      ],
+    })
+
+    const result = selectSupplierReviewData(data, [
+      { title: 'Accra City Tour', location: 'Accra, Ghana', supplierName: scrapedSupplier },
+    ])
+
+    expect(result.reviews.map((r) => r.id)).toEqual(['r-mine'])
   })
 
   it('returns an empty summary when there is nothing to show', () => {

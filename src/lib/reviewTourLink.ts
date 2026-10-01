@@ -212,3 +212,36 @@ export function matchTourForTitle<T extends MatchableTour>(reviewTitle: string, 
 
   return best?.tour ?? null
 }
+
+/**
+ * Do these two titles name the *same* tour — as opposed to a similar one?
+ *
+ * Token-set equality rather than string equality, so punctuation and marketing
+ * padding do not matter ("From Accra :" and "From Accra:" are the same tour, and
+ * the trailing "Day Tour" carries no identity — it is already stripped as a stop
+ * word). Anything beyond that is a different tour: "Cape Coast Castle, Elmina
+ * Castle & Kakum National Park Tour" is not "Cape Coast Castle and Kakum
+ * National Park Day Tour" (one goes to Elmina, one does not), and no token of
+ * either belongs to `Transport form Accra to Cape Coast`.
+ *
+ * This is the test `matchTourForTitle` cannot make: it scores *how much* two
+ * titles overlap and picks the best of a candidate list, which is the right
+ * question when ranking tours against one review title and the wrong question
+ * when deciding whether a listing belongs to this tour at all. With a
+ * single-candidate list — which is how every caller used it — "best" degenerates
+ * into "scores above zero", so one listing could belong to four tours at once.
+ *
+ * Empty or unparseable input is not a match. Failing closed is deliberate: an
+ * unknown listing shows no rating rather than a wrong one.
+ */
+export function sameTourTitle(
+  left: string | null | undefined,
+  right: string | null | undefined,
+): boolean {
+  if (!left || !right) return false
+  const leftTokens = new Set(tokenize(normalizeTitle(left)))
+  const rightTokens = new Set(tokenize(normalizeTitle(right)))
+  if (leftTokens.size === 0 || leftTokens.size !== rightTokens.size) return false
+  for (const token of leftTokens) if (!rightTokens.has(token)) return false
+  return true
+}
