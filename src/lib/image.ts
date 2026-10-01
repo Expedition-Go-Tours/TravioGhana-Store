@@ -115,8 +115,23 @@ export function getSrcSet(url: string, widths: number[], opts: TransformOpts = {
  * Widths Vercel's Image Optimization is allowed to emit — `vercel.json →
  * images.sizes`. A width missing from that array makes `/_vercel/image` answer
  * with an error rather than an image, so the two lists must stay in step.
+ *
+ * 320 exists for the small boxes — a 38px thumbnail, a 180px gallery cell —
+ * which otherwise had to fetch 640. The two rungs above it are what make it
+ * safe to offer: see MIN_SOURCE_WIDTH.
  */
-export const OPTIMIZED_WIDTHS = [640, 1080, 1600] as const
+export const OPTIMIZED_WIDTHS = [320, 640, 1080, 1600] as const
+
+/**
+ * Narrowest source worth optimizing, independent of OPTIMIZED_WIDTHS.
+ *
+ * Below this the source is already close to the largest size any breakpoint
+ * will ask for, so 320 would be the ONLY candidate — and on a 2x screen the
+ * browser must pick it even where it needs ~580px, which is softer than simply
+ * serving the original. Keeping sources under 640 out of the pipeline leaves
+ * them on `src`, sharp at every DPR, at the cost of a few KB at 1x.
+ */
+export const MIN_SOURCE_WIDTH = 640
 
 /** Matches `vercel.json → images.qualities`. */
 export const OPTIMIZED_QUALITY = 75
@@ -147,9 +162,10 @@ export const DEFAULT_IMAGE_SIZES = '(max-width: 768px) 100vw, (max-width: 1200px
  *     hand back a 1600w transform of a 720w file, which is the original with
  *     extra bytes and no extra detail; never offer a width the source can't
  *     fill.
- *  2. Anything narrower than the smallest configured width gets no `srcSet` at
- *     all, which is the right answer twice over: it would be a no-op resize,
- *     and Vercel advises against spending transformation quota on small images.
+ *  2. Anything narrower than MIN_SOURCE_WIDTH gets no `srcSet` at all: 320
+ *     would be its only rung, and a 2x browser forced to pick it renders
+ *     softer than the original it already had. Vercel also advises against
+ *     spending transformation quota on small images.
  *
  * Returns null when the URL isn't optimizable, so callers fall back cleanly:
  *  - `enabled` false — the `vite dev`/`vite preview` servers have no
@@ -177,6 +193,9 @@ export function optimizedLocalSrcSet(
 
   const px = typeof intrinsicWidth === 'string' ? parseInt(intrinsicWidth, 10) : intrinsicWidth
   if (!px || !Number.isFinite(px) || px <= 0) return null
+  // Not the narrowest CONFIGURED width — the narrowest width that still leaves
+  // the browser a larger rung to reach for on a 2x screen.
+  if (px < MIN_SOURCE_WIDTH) return null
 
   const widths = OPTIMIZED_WIDTHS.filter((w) => w <= px)
   if (widths.length === 0) return null

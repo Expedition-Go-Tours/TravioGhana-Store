@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
   DEFAULT_IMAGE_SIZES,
+  MIN_SOURCE_WIDTH,
   OPTIMIZED_QUALITY,
   OPTIMIZED_WIDTHS,
   optimizedLocalSrcSet,
@@ -21,26 +22,48 @@ describe('optimizedLocalSrcSet', () => {
     const candidates = candidatesOf(srcSet)
 
     expect(widthsOf(srcSet)).toEqual([...OPTIMIZED_WIDTHS])
-    expect(candidates).toHaveLength(3)
+    expect(candidates).toHaveLength(OPTIMIZED_WIDTHS.length)
     expect(candidates.every((c) => c.includes(`q=${OPTIMIZED_QUALITY}`))).toBe(true)
     expect(candidates.every((c) => c.startsWith('/_vercel/image?'))).toBe(true)
-    expect(candidates.map((c) => c.split(' ')[1])).toEqual(['640w', '1080w', '1600w'])
+    expect(candidates.map((c) => c.split(' ')[1])).toEqual(['320w', '640w', '1080w', '1600w'])
   })
 
   it('never offers a width wider than the source (it would upscale)', () => {
     // 1350×900 hero-2: 1600w would upscale by 19% — more bytes, no more detail.
-    expect(widthsOf(optimizedLocalSrcSet(BUNDLED, 1350)!)).toEqual([640, 1080])
-    expect(widthsOf(optimizedLocalSrcSet(BUNDLED, 720)!)).toEqual([640])
-    expect(widthsOf(optimizedLocalSrcSet(BUNDLED, 640)!)).toEqual([640])
+    expect(widthsOf(optimizedLocalSrcSet(BUNDLED, 1350)!)).toEqual([320, 640, 1080])
+    expect(widthsOf(optimizedLocalSrcSet(BUNDLED, 720)!)).toEqual([320, 640])
+    expect(widthsOf(optimizedLocalSrcSet(BUNDLED, 640)!)).toEqual([320, 640])
   })
 
-  it('gives up on sources too small to be worth transforming', () => {
-    // Vercel advises against spending transformation quota on small images, and
-    // a transform below the smallest width would be a no-op resize.
+  it('offers 320 for small boxes, but never as the only rung', () => {
+    // A 38px thumbnail used to have to fetch 640.
+    expect(widthsOf(optimizedLocalSrcSet(BUNDLED, 728)!)).toEqual([320, 640])
+
+    // The browser takes the smallest candidate that meets `sizes` × DPR, so
+    // 640 and 1080 must remain reachable: if 320 were the only rung below the
+    // source, a 2x screen would be handed 320 where it needs ~580 and render
+    // softer than the original it already had.
+    const candidates = widthsOf(optimizedLocalSrcSet(BUNDLED, 1350)!)
+    const pick = (need: number) => candidates.find((w) => w >= need) ?? candidates.at(-1)!
+
+    expect(pick(38)).toBe(320) // thumbnail at 1x
+    expect(pick(547)).toBe(640) // the 547px Hotels hero at 1x
+    expect(pick(1094)).toBe(1080) // the same hero at 2x
+    expect(pick(1600)).toBe(1080) // nothing above the 1350 source — no upscale
+  })
+
+  it('gives up on sources too narrow to leave the browser a second rung', () => {
+    // Under MIN_SOURCE_WIDTH the configured 320 would be the ONLY candidate,
+    // and a 2x browser has to pick it where it needs ~580 — softer than the
+    // original it was already being sent. Vercel also advises against spending
+    // transformation quota on small images.
+    expect(optimizedLocalSrcSet(BUNDLED, 639)).toBeNull()
     expect(optimizedLocalSrcSet(BUNDLED, 600)).toBeNull()
     expect(optimizedLocalSrcSet(BUNDLED, 307)).toBeNull()
     expect(optimizedLocalSrcSet(BUNDLED, 0)).toBeNull()
     expect(optimizedLocalSrcSet(BUNDLED, -1)).toBeNull()
+    // The boundary is inclusive: 640 still yields a wider rung above 320.
+    expect(widthsOf(optimizedLocalSrcSet(BUNDLED, MIN_SOURCE_WIDTH)!)).toEqual([320, 640])
   })
 
   it('gives up rather than guess when the intrinsic width is unknown', () => {
