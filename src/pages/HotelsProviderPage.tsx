@@ -5,7 +5,9 @@ import { useAuthUser } from '../hooks/useAuthUser'
 import Footer from '../components/Footer'
 import SEO from '../components/SEO'
 import RevealOnScroll from '../components/shared/RevealOnScroll'
+import BundledImage from '../components/shared/BundledImage'
 import FAQAccordion from '../components/shared/FAQAccordion'
+import royalSenchiSuite from '../assets/hotels/royal-senchi-suite.jpg'
 import '../styles/partner-pages.css'
 import '../styles/HotelsStays.css'
 
@@ -106,11 +108,12 @@ export default function HotelsProviderPage({ onOpenAuth }: HotelsProviderPagePro
           </div>
           <div className="hs-hero-visual">
             <div className="hs-room-photo">
-              <img
-                src="https://theroyalsenchi.com/wp-content/uploads/2024/09/Untitled-3.jpg"
+              <BundledImage
+                src={royalSenchiSuite}
                 alt="Comfortable hotel suite with a garden view"
                 width={728}
                 height={471}
+                sizes="(max-width: 1000px) 100vw, 550px"
                 loading="eager"
                 decoding="async"
               />
@@ -120,7 +123,7 @@ export default function HotelsProviderPage({ onOpenAuth }: HotelsProviderPagePro
               <div className="hs-dash-top">
                 <div className="hs-dash-property">
                   <div className="hs-property-thumb">
-                    <img src="https://theroyalsenchi.com/wp-content/uploads/2024/09/Untitled-3.jpg" alt="" width={728} height={471} loading="lazy" decoding="async" />
+                    <BundledImage src={royalSenchiSuite} alt="" width={728} height={471} sizes="38px" loading="lazy" decoding="async" />
                   </div>
                   <div><b>Akwaaba Garden Stay</b><span>Accra · Published</span></div>
                 </div>
