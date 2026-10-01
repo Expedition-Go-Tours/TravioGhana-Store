@@ -3,7 +3,7 @@
  * Validates the type param, checks auth, renders the multi-step form.
  */
 import { useEffect } from "react"
-import { useParams, useLocation, useNavigate } from "react-router-dom"
+import { Navigate, useParams, useLocation, useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 import { ArrowLeft } from "lucide-react"
 
@@ -19,7 +19,6 @@ const VALID_TYPES: PartnerType[] = [
   "tour-operators",
   "hotels",
   "travel-agents",
-  "content-creators",
   "transport-providers",
 ]
 
@@ -49,6 +48,13 @@ export default function PartnerApplyPage({ onOpenAuth }: PartnerApplyPageProps) 
       document.title = `${config.title} | Travio Ghana`
     }
   }, [config])
+
+  // The creator programme application form has been removed. Old bookmarks
+  // and links fall back to the programme page, which explains that
+  // applications are opening soon.
+  if (type === "content-creators") {
+    return <Navigate to="/content-creators" replace />
+  }
 
   if (!isValidType || !config) {
     return (

@@ -1,11 +1,8 @@
-import { useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { setAuthReturnTo } from '../lib/auth'
-import { useAuthUser } from '../hooks/useAuthUser'
 import Footer from '../components/Footer'
 import SEO from '../components/SEO'
 import RevealOnScroll from '../components/shared/RevealOnScroll'
 import FAQAccordion from '../components/shared/FAQAccordion'
+import { useComingSoon } from '../hooks/useComingSoon'
 import '../styles/partner-pages.css'
 import '../styles/ContentCreators.css'
 import content1 from '../assets/content-creators/content1.avif'
@@ -15,10 +12,6 @@ import content4 from '../assets/content-creators/content4.avif'
 import content5 from '../assets/content-creators/content5.avif'
 import content6 from '../assets/content-creators/content6.avif'
 import content7 from '../assets/content-creators/content7.avif'
-
-interface ContentCreatorsPageProps {
-  onOpenAuth?: (mode: 'signin' | 'signup') => void
-}
 
 const CREATOR_IMAGES = [
   { src: content1, label: 'Travel storyteller' },
@@ -43,7 +36,7 @@ const BENEFITS = [
 ]
 
 const HOW_STEPS = [
-  { num: '01', title: 'Apply to the creator programme', desc: 'Tell us about your platform, audience and content style. We review applications quickly.' },
+  { num: '01', title: 'Applications open soon', desc: 'The programme is not accepting applications yet. When the window opens, you will tell us about your platform, audience and content style.' },
   { num: '02', title: 'Choose experiences and create', desc: 'Pick the experiences that fit your audience, visit or sample them and create authentic content.' },
   { num: '03', title: 'Share and earn', desc: 'Publish your content with your personal booking link and earn commission on every confirmed booking.' },
 ]
@@ -56,33 +49,16 @@ const EARNINGS = [
 
 const FAQ_ITEMS = [
   { question: 'What is the Travio Ghana Creator Programme?', answer: 'It is a partnership for travel and lifestyle content creators who want to feature authentic Ghana experiences, share curated booking links and earn commission on confirmed bookings.' },
-  { question: 'Do I need a minimum follower count?', answer: 'We review applications based on content quality, relevance and audience fit rather than a strict follower count.' },
+  { question: 'Do I need a minimum follower count?', answer: 'When applications open, we will review creators based on content quality, relevance and audience fit rather than a strict follower count.' },
   { question: 'How do creators earn commission?', answer: 'Creators receive a personal booking link that tracks referrals. When a guest completes a booking through that link, the creator earns a transparent commission.' },
   { question: 'Can I get sponsored access to experiences?', answer: 'Sponsored and hosted experiences are available for selected creators who align with the Travio Ghana brand. These are discussed during onboarding.' },
   { question: 'How are creator payouts processed?', answer: 'Earnings accumulate monthly and are paid out through secure payout channels. Full details are provided during the partner setup.' },
 ]
 
-export default function ContentCreatorsPage({ onOpenAuth }: ContentCreatorsPageProps) {
-  const navigate = useNavigate()
-  const user = useAuthUser()
-
-  useEffect(() => {
-    setAuthReturnTo('/content-creators')
-  }, [])
-
-  /**
-   * Signed-in creators go straight to the creator application form; everyone
-   * else signs up first and is returned to it. Without the user check a
-   * signed-in creator was shown the sign-up overlay again.
-   */
-  const handleApply = () => {
-    if (!user) {
-      setAuthReturnTo('/partners/content-creators/apply')
-      onOpenAuth?.('signup')
-      return
-    }
-    navigate('/partners/content-creators/apply')
-  }
+export default function ContentCreatorsPage() {
+  // The creator programme is not accepting applications yet, so both CTAs are
+  // dormant "Coming soon" controls (see useComingSoon).
+  const comingSoon = useComingSoon()
 
   return (
     <main>
@@ -109,7 +85,7 @@ export default function ContentCreatorsPage({ onOpenAuth }: ContentCreatorsPageP
           <h1>Create content.<br /><em>Earn on Ghana experiences.</em></h1>
           <p>Join the Travio Ghana creator programme, feature authentic travel experiences in Ghana and earn commission on every booking your audience makes.</p>
           <div className="cc-hero-actions">
-            <button className="cc-btn cc-btn-primary" onClick={handleApply}>Apply to the creator programme</button>
+            <button type="button" className="cc-btn cc-btn-primary is-coming-soon" {...comingSoon}>Coming soon</button>
             <a className="cc-btn cc-btn-secondary" href="#benefits">Learn more</a>
           </div>
           <div className="cc-hero-proof">
@@ -169,7 +145,7 @@ export default function ContentCreatorsPage({ onOpenAuth }: ContentCreatorsPageP
               <div className="cc-how-sticky">
                 <div className="cc-kicker"><span />Three steps to start</div>
                 <h2 className="eg-section-title" style={{ marginTop: 22 }}>From content<br />to commission.</h2>
-                <p>Getting started is straightforward. Apply, choose experiences that fit your audience and start earning from your content.</p>
+                <p>Applications are opening soon. Once they do, choose experiences that fit your audience and start earning from your content.</p>
               </div>
               <div className="cc-step-stack">
                 {HOW_STEPS.map((s) => (
@@ -219,30 +195,22 @@ export default function ContentCreatorsPage({ onOpenAuth }: ContentCreatorsPageP
             <h2>Create.<br />Share. Earn.</h2>
             <p>Join the Travio Ghana creator programme and turn authentic Ghana experiences into engaging content and transparent earnings.</p>
             <button
-              onClick={handleApply}
+              type="button"
+              className="is-coming-soon"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 11,
                 padding: '16px 22px', background: '#fff', color: '#15201d',
                 borderRadius: 999, fontWeight: 700, fontSize: 15,
                 border: 'none', cursor: 'pointer', marginTop: 28, position: 'relative', zIndex: 2,
               }}
+              {...comingSoon}
             >
-              Apply now
+              Coming soon
             </button>
           </div>
         </RevealOnScroll>
       </div>
 
-      {/* Partner resources cross-link — for creators who are already live. */}
-      <div className="wrap" style={{ padding: '4px 0 46px', textAlign: 'center' }}>
-        <p style={{ margin: 0, color: '#5e6b64', fontSize: 14.5 }}>
-          Already a partner? Badges and copy-paste link snippets live on the{' '}
-          <Link to="/partner-resources" style={{ color: '#179237', fontWeight: 700 }}>
-            partner resources
-          </Link>{' '}
-          page.
-        </p>
-      </div>
       <Footer />
     </main>
   )

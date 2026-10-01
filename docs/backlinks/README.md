@@ -60,8 +60,7 @@ gets a reason and an easy way to link back.**
   "here is a link, click copy" — not "please add a link".
 - Bundle the ask into partner activation: when a supplier/hotel/agent/creator
   goes live, send their listing link **and** the toolkit link.
-- Four partner landing pages cross-link to the toolkit (`/content-creators`,
-  `/hotels`, `/transport-providers`, `/travel-agents`), plus the footer.
+- The toolkit is linked from `/partnerships` and the `/press` page.
 - Badges embed referral parameters (`utm_source=PARTNER`) so partner-driven
   traffic is visible in analytics.
 

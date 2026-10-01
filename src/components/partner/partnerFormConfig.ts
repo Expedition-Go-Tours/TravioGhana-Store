@@ -2,9 +2,9 @@
  * Partner application form configuration.
  * Each partner type defines its own steps, fields, validation, and initial state.
  */
-import { Building2, Briefcase, FileText, UserCircle, ShieldCheck, Car, Camera, Hotel, Handshake, MapPin } from "lucide-react"
+import { Building2, Briefcase, FileText, UserCircle, ShieldCheck, Car, Hotel, MapPin } from "lucide-react"
 
-export type PartnerType = "tour-operators" | "hotels" | "travel-agents" | "content-creators" | "transport-providers"
+export type PartnerType = "tour-operators" | "hotels" | "travel-agents" | "transport-providers"
 
 export interface StepDef {
   key: string
@@ -61,16 +61,6 @@ const travelAgentsSteps: StepDef[] = [
   { key: "agency", label: "Agency Details", icon: Building2 },
   { key: "channels", label: "Sales Channels", icon: Briefcase },
   { key: "documents", label: "Required Documents", icon: FileText },
-  { key: "review", label: "Review & Submit", icon: ShieldCheck },
-]
-
-/* ---------- Content Creators ---------- */
-
-const contentCreatorsSteps: StepDef[] = [
-  { key: "basic", label: "Basic Information", icon: UserCircle },
-  { key: "identity", label: "Creator Identity", icon: Camera },
-  { key: "socials", label: "Socials & Content", icon: Briefcase },
-  { key: "interests", label: "Collaboration Interests", icon: Handshake },
   { key: "review", label: "Review & Submit", icon: ShieldCheck },
 ]
 
@@ -151,20 +141,6 @@ const TRAVEL_AGENT_INITIAL = {
   businessLicense: null as File | null,
   businessRegistration: null as File | null,
   proofOfAddress: null as File | null,
-  termsAccepted: false,
-}
-
-const CONTENT_CREATOR_INITIAL = {
-  ...createBasicInitial(),
-  displayName: "",
-  contentNiche: "",
-  audienceSize: "",
-  socialLinks: {} as Record<string, string>,
-  contentType: [] as string[],
-  portfolioUrl: "",
-  preferredCampaigns: [] as string[],
-  availability: "",
-  rateExpectations: "",
   termsAccepted: false,
 }
 
@@ -282,29 +258,6 @@ const configs: Record<PartnerType, PartnerFormConfig> = {
     },
   },
 
-  "content-creators": {
-    title: "Content Creator Application",
-    subtitle: "Collaborate with us to create inspiring travel content and earn through your audience.",
-    steps: contentCreatorsSteps,
-    initialForm: CONTENT_CREATOR_INITIAL,
-    validateStep(stepKey, form) {
-      switch (stepKey) {
-        case "basic": return validateBasic(form)
-        case "identity":
-          if (!form.displayName?.trim()) return "Display name is required"
-          if (!form.contentNiche) return "Content niche is required"
-          return null
-        case "socials":
-          if (!form.socialLinks || Object.values(form.socialLinks).every((v) => typeof v !== "string" || !v.trim()))
-            return "Provide at least one social media link"
-          return null
-        case "interests": return null
-        case "review": return validateReview(form)
-        default: return null
-      }
-    },
-  },
-
   "transport-providers": {
     title: "Transport Provider Application",
     subtitle: "Partner with us to offer seamless transport solutions for travellers.",
@@ -339,7 +292,6 @@ export const PARTNER_TYPES: { value: PartnerType; label: string }[] = [
   { value: "tour-operators", label: "Tour Operators & Suppliers" },
   { value: "hotels", label: "Hotels & Accommodations" },
   { value: "travel-agents", label: "Travel Agents & Resellers" },
-  { value: "content-creators", label: "Content Creators & Influencers" },
   { value: "transport-providers", label: "Transport Providers" },
 ]
 
@@ -361,11 +313,6 @@ export const TOUR_CATEGORIES = [
 export const AMENITIES = [
   "WiFi", "Pool", "Spa", "Restaurant", "Bar", "Gym", "Parking", "Airport Shuttle",
   "Room Service", "Laundry", "Conference Room", "Beach Access",
-]
-
-export const CONTENT_NICHES = [
-  "Travel", "Food & Culinary", "Culture & Heritage", "Adventure", "Luxury",
-  "Budget Travel", "Family Travel", "Solo Travel", "Photography", "Sustainability",
 ]
 
 export const VEHICLE_TYPES = [

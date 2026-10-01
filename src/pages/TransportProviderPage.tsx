@@ -69,10 +69,12 @@ const BENEFITS = [
 
 export default function TransportProviderPage() {
   const pageRef = useRef<HTMLDivElement>(null)
+  const heroRef = useRef<HTMLElement>(null)
   const storyRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<SVGSVGElement>(null)
   const activeStopRef = useRef(-1)
   const queuedRef = useRef(false)
+  const journeyVisibleRef = useRef(true)
   const [motionPaused, setMotionPaused] = useState(false)
 
   // ── Reveal on scroll (the template's .reveal observer) ──────────────────
@@ -134,6 +136,7 @@ export default function TransportProviderPage() {
 
   useEffect(() => {
     const queue = () => {
+      if (!journeyVisibleRef.current) return
       if (!queuedRef.current) {
         queuedRef.current = true
         requestAnimationFrame(updateRoad)
@@ -152,15 +155,49 @@ export default function TransportProviderPage() {
     }
   }, [updateRoad])
 
+  // The road fill is only measurable while the journey is on screen. Without
+  // this gate every scroll frame anywhere on the page would pay for layout
+  // reads on stops that are nowhere near the viewport.
+  useEffect(() => {
+    const story = storyRef.current
+    if (!story || !('IntersectionObserver' in window)) return
+    const io = new IntersectionObserver(
+      (entries) => {
+        journeyVisibleRef.current = entries.some((entry) => entry.isIntersecting)
+        if (journeyVisibleRef.current) updateRoad()
+      },
+      { rootMargin: '200px 0px' },
+    )
+    io.observe(story)
+    return () => io.disconnect()
+  }, [updateRoad])
+
   // ── Motion: the map's SMIL animations, honouring reduced motion ─────────
   // The template paused the SVG when prefers-reduced-motion matched. The
   // pause-all control extends that to every CSS animation via .tp-motion-paused.
+  // The map also pauses whenever the hero is offscreen: an SMIL scene the
+  // visitor cannot see is pure main-thread work during the rest of the scroll.
   useEffect(() => {
     const svg = mapRef.current
     if (!svg) return
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (reduced || motionPaused) svg.pauseAnimations()
-    else svg.unpauseAnimations()
+    let heroVisible = true
+    const apply = () => {
+      if (reduced || motionPaused || !heroVisible) svg.pauseAnimations()
+      else svg.unpauseAnimations()
+    }
+    const hero = heroRef.current
+    if (!hero || !('IntersectionObserver' in window)) {
+      apply()
+      return
+    }
+    const io = new IntersectionObserver((entries) => {
+      heroVisible = entries.some((entry) => entry.isIntersecting)
+      apply()
+    })
+    io.observe(hero)
+    apply()
+    return () => io.disconnect()
   }, [motionPaused])
 
   return (
@@ -183,7 +220,7 @@ export default function TransportProviderPage() {
           ]}
         />
         {/* ── Hero ─────────────────────────────────────────────────────── */}
-        <section className="hero ghana-hero">
+        <section className="hero ghana-hero" ref={heroRef}>
           <div className="wrap hero-inner ghana-hero-grid">
             <div className="hero-copy">
               <div className="eyebrow">Travio Ghana · Transport partners</div>

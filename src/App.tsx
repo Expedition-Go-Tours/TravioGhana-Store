@@ -369,7 +369,7 @@ function AppContent() {
           <Route path="/press" element={<PressPage />} />
           <Route path="/partner-resources" element={<PartnerResourcesPage />} />
           <Route path="/content-creators" element={
-            <ContentCreatorsPage onOpenAuth={handleOpenAuth} />
+            <ContentCreatorsPage />
           } />
           <Route path="/travel-agents" element={
             <TravelAgentsPage />

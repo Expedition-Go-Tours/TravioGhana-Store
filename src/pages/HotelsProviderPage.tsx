@@ -1,5 +1,5 @@
 import { useEffect, type MouseEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { setAuthReturnTo } from '../lib/auth'
 import { useAuthUser } from '../hooks/useAuthUser'
 import Footer from '../components/Footer'
@@ -306,16 +306,6 @@ export default function HotelsProviderPage({ onOpenAuth }: HotelsProviderPagePro
         </RevealOnScroll>
       </div>
 
-      {/* Partner resources cross-link — for properties that are already live. */}
-      <div className="wrap" style={{ padding: '4px 0 46px', textAlign: 'center' }}>
-        <p style={{ margin: 0, color: '#5e6b64', fontSize: 14.5 }}>
-          Already a partner? Badges and copy-paste link snippets live on the{' '}
-          <Link to="/partner-resources" style={{ color: '#179237', fontWeight: 700 }}>
-            partner resources
-          </Link>{' '}
-          page.
-        </p>
-      </div>
       <Footer />
     </main>
   )

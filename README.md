@@ -69,8 +69,9 @@ It is the front half of a two-sided platform:
 - **Accounts** — email/password plus Google OAuth and Google One Tap; wishlists, booking
   history, a traveller dashboard and in-app chat.
 - **Partner programmes** — supplier self-onboarding (`/supplier/register`,
-  `/supplier/list-experience`), hotels, transport providers, travel agents and content
-  creators each have their own application flow.
+  `/supplier/list-experience`), hotels, transport providers and travel agents each
+  have their own application flow. The content creator programme is live as a landing
+  page, but applications are not open yet.
 - **Editorial** — `/stories` travel writing and a blog, both prerendered to static HTML.
 - **Internationalisation** — i18next, with locale and currency selection in the header.
 
