@@ -171,29 +171,52 @@ function loadPreviousDataset() {
 }
 
 /**
- * Keep a source's previous rows when this run produced none for it. A bot wall
- * or DOM change blocks one platform at a time, so losing that platform's
- * reviews silently would be a regression — the same idea previously applied to
- * Google only, now applied to every source.
+ * Keep a LISTING's previous rows when this run produced none for it.
+ *
+ * Scoped to a listing rather than a whole platform, because a platform fails
+ * PARTIALLY. The source-level rule this replaces asked one binary question —
+ * did the platform yield exactly zero rows — so any platform that yielded
+ * anything at all had its entire previous body discarded. GetYourGuide yielded
+ * 182 of its 311 stored rows, all 311 were dropped, and the dataset read 1,114
+ * against a floor of 1,118: the run failed over 4 rows while the honest total
+ * was 1,241. One blocked listing (Cape Coast, 127 rows) was the entire
+ * difference.
+ *
+ * Same guarantee as before — "blocked means preserved, not deleted" — applied
+ * one level down, which is the granularity mergeProducts already uses for the
+ * official totals 60 lines below.
+ *
+ * Keyed by productId, which embeds the source. Google's business-level rows
+ * carry no productId and fall back to tourUrl; a row with neither degrades to
+ * the old source-level grouping instead of being dropped, so no row is worse
+ * off than it was.
  */
-function keepPreviousForEmptySources(newRows, previousRows) {
-  const bySource = (rows) =>
-    rows.reduce((acc, row) => {
-      const source = row?.source || 'UNKNOWN'
-      if (!acc[source]) acc[source] = []
-      acc[source].push(row)
-      return acc
-    }, {})
+function keepPreviousForListings(newRows, previousRows) {
+  const listingKey = (row) =>
+    `${row?.source || 'UNKNOWN'}:${row?.productId || row?.tourUrl || 'UNIDENTIFIED'}`
 
-  const previous = bySource(previousRows)
-  const fresh = bySource(newRows)
+  const scraped = new Set(newRows.map(listingKey))
   const out = [...newRows]
 
-  for (const [source, rows] of Object.entries(previous)) {
-    if (!fresh[source] || fresh[source].length === 0) {
-      console.log(`    ${source}: scrape yielded 0 — keeping ${rows.length} rows from the previous dataset`)
-      out.push(...rows)
-    }
+  const staleByKey = new Map()
+  for (const row of previousRows) {
+    const key = listingKey(row)
+    if (scraped.has(key)) continue
+    if (!staleByKey.has(key)) staleByKey.set(key, [])
+    staleByKey.get(key).push(row)
+  }
+
+  let listings = 0
+  let kept = 0
+  for (const stale of staleByKey.values()) {
+    out.push(...stale)
+    listings += 1
+    kept += stale.length
+  }
+  if (listings > 0) {
+    console.log(
+      `    scrape produced no rows for ${listings} listing(s) — keeping ${kept} rows from the previous dataset`
+    )
   }
   return out
 }
@@ -827,7 +850,7 @@ async function main() {
 
     // Merge with the previous dataset so a blocked source keeps its rows.
     const previous = loadPreviousDataset()
-    const mergedReviews = keepPreviousForEmptySources(allReviews, previous.reviews)
+    const mergedReviews = keepPreviousForListings(allReviews, previous.reviews)
     const mergedProducts = mergeProducts(products, previous.products)
 
     // Push the official per-product totals FIRST: homepage ranking must keep
@@ -881,7 +904,7 @@ if (require.main === module) {
 
 module.exports = {
   loadPreviousDataset,
-  keepPreviousForEmptySources,
+  keepPreviousForListings,
   mergeProducts,
   computeStats,
   declareTourTitles,
