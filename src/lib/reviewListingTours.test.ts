@@ -26,7 +26,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const require = createRequire(import.meta.url)
-const { declareTourTitles, pushToBackend } = require('../../scripts/sync-reviews.cjs')
+const { declareTourTitles, withMappedTourTitles, pushToBackend } = require('../../scripts/sync-reviews.cjs')
 
 const declaredTours = require('../../src/data/reviewListingTours.json') as Record<string, string>
 
@@ -160,5 +160,71 @@ describe('pushToBackend', () => {
       if (token !== undefined) process.env.EXTERNAL_REVIEWS_SYNC_TOKEN = token
     }
     expect(fetchSpy).not.toHaveBeenCalled()
+  })
+})
+
+/**
+ * `tourTitle` is what the site displays — the platform's own wording.
+ * `mappedTourTitle` is what the backend matches on.
+ *
+ * The backend has no copy of this repo's map, so a caller that posts the raw
+ * dataset (its `backfill-external-review-stats.js`, a hand-rolled POST) had no
+ * way to attribute correctly and the fuzzy matcher chose
+ * `Transport form Accra to Cape Coast` for the 211-review Cape Coast listing.
+ * Stamping the answer into the dataset makes the file self-describing, so the
+ * identity travels with the data instead of living in one repo.
+ */
+describe('withMappedTourTitles', () => {
+  type Product = { id: string; tourTitle: string; mappedTourTitle?: string }
+
+  it('stamps the curated tour onto every listing the map declares', () => {
+    const stamped = withMappedTourTitles(payload.products) as Product[]
+    for (const product of stamped) {
+      if (!isDeclared(product.id)) continue
+      expect(product.mappedTourTitle).toBe(declaredTours[product.id])
+    }
+  })
+
+  it('leaves the displayed wording exactly as the platform wrote it', () => {
+    // Display and identity are separate fields: rewriting tourTitle here would
+    // change what the storefront renders, which is the whole reason the map
+    // lives apart from the title.
+    const before = payload.products.map((p) => p.tourTitle)
+    const stamped = withMappedTourTitles(payload.products) as Product[]
+    expect(stamped.map((p) => p.tourTitle)).toEqual(before)
+  })
+
+  it('adds nothing to a listing the map does not declare', () => {
+    const undeclared: Product[] = [
+      { id: 'some-listing-not-in-the-map', tourTitle: 'A Platform Title' },
+    ]
+    const [stamped] = withMappedTourTitles(undeclared)
+    expect(stamped).toEqual(undeclared[0])
+    expect(stamped.mappedTourTitle).toBeUndefined()
+  })
+
+  it('agrees with declareTourTitles, so the two paths cannot drift', () => {
+    const declared = new Map(
+      declareTourTitles(payload.products).map((p: Product) => [p.id, p.tourTitle]),
+    )
+    const stamped = withMappedTourTitles(payload.products) as Product[]
+
+    // Guard against passing vacuously: with no field at all the comparison
+    // loop below never runs and this test would pass with the feature broken.
+    expect(stamped.some((p) => p.mappedTourTitle)).toBe(true)
+
+    let compared = 0
+    for (const product of stamped) {
+      if (!product.mappedTourTitle) continue
+      expect(product.mappedTourTitle).toBe(declared.get(product.id))
+      compared += 1
+    }
+    expect(compared).toBeGreaterThan(0)
+  })
+
+  it('does not mutate its input', () => {
+    const before = JSON.stringify(payload.products)
+    withMappedTourTitles(payload.products)
+    expect(JSON.stringify(payload.products)).toBe(before)
   })
 })

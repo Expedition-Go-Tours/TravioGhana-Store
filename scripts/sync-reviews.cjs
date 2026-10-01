@@ -735,6 +735,31 @@ function declareTourTitles(products) {
   })
 }
 
+/**
+ * Stamp each product with the tour the curated map says it is, WITHOUT
+ * touching `tourTitle`.
+ *
+ * `tourTitle` is display copy — the storefront shows the platform's own
+ * wording ("From Accra: The Cape Coast Day Tour Guided Experience"), which is
+ * what a visitor sees on TripAdvisor. `mappedTourTitle` is the identity the
+ * backend matches on. Splitting them means the committed dataset is
+ * self-describing: any consumer of the file — the nightly push, the backend's
+ * backfill script, a hand-rolled POST — can attribute correctly without
+ * holding a copy of this repo's map, which the backend does not have.
+ *
+ * Pure, and exported, so the test in src/lib/reviewListingTours.test.ts can
+ * pin that the display copy survives.
+ */
+function withMappedTourTitles(products) {
+  const LISTING_TOURS = require('../src/data/reviewListingTours.json')
+  return products.map((product) => {
+    const tourTitle = LISTING_TOURS[product.id]
+    return typeof tourTitle === 'string' && tourTitle
+      ? { ...product, mappedTourTitle: tourTitle }
+      : product
+  })
+}
+
 async function pushToBackend(products) {
   const url = process.env.EXTERNAL_REVIEWS_SYNC_URL
   const token = process.env.EXTERNAL_REVIEWS_SYNC_TOKEN
@@ -877,7 +902,7 @@ async function main() {
     const output = {
       generatedAt: new Date().toISOString(),
       stats,
-      products: mergedProducts,
+      products: withMappedTourTitles(mergedProducts),
       reviews: deduped,
     }
 
@@ -908,5 +933,6 @@ module.exports = {
   mergeProducts,
   computeStats,
   declareTourTitles,
+  withMappedTourTitles,
   pushToBackend,
 }
