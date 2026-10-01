@@ -86,6 +86,24 @@ describe('a listing names one tour', () => {
     }
   })
 
+  /**
+   * The tour-detail overview carousel is fed by the per-product featured
+   * slices in this same payload. A sync that regenerated the stats file
+   * without them would empty the carousel while every other gate stayed green.
+   */
+  it('carries a carousel slice for every declared listing with visible rows', () => {
+    const featured = data.featuredReviewsByProduct ?? {}
+    for (const product of data.products) {
+      if (!declaredListingTours()[product.id]) continue
+      const aggregate = data.productAggregates[product.id]
+      if (!aggregate || aggregate.count === 0) continue
+      expect(
+        (featured[product.id] ?? []).length,
+        `${product.id} has ${aggregate.count} visible rows but no featured carousel slice`,
+      ).toBeGreaterThan(0)
+    }
+  })
+
   it('claims a listing for its own tour and no other', () => {
     const claimedBy = new Map<string, string[]>()
     // Deduplicated: two listings may legitimately declare the same tour, and

@@ -28,6 +28,8 @@ import hero3 from '../assets/about/hero-3.webp'
 import hero4 from '../assets/about/hero-4.webp'
 import story1 from '../assets/about/story-1.webp'
 import story3 from '../assets/about/story-3.webp'
+import expeditionGoLogo from '../assets/about/expedition-go-logo.png'
+import travioAfricaLockup from '../assets/about/travio-africa-lockup.png'
 
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
@@ -338,7 +340,91 @@ export default function AboutUsPage() {
         </motion.section>
 
         {/* ================================================================
-            4. CATEGORIES — dark full-bleed section
+            4. PLATFORMS — the brands the company builds and runs
+            ================================================================ */}
+        <motion.section
+          className="about-platforms"
+          initial="hidden"
+          whileInView="visible"
+          viewport={revealViewport}
+          variants={stagger}
+          aria-label="Platforms we manage"
+        >
+          <div className="about-container">
+            <motion.div className="about-platforms-head" variants={fadeUp}>
+              <p className="about-label">Platforms we manage</p>
+              <h2 className="about-title">One team. Two travel platforms.</h2>
+              <p className="about-lead">
+                Alongside Travio Ghana, our team builds and runs the platforms that
+                connect travellers with local operators.
+              </p>
+            </motion.div>
+
+            <div className="about-platform-grid">
+              {/* Live platform: the whole card leads to the operating company. */}
+              <motion.a
+                className="about-platform-card"
+                href="https://www.expeditiongotours.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-labelledby="platform-expedition-go"
+                variants={cardFade}
+              >
+                <span className="about-platform-logo">
+                  <img
+                    src={expeditionGoLogo}
+                    alt=""
+                    width={320}
+                    height={320}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </span>
+                <div className="about-platform-body">
+                  <h3 id="platform-expedition-go">Expedition-Go Tours Ltd</h3>
+                  <p className="about-platform-domain">expeditiongotours.com</p>
+                  <p className="about-platform-text">
+                    The Ghanaian tour operator behind Travio Ghana — designing and
+                    running experiences across the country.
+                  </p>
+                </div>
+                <span className="about-platform-cta">
+                  Visit expeditiongotours.com
+                  <ArrowRight size={16} aria-hidden="true" />
+                </span>
+              </motion.a>
+
+              {/* Not live yet: muted artwork, badge, no link. */}
+              <motion.article
+                className="about-platform-card about-platform-card--muted"
+                variants={cardFade}
+              >
+                <span className="about-platform-logo">
+                  <img
+                    src={travioAfricaLockup}
+                    alt=""
+                    width={366}
+                    height={424}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </span>
+                <div className="about-platform-body">
+                  <h3>TravioAfrica</h3>
+                  <p className="about-platform-domain">travioafrica.com</p>
+                  <p className="about-platform-text">
+                    Our next platform, taking the same local-first approach beyond
+                    Ghana to the rest of Africa.
+                  </p>
+                </div>
+                <span className="about-platform-badge">Coming soon</span>
+              </motion.article>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* ================================================================
+            5. CATEGORIES — dark full-bleed section
             ================================================================ */}
         <section className="about-categories" aria-label="What travellers can discover">
           <motion.div
@@ -379,7 +465,7 @@ export default function AboutUsPage() {
         </section>
 
         {/* ================================================================
-            5. VALUES
+            6. VALUES
             ================================================================ */}
         <motion.section
           id="values"
@@ -419,7 +505,7 @@ export default function AboutUsPage() {
         </motion.section>
 
         {/* ================================================================
-            6. PARTNERS — moving logo cards
+            7. PARTNERS — moving logo cards
             ================================================================ */}
         <motion.div
           className="about-partners"
@@ -432,7 +518,7 @@ export default function AboutUsPage() {
         </motion.div>
 
         {/* ================================================================
-            7. PROMISE — acid shell
+            8. PROMISE — acid shell
             ================================================================ */}
         <motion.section
           className="about-promise"
@@ -464,7 +550,7 @@ export default function AboutUsPage() {
         </motion.section>
 
         {/* ================================================================
-            8. VISIT US — office location on Google Maps
+            9. VISIT US — office location on Google Maps
             ================================================================ */}
         <motion.section
           className="about-visit"
@@ -513,7 +599,7 @@ export default function AboutUsPage() {
         </motion.section>
 
         {/* ================================================================
-            9. CTA
+            10. CTA
             ================================================================ */}
         <motion.section
           className="about-cta"

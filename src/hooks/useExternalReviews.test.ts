@@ -6,6 +6,7 @@ import {
   computeExternalReviewStats,
   isVisibleExternalReview,
   scaleDistribution,
+  selectFeaturedTourReviews,
   selectMatchedProducts,
   selectSupplierReviewData,
   type ExternalReview,
@@ -568,5 +569,85 @@ describe('selectSupplierReviewData', () => {
       summary: { rating: null, count: 0, distribution: null },
       reviews: [],
     })
+  })
+})
+
+describe('selectFeaturedTourReviews', () => {
+  const ENTITY = 'Expedition-Go Tours LTD'
+
+  function statsData(over: Partial<ExternalReviewStatsData> = {}): ExternalReviewStatsData {
+    return {
+      stats: { totalReviews: 0, averageRating: null, platforms: [] },
+      products: [],
+      productAggregates: {},
+      featuredReviews: [],
+      ...over,
+    }
+  }
+
+  function product(
+    id: string,
+    tourTitle: string,
+    over: Partial<ExternalReviewStatsProduct> = {},
+  ): ExternalReviewStatsProduct {
+    return {
+      id,
+      source: 'TRIPADVISOR',
+      tourTitle,
+      tourUrl: 'https://example.com/product',
+      rating: null,
+      reviewCount: null,
+      distribution: null,
+      resolvedDistribution: null,
+      official: false,
+      ...over,
+    }
+  }
+
+  it('returns the featured slice of every matched product, best first', () => {
+    const data = statsData({
+      products: [product('p1', 'Accra City Tour'), product('p2', 'Somewhere Else')],
+      featuredReviewsByProduct: {
+        p1: [
+          review({ id: 'r1', source: 'TRIPADVISOR', rating: 4, productId: 'p1' }),
+          review({ id: 'r2', source: 'GETYOURGUIDE', rating: 5, productId: 'p1' }),
+        ],
+        p2: [review({ id: 'r3', source: 'TRIPADVISOR', rating: 5, productId: 'p2' })],
+      },
+    })
+
+    const rows = selectFeaturedTourReviews(data, {
+      title: 'Accra City Tour',
+      location: 'Accra, Ghana',
+      supplierName: ENTITY,
+    })
+
+    expect(rows.map((r) => r.id)).toEqual(['r2', 'r1'])
+  })
+
+  it('fails closed for another operator and for unmatched titles', () => {
+    const data = statsData({
+      products: [product('p1', 'Accra City Tour')],
+      featuredReviewsByProduct: {
+        p1: [review({ id: 'r1', source: 'TRIPADVISOR', rating: 5, productId: 'p1' })],
+      },
+    })
+
+    expect(
+      selectFeaturedTourReviews(data, { title: 'Accra City Tour', supplierName: 'Kadelo Travels' }),
+    ).toEqual([])
+    expect(
+      selectFeaturedTourReviews(data, { title: 'Some Other Tour', supplierName: ENTITY }),
+    ).toEqual([])
+  })
+
+  it('tolerates a stats payload without per-product slices', () => {
+    const data = statsData({
+      products: [product('p1', 'Accra City Tour')],
+    })
+
+    expect(
+      selectFeaturedTourReviews(data, { title: 'Accra City Tour', supplierName: ENTITY }),
+    ).toEqual([])
   })
 })

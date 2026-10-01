@@ -18,11 +18,13 @@ import { useExpeditionTourReviews, useCreateReview } from '../../hooks/useExpedi
 import {
   useTourExternalReviews,
   useTourExternalProducts,
+  useTourExternalFeaturedReviews,
   combineReviewStats,
   aggregateProducts,
   aggregateResolvedDistribution,
   scaleDistribution,
   COUNTED_SOURCES,
+  type ExternalReview,
 } from '../../hooks/useExternalReviews'
 import { useTourAvailability, useReviewableBookingForTour } from '../../hooks/useExpeditionBookings'
 import { freeCancellationDateLabel } from '../../lib/cancellationLabel'
@@ -60,6 +62,32 @@ import './TourDetailPage.css'
 
 /** Reviews rendered per "Load more" step (local + matched scraped cards). */
 const REVIEW_PAGE_SIZE = 10
+
+/** Scraped row → the shared card shape used by the carousel and the list. */
+function mapExternalReviewCard(r: ExternalReview) {
+  return {
+    id: r.id,
+    name: r.reviewerName,
+    date: r.originalDate
+      ? new Date(r.originalDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+      : '',
+    rating: r.rating,
+    text: r.text,
+    title: r.title || '',
+    avatar: r.reviewerAvatar || undefined,
+    bookingId: undefined as string | undefined,
+    photos: undefined as string[] | undefined,
+    supplierResponse: null,
+    supplierResponseAt: null,
+    valueForMoneyRating: null,
+    guideRating: null,
+    meetingRating: null,
+    travelMonth: null,
+    companions: undefined as string[] | undefined,
+    source: r.source,
+    externalUrl: r.tourUrl,
+  }
+}
 
 /** Skeleton placeholder shown while the tour loads: header, image gallery and booking widget. */
 function TourDetailSkeleton() {
@@ -142,6 +170,12 @@ export default function TourDetailPage() {
   // Official product totals (e.g. TripAdvisor "4.9 (595 reviews)") for the
   // matched scraped listings — used for the headline rating/count.
   const { products: externalMatchedProducts } = useTourExternalProducts(
+    tour ? { title: tour.title, location: tour.location, supplierName: tour.supplierName } : null,
+  )
+  // Featured scraped rows for the Overview carousel, served from the slim
+  // stats file — the full 1.6 MB row dataset stays gated behind the Reviews
+  // tab (see `useTourExternalReviews` above).
+  const { reviews: featuredExternalReviews } = useTourExternalFeaturedReviews(
     tour ? { title: tour.title, location: tour.location, supplierName: tour.supplierName } : null,
   )
   // Headline review stats = in-app reviews + the matched scraped TripAdvisor /
@@ -536,32 +570,20 @@ export default function TourDetailPage() {
   }, [reviews, t])
 
   // External reviews projected into the same card shape as in-app ones so the
-  // "What Travellers are Saying" list and the Overview carousel render them
-  // with the internal card layout (plus a source badge).
-  const externalReviewCards = useMemo(() => {
-    return externalMatchedReviews.map((r) => ({
-      id: r.id,
-      name: r.reviewerName,
-      date: r.originalDate
-        ? new Date(r.originalDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-        : '',
-      rating: r.rating,
-      text: r.text,
-      title: r.title || '',
-      avatar: r.reviewerAvatar || undefined,
-      bookingId: undefined as string | undefined,
-      photos: undefined as string[] | undefined,
-      supplierResponse: null,
-      supplierResponseAt: null,
-      valueForMoneyRating: null,
-      guideRating: null,
-      meetingRating: null,
-      travelMonth: null,
-      companions: undefined as string[] | undefined,
-      source: r.source,
-      externalUrl: r.tourUrl,
-    }))
-  }, [externalMatchedReviews])
+  // "What Travellers are Saying" list renders them with the internal card
+  // layout (plus a source badge).
+  const externalReviewCards = useMemo(
+    () => externalMatchedReviews.map(mapExternalReviewCard),
+    [externalMatchedReviews],
+  )
+
+  // The Overview carousel gets the same card shape from the slim per-product
+  // featured slices, so real reviews render on first paint without the full
+  // row dataset.
+  const featuredExternalReviewCards = useMemo(
+    () => featuredExternalReviews.map(mapExternalReviewCard),
+    [featuredExternalReviews],
+  )
 
   const filteredReviewCards = useMemo(() => {
     return [...allReviewCards, ...externalReviewCards].filter((r) => {
@@ -1278,7 +1300,7 @@ export default function TourDetailPage() {
                           highlights={highlights}
                           reviews={[
                             ...allReviewCards.map(r => ({ id: r.id, name: r.name, date: r.date, rating: r.rating, text: r.text, country: '' })),
-                            ...externalReviewCards.map(r => ({ id: r.id, name: r.name, date: r.date, rating: r.rating, text: r.text, country: '', source: r.source, externalUrl: r.externalUrl })),
+                            ...featuredExternalReviewCards.map(r => ({ id: r.id, name: r.name, date: r.date, rating: r.rating, text: r.text, country: '', source: r.source, externalUrl: r.externalUrl })),
                           ].slice(0, 12)}
                           onTabChange={handleTabChange}
                           onReviewReadMore={setReviewDetail}

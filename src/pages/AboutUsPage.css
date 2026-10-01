@@ -535,7 +535,165 @@
 }
 
 /* ============================================================
-   4. CATEGORIES — dark full-bleed section
+   4. PLATFORMS — the brands the company builds and runs
+   ============================================================ */
+
+.about-platforms {
+  padding: 115px 0;
+}
+
+.about-platforms-head {
+  text-align: center;
+}
+
+.about-platforms-head .about-label {
+  justify-content: center;
+}
+
+.about-platforms-head .about-label::before {
+  display: none;
+}
+
+.about-platforms-head .about-title,
+.about-platforms-head .about-lead {
+  margin-inline: auto;
+}
+
+.about-platform-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 50px;
+}
+
+.about-platform-card {
+  display: flex;
+  flex-direction: column;
+  padding: 30px 32px 30px;
+  border: 1px solid var(--ab-line);
+  border-radius: 26px;
+  background: #fff;
+  color: inherit;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+/* The live card is the link; the muted card is a plain article. */
+a.about-platform-card:hover {
+  transform: translateY(-4px);
+  border-color: #c8e6d3;
+  box-shadow: 0 18px 45px rgba(10, 53, 34, 0.1);
+}
+
+a.about-platform-card:focus-visible {
+  outline: 3px solid var(--ab-ring);
+  outline-offset: 3px;
+}
+
+/* Fixed logo rail so the two cards' copy starts on the same line whether the
+   artwork is the round Expedition-Go mark or the portrait TA lockup. */
+.about-platform-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 232px;
+}
+
+.about-platform-logo img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.about-platform-card[href] .about-platform-logo img {
+  max-width: 208px;
+}
+
+.about-platform-body h3 {
+  margin: 0 0 6px;
+  font-family: var(--font-heading, 'Manrope', sans-serif);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ab-ink);
+}
+
+.about-platform-domain {
+  margin: 0 0 12px;
+  color: var(--ab-green);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.about-platform-text {
+  margin: 0;
+  color: var(--ab-sub);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.about-platform-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 26px;
+  color: var(--ab-green);
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.about-platform-cta svg {
+  transition: transform 0.2s ease;
+}
+
+a.about-platform-card:hover .about-platform-cta svg {
+  transform: translateX(3px);
+}
+
+.about-platform-badge {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 26px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  background: var(--ab-mint);
+  color: var(--ab-dark);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.about-platform-badge::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ab-orange);
+}
+
+/* TravioAfrica is not live yet: muted artwork, muted copy, dashed frame. */
+.about-platform-card--muted {
+  background: #fbfcfa;
+  border-style: dashed;
+}
+
+.about-platform-card--muted .about-platform-logo img {
+  opacity: 0.55;
+  filter: grayscale(0.35);
+}
+
+.about-platform-card--muted .about-platform-body h3,
+.about-platform-card--muted .about-platform-domain,
+.about-platform-card--muted .about-platform-text {
+  opacity: 0.74;
+}
+
+/* ============================================================
+   5. CATEGORIES — dark full-bleed section
    ============================================================ */
 
 .about-categories {
@@ -623,7 +781,7 @@
 }
 
 /* ============================================================
-   5. VALUES
+   6. VALUES
    ============================================================ */
 
 .about-values {
@@ -699,7 +857,7 @@
 }
 
 /* ============================================================
-   6. PARTNERS — moving logo cards
+   7. PARTNERS — moving logo cards
    ============================================================ */
 
 .about-partners {
@@ -743,7 +901,7 @@
 }
 
 /* ============================================================
-   7. PROMISE — acid shell
+   8. PROMISE — acid shell
    ============================================================ */
 
 .about-promise {
@@ -800,7 +958,7 @@
 }
 
 /* ============================================================
-   8. VISIT US — office details + live Google Maps embed
+   9. VISIT US — office details + live Google Maps embed
    ============================================================ */
 
 .about-visit {
@@ -941,7 +1099,7 @@
 }
 
 /* ============================================================
-   9. CTA
+   10. CTA
    ============================================================ */
 
 .about-cta {
@@ -1087,6 +1245,10 @@
   .about-promise {
     padding: 84px 0;
   }
+
+  .about-platforms {
+    padding: 84px 0;
+  }
 }
 
 @media (max-width: 560px) {
@@ -1156,6 +1318,18 @@
     min-height: 245px;
   }
 
+  .about-platform-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-platform-card {
+    padding: 26px 22px;
+  }
+
+  .about-platform-logo {
+    height: 200px;
+  }
+
   .about-promise-shell {
     padding: 35px 24px;
   }
@@ -1186,6 +1360,7 @@
   .about-gallery-photo:hover img,
   .about-category-card:hover,
   .about-cta-btn:hover,
+  a.about-platform-card:hover,
   .about-page .partner-logo-card:hover {
     transform: none;
   }
@@ -1208,6 +1383,7 @@
   .about-btn,
   .about-category-card,
   .about-cta-btn,
+  a.about-platform-card,
   .about-page .partner-logo-card {
     transition: none !important;
   }
@@ -1216,6 +1392,7 @@
   .about-btn:hover,
   .about-category-card:hover,
   .about-cta-btn:hover,
+  a.about-platform-card:hover,
   .about-page .partner-logo-card:hover {
     transform: none;
   }

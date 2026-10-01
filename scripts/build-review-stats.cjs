@@ -35,6 +35,7 @@ const MIN_SCRAPED_RATING = 2
 const PLACEHOLDER_REVIEW_TEXT = /^\(no review text\)$/i
 const STAR_ORDER = [5, 4, 3, 2, 1]
 const FEATURED_REVIEW_LIMIT = 16
+const FEATURED_PER_PRODUCT_LIMIT = 8
 
 /** Only the fields ExternalReviewCard renders — keeps the stats file tiny. */
 function toFeaturedReview(review) {
@@ -53,6 +54,20 @@ function toFeaturedReview(review) {
 }
 
 /**
+ * Deterministic "best of" order: reviews with avatars first, then rating, then
+ * recency. Shared by the homepage rail and the per-product carousel slices.
+ */
+function featuredPriority(a, b) {
+  const avatarA = a.reviewerAvatar ? 1 : 0
+  const avatarB = b.reviewerAvatar ? 1 : 0
+  if (avatarA !== avatarB) return avatarB - avatarA
+  if (b.rating !== a.rating) return b.rating - a.rating
+  const dateA = a.originalDate ? new Date(a.originalDate).getTime() : 0
+  const dateB = b.originalDate ? new Date(b.originalDate).getTime() : 0
+  return dateB - dateA
+}
+
+/**
  * Deterministic "best of" selection: reviews with avatars first, then rating,
  * then recency. Mixing sources keeps the rail from reading as a single
  * platform; Google (business-level) rows are excluded because the rail links
@@ -62,15 +77,7 @@ function pickFeaturedReviews(reviews) {
   const scored = reviews
     .filter((review) => review.source !== 'GOOGLE')
     .slice()
-    .sort((a, b) => {
-      const avatarA = a.reviewerAvatar ? 1 : 0
-      const avatarB = b.reviewerAvatar ? 1 : 0
-      if (avatarA !== avatarB) return avatarB - avatarA
-      if (b.rating !== a.rating) return b.rating - a.rating
-      const dateA = a.originalDate ? new Date(a.originalDate).getTime() : 0
-      const dateB = b.originalDate ? new Date(b.originalDate).getTime() : 0
-      return dateB - dateA
-    })
+    .sort(featuredPriority)
 
   const perSource = { TRIPADVISOR: 0, GETYOURGUIDE: 0 }
   const picked = []
@@ -82,6 +89,23 @@ function pickFeaturedReviews(reviews) {
     if (picked.length >= FEATURED_REVIEW_LIMIT) break
   }
   return picked.map(toFeaturedReview)
+}
+
+/**
+ * One small "best of" slice per product, keyed by product id. The tour-detail
+ * overview carousel shows at most 8 cards, so eight rows is a full rail even
+ * when a tour matches two listings.
+ */
+function buildFeaturedByProduct(rowsByProduct) {
+  const byProduct = {}
+  for (const [productId, rows] of rowsByProduct) {
+    byProduct[productId] = rows
+      .slice()
+      .sort(featuredPriority)
+      .slice(0, FEATURED_PER_PRODUCT_LIMIT)
+      .map(toFeaturedReview)
+  }
+  return byProduct
 }
 
 function isVisibleReview(review) {
@@ -224,6 +248,10 @@ function main() {
     products: resolvedProducts,
     productAggregates,
     featuredReviews: pickFeaturedReviews(visible),
+    // Per-product "best of" slices for the tour-detail overview carousel: the
+    // section needs real rows on first paint, and this file is already on the
+    // page — so the 1.6 MB row dataset can stay gated behind the Reviews tab.
+    featuredReviewsByProduct: buildFeaturedByProduct(rowsByProduct),
   }
 
   fs.writeFileSync(OUT, JSON.stringify(output))

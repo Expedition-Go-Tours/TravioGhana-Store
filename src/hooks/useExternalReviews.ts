@@ -87,6 +87,8 @@ export interface ExternalReviewStatsData {
   productAggregates: Record<string, { count: number; sum: number }>
   /** Small deterministic slice for the homepage rail (no row dataset needed). */
   featuredReviews: ExternalReview[]
+  /** Per-product "best of" slices for the tour-detail overview carousel. */
+  featuredReviewsByProduct?: Record<string, ExternalReview[]>
 }
 
 async function fetchExternalReviewStatsData(): Promise<ExternalReviewStatsData> {
@@ -99,6 +101,10 @@ async function fetchExternalReviewStatsData(): Promise<ExternalReviewStatsData> 
     products: Array.isArray(payload.products) ? payload.products : [],
     productAggregates: payload.productAggregates ?? {},
     featuredReviews: Array.isArray(payload.featuredReviews) ? payload.featuredReviews : [],
+    featuredReviewsByProduct:
+      payload.featuredReviewsByProduct && typeof payload.featuredReviewsByProduct === 'object'
+        ? payload.featuredReviewsByProduct
+        : {},
   }
 }
 
@@ -380,6 +386,45 @@ export function useTourExternalProducts(tour: MatchableTour | null | undefined) 
   }, [data, title, location, supplierName])
 
   return { products, isLoading }
+}
+
+/**
+ * Featured scraped rows for a tour's matched products, served from the slim
+ * stats file. The overview carousel needs real reviews on first paint, and
+ * that file is already on the page — so the 1.6 MB row dataset can stay gated
+ * behind the Reviews tab.
+ */
+export function selectFeaturedTourReviews(
+  data: ExternalReviewStatsData | undefined,
+  tour: MatchableTour | null | undefined,
+): ExternalReview[] {
+  if (!data || !tour?.title) return []
+  const products = selectMatchedProducts(data.products, tour)
+  const byProduct = data.featuredReviewsByProduct ?? {}
+  const seen = new Set<string>()
+  const rows: ExternalReview[] = []
+  for (const product of products) {
+    for (const row of byProduct[product.id] ?? []) {
+      if (seen.has(row.id)) continue
+      seen.add(row.id)
+      rows.push(row)
+    }
+  }
+  return sortReviews(rows)
+}
+
+export function useTourExternalFeaturedReviews(tour: MatchableTour | null | undefined) {
+  const { data, isLoading } = useExternalReviewStatsData()
+  const title = tour?.title
+  const location = tour?.location
+  const supplierName = tour?.supplierName
+
+  const reviews = useMemo(() => {
+    if (!data || !title) return [] as ExternalReview[]
+    return selectFeaturedTourReviews(data, { title, location, supplierName })
+  }, [data, title, location, supplierName])
+
+  return { reviews, isLoading }
 }
 
 /**
