@@ -147,30 +147,52 @@ describe('a listing names one tour', () => {
 })
 
 /**
- * The arithmetic the homepage publishes, tour by tour.
+ * The ratings the homepage publishes, tour by tour — asserted as *which*
+ * listings each tour claims, never as a review total.
  *
- * The numbers are not chosen: they are the review counts in the committed
- * payload, added up. `799` and `327` are what several tours must *not* show,
- * because that is what they showed when one listing was allowed to belong to
- * four tours at once.
+ * The totals drift constantly (the Cape Coast listing read 210 in the committed
+ * dataset and 211 the moment it was regenerated), and a test that pins 799 fails
+ * for anyone who checks out the repo on the wrong day — as it just did. The
+ * durable claim is membership: which listings belong to which tour. Membership
+ * is also the thing that was broken, so nothing is lost by asserting it.
  */
 describe('the ratings the homepage publishes', () => {
+  const idsOn = (title: string): string[] =>
+    productsOn(title)
+      .map((product) => product.id)
+      .sort()
+
   it('puts both Cape Coast listings on the castles tour', () => {
-    expect(reviewsOn('Cape Coast Castle, Elmina Castle & Kakum National Park Tour')).toBe(799)
+    expect(idsOn('Cape Coast Castle, Elmina Castle & Kakum National Park Tour')).toEqual([
+      'getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942',
+      'tripadvisor-24189724',
+    ])
     const stats = combinedStatsFor(tour('Cape Coast Castle, Elmina Castle & Kakum National Park Tour'), data)
-    expect(stats.externalCount).toBe(799)
+    // Both members, counted — not one listing standing in for the pair.
+    expect(stats.externalCount).toBe(reviewsOn('Cape Coast Castle, Elmina Castle & Kakum National Park Tour'))
     expect(stats.rating).toBeGreaterThan(0)
   })
 
   it('adds the GetYourGuide listing to the tour the TripAdvisor one is on', () => {
-    expect(reviewsOn('From Accra : Waterfalls, Aburi Gardens & Cocoa Farm Tour')).toBe(229)
-    expect(reviewsOn('Accra Guided City Tour: Cultural and Historical Experience')).toBe(327)
-    expect(reviewsOn('Accra: Shai Hills Safari & Akosombo Boat Cruise Day Tour')).toBe(55)
+    expect(idsOn('From Accra : Waterfalls, Aburi Gardens & Cocoa Farm Tour')).toEqual([
+      'getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545',
+      'tripadvisor-25225851',
+    ])
+    expect(idsOn('Accra Guided City Tour: Cultural and Historical Experience')).toEqual([
+      'getyourguide-accra-guided-city-tour-experience-t839108',
+      'tripadvisor-25217516',
+    ])
+    expect(idsOn('Accra: Shai Hills Safari & Akosombo Boat Cruise Day Tour')).toEqual([
+      'getyourguide-accra-mini-safari-rock-climbing-museum-boat-cruise-tour-t1170966',
+      'tripadvisor-25275033',
+    ])
   })
 
-  it('keeps the single-listing tours at their own totals', () => {
-    expect(reviewsOn('Private Accra International Airport Pickup & Dropoff')).toBe(6)
-    expect(reviewsOn('The Kumasi Cultural and Heritage Day Tour')).toBe(1)
+  it('keeps the single-listing tours to their own listing', () => {
+    expect(idsOn('Private Accra International Airport Pickup & Dropoff')).toEqual(['tripadvisor-25225556'])
+    expect(idsOn('The Kumasi Cultural and Heritage Day Tour')).toEqual(['tripadvisor-25225555'])
+    // A listing with no official total contributes nothing to the rating.
+    expect(combinedStatsFor(tour('The Kumasi Cultural and Heritage Day Tour'), data).rating).toBeGreaterThan(0)
   })
 
   it('publishes nothing on the transport listing', () => {
