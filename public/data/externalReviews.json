@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-01T13:23:52.879Z",
+  "generatedAt": "2026-10-01T18:59:54.617Z",
   "stats": {
     "totalReviews": 1196,
     "averageRating": 4.9,
@@ -34,7 +34,8 @@
         "3": 5,
         "4": 33,
         "5": 548
-      }
+      },
+      "mappedTourTitle": "Cape Coast Castle, Elmina Castle & Kakum National Park Tour"
     },
     {
       "id": "tripadvisor-25225851",
@@ -48,7 +49,8 @@
         "3": 1,
         "4": 8,
         "5": 93
-      }
+      },
+      "mappedTourTitle": "From Accra : Waterfalls, Aburi Gardens & Cocoa Farm Tour"
     },
     {
       "id": "tripadvisor-25217516",
@@ -62,7 +64,8 @@
         "3": 4,
         "4": 6,
         "5": 163
-      }
+      },
+      "mappedTourTitle": "Accra Guided City Tour: Cultural and Historical Experience"
     },
     {
       "id": "tripadvisor-25275033",
@@ -76,7 +79,8 @@
         "3": 2,
         "4": 3,
         "5": 34
-      }
+      },
+      "mappedTourTitle": "Accra: Shai Hills Safari & Akosombo Boat Cruise Day Tour"
     },
     {
       "id": "tripadvisor-25225556",
@@ -91,7 +95,8 @@
         "3": 0,
         "4": 0,
         "5": 6
-      }
+      },
+      "mappedTourTitle": "Private Accra International Airport Pickup & Dropoff"
     },
     {
       "id": "tripadvisor-25225555",
@@ -106,7 +111,8 @@
         "3": 0,
         "4": 0,
         "5": 1
-      }
+      },
+      "mappedTourTitle": "The Kumasi Cultural and Heritage Day Tour"
     },
     {
       "id": "tripadvisor-34552807",
@@ -129,7 +135,8 @@
         "3": 0,
         "4": 0,
         "5": 0
-      }
+      },
+      "mappedTourTitle": "Waterfalls Massage With Aburi Gardens & Cocoa Farm Activity"
     },
     {
       "id": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
@@ -138,7 +145,8 @@
       "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
       "rating": 4.7,
       "reviewCount": 211,
-      "distribution": null
+      "distribution": null,
+      "mappedTourTitle": "Cape Coast Castle, Elmina Castle & Kakum National Park Tour"
     },
     {
       "id": "getyourguide-accra-guided-city-tour-experience-t839108",
@@ -147,7 +155,8 @@
       "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
       "rating": 4.7,
       "reviewCount": 154,
-      "distribution": null
+      "distribution": null,
+      "mappedTourTitle": "Accra Guided City Tour: Cultural and Historical Experience"
     },
     {
       "id": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
@@ -156,7 +165,8 @@
       "tourUrl": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
       "rating": 4.6,
       "reviewCount": 125,
-      "distribution": null
+      "distribution": null,
+      "mappedTourTitle": "From Accra : Waterfalls, Aburi Gardens & Cocoa Farm Tour"
     },
     {
       "id": "getyourguide-accra-mini-safari-rock-climbing-museum-boat-cruise-tour-t1170966",
@@ -165,7 +175,8 @@
       "tourUrl": "https://www.getyourguide.com/ghana-eastern-region-l147826/accra-mini-safari-rock-climbing-museum-boat-cruise-tour-t1170966/",
       "rating": 4.8,
       "reviewCount": 16,
-      "distribution": null
+      "distribution": null,
+      "mappedTourTitle": "Accra: Shai Hills Safari & Akosombo Boat Cruise Day Tour"
     },
     {
       "id": "getyourguide-kotoka-domestic-airport-transfer-with-mini-accra-city-tour-t1243777",
@@ -183,7 +194,8 @@
       "tourUrl": "https://www.getyourguide.com/accra-l506/accra-sankofa-gallery-art-tour-candle-making-workshop-t1404702/",
       "rating": null,
       "reviewCount": null,
-      "distribution": null
+      "distribution": null,
+      "mappedTourTitle": "Accra: Sankofa Art Gallery Tour & Candle-Making Workshop"
     }
   ],
   "reviews": [
