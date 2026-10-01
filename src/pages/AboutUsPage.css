@@ -89,6 +89,26 @@
   line-height: 1.65;
 }
 
+/* Inline parent-company link in body copy: site green with an orange hover,
+   underlined so it reads as a link without breaking the paragraph rhythm. */
+.about-company-link {
+  color: var(--ab-green);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
+}
+
+.about-company-link:hover {
+  color: var(--ab-orange);
+}
+
+.about-company-link:focus-visible {
+  outline: 3px solid rgba(8, 119, 71, 0.28);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
 /* ============================================================
    BUTTONS
    ============================================================ */
@@ -812,6 +832,36 @@
   font-size: clamp(1.35rem, 2.6vw, 1.9rem);
   font-weight: 800;
   letter-spacing: -0.03em;
+}
+
+/* The office card names the operating company; the title links back to its
+   own site (external, new tab) without changing the heading at rest. */
+.about-visit-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.about-visit-link:hover {
+  color: var(--ab-green);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.about-visit-link:focus-visible {
+  outline: 3px solid rgba(8, 119, 71, 0.28);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Touch and narrow screens have no hover, so the heading link must read as a
+   link at rest — colour + underline instead of relying on :hover. */
+@media (hover: none), (max-width: 768px) {
+  .about-visit-link {
+    color: var(--ab-green);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
 }
 
 .about-visit-address {

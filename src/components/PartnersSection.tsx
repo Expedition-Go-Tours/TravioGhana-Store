@@ -16,10 +16,32 @@ import tqSrc from '../assets/icons/partners/tq.webp'
 import marriotSrc from '../assets/icons/partners/marriott.webp'
 import viatorSrc from '../assets/icons/partners/viator.webp'
 
-const logos = [
-  { src: trippySrc, alt: 'Tripadvisor' },
+/**
+ * Public marketplace profiles for the operating company. Tripadvisor and
+ * GetYourGuide are operator pages; Viator has no public supplier hub, so the
+ * flagship Cape Coast product page stands in — its text fragment scrolls to
+ * and highlights the "Supplied by Expedition-Go Tours Ltd" line. Deliberately
+ * not part of `brandSocial`'s `sameAs`: these are marketplace listings, not
+ * profiles the brand owns.
+ */
+const TRIPADVISOR_PROFILE_URL =
+  'https://www.tripadvisor.com/Attraction_Review-g293797-d24155300-Reviews-Expedition_Go_Tours_Ltd-Accra_Greater_Accra.html'
+const GETYOURGUIDE_PROFILE_URL = 'https://www.getyourguide.com/expedition-go-tours-s484318/'
+const VIATOR_PROFILE_URL =
+  'https://www.viator.com/tours/Accra/Touring-Cape-Coast/d5517-358551P1#:~:text=Supplied%20by-,Expedition%2DGo%20Tours%20Ltd,-Cancellation%20Policy'
+
+interface PartnerLogo {
+  src: string
+  alt: string
+  tall?: boolean
+  /** Marketplaces with a public page for the company link there. */
+  href?: string
+}
+
+const logos: PartnerLogo[] = [
+  { src: trippySrc, alt: 'Tripadvisor', href: TRIPADVISOR_PROFILE_URL },
   { src: bookingSrc, alt: 'Booking.com' },
-  { src: getyourguideSrc, alt: 'GetYourGuide' },
+  { src: getyourguideSrc, alt: 'GetYourGuide', href: GETYOURGUIDE_PROFILE_URL },
   { src: civitatisSrc, alt: 'Civitatis' },
   { src: toughaSrc, alt: 'TOUGHA' },
   { src: paypalSrc, alt: 'PayPal', tall: true },
@@ -31,7 +53,7 @@ const logos = [
   { src: peSrc, alt: 'PE', tall: true },
   { src: tqSrc, alt: 'TQ' },
   { src: marriotSrc, alt: 'Marriot' },
-  { src: viatorSrc, alt: 'Viator' },
+  { src: viatorSrc, alt: 'Viator', href: VIATOR_PROFILE_URL },
 ]
 
 export default function PartnersSection() {
@@ -52,24 +74,40 @@ export default function PartnersSection() {
               {[...logos, ...logos].map((logo, i) => {
                 // The second half duplicates the first for the seamless marquee
                 // loop — it is decorative and must stay out of the a11y tree.
+                // `tabIndex={-1}` on the clone anchors keeps them out of the
+                // keyboard order while aria-hidden, yet still clickable.
                 const isClone = i >= logos.length
+                const cardClass = `partner-logo-card${logo.tall ? ' partner-logo-card--tall' : ''}`
+                const image = (
+                  <img
+                    src={logo.src}
+                    alt={isClone ? '' : logo.alt}
+                    loading="lazy"
+                    decoding="async"
+                    fetchPriority="low"
+                    width={120}
+                    height={40}
+                  />
+                )
                 return (
                   <div
                     key={`${logo.alt}-${i}`}
                     className="partner-logo-wrap"
                     aria-hidden={isClone || undefined}
                   >
-                    <div className={`partner-logo-card${logo.tall ? ' partner-logo-card--tall' : ''}`}>
-                      <img
-                        src={logo.src}
-                        alt={isClone ? '' : logo.alt}
-                        loading="lazy"
-                        decoding="async"
-                        fetchPriority="low"
-                        width={120}
-                        height={40}
-                      />
-                    </div>
+                    {logo.href ? (
+                      <a
+                        className={cardClass}
+                        href={logo.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        tabIndex={isClone ? -1 : undefined}
+                      >
+                        {image}
+                      </a>
+                    ) : (
+                      <div className={cardClass}>{image}</div>
+                    )}
                   </div>
                 )
               })}

@@ -232,7 +232,7 @@
     "ourFoundation": "Notre Fondation",
     "accommodationProviders": "Fournisseurs d'hébergement",
     "followJourney": "Suivez le voyage",
-    "copyrightBy": "by Expedition-Go Tours Ltd · Accra, Ghana",
+    "copyrightLine": "© {{year}} <brand>TravioGhana</brand>. Tous droits réservés. · Une société <company>Expedition-Go Tours</company> · Accra, Ghana.",
     "legalNav": "Mentions légales"
   },
   "gallery": {
@@ -796,7 +796,7 @@
     "searchPlaceholder": "Rechercher dans l'aide et la FAQ",
     "searchNoResults": "Aucun résultat pour \"{{query}}\". Essayez d'autres mots ou contactez-nous.",
     "whatWeDoTitle": "Ce que nous faisons",
-    "whatWeDoText": "Travio Ghana est une plateforme basée au Ghana qui propose des circuits et expériences sélectionnés — circuits culturels, safaris, excursions à la journée et aventures de plusieurs jours — avec des opérateurs locaux et une équipe d'assistance facile à joindre.",
+    "whatWeDoText": "Travio Ghana est une plateforme basée au Ghana qui propose des circuits et expériences sélectionnés — circuits culturels, safaris, excursions à la journée et aventures de plusieurs jours — avec des opérateurs locaux et une équipe d'assistance facile à joindre. Elle est exploitée par sa société mère, <company>Expedition-Go Tours</company>.",
     "trust1": "Expériences locales sélectionnées",
     "trust2": "Annulation gratuite sur la plupart des circuits",
     "trust3": "Prise en charge partout au Ghana",
@@ -1164,6 +1164,9 @@
   },
   "faq": {
     "pageTitle": "FAQ | Travio Ghana",
+    "aboutKicker": "Qui sommes-nous",
+    "aboutTitle": "À propos de TravioGhana",
+    "aboutText": "TravioGhana est une plateforme de voyage basée au Ghana proposant des circuits sélectionnés, des expériences culturelles, des safaris et des excursions à la journée. Elle est exploitée par sa société mère, <company>Expedition-Go Tours Ltd</company>, un opérateur enregistré auprès de l'Autorité du tourisme du Ghana et basé à Accra.",
     "catBooking": "Réservation & Paiement",
     "catCancellation": "Annulation & Remboursements",
     "catPickup": "Prise en charge & Points de Rendez-vous",

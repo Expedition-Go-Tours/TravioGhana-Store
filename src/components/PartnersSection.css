@@ -118,6 +118,18 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
+/* Tripadvisor, GetYourGuide and Viator cards are profile links; the card look
+   is unchanged, so pointer and focus ring are the only affordances added. */
+a.partner-logo-card {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+a.partner-logo-card:focus-visible {
+  outline: 3px solid #2d6a4f;
+  outline-offset: 3px;
+}
+
 .partner-logo-card img {
   max-width: 100%;
   max-height: 100%;

@@ -463,7 +463,16 @@ export default function ContactUsPage() {
                     <MapPin size={14} aria-hidden="true" />
                     {t('contact.officeLabel')}
                   </span>
-                  <h4 className="sh-sidebar-card-name">{t('contact.companyName')}</h4>
+                  <h4 className="sh-sidebar-card-name">
+                    <a
+                      className="sh-sidebar-card-company-link"
+                      href="https://www.expeditiongotours.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {t('contact.companyName')}
+                    </a>
+                  </h4>
                   <p className="sh-sidebar-card-address">
                     {t('contact.addressLine1')}
                     <br />

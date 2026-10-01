@@ -232,7 +232,7 @@
     "ourFoundation": "Nuestra Fundación",
     "accommodationProviders": "Proveedores de alojamiento",
     "followJourney": "Sigue el viaje",
-    "copyrightBy": "by Expedition-Go Tours Ltd · Accra, Ghana",
+    "copyrightLine": "© {{year}} <brand>TravioGhana</brand>. Todos los derechos reservados. · Una empresa de <company>Expedition-Go Tours</company> · Accra, Ghana.",
     "legalNav": "Legal"
   },
   "gallery": {
@@ -790,7 +790,7 @@
     "searchPlaceholder": "Busca en artículos de ayuda y preguntas frecuentes",
     "searchNoResults": "No hay resultados para \"{{query}}\". Prueba otras palabras o contáctanos.",
     "whatWeDoTitle": "Qué hacemos",
-    "whatWeDoText": "Travio Ghana es una plataforma con base en Ghana para tours y experiencias seleccionadas — tours culturales, safaris, excursiones de un día y aventuras de varios días — con operadores locales y un equipo de soporte fácil de contactar.",
+    "whatWeDoText": "Travio Ghana es una plataforma con base en Ghana para tours y experiencias seleccionadas — tours culturales, safaris, excursiones de un día y aventuras de varios días — con operadores locales y un equipo de soporte fácil de contactar. Está operada por su empresa matriz, <company>Expedition-Go Tours</company>.",
     "trust1": "Experiencias locales seleccionadas",
     "trust2": "Cancelación gratuita en la mayoría de los tours",
     "trust3": "Recogida en todo Ghana",
@@ -1158,6 +1158,9 @@
   },
   "faq": {
     "pageTitle": "Preguntas Frecuentes | Travio Ghana",
+    "aboutKicker": "Quiénes somos",
+    "aboutTitle": "Acerca de TravioGhana",
+    "aboutText": "TravioGhana es una plataforma de viajes con base en Ghana para tours seleccionados, experiencias culturales, safaris y excursiones de un día. Está operada por su empresa matriz, <company>Expedition-Go Tours Ltd</company>, un operador registrado en la Autoridad de Turismo de Ghana con sede en Accra.",
     "catBooking": "Reserva y Pago",
     "catCancellation": "Cancelación y Reembolsos",
     "catPickup": "Recogida y Puntos de Encuentro",

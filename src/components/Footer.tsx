@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
@@ -386,7 +386,23 @@ export default function Footer() {
         </div>
         <div className="footer-container footer-bottom-inner">
           <p className="footer-copyright">
-            © {year} <strong>Travio Ghana</strong> {t('footer.copyrightBy')}
+            {/* The parent-company mention is the bottom band's one outbound
+                brand link; it opens expeditiongotours.com in a new tab. */}
+            <Trans
+              i18nKey="footer.copyrightLine"
+              values={{ year }}
+              components={{
+                brand: <strong />,
+                company: (
+                  <a
+                    className="footer-copyright-link"
+                    href="https://www.expeditiongotours.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  />
+                ),
+              }}
+            />
           </p>
           <nav className="footer-legal-links" aria-label={t('footer.legalNav')}>
             <FooterLink to="/terms-and-conditions" className="footer-legal-link">

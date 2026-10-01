@@ -241,7 +241,7 @@
     "ourFoundation": "Our Foundation",
     "accommodationProviders": "Accommodation providers",
     "followJourney": "Follow the journey",
-    "copyrightBy": "by Expedition-Go Tours Ltd · Accra, Ghana",
+    "copyrightLine": "© {{year}} <brand>TravioGhana</brand>. All rights reserved. · An <company>Expedition-Go Tours</company> company · Accra, Ghana.",
     "legalNav": "Legal"
   },
   "gallery": {
@@ -842,7 +842,7 @@
     "searchPlaceholder": "Search help articles and FAQs",
     "searchNoResults": "No results for \"{{query}}\". Try different words or contact us.",
     "whatWeDoTitle": "What we do",
-    "whatWeDoText": "Travio Ghana is a Ghana-based platform for curated tours and experiences, cultural tours, wildlife safaris, day trips and multi-day adventures, with local operators and a support team that's easy to reach.",
+    "whatWeDoText": "Travio Ghana is a Ghana-based platform for curated tours and experiences, cultural tours, wildlife safaris, day trips and multi-day adventures, with local operators and a support team that's easy to reach. It is operated by its parent company, <company>Expedition-Go Tours</company>.",
     "trust1": "Curated local experiences",
     "trust2": "Free cancellation on most tours",
     "trust3": "Pickup across Ghana",
@@ -1210,6 +1210,9 @@
   },
   "faq": {
     "pageTitle": "FAQ | Travio Ghana",
+    "aboutKicker": "Who we are",
+    "aboutTitle": "About TravioGhana",
+    "aboutText": "TravioGhana is a Ghana-based travel platform for curated tours, cultural experiences, safaris and day trips. It is operated by its parent company, <company>Expedition-Go Tours Ltd</company>, a Ghana Tourism Authority-registered operator based in Accra.",
     "catBooking": "Booking & Payment",
     "catCancellation": "Cancellation & Refunds",
     "catPickup": "Pickup & Meeting Points",

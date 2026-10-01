@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { MotionConfig, motion } from 'framer-motion'
 import {
   CreditCard,
@@ -362,6 +362,36 @@ export default function FAQPage() {
         {/* ============================================================ */}
         <div className="support-container sh-main sh-main--faq">
           <div className="sh-faq-content">
+              {/* About TravioGhana */}
+              <motion.section
+                className="sh-about-panel sh-faq-about"
+                aria-labelledby="sh-faq-about-title"
+                initial="hidden"
+                whileInView="visible"
+                viewport={revealViewport}
+                variants={fadeUp}
+              >
+                <p className="sh-about-panel-kicker">{t('faq.aboutKicker')}</p>
+                <h2 className="sh-about-panel-title" id="sh-faq-about-title">
+                  {t('faq.aboutTitle')}
+                </h2>
+                <p className="sh-about-panel-desc">
+                  <Trans
+                    i18nKey="faq.aboutText"
+                    components={{
+                      company: (
+                        <a
+                          className="sh-about-panel-link"
+                          href="https://www.expeditiongotours.com/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        />
+                      ),
+                    }}
+                  />
+                </p>
+              </motion.section>
+
               {/* Results bar */}
               <div className="sh-faq-results-bar">
                 <p className="sh-faq-results-count">

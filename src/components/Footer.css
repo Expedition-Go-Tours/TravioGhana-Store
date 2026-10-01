@@ -458,6 +458,19 @@ body:has(.supplier-page) .footer-container {
   color: #fff;
 }
 
+/* Inline brand mention: underlined so it reads as a link against the muted
+   legal text, with the same hover treatment as the legal links beside it. */
+.footer-copyright-link {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.25s;
+}
+
+.footer-copyright-link:hover {
+  color: #d9f0b2;
+}
+
 .footer-legal-links {
   display: flex;
   flex-wrap: wrap;

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { MotionConfig, motion } from 'framer-motion'
 import {
   CheckCircle,
@@ -236,7 +236,21 @@ export default function HelpCentrePage() {
             <h2 className="sh-about-panel-title" id="sh-about-panel-title">
               Ghana experiences, backed by people who know Ghana.
             </h2>
-            <p className="sh-about-panel-desc">{t('supportHub.whatWeDoText')}</p>
+            <p className="sh-about-panel-desc">
+              <Trans
+                i18nKey="supportHub.whatWeDoText"
+                components={{
+                  company: (
+                    <a
+                      className="sh-about-panel-link"
+                      href="https://www.expeditiongotours.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    />
+                  ),
+                }}
+              />
+            </p>
             <div className="sh-about-panel-tags">
               {ABOUT_TAGS.map((tag) => (
                 <span key={tag} className="sh-about-panel-tag">
@@ -402,7 +416,14 @@ export default function HelpCentrePage() {
             <div className="sh-visit-info">
               <p className="sh-block-kicker">Visit us</p>
               <h2 className="sh-visit-name" id="sh-visit-title">
-                {t('help.companyName')}
+                <a
+                  className="sh-visit-link"
+                  href="https://www.expeditiongotours.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t('help.companyName')}
+                </a>
               </h2>
               <p className="sh-visit-address">
                 {t('help.addressLine1')}

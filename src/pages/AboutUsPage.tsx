@@ -303,7 +303,17 @@ export default function AboutUsPage() {
               <h2 className="about-title">It started with one simple idea.</h2>
               <p className="about-lead">
                 Make discovering Ghana easier for travellers — and create a stronger
-                digital platform for the people who know it best.
+                digital platform for the people who know it best. Travio Ghana is
+                operated by its parent company,{' '}
+                <a
+                  className="about-company-link"
+                  href="https://www.expeditiongotours.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Expedition-Go Tours Ltd
+                </a>
+                , a Ghanaian tour operator established on 18 February 2023.
               </p>
               <blockquote className="about-quote">
                 &ldquo;Authentic travel should feel personal, trustworthy and
@@ -468,7 +478,16 @@ export default function AboutUsPage() {
             <div className="about-visit-card">
               <div className="about-visit-info">
                 <p className="about-label">Visit us</p>
-                <h2 className="about-visit-title">{t('help.companyName')}</h2>
+                <h2 className="about-visit-title">
+                  <a
+                    className="about-visit-link"
+                    href="https://www.expeditiongotours.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {t('help.companyName')}
+                  </a>
+                </h2>
                 <p className="about-visit-address">
                   {t('help.addressLine1')}
                   <br />
