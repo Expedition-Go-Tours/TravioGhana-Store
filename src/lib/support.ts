@@ -2,6 +2,10 @@
  *  (Help Centre, Contact Us, FAQ). */
 export const SUPPORT_EMAIL = 'info@expeditiongotours.com'
 
+/** The operating company's public site. Used for backlinks to
+ *  Expedition-Go Tours Ltd from legal documents and policy pages. */
+export const COMPANY_URL = 'https://www.expeditiongotours.com/'
+
 export const SUPPORT_PHONE = '+233591409761'
 
 /** E.164-ish digits only, for tel: and wa.me links. */

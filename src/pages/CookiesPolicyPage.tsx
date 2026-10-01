@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { ArrowUp, Check, Cookie, LifeBuoy } from 'lucide-react'
 import Footer from '../components/Footer'
 import SEO, { buildBreadcrumbSchema } from '../components/SEO'
+import CompanyLink from '../components/shared/CompanyLink'
 import { useCookieConsent } from '../context/CookieConsentContext'
 import { POLICY_TABS } from '../lib/policyTabs'
 import './CookiesPolicyPage.css'
@@ -202,7 +203,7 @@ export default function CookiesPolicyPage() {
 
             <h2 id="1-about-this-policy">1. About this policy</h2>
             <p>
-              This Cookie Policy explains how <strong>Expedition-Go Tours Ltd</strong> (
+              This Cookie Policy explains how <strong><CompanyLink /></strong> (
               <strong>&ldquo;Travio Ghana&rdquo;</strong>, <strong>&ldquo;we&rdquo;</strong>,{' '}
               <strong>&ldquo;us&rdquo;</strong> or <strong>&ldquo;our&rdquo;</strong>) uses cookies and
               similar technologies when you visit or use:
@@ -218,7 +219,7 @@ export default function CookiesPolicyPage() {
             <p>Together, these are the <strong>&ldquo;Platform&rdquo;</strong>.</p>
             <p>
               <strong>Travio Ghana</strong> and <strong>Travio Africa</strong> are registered trading
-              names of Expedition-Go Tours Ltd and are not separate legal entities.
+              names of <CompanyLink /> and are not separate legal entities.
             </p>
             <p>
               This policy should be read with our <Link to="/privacy-policy">Privacy Policy</Link>,
@@ -259,8 +260,8 @@ export default function CookiesPolicyPage() {
             <p>They may also be:</p>
             <ul>
               <li>
-                <strong>First-party cookies</strong>, set by the Expedition-Go Tours, Travio Ghana or
-                Travio Africa domain you are visiting; or
+                <strong>First-party cookies</strong>, set by the <CompanyLink>Expedition-Go Tours</CompanyLink>,
+                Travio Ghana or Travio Africa domain you are visiting; or
               </li>
               <li>
                 <strong>Third-party cookies</strong>, set by another organisation whose service is
@@ -334,7 +335,7 @@ export default function CookiesPolicyPage() {
               <li>limit how often an advertisement is shown;</li>
               <li>understand whether a booking followed an advertisement;</li>
               <li>build or use audiences for relevant advertising; and</li>
-              <li>show Expedition-Go Tours, Travio Ghana or Travio Africa promotions on other websites and platforms.</li>
+              <li>show <CompanyLink>Expedition-Go Tours</CompanyLink>, Travio Ghana or Travio Africa promotions on other websites and platforms.</li>
             </ul>
             <p>
               These technologies may recognise your browser or device across services. If you reject
@@ -486,7 +487,7 @@ export default function CookiesPolicyPage() {
             <h2 id="11-contact-us">11. Contact us</h2>
             <p>For questions about cookies, privacy choices or personal information, contact:</p>
             <p>
-              <strong>Expedition-Go Tours Ltd</strong>
+              <strong><CompanyLink /></strong>
               <br />
               Trading address: <strong>Nmai Dzorn Adjiringano Road, Accra, Ghana</strong>
               <br />

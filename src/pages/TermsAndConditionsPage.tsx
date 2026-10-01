@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Footer from '@/components/Footer'
 import SEO, { buildBreadcrumbSchema, SITE_URL } from '@/components/SEO'
+import CompanyLink from '@/components/shared/CompanyLink'
 import { POLICY_TABS } from '@/lib/policyTabs'
 import '../styles/LegalPage.css'
 
@@ -138,7 +139,7 @@ export default function TermsAndConditionsPage() {
 
         <div className="leg-content">
           <p>
-            These General Terms and Conditions (the <strong>“Terms”</strong>) govern your access to and use of the websites, applications, booking services and related services operated by or on behalf of Expedition-Go Tours Ltd, including <strong>travioghana.com</strong>, <strong>travioghana.com</strong>, <strong>travioafrica.com</strong>, their subdomains and any booking journey made available through them (together, the <strong>“Platform”</strong>).
+            These General Terms and Conditions (the <strong>“Terms”</strong>) govern your access to and use of the websites, applications, booking services and related services operated by or on behalf of <CompanyLink />, including <strong>travioghana.com</strong>, <strong>travioghana.com</strong>, <strong>travioafrica.com</strong>, their subdomains and any booking journey made available through them (together, the <strong>“Platform”</strong>).
           </p>
           <p>
             These Terms should be read together with our Privacy Policy, Cookie Policy, the description and cancellation terms shown for the experience you book, and any additional terms clearly presented during checkout.
@@ -149,7 +150,7 @@ export default function TermsAndConditionsPage() {
 
           <h2 id="1-about-us">1. About us</h2>
           <p>
-            The Platform is operated by <strong>Expedition-Go Tours Ltd</strong>, a private company limited by shares incorporated in the Republic of Ghana on <strong>18 February 2023</strong> under the Companies Act, 2019 (Act 992), with company registration number <strong>CS026170223</strong> and taxpayer identification number <strong>C0062656392</strong> (<strong>“Travio Ghana”</strong>, <strong>“we”</strong>, <strong>“us”</strong> or <strong>“our”</strong>).
+            The Platform is operated by <strong><CompanyLink /></strong>, a private company limited by shares incorporated in the Republic of Ghana on <strong>18 February 2023</strong> under the Companies Act, 2019 (Act 992), with company registration number <strong>CS026170223</strong> and taxpayer identification number <strong>C0062656392</strong> (<strong>“Travio Ghana”</strong>, <strong>“we”</strong>, <strong>“us”</strong> or <strong>“our”</strong>).
           </p>
           <p>
             Our registered address is <strong>H/N UNN House, near Harvest Chapel International, Accra, Ghana</strong>. Our principal trading and customer-facing address, as displayed on our Google Business Profile, is <strong>Nmai Dzorn Adjiringano Road, Accra, Ghana</strong>.
@@ -163,7 +164,7 @@ export default function TermsAndConditionsPage() {
             <li>Registered address: <strong>H/N UNN House, near Harvest Chapel International, Accra, Ghana</strong></li>
           </ul>
           <p>
-            <strong>Travio Ghana</strong> and <strong>Travio Africa</strong> are registered trading names of Expedition-Go Tours Ltd and are not separate legal entities. Services offered under those names are operated by Expedition-Go Tours Ltd. Section 15 explains how information may be used across our connected branded platforms and services.
+            <strong>Travio Ghana</strong> and <strong>Travio Africa</strong> are registered trading names of <CompanyLink /> and are not separate legal entities. Services offered under those names are operated by <CompanyLink />. Section 15 explains how information may be used across our connected branded platforms and services.
           </p>
 
           <h2 id="2-scope-of-these-terms">2. Scope of these Terms</h2>
@@ -174,7 +175,7 @@ export default function TermsAndConditionsPage() {
           <h2 id="3-our-role-and-the-role-of-suppliers">3. Our role and the role of suppliers</h2>
           <p>Experiences available through the Platform may be:</p>
           <ol>
-            <li>organised and delivered directly by Expedition-Go Tours Ltd; or</li>
+            <li>organised and delivered directly by <CompanyLink />; or</li>
             <li>organised and delivered by an independent tour operator, guide, attraction, transport provider or other third-party supplier (a <strong>“Supplier”</strong>).</li>
           </ol>
           <p>Where Travio Ghana operates the Experience directly, your contract for the Experience is with Travio Ghana.</p>
@@ -193,7 +194,7 @@ export default function TermsAndConditionsPage() {
 
           <h2 id="6-prices-and-payments">6. Prices and payments</h2>
           <p>The total price and currency payable will be displayed before you confirm the booking. The price will identify any taxes, booking charges or compulsory fees included at checkout. Optional costs and items excluded from the Experience will be identified where applicable.</p>
-          <p>Payments may be collected by us under the Expedition-Go Tours, Travio Ghana or Travio Africa trading name, or by an authorised payment processor on our behalf or on behalf of the relevant Supplier. You authorise us and our payment providers to charge the selected payment method for the total amount shown at checkout.</p>
+          <p>Payments may be collected by us under the <CompanyLink>Expedition-Go Tours</CompanyLink>, Travio Ghana or Travio Africa trading name, or by an authorised payment processor on our behalf or on behalf of the relevant Supplier. You authorise us and our payment providers to charge the selected payment method for the total amount shown at checkout.</p>
           <p>You confirm that you are authorised to use the selected payment method. Your bank or payment provider may charge exchange-rate or international transaction fees, which are outside our control.</p>
           <p>We may correct an obvious pricing error before the Experience begins. If the corrected price is higher, you may accept the corrected price or cancel for a full refund.</p>
 
@@ -268,7 +269,7 @@ export default function TermsAndConditionsPage() {
 
           <h2 id="15-privacy-and-use-of-information-across-the-expedition-go-tours-ecosystem">15. Privacy and use of information across the Travio Ghana ecosystem</h2>
           <p>We collect and process personal information in accordance with our Privacy Policy and applicable data-protection law, including Ghana&apos;s Data Protection Act, 2012 (Act 843), where applicable.</p>
-          <p>Because <strong>Travio Ghana</strong> and <strong>Travio Africa</strong> are trading names of Expedition-Go Tours Ltd rather than separate companies, information used through those branded services remains under the responsibility of Expedition-Go Tours Ltd. By using the Platform or making a booking, you acknowledge and agree that Travio Ghana may use and make relevant personal information available across the Expedition-Go Tours, Travio Ghana and Travio Africa branded platforms, systems and operational teams where reasonably necessary to:</p>
+          <p>Because <strong>Travio Ghana</strong> and <strong>Travio Africa</strong> are trading names of <CompanyLink /> rather than separate companies, information used through those branded services remains under the responsibility of <CompanyLink />. By using the Platform or making a booking, you acknowledge and agree that Travio Ghana may use and make relevant personal information available across the <CompanyLink>Expedition-Go Tours</CompanyLink>, Travio Ghana and Travio Africa branded platforms, systems and operational teams where reasonably necessary to:</p>
           <ul>
             <li>create, administer and synchronise your account or booking;</li>
             <li>match you with an Experience or Supplier;</li>
@@ -279,7 +280,7 @@ export default function TermsAndConditionsPage() {
             <li>improve the functionality, safety and reliability of our services; or</li>
             <li>comply with legal and regulatory obligations.</li>
           </ul>
-          <p>Expedition-Go Tours Ltd is the legal entity responsible for this internal use of information across the three trading names. We will make available only the information reasonably necessary for the relevant purpose and will apply appropriate confidentiality, security, access-control and retention safeguards. Our Privacy Policy will identify the relevant purposes, lawful bases, categories of information, recipients, retention periods and any international transfers.</p>
+          <p><CompanyLink /> is the legal entity responsible for this internal use of information across the three trading names. We will make available only the information reasonably necessary for the relevant purpose and will apply appropriate confidentiality, security, access-control and retention safeguards. Our Privacy Policy will identify the relevant purposes, lawful bases, categories of information, recipients, retention periods and any international transfers.</p>
           <p>Operational data sharing needed to perform a booking is not optional where the relevant Travio service forms part of that booking. Where consent is legally required—particularly for direct electronic marketing—we will request it separately. You may withdraw marketing consent at any time without affecting an existing booking.</p>
           <p>We may also share necessary information with the Supplier, payment processors, communications providers, technology providers, professional advisers, regulators and law-enforcement bodies. We do not sell personal information.</p>
           <p>Your data-protection rights and the process for exercising them are explained in our Privacy Policy. Privacy enquiries may be sent to <a href="mailto:info@expeditiongotours.com">info@expeditiongotours.com</a> with the subject line <strong>“Data Protection Request”</strong>.</p>
@@ -287,7 +288,7 @@ export default function TermsAndConditionsPage() {
           <h2 id="16-intellectual-property">16. Intellectual property</h2>
           <p>The Platform and its content—including software, design, text, graphics, trademarks, databases and original photographs—are owned by or licensed to Travio Ghana and are protected by applicable intellectual-property law.</p>
           <p>We grant you a limited, revocable, non-exclusive, non-transferable licence to use the Platform for personal, lawful travel-search and booking purposes. No content may be copied, sold, republished, reverse-engineered or commercially exploited without prior written permission, except where the law expressly permits it.</p>
-          <p>“Travio Ghana”, “Travio Ghana”, “Travio Africa” and their associated names, logos and branding are owned by or registered to Expedition-Go Tours Ltd and may not be used without our prior written permission.</p>
+          <p>“Travio Ghana”, “Travio Ghana”, “Travio Africa” and their associated names, logos and branding are owned by or registered to <CompanyLink /> and may not be used without our prior written permission.</p>
 
           <h2 id="17-liability">17. Liability</h2>
           <p>Nothing in these Terms excludes or limits liability that cannot lawfully be excluded, including liability for fraud, fraudulent misrepresentation, wilful misconduct, or death or personal injury caused by negligence where applicable law prohibits exclusion.</p>
@@ -324,7 +325,7 @@ export default function TermsAndConditionsPage() {
           <h2 id="23-contact-us">23. Contact us</h2>
           <p>Questions about these Terms or a booking may be sent to:</p>
           <p>
-            <strong>Expedition-Go Tours Ltd</strong>
+            <strong><CompanyLink /></strong>
             <br />
             <strong>Trading address: Nmai Dzorn Adjiringano Road, Accra, Ghana</strong>
             <br />

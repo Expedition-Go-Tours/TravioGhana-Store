@@ -15,6 +15,7 @@ import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react
 import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
 import SEO, { buildBreadcrumbSchema, SITE_URL } from '../components/SEO'
+import CompanyLink from '../components/shared/CompanyLink'
 import { POLICY_TABS } from '../lib/policyTabs'
 import '@/styles/SupplierTermsPage.css'
 
@@ -153,7 +154,7 @@ export default function SupplierTermsPage() {
               <p>
                 The terms that govern listing, selling and delivering tours and
                 activities through Travio Ghana, a Ghanaian tours and activities
-                platform managed by Expedition-Go Tours Ltd.
+                platform managed by <CompanyLink />.
               </p>
               <div className="updated">
                 <i />Last updated · September 2026
@@ -221,11 +222,10 @@ export default function SupplierTermsPage() {
                   through Travio Ghana supplier platform.
                 </p>
                 <p>
-                  <strong>Expedition-Go Tours Ltd</strong> manages and operates
+                  <strong><CompanyLink /></strong> manages and operates
                   Travio Ghana supplier services. In this Agreement, &quot;Travio
                   Ghana&quot;, &quot;we&quot;, &quot;us&quot; and &quot;our&quot; may
-                  refer to the applicable platform service operated by Expedition-Go
-                  Tours Ltd.
+                  refer to the applicable platform service operated by <CompanyLink />.
                 </p>
                 <div className="acceptance-notice">
                   <strong>Your use of the platform means you agree to these terms.</strong>
@@ -291,7 +291,7 @@ export default function SupplierTermsPage() {
                 <p>
                   The Supplier operates as an independent business. Nothing in this
                   Agreement creates employment, partnership, joint venture, franchise
-                  or general agency between the Supplier and Expedition-Go Tours Ltd.
+                  or general agency between the Supplier and <CompanyLink />.
                 </p>
                 <p>
                   The relationship is non-exclusive unless otherwise agreed in
@@ -562,7 +562,7 @@ export default function SupplierTermsPage() {
                   photographs, videos, descriptions and logos.
                 </p>
                 <p>
-                  The Supplier grants Expedition-Go Tours Ltd a non-exclusive,
+                  The Supplier grants <CompanyLink /> a non-exclusive,
                   worldwide, transferable, sublicensable and royalty-free licence to
                   host, reproduce, edit, translate, format, display, promote and
                   distribute Supplier Content for the purpose of selling, advertising,
@@ -570,7 +570,7 @@ export default function SupplierTermsPage() {
                 </p>
                 <p>
                   This may include distribution through{' '}
-                  <strong>Travio Ghana, Expedition-Go Tours</strong>, approved websites
+                  <strong>Travio Ghana, <CompanyLink>Expedition-Go Tours</CompanyLink></strong>, approved websites
                   and applications, social channels, search engines, travel agents,
                   affiliates, content creators, hotels, tourism partners, approved
                   resellers and other authorised distribution partners in Ghana and
@@ -586,7 +586,7 @@ export default function SupplierTermsPage() {
                   Neither Party acquires ownership of the other&apos;s trademarks or
                   branding. The Supplier may identify itself as a Travio supplier but
                   may not represent itself as owned by or able to legally bind
-                  Expedition-Go Tours Ltd unless authorised in writing.
+                  <CompanyLink /> unless authorised in writing.
                 </p>
                 <p>
                   Each Party must comply with applicable privacy and data-protection
@@ -646,7 +646,7 @@ export default function SupplierTermsPage() {
                 </p>
                 <p>
                   To the extent permitted by law, the Supplier will indemnify
-                  Expedition-Go Tours Ltd, Travio Ghana and their directors, employees
+                  <CompanyLink />, Travio Ghana and their directors, employees
                   and representatives against third-party claims, losses, liabilities,
                   penalties or reasonable legal expenses arising directly from the
                   Supplier&apos;s negligent or unlawful delivery, breach of this
@@ -669,7 +669,7 @@ export default function SupplierTermsPage() {
                 <p>
                   The Travio Ghana name, software, website design, supplier tools,
                   databases, platform functionality and proprietary materials belong to
-                  Expedition-Go Tours Ltd or its applicable licensors. Supplier
+                  <CompanyLink /> or its applicable licensors. Supplier
                   participation does not transfer ownership of these assets.
                 </p>
 
@@ -717,7 +717,7 @@ export default function SupplierTermsPage() {
                 <h3>28.2 Assignment</h3>
                 <p>
                   The Supplier may not transfer this Agreement or its Supplier account
-                  without prior written approval. Expedition-Go Tours Ltd may assign its
+                  without prior written approval. <CompanyLink /> may assign its
                   rights as part of a corporate restructuring, merger, acquisition,
                   financing, sale or transfer of the Travio business, subject to
                   applicable law.
@@ -766,7 +766,7 @@ export default function SupplierTermsPage() {
                   <li>the Supplier is responsible for the Experiences it supplies and delivers;</li>
                   <li>
                     eligible Products may be marketed and distributed through Travio
-                    Ghana, Expedition-Go Tours and approved distribution partners for
+                    Ghana, <CompanyLink>Expedition-Go Tours</CompanyLink> and approved distribution partners for
                     the purpose of promoting and selling tours and activities in Ghana;
                   </li>
                   <li>

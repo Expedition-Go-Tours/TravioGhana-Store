@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import SEO, { buildBreadcrumbSchema } from '../components/SEO'
 import LegalPageShell from '../components/shared/LegalPageShell'
+import CompanyLink from '../components/shared/CompanyLink'
 
 const SUMMARY = [
   { icon: '✓', text: '24-hour standard cancellation window' },
@@ -83,28 +84,28 @@ export default function RefundPolicyPage() {
         </p>
         <p>
           The cancellation deadline is calculated using the local time at the experience destination. The
-          time Expedition-Go Tours Ltd or the relevant booking channel receives your cancellation request
+          time <CompanyLink /> or the relevant booking channel receives your cancellation request
           determines whether it was submitted before the deadline.
         </p>
 
         <h2 id="1-about-this-policy">1. About this policy</h2>
         <p>
           This Refund and Cancellation Policy applies to bookings made through platforms operated by
-          Expedition-Go Tours Ltd under the following trading names:
+          <CompanyLink /> under the following trading names:
         </p>
         <ul>
           <li>Travio Ghana</li>
-          <li>Expedition-Go Tours</li>
+          <li><CompanyLink>Expedition-Go Tours</CompanyLink></li>
           <li>Travio Africa</li>
         </ul>
         <p>
-          Travio Ghana, Expedition-Go Tours and Travio Africa are registered trading
-          names of Expedition-Go Tours Ltd and are not separate legal entities.
+          Travio Ghana, <CompanyLink>Expedition-Go Tours</CompanyLink> and Travio Africa are registered
+          trading names of <CompanyLink /> and are not separate legal entities.
         </p>
         <p>
           This policy applies to <strong>travioghana.com</strong>,{' '}
           <strong>expeditiongotours.com</strong>, <strong>travioafrica.com</strong>, their subdomains
-          and any booking tools operated by Expedition-Go Tours Ltd (together, the{' '}
+          and any booking tools operated by <CompanyLink /> (together, the{' '}
           <strong>"Platform"</strong>).
         </p>
         <p>It should be read together with:</p>
@@ -122,7 +123,7 @@ export default function RefundPolicyPage() {
         <h2 id="2-who-provides-your-experience">2. Who provides your experience</h2>
         <p>An experience may be:</p>
         <ol>
-          <li>organised and delivered directly by Expedition-Go Tours Ltd; or</li>
+          <li>organised and delivered directly by <CompanyLink />; or</li>
           <li>
             delivered by an independent tour operator, guide, attraction, transport provider or other
             supplier (a <strong>"Supplier"</strong>).
@@ -401,7 +402,7 @@ export default function RefundPolicyPage() {
 
         <h2 id="18-contacting-us-about-a-refund">18. Contacting us about a refund</h2>
         <p>
-          <strong>Expedition-Go Tours Ltd</strong>
+          <strong><CompanyLink /></strong>
           <br />
           Trading address: <strong>Nmai Dzorn Adjiringano Road, Accra, Ghana</strong>
           <br />
@@ -422,7 +423,7 @@ export default function RefundPolicyPage() {
 
         <h2 id="19-governing-terms-and-consumer-rights">19. Governing terms and consumer rights</h2>
         <p>
-          This policy forms part of the Expedition-Go Tours Ltd General Terms and Conditions. If there is
+          This policy forms part of the <CompanyLink /> General Terms and Conditions. If there is
           a conflict, mandatory consumer law applies first, followed by the specific cancellation terms
           disclosed for the booking, this policy and the General Terms and Conditions.
         </p>

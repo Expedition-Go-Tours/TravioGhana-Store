@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import SEO, { buildBreadcrumbSchema } from '../components/SEO'
 import LegalPageShell from '../components/shared/LegalPageShell'
+import CompanyLink from '../components/shared/CompanyLink'
 
 const SUMMARY = [
   { icon: '✓', text: 'How we collect and use your information' },
@@ -60,7 +61,7 @@ export default function PrivacyPolicyPage() {
         activeTab="privacy"
       >
           <p>
-            Expedition-Go Tours Ltd respects your privacy and is committed to handling personal
+            <CompanyLink /> respects your privacy and is committed to handling personal
             information fairly, lawfully, securely and transparently.
           </p>
           <p>
@@ -75,13 +76,13 @@ export default function PrivacyPolicyPage() {
             <li>submit a review, photograph or other content;</li>
             <li>subscribe to marketing;</li>
             <li>apply to become a supplier or business partner; or</li>
-            <li>otherwise interact with Expedition-Go Tours Ltd.</li>
+            <li>otherwise interact with <CompanyLink />.</li>
           </ul>
 
           <h2 id="2-who-we-are">2. Who we are</h2>
           <p>The controller responsible for your personal information is:</p>
           <p>
-            <strong>Expedition-Go Tours Ltd</strong>
+            <strong><CompanyLink /></strong>
             <br />
             Company registration number: <strong>CS026170223</strong>
             <br />
@@ -98,11 +99,11 @@ export default function PrivacyPolicyPage() {
             Telephone/WhatsApp: <strong>+233 59 140 9761</strong>
           </p>
           <p>
-            Expedition-Go Tours Ltd was incorporated in Ghana on 18 February 2023 under the
+            <CompanyLink /> was incorporated in Ghana on 18 February 2023 under the
             Companies Act, 2019 (Act 992).
           </p>
           <p>
-            For UK data-protection purposes, Expedition-Go Tours Ltd is registered with the{' '}
+            For UK data-protection purposes, <CompanyLink /> is registered with the{' '}
             <strong>Information Commissioner&apos;s Office (ICO)</strong>:
           </p>
           <ul>
@@ -115,10 +116,10 @@ export default function PrivacyPolicyPage() {
           <h2 id="3-our-trading-names-and-platforms">3. Our trading names and platforms</h2>
           <p>
             <strong>Travio Ghana</strong> and <strong>Travio Africa</strong> are registered trading
-            names of Expedition-Go Tours Ltd. They are not separate legal entities.
+            names of <CompanyLink />. They are not separate legal entities.
           </p>
           <p>
-            For data-protection purposes, Expedition-Go Tours Ltd is the controller across the
+            For data-protection purposes, <CompanyLink /> is the controller across the
             following branded services:
           </p>
           <ul>
@@ -375,7 +376,7 @@ export default function PrivacyPolicyPage() {
           <h2 id="8-information-used-across-expedition-go-tours-travio-ghana-and-travio-africa">8. Information used across Expedition-Go Tours, Travio Ghana and Travio Africa</h2>
           <p>
             When you use any of our branded services, you agree that relevant information may be
-            accessed and used within Expedition-Go Tours Ltd across the Travio Ghana,
+            accessed and used within <CompanyLink /> across the Travio Ghana,
             Travio Ghana and Travio Africa platforms and operational teams where necessary to:
           </p>
           <ul>
@@ -715,7 +716,7 @@ export default function PrivacyPolicyPage() {
           <h2 id="24-contact-us">24. Contact us</h2>
           <p>For privacy questions or requests, contact:</p>
           <p>
-            <strong>Expedition-Go Tours Ltd</strong>
+            <strong><CompanyLink /></strong>
             <br />
             <strong>Privacy contact / Data Protection Supervisor</strong>
             <br />
