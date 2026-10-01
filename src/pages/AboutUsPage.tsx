@@ -17,6 +17,7 @@ import {
 import Footer from '../components/Footer'
 import SEO, { buildBreadcrumbSchema } from '../components/SEO'
 import PartnersSection from '../components/PartnersSection'
+import BundledImage from '@/components/shared/BundledImage'
 import DeferredMap from '../components/support/DeferredMap'
 import { OFFICE_DIRECTIONS_URL, OFFICE_MAP_EMBED, SUPPORT_EMAIL } from '../lib/support'
 import './AboutUsPage.css'
@@ -235,11 +236,12 @@ export default function AboutUsPage() {
                       >
                         {lane.map((img) => (
                           <figure key={`${set}-${img.label}`} className="about-gallery-photo">
-                            <img
+                            <BundledImage
                               src={img.src}
                               alt=""
                               width={img.width}
                               height={img.height}
+                              sizes="(max-width: 768px) 40vw, 300px"
                               loading={laneIndex === 0 && set === 0 ? 'eager' : 'lazy'}
                               fetchPriority={laneIndex === 0 && set === 0 ? 'high' : undefined}
                               decoding="async"

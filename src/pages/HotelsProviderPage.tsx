@@ -106,14 +106,21 @@ export default function HotelsProviderPage({ onOpenAuth }: HotelsProviderPagePro
           </div>
           <div className="hs-hero-visual">
             <div className="hs-room-photo">
-              <img src="https://theroyalsenchi.com/wp-content/uploads/2024/09/Untitled-3.jpg" alt="Comfortable hotel suite with a garden view" loading="eager" />
+              <img
+                src="https://theroyalsenchi.com/wp-content/uploads/2024/09/Untitled-3.jpg"
+                alt="Comfortable hotel suite with a garden view"
+                width={728}
+                height={471}
+                loading="eager"
+                decoding="async"
+              />
               <span className="hs-photo-label">Your property, beautifully presented</span>
             </div>
             <div className="hs-dashboard">
               <div className="hs-dash-top">
                 <div className="hs-dash-property">
                   <div className="hs-property-thumb">
-                    <img src="https://theroyalsenchi.com/wp-content/uploads/2024/09/Untitled-3.jpg" alt="" />
+                    <img src="https://theroyalsenchi.com/wp-content/uploads/2024/09/Untitled-3.jpg" alt="" width={728} height={471} loading="lazy" decoding="async" />
                   </div>
                   <div><b>Akwaaba Garden Stay</b><span>Accra · Published</span></div>
                 </div>

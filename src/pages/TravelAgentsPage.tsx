@@ -23,6 +23,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
 import SEO from '../components/SEO'
+import BundledImage from '@/components/shared/BundledImage'
 import travioLogoSrc from '../assets/TravioGhana_Logo.svg'
 
 /**
@@ -98,9 +99,9 @@ const BENEFITS = [
 ]
 
 const DESTINATIONS = [
-  { img: capeCoastCastle, alt: "Cape Coast Castle on Ghana's coast", region: 'CENTRAL REGION', title: 'Cape Coast heritage', body: 'Stories, culture and the coast.' },
-  { img: kakumCanopyWalkway, alt: 'Canopy walkway at Kakum National Park, Ghana', region: 'CENTRAL REGION', title: 'Kakum adventures', body: 'Nature from a new perspective.' },
-  { img: aburiBotanicalGardens, alt: 'Aburi Botanical Gardens in Ghana', region: 'EASTERN REGION', title: 'Aburi escapes', body: 'Green spaces and slower moments.' },
+  { img: capeCoastCastle, w: 1200, h: 800, alt: "Cape Coast Castle on Ghana's coast", region: 'CENTRAL REGION', title: 'Cape Coast heritage', body: 'Stories, culture and the coast.' },
+  { img: kakumCanopyWalkway, w: 1000, h: 750, alt: 'Canopy walkway at Kakum National Park, Ghana', region: 'CENTRAL REGION', title: 'Kakum adventures', body: 'Nature from a new perspective.' },
+  { img: aburiBotanicalGardens, w: 800, h: 1067, alt: 'Aburi Botanical Gardens in Ghana', region: 'EASTERN REGION', title: 'Aburi escapes', body: 'Green spaces and slower moments.' },
 ]
 
 const STEPS = [
@@ -227,7 +228,15 @@ export default function TravelAgentsPage() {
 
             <div className="portrait-stage">
               <div className="portrait-frame">
-                <img src={accraSkyline} alt="Accra Airport City skyline in Ghana" decoding="async" fetchPriority="high" />
+                <BundledImage
+                  src={accraSkyline}
+                  alt="Accra Airport City skyline in Ghana"
+                  width={1600}
+                  height={1066}
+                  sizes="(max-width: 768px) 78vw, (max-width: 1100px) 320px, 520px"
+                  decoding="async"
+                  fetchPriority="high"
+                />
               </div>
               <div className="agent-badge">
                 <span>Made for travel professionals</span>
@@ -310,7 +319,15 @@ export default function TravelAgentsPage() {
             <div className="destination-grid">
               {DESTINATIONS.map((d) => (
                 <article className="destination-card reveal" key={d.title}>
-                  <img src={d.img} alt={d.alt} loading="lazy" />
+                  <BundledImage
+                    src={d.img}
+                    alt={d.alt}
+                    width={d.w}
+                    height={d.h}
+                    sizes="(max-width: 768px) 40vw, (max-width: 1100px) 250px, 400px"
+                    loading="lazy"
+                    decoding="async"
+                  />
                   <div>
                     <span>{d.region}</span>
                     <h3>{d.title}</h3>
@@ -370,7 +387,7 @@ export default function TravelAgentsPage() {
               <div className="dash-window">
                 <div className="dash-nav">
                   <span className="dash-brand">
-                    <img src={travioLogoSrc} alt="Travio Ghana logo" />
+                    <img src={travioLogoSrc} alt="Travio Ghana logo" width={2076} height={450} />
                     <small>Agent desk</small>
                   </span>
                   <span className="dash-user" aria-label="Sample agent profile">AG</span>
@@ -403,7 +420,7 @@ export default function TravelAgentsPage() {
                       </div>
                       <div className="dash-title">Sample upcoming departures</div>
                       <Link className="dash-row dash-booking" to={tourPath(TOURS.accra)} target="_blank" rel="noopener">
-                        <img className="dash-thumb" src={TOURS.accra.img} alt={TOURS.accra.short} />
+                        <img className="dash-thumb" src={TOURS.accra.img} alt={TOURS.accra.short} width={1200} height={800} loading="lazy" decoding="async" />
                         <span>
                           <strong>{TOURS.accra.title}</strong>
                           <span>Sample booking · 2 guests</span>
@@ -411,7 +428,7 @@ export default function TravelAgentsPage() {
                         <span className="dash-amount">View ↗</span>
                       </Link>
                       <Link className="dash-row dash-booking" to={tourPath(TOURS.capeCoast)} target="_blank" rel="noopener">
-                        <img className="dash-thumb" src={TOURS.capeCoast.img} alt={TOURS.capeCoast.short} />
+                        <img className="dash-thumb" src={TOURS.capeCoast.img} alt={TOURS.capeCoast.short} width={1200} height={800} loading="lazy" decoding="async" />
                         <span>
                           <strong>{TOURS.capeCoast.title}</strong>
                           <span>Sample booking · 4 guests</span>
@@ -425,7 +442,7 @@ export default function TravelAgentsPage() {
                       <p className="dash-sub">Real experiences currently listed on the platform.</p>
                       {[TOURS.capeCoast, TOURS.waterfalls, TOURS.accra].map((t) => (
                         <Link className="dash-tour" to={tourPath(t)} target="_blank" rel="noopener" key={t.id}>
-                          <img className="tour-dot" src={t.img} alt="" />
+                          <img className="tour-dot" src={t.img} alt="" width={1200} height={800} loading="lazy" decoding="async" />
                           <span>
                             <strong>{t.title}</strong>
                             <small>{t.meta}</small>

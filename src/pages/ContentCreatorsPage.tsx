@@ -2,6 +2,7 @@ import Footer from '../components/Footer'
 import SEO from '../components/SEO'
 import RevealOnScroll from '../components/shared/RevealOnScroll'
 import FAQAccordion from '../components/shared/FAQAccordion'
+import BundledImage from '@/components/shared/BundledImage'
 import { useComingSoon } from '../hooks/useComingSoon'
 import '../styles/partner-pages.css'
 import '../styles/ContentCreators.css'
@@ -14,13 +15,13 @@ import content6 from '../assets/content-creators/content6.avif'
 import content7 from '../assets/content-creators/content7.avif'
 
 const CREATOR_IMAGES = [
-  { src: content1, label: 'Travel storyteller' },
-  { src: content2, label: 'Community' },
-  { src: content3, label: 'Food & lifestyle' },
-  { src: content4, label: 'Culture & lifestyle' },
-  { src: content5, label: 'Experiences' },
-  { src: content6, label: 'Original content' },
-  { src: content7, label: 'Explore Ghana' },
+  { src: content1, label: 'Travel storyteller', w: 600, h: 750 },
+  { src: content2, label: 'Community', w: 600, h: 400 },
+  { src: content3, label: 'Food & lifestyle', w: 600, h: 400 },
+  { src: content4, label: 'Culture & lifestyle', w: 600, h: 900 },
+  { src: content5, label: 'Experiences', w: 600, h: 900 },
+  { src: content6, label: 'Original content', w: 600, h: 900 },
+  { src: content7, label: 'Explore Ghana', w: 600, h: 1067 },
 ]
 
 const COMMUNITY_POINTS = [
@@ -98,7 +99,15 @@ export default function ContentCreatorsPage() {
           <div className="cc-track">
             {[...CREATOR_IMAGES, ...CREATOR_IMAGES].map((img, i) => (
               <figure key={i} className="cc-card">
-                <img src={img.src} alt={img.label} loading="lazy" />
+                <BundledImage
+                  src={img.src}
+                  alt={img.label}
+                  width={img.w}
+                  height={img.h}
+                  sizes="290px"
+                  loading="lazy"
+                  decoding="async"
+                />
                 <figcaption>{img.label}</figcaption>
               </figure>
             ))}

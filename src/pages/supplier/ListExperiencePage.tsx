@@ -18,6 +18,7 @@ import { motion } from 'framer-motion'
 import Footer from '@/components/Footer'
 import SEO, { buildBreadcrumbSchema, buildFAQSchema } from '@/components/SEO'
 import FAQAccordion from '@/components/shared/FAQAccordion'
+import BundledImage from '@/components/shared/BundledImage'
 import { useSupplierStatus } from '@/hooks/useSupplierStatus'
 import { getSupplierPortalUrl, isApprovedSupplier } from '@/lib/supplier'
 import { SUPPORT_EMAIL, WHATSAPP_URL } from '@/lib/support'
@@ -40,9 +41,9 @@ import '@/styles/ListExperience.css'
 const DEMO_MAILTO = `mailto:${SUPPORT_EMAIL}?subject=TravioGhana%20Supplier%2015-Minute%20Demo`
 
 const HERO_IMAGES = [
-  { src: phoneLogin, alt: 'Supplier login screen', cls: 'le-phone-a' },
-  { src: phoneDashboard, alt: 'Supplier dashboard with bookings and earnings', cls: 'le-phone-b' },
-  { src: phoneProducts, alt: 'Tour products management screen', cls: 'le-phone-c' },
+  { src: phoneLogin, w: 304, h: 558, alt: 'Supplier login screen', cls: 'le-phone-a' },
+  { src: phoneDashboard, w: 307, h: 667, alt: 'Supplier dashboard with bookings and earnings', cls: 'le-phone-b' },
+  { src: phoneProducts, w: 309, h: 672, alt: 'Tour products management screen', cls: 'le-phone-c' },
 ]
 
 const PROOF = [
@@ -142,36 +143,48 @@ const TERMS = [
 const EXPERIENCES = [
   {
     src: imgCapeCoast,
+    w: 700,
+    h: 394,
     title: 'Cape Coast Heritage',
     desc: 'Castles, history and the Atlantic coast',
     alt: 'Cape Coast Castle and coastal town in Ghana',
   },
   {
     src: imgCoastal,
+    w: 700,
+    h: 907,
     title: 'Historic Coastal Tours',
     desc: "Ghana's heritage sites and coastal stories",
     alt: 'Cape Coast Castle cannons overlooking the Ghana coastline',
   },
   {
     src: imgElmina,
+    w: 650,
+    h: 980,
     title: 'Elmina Experiences',
     desc: 'Architecture, culture and local history',
     alt: 'Historic Elmina Castle archway overlooking the sea in Ghana',
   },
   {
     src: imgAccra,
+    w: 700,
+    h: 933,
     title: 'Accra City Experiences',
     desc: 'Landmarks, culture and city discovery',
     alt: 'Independence Arch in Accra Ghana',
   },
   {
     src: imgWaterfalls,
+    w: 653,
+    h: 980,
     title: 'Waterfalls & Nature',
     desc: 'Outdoor adventures through lush Ghana',
     alt: 'Visitor at Kintampo Waterfalls in Ghana',
   },
   {
     src: imgWaterBoat,
+    w: 700,
+    h: 484,
     title: 'Water & Boat Experiences',
     desc: 'Coastal life, lakes and local waterways',
     alt: 'Fishing boats on water in Accra Ghana',
@@ -393,7 +406,7 @@ export default function ListExperiencePage() {
           <div className="le-device-wall" aria-label="TravioGhana supplier platform screens">
             {HERO_IMAGES.map((img) => (
               <div key={img.cls} className={`le-device ${img.cls}`}>
-                <img src={img.src} alt={img.alt} loading="eager" />
+                <BundledImage src={img.src} alt={img.alt} width={img.w} height={img.h} sizes="300px" loading="eager" decoding="async" />
               </div>
             ))}
             <div className="le-float-card le-float-earning">
@@ -490,7 +503,7 @@ export default function ListExperiencePage() {
                 <div className="le-profile-top">
                   <div className="le-profile-brand">
                     <div className="le-profile-logo">
-                      <img src={tripadvisorLogo} alt="Tripadvisor" />
+                      <img src={tripadvisorLogo} alt="Tripadvisor" width={206} height={35} loading="lazy" />
                     </div>
                   </div>
                   <a
@@ -519,7 +532,7 @@ export default function ListExperiencePage() {
                 <div className="le-profile-top">
                   <div className="le-profile-brand">
                     <div className="le-profile-logo le-profile-logo--gyg">
-                      <img src={getYourGuideLogo} alt="GetYourGuide" />
+                      <img src={getYourGuideLogo} alt="GetYourGuide" width={578} height={478} loading="lazy" />
                     </div>
                   </div>
                   <a
@@ -641,7 +654,7 @@ export default function ListExperiencePage() {
           <div className="le-experience-set">
             {EXPERIENCES.map((exp) => (
               <figure key={exp.title} className="le-experience-card">
-                <img src={exp.src} alt={exp.alt} loading="lazy" />
+                <BundledImage src={exp.src} alt={exp.alt} width={exp.w} height={exp.h} sizes="280px" loading="lazy" decoding="async" />
                 <figcaption>
                   <strong>{exp.title}</strong>
                   <span>{exp.desc}</span>
@@ -652,7 +665,7 @@ export default function ListExperiencePage() {
           <div className="le-experience-set" aria-hidden="true">
             {EXPERIENCES.map((exp) => (
               <figure key={`dup-${exp.title}`} className="le-experience-card">
-                <img src={exp.src} alt="" loading="lazy" />
+                <BundledImage src={exp.src} alt="" width={exp.w} height={exp.h} sizes="280px" loading="lazy" decoding="async" />
                 <figcaption>
                   <strong>{exp.title}</strong>
                   <span>{exp.desc}</span>

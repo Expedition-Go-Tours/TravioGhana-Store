@@ -13,6 +13,7 @@ import { useCallback, useEffect, useRef, useState, Fragment, type CSSProperties 
 import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
 import SEO, { buildBreadcrumbSchema } from '../components/SEO'
+import BundledImage from '@/components/shared/BundledImage'
 import '@/styles/partner-pages.css'
 import '@/styles/PartnershipsPage.css'
 
@@ -109,18 +110,18 @@ const BENEFITS = [
  * an edge (see the Adaptations block in PartnershipsPage.css).
  */
 const ROUTE_CARDS = [
-  { img: capeCoastCastle, alt: 'Cape Coast Castle in Ghana', to: '/supplier/list-experience', label: 'Tour & activity suppliers', no: '01', h3: 'List tours, activities and experiences for travellers discovering Ghana.', cta: 'List your experience' },
-  { img: accraSkyline, alt: 'Accra skyline in Ghana', to: '/hotels', label: 'Hotels & stays', no: '02', h3: 'List rooms or properties and connect guests with Ghana experiences.', cta: 'Explore stays partnership' },
-  { img: makolaMarket, alt: 'Street outside Makola Market in Accra', to: '/travel-agents', label: 'Travel agents', no: '03', h3: 'Recommend curated Ghana experiences and manage bookings for your clients.', cta: 'Explore agent network' },
-  { img: kakumCanopy, alt: 'Canopy walkway at Kakum National Park', to: '/content-creators', label: 'Content creators', no: '04', h3: 'Choose experiences, tell their stories and share your own booking link.', cta: 'Explore creator programme' },
-  { img: accraTaxi, alt: 'Taxi travelling in Accra', to: '/transport-providers', label: 'Transport providers', no: '05', h3: 'Show your fleet and respond to suitable journey requests.', cta: 'Explore transport partnership' },
-  { img: wliWaterfall, alt: 'Wli waterfall in Ghana', to: '/supplier/list-experience', label: 'Tour & activity suppliers', no: '06', h3: 'List tours, activities and experiences for travellers discovering Ghana.', cta: 'List your experience' },
-  { img: bojoBeach, alt: 'Visitors at Bojo Beach Resort near Accra', to: '/hotels', label: 'Hotels & stays', no: '07', h3: 'List rooms or properties and connect guests with Ghana experiences.', cta: 'Explore stays partnership' },
-  { img: kenteWeaving, alt: 'A Ghanaian craft maker weaving kente', to: '/content-creators', label: 'Content creators', no: '08', h3: 'Choose experiences, tell their stories and share your own booking link.', cta: 'Explore creator programme' },
-  { img: shaiHills, alt: 'Landscape at Shai Hills in Ghana', to: '/transport-providers', label: 'Transport providers', no: '09', h3: 'Show your fleet and respond to suitable journey requests.', cta: 'Explore transport partnership' },
-  { img: waakye, alt: 'A Ghanaian waakye dish', to: '/travel-agents', label: 'Travel agents', no: '10', h3: 'Recommend curated Ghana experiences and manage bookings for your clients.', cta: 'Explore agent network' },
-  { img: aburiGardens, alt: 'Palm trees at Aburi Botanical Gardens', to: '/hotels', label: 'Hotels & stays', no: '11', h3: 'List rooms or properties and connect guests with Ghana experiences.', cta: 'Explore stays partnership' },
-  { img: voltaLake, alt: 'Lake Volta near Sogakope in Ghana', to: '/supplier/list-experience', label: 'Tour & activity suppliers', no: '12', h3: 'List tours, activities and experiences for travellers discovering Ghana.', cta: 'List your experience' },
+  { img: capeCoastCastle, w: 640, h: 480, alt: 'Cape Coast Castle in Ghana', to: '/supplier/list-experience', label: 'Tour & activity suppliers', no: '01', h3: 'List tours, activities and experiences for travellers discovering Ghana.', cta: 'List your experience' },
+  { img: accraSkyline, w: 640, h: 427, alt: 'Accra skyline in Ghana', to: '/hotels', label: 'Hotels & stays', no: '02', h3: 'List rooms or properties and connect guests with Ghana experiences.', cta: 'Explore stays partnership' },
+  { img: makolaMarket, w: 640, h: 427, alt: 'Street outside Makola Market in Accra', to: '/travel-agents', label: 'Travel agents', no: '03', h3: 'Recommend curated Ghana experiences and manage bookings for your clients.', cta: 'Explore agent network' },
+  { img: kakumCanopy, w: 640, h: 480, alt: 'Canopy walkway at Kakum National Park', to: '/content-creators', label: 'Content creators', no: '04', h3: 'Choose experiences, tell their stories and share your own booking link.', cta: 'Explore creator programme' },
+  { img: accraTaxi, w: 640, h: 427, alt: 'Taxi travelling in Accra', to: '/transport-providers', label: 'Transport providers', no: '05', h3: 'Show your fleet and respond to suitable journey requests.', cta: 'Explore transport partnership' },
+  { img: wliWaterfall, w: 640, h: 853, alt: 'Wli waterfall in Ghana', to: '/supplier/list-experience', label: 'Tour & activity suppliers', no: '06', h3: 'List tours, activities and experiences for travellers discovering Ghana.', cta: 'List your experience' },
+  { img: bojoBeach, w: 640, h: 854, alt: 'Visitors at Bojo Beach Resort near Accra', to: '/hotels', label: 'Hotels & stays', no: '07', h3: 'List rooms or properties and connect guests with Ghana experiences.', cta: 'Explore stays partnership' },
+  { img: kenteWeaving, w: 640, h: 427, alt: 'A Ghanaian craft maker weaving kente', to: '/content-creators', label: 'Content creators', no: '08', h3: 'Choose experiences, tell their stories and share your own booking link.', cta: 'Explore creator programme' },
+  { img: shaiHills, w: 640, h: 854, alt: 'Landscape at Shai Hills in Ghana', to: '/transport-providers', label: 'Transport providers', no: '09', h3: 'Show your fleet and respond to suitable journey requests.', cta: 'Explore transport partnership' },
+  { img: waakye, w: 640, h: 854, alt: 'A Ghanaian waakye dish', to: '/travel-agents', label: 'Travel agents', no: '10', h3: 'Recommend curated Ghana experiences and manage bookings for your clients.', cta: 'Explore agent network' },
+  { img: aburiGardens, w: 640, h: 960, alt: 'Palm trees at Aburi Botanical Gardens', to: '/hotels', label: 'Hotels & stays', no: '11', h3: 'List rooms or properties and connect guests with Ghana experiences.', cta: 'Explore stays partnership' },
+  { img: voltaLake, w: 640, h: 480, alt: 'Lake Volta near Sogakope in Ghana', to: '/supplier/list-experience', label: 'Tour & activity suppliers', no: '12', h3: 'List tours, activities and experiences for travellers discovering Ghana.', cta: 'List your experience' },
 ]
 
 const JOINS = [
@@ -318,11 +319,14 @@ export default function PartnershipsPage() {
     <div className="route-set" {...(duplicate ? { 'aria-hidden': 'true' } : {})}>
       {ROUTE_CARDS.map((card, i) => (
         <article className="route-card" style={{ '--i': i } as CSSProperties} key={`${card.no}-${card.label}`}>
-          <img
+          <BundledImage
             key={`${duplicate ? 'duplicate' : 'primary'}-${railArmed ? 'eager' : 'lazy'}`}
             ref={duplicate ? undefined : (el) => { railImages.current[i] = el }}
             src={card.img}
             alt={card.alt}
+            width={card.w}
+            height={card.h}
+            sizes="318px"
             loading={railArmed ? 'eager' : 'lazy'}
             decoding="async"
             onLoad={duplicate ? undefined : settleRailImage}
@@ -402,9 +406,12 @@ export default function PartnershipsPage() {
               <path d="M90 450c100-195 238-292 415-285 92 4 161 37 207 97" />
             </svg>
             <div className="hero-shot">
-              <img
+              <BundledImage
                 src={elminaCastle}
                 alt="Elmina Castle on the Ghana coast"
+                width={1200}
+                height={800}
+                sizes="(max-width: 1000px) 100vw, 530px"
                 fetchPriority="high"
                 decoding="async"
               />
@@ -605,9 +612,12 @@ export default function PartnershipsPage() {
             </div>
             <div className="process-grid">
               <div className="process-image" data-reveal>
-                <img
+                <BundledImage
                   src={materialImage}
                   alt="Two people smiling and greeting one another with a fist bump"
+                  width={1200}
+                  height={674}
+                  sizes="(max-width: 1000px) 100vw, 665px"
                   loading="lazy"
                   decoding="async"
                 />

@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import Footer from '../components/Footer'
 import SEO, { buildBreadcrumbSchema } from '../components/SEO'
+import BundledImage from '@/components/shared/BundledImage'
 import {
   fadeUp,
   revealViewport,
@@ -101,16 +102,22 @@ const GALLERY_IMAGES = [
     src: partner1,
     alt: 'Travio Ghana colleague welcoming travellers',
     label: 'Operations',
+    width: 645,
+    height: 624,
   },
   {
     src: partner3,
     alt: 'Travio Ghana colleagues planning together',
     label: 'Technology',
+    width: 841,
+    height: 516,
   },
   {
     src: partner4,
     alt: 'Tourism professionals collaborating',
     label: 'Teamwork',
+    width: 785,
+    height: 624,
   },
 ]
 
@@ -119,16 +126,22 @@ const GALLERY_IMAGES_2 = [
     src: partner4,
     alt: 'Travio Ghana team supporting travel partners',
     label: 'Customer care',
+    width: 785,
+    height: 624,
   },
   {
     src: partner1,
     alt: 'Welcoming guests to Ghana',
     label: 'On the road',
+    width: 645,
+    height: 624,
   },
   {
     src: partner3,
     alt: 'Creating travel ideas together',
     label: 'Marketing',
+    width: 841,
+    height: 516,
   },
 ]
 
@@ -139,7 +152,15 @@ function GalleryLane({ images }: { images: typeof GALLERY_IMAGES }) {
         <div className="cr-set">
           {images.map((img) => (
             <figure key={img.label} className="cr-photo">
-              <img src={img.src} alt={img.alt} loading="lazy" />
+              <BundledImage
+                src={img.src}
+                alt={img.alt}
+                width={img.width}
+                height={img.height}
+                sizes="(max-width: 768px) 240px, 220px"
+                loading="lazy"
+                decoding="async"
+              />
               <span>{img.label}</span>
             </figure>
           ))}
@@ -147,7 +168,15 @@ function GalleryLane({ images }: { images: typeof GALLERY_IMAGES }) {
         <div className="cr-set" aria-hidden="true">
           {images.map((img) => (
             <figure key={`dup-${img.label}`} className="cr-photo">
-              <img src={img.src} alt="" loading="lazy" />
+              <BundledImage
+                src={img.src}
+                alt=""
+                width={img.width}
+                height={img.height}
+                sizes="(max-width: 768px) 240px, 220px"
+                loading="lazy"
+                decoding="async"
+              />
               <span>{img.label}</span>
             </figure>
           ))}

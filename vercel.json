@@ -1,5 +1,18 @@
 {
   "rewrites": [],
+  "images": {
+    "sizes": [640, 1080, 1600],
+    "domains": [],
+    "localPatterns": [
+      {
+        "pathname": "^/assets/.*$",
+        "search": ""
+      }
+    ],
+    "formats": ["image/avif", "image/webp"],
+    "qualities": [75],
+    "minimumCacheTTL": 31536000
+  },
   "headers": [
     {
       "source": "/(.*)",

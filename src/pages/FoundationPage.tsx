@@ -24,6 +24,7 @@ import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
 import SEO, { buildBreadcrumbSchema } from '../components/SEO'
+import BundledImage from '@/components/shared/BundledImage'
 import '@/styles/FoundationPage.css'
 
 /**
@@ -51,16 +52,22 @@ const GALLERY_LANE_1 = [
     img: schoolChildren,
     alt: 'School children in an English class in Accra',
     label: 'Learning',
+    w: 900,
+    h: 596,
   },
   {
     img: treePlanting9,
     alt: 'Tree planting activity in Ghana',
     label: 'Growing',
+    w: 900,
+    h: 600,
   },
   {
     img: communityCleanUp,
     alt: 'Community clean-up in Winneba, Ghana',
     label: 'Community action',
+    w: 700,
+    h: 934,
   },
 ]
 
@@ -69,16 +76,22 @@ const GALLERY_LANE_2 = [
     img: marketWomen,
     alt: 'Market women in Ghana',
     label: 'Livelihoods',
+    w: 700,
+    h: 466,
   },
   {
     img: villageMeeting,
     alt: 'Community development meeting in northern Ghana',
     label: 'Local voices',
+    w: 800,
+    h: 450,
   },
   {
     img: teacherReading,
     alt: 'A teacher helping a student read in Northern Ghana',
     label: 'Education',
+    w: 600,
+    h: 800,
   },
 ]
 
@@ -188,6 +201,8 @@ const HELP_CARDS = [
   },
   {
     img: waliMeeting,
+    w: 1200,
+    h: 900,
     alt: 'Community group meeting in Wa, Ghana',
     tag: 'For communities',
     title: 'Bring a local need forward.',
@@ -199,21 +214,29 @@ const HELP_CARDS = [
 const IMPACT_SHOTS = [
   {
     img: cleanup9,
+    w: 1100,
+    h: 825,
     alt: 'Volunteers cleaning a street in Accra',
     caption: 'Local action',
   },
   {
     img: schoolgirl,
+    w: 600,
+    h: 899,
     alt: 'Schoolgirl photographed in northern Ghana',
     caption: 'Education & opportunity',
   },
   {
     img: treePlanting,
+    w: 640,
+    h: 854,
     alt: 'Tree planting initiative in Ghana',
     caption: 'Looking after our future',
   },
   {
     img: youngWomen,
+    w: 600,
+    h: 901,
     alt: 'Young women at a community health event in Ghana',
     caption: 'People working together',
   },
@@ -237,10 +260,14 @@ function GalleryLane({
     <div className="set" {...(duplicate ? { 'aria-hidden': 'true' } : {})}>
       {images.map((img) => (
         <figure className="photo" key={`${duplicate ? 'dup-' : ''}${img.label}`}>
-          <img
+          <BundledImage
             src={img.img}
             alt={duplicate ? '' : img.alt}
+            width={img.w}
+            height={img.h}
+            sizes="(max-width: 768px) 40vw, 300px"
             loading={eager && !duplicate ? 'eager' : 'lazy'}
+            decoding="async"
           />
           <span>{img.label}</span>
         </figure>
@@ -263,10 +290,14 @@ function ImpactSet({ duplicate }: { duplicate: boolean }) {
     <div className="impact-set" {...(duplicate ? { 'aria-hidden': 'true' } : {})}>
       {IMPACT_SHOTS.map((shot) => (
         <figure className="impact-shot" key={`${duplicate ? 'dup-' : ''}${shot.caption}`}>
-          <img
+          <BundledImage
             src={shot.img}
             alt={duplicate ? '' : shot.alt}
+            width={shot.w}
+            height={shot.h}
+            sizes="(max-width: 768px) 76vw, (max-width: 1100px) 300px, 340px"
             loading="lazy"
+            decoding="async"
           />
           <figcaption>{shot.caption}</figcaption>
         </figure>
@@ -478,7 +509,15 @@ export default function FoundationPage() {
             <div className="help-grid">
               {HELP_CARDS.map((card) => (
                 <article className="help-card reveal" key={card.tag}>
-                  <img src={card.img} alt={card.alt} />
+                  <BundledImage
+                    src={card.img}
+                    alt={card.alt}
+                    width={card.w}
+                    height={card.h}
+                    sizes="(max-width: 768px) 100vw, 590px"
+                    loading="lazy"
+                    decoding="async"
+                  />
                   <div className="help-copy">
                     <span className="help-tag">{card.tag}</span>
                     <h3>{card.title}</h3>
@@ -515,9 +554,14 @@ export default function FoundationPage() {
         <section className="volunteer" id="get-involved">
           <div className="container volunteer-shell reveal">
             <div className="volunteer-photo">
-              <img
+              <BundledImage
                 src={cleanup4}
                 alt="Volunteers taking part in a clean-up in Accra"
+                width={1400}
+                height={1050}
+                sizes="(max-width: 768px) 100vw, 570px"
+                loading="lazy"
+                decoding="async"
               />
             </div>
             <div className="volunteer-copy">

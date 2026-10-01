@@ -95,6 +95,14 @@ export default function middleware(request: Request) {
   const pathname = url.pathname
   const ua = request.headers.get('user-agent') || ''
 
+  // Vercel's Image Optimization endpoint carries every parameter in the query
+  // string, so `/_vercel/image` has no file extension. Without this guard it
+  // clears `isStatic()` (no known extension), clears the bot prerouter (no dot
+  // at all) and lands on the SPA rewrite at the bottom, which answers with
+  // index.html instead of an optimized image — observed on prod as a 5,267-byte
+  // text/html response for an image request. Hand it straight to the platform.
+  if (pathname.startsWith('/_vercel/')) return
+
   // Let static files pass through
   if (isStatic(pathname)) return
 
