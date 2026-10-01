@@ -627,3 +627,24 @@ export async function handleGoogleCallback(): Promise<boolean> {
   window.history.replaceState({}, '', window.location.origin + window.location.pathname)
   return true
 }
+
+/**
+ * Adopt a session minted by another of our storefronts.
+ *
+ * A cross-site handoff cannot read the other origin's localStorage, so the
+ * receiving site is handed tokens over the wire and must store them exactly as
+ * it would a login. Routing that through one function keeps the storage shape
+ * and the change notification identical to every other way of signing in —
+ * components watching auth state cannot tell an arrival from another domain
+ * from a login performed here.
+ *
+ * Added alongside ssoHandoff.ts, which exists in both storefronts so the two
+ * `auth.ts` copies stay byte-identical.
+ */
+export function adoptSession(
+  data: { accessToken: string; refreshToken: string; user: AuthUser | null },
+  area: AuthStorageArea = 'local',
+): void {
+  storeAuth({ accessToken: data.accessToken, refreshToken: data.refreshToken, user: data.user }, area)
+  notifyAuthStateChange(data.user)
+}

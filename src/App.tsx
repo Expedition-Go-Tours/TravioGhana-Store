@@ -30,6 +30,7 @@ import CookieBanner from './components/consent/CookieBanner'
 import CookiePreferences from './components/consent/CookiePreferences'
 import GoogleOneTapPrompt from './components/GoogleOneTapPrompt'
 import { subscribeToAuthState, handleGoogleCallback, getAuthReturnTo, clearAuthReturnTo } from './lib/auth'
+import { consumeHandoff } from './lib/ssoHandoff'
 import { AuthProvider } from './context/AuthContext'
 import { startSessionWatchdog, stopSessionWatchdog } from './auth/sessionManager'
 import { trackPageView } from './lib/analytics'
@@ -231,13 +232,16 @@ function AppContent() {
   }, [])
 
   useEffect(() => {
-    // Processes the Google OAuth callback (a full page-load back from Google
-    // with ?accessToken=...&refreshToken=...) and then honors any pending
-    // return-to. Mount-only: react-router's useNavigate() returns a new
-    // function whenever the pathname changes, so listing it in the deps would
-    // re-run this on every navigation and consume the pending return-to.
+    // Processes a session arriving from another of our storefronts (a tour
+    // click on expeditiongotours.com lands here with a one-time ticket in the
+    // URL *fragment*) and the Google OAuth callback (?accessToken=...&refreshToken=...)
+    // and then honors any pending return-to. Mount-only: react-router's
+    // useNavigate() returns a new function whenever the pathname changes, so
+    // listing it in the deps would re-run this on every navigation and consume
+    // the pending return-to.
     (async () => {
-      const processed = await handleGoogleCallback()
+      const handedOff = await consumeHandoff()
+      const processed = handedOff || (await handleGoogleCallback())
       const returnTo = processed ? getAuthReturnTo() : null
       if (returnTo) {
         clearAuthReturnTo()
