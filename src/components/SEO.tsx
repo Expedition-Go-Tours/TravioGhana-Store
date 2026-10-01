@@ -288,6 +288,23 @@ function brandOrganization(): Record<string, unknown> {
   }
 }
 
+/**
+ * `Product.brand` is typed `Brand | Organization` in schema.org, but Google's
+ * merchant-listing report validates the field against `Brand` and returns
+ * "Invalid object type for field 'brand'" for an Organization — which is what
+ * every tour page was sending. The offer's `seller` and a CreativeWork's
+ * `publisher` are genuinely Organization slots, so only this one node changes
+ * type. `sameAs` stays: `Brand` inherits it from `Thing`, and dropping it would
+ * cost the tour pages their only link back to the brand's profiles.
+ */
+function brandNode(): Record<string, unknown> {
+  return {
+    '@type': 'Brand',
+    name: SITE_NAME,
+    sameAs: [...BRAND_SOCIAL_URLS],
+  }
+}
+
 export function buildProductSchema(tour: {
   title: string
   description: string
@@ -310,7 +327,7 @@ export function buildProductSchema(tour: {
     url: tour.id
       ? `${SITE_URL}/tour/${encodeURIComponent(tour.id)}/${encodeURIComponent(tour.slug)}`
       : `${SITE_URL}/tour/${tour.slug}`,
-    brand: brandOrganization(),
+    brand: brandNode(),
     offers: {
       '@type': 'Offer',
       price: tour.price,

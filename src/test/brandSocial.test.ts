@@ -159,13 +159,35 @@ describe('the product schema names the brand', () => {
     currency: 'USD',
     slug: 'kakum-canopy-walk',
   }) as {
-    brand: { name: string; sameAs?: string[] }
-    offers: { seller: { name: string; sameAs?: string[] } }
+    '@type': string
+    brand: { '@type': string; name: string; sameAs?: string[] }
+    offers: { seller: { '@type': string; name: string; sameAs?: string[] } }
   }
 
   it('gives the product brand the brand profiles', () => {
     expect(product.brand.name).toBe('Travio Ghana')
     expect(product.brand.sameAs).toEqual([...BRAND_SOCIAL_URLS])
+  })
+
+  /**
+   * Google's merchant-listing report validates `Product.brand` against the
+   * `Brand` type and answers "Invalid object type for field 'brand'" for an
+   * Organization — which is what this node was. The type change is the whole
+   * fix, so it gets its own assertion rather than riding along on the name.
+   */
+  it('types it as Brand, which is what the report validates against', () => {
+    expect(product['@type']).toBe('Product')
+    expect(product.brand['@type']).toBe('Brand')
+  })
+
+  /**
+   * The split matters as much as the type: `Offer.seller` is typed
+   * `Organization | Person`, so flipping every node to Brand would trade one
+   * invalid object for another.
+   */
+  it('leaves the offer seller an Organization, which is what Offer.seller allows', () => {
+    expect(product.offers.seller['@type']).toBe('Organization')
+    expect(product.offers.seller.name).toBe('Travio Ghana')
   })
 
   it('gives the offer seller them too, so both references resolve', () => {
