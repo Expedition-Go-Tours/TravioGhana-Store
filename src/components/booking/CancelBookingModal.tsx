@@ -9,12 +9,12 @@ const currencySymbol = (currency?: string): string => {
   return '$'
 }
 
-type Step = 'confirm' | 'refund' | 'no_refund'
+type Step = 'confirm' | 'reason' | 'refund' | 'no_refund'
 
 interface CancelBookingModalProps {
   isOpen: boolean
   onClose: () => void
-  onConfirm: (reason: string) => void
+  onConfirm: (reason: string, note?: string) => void
   isPending: boolean
   error: string | null
   refundPct: number
@@ -24,6 +24,15 @@ interface CancelBookingModalProps {
   refundAmount?: number
   currency?: string
 }
+
+const CANCEL_REASONS = [
+  { code: 'SCHEDULE_CHANGED', label: 'My schedule changed', hint: 'Plans shifted and I can no longer attend' },
+  { code: 'HEALTH_MEDICAL', label: 'Health or medical reasons', hint: 'Illness, injury, or medical situation' },
+  { code: 'TRANSPORTATION', label: 'Transportation issues', hint: 'Flight delay, missed connection, or travel disruption' },
+  { code: 'WEATHER_SAFETY', label: 'Weather or safety concerns', hint: 'Conditions that make travel unsafe or unpleasant' },
+  { code: 'FOUND_ALTERNATIVE', label: 'Found a better option', hint: 'Found a different experience or provider' },
+  { code: 'OTHER', label: 'Other', hint: 'Something else — tell us more below' },
+] as const
 
 export default function CancelBookingModal({
   isOpen,
@@ -39,13 +48,15 @@ export default function CancelBookingModal({
   currency,
 }: CancelBookingModalProps) {
   const [step, setStep] = useState<Step>('confirm')
+  const [reason, setReason] = useState<string>('')
+  const [note, setNote] = useState<string>('')
 
   // Reset to the confirm step each time the modal opens (state adjustment
   // during render — the lint-approved alternative to a reset effect).
   const [prevOpen, setPrevOpen] = useState(isOpen)
   if (isOpen !== prevOpen) {
     setPrevOpen(isOpen)
-    if (isOpen) setStep('confirm')
+    if (isOpen) { setStep('confirm'); setReason(''); setNote('') }
   }
 
   // Close on Escape
@@ -67,12 +78,16 @@ export default function CancelBookingModal({
   }, [isOpen])
 
   const handleYes = useCallback(() => {
+    setStep('reason')
+  }, [])
+
+  const handleReasonContinue = useCallback(() => {
     setStep(refundPct > 0 ? 'refund' : 'no_refund')
   }, [refundPct])
 
   const handleConfirm = useCallback(() => {
-    onConfirm('Customer requested cancellation')
-  }, [onConfirm])
+    onConfirm(reason || 'Customer requested cancellation', note || undefined)
+  }, [onConfirm, reason, note])
 
   const sym = currencySymbol(currency)
   const formattedRefund = refundAmount != null && refundAmount > 0
@@ -129,7 +144,61 @@ export default function CancelBookingModal({
           </>
         )}
 
-        {/* Step 2a: Refund eligible */}
+        {/* Step 2: Reason selection — mirrors RequestRefundModal's pattern */}
+        {step === 'reason' && (
+          <>
+            <h2 className="cb-title">Please tell us your reason</h2>
+            <p className="cb-body">
+              This helps the tour operator understand what happened and improve future bookings.
+            </p>
+            <div className="cb-reasons">
+              {CANCEL_REASONS.map((r) => (
+                <button
+                  key={r.code}
+                  type="button"
+                  className={`cb-reason${reason === r.code ? ' selected' : ''}`}
+                  onClick={() => setReason(r.code)}
+                >
+                  <span className="cb-reason-radio" aria-hidden="true" />
+                  <span className="cb-reason-text">
+                    <strong>{r.label}</strong>
+                    <small>{r.hint}</small>
+                  </span>
+                </button>
+              ))}
+            </div>
+            {(reason === 'OTHER' || reason === '') && (
+              <label className="cb-note-input">
+                <span>Anything else we should know? <em>Optional</em></span>
+                <textarea
+                  rows={3}
+                  maxLength={1000}
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="Tell us what happened"
+                />
+              </label>
+            )}
+            <div className="cb-actions">
+              <button
+                type="button"
+                className="bk-btn bk-btn-ghost cb-btn"
+                onClick={() => setStep('confirm')}
+              >
+                Go back
+              </button>
+              <button
+                type="button"
+                className="bk-btn bk-btn-primary cb-btn"
+                onClick={handleReasonContinue}
+              >
+                Continue
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Step 3a: Refund eligible */}
         {step === 'refund' && (
           <>
             <div className="cb-icon cb-icon-green">
@@ -168,7 +237,7 @@ export default function CancelBookingModal({
           </>
         )}
 
-        {/* Step 2b: No refund */}
+        {/* Step 3b: No refund */}
         {step === 'no_refund' && (
           <>
             <div className="cb-icon cb-icon-rose">

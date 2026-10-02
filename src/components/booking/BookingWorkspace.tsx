@@ -653,10 +653,10 @@ export default function BookingWorkspace({ id, onClose }: { id?: string; onClose
     setCancelModalOpen(true)
   }
 
-  const handleCancelConfirm = (reason: string) => {
+  const handleCancelConfirm = (reason: string, note?: string) => {
     if (!detail?.id) return
     cancelBooking.mutate(
-      { id: detail.id, reason },
+      { id: detail.id, reason, note },
       {
         onSuccess: closeDetail,
         onError: (err: Error) => setCancelError(err.message),

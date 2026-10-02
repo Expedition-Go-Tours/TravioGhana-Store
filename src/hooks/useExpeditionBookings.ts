@@ -600,10 +600,10 @@ export function useCancelBooking() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (input: { id: string; reason: string }) => {
+    mutationFn: async (input: { id: string; reason: string; note?: string }) => {
       const res = await fetchWithAuth(`/travioghana/bookings/${encodeURIComponent(input.id)}/cancel`, {
         method: 'PATCH',
-        body: JSON.stringify({ reason: input.reason }),
+        body: JSON.stringify({ reason: input.reason, note: input.note }),
       })
       const payload = await res.json().catch(() => ({}))
       if (!res.ok) {
