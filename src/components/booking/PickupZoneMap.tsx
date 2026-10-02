@@ -411,9 +411,19 @@ export default function PickupZoneMap({
     // checkout — degrade to the fallback after a grace period. Errors on a
     // map that HAS painted are transient (single raster tile 404s self-heal);
     // errors before the first paint mean the basemap is dead.
-    map.on('error', () => {
+    // A worker that fails to boot is fatal and unrecoverable — vector tiles
+    // and the zone/exclusion GeoJSON overlays are all parsed inside it — so
+    // fail over to the fallback stack immediately instead of leaving a blank
+    // map until the watchdog expires. Other pre-paint errors keep the grace
+    // timer (single tile 404s self-heal).
+    map.on('error', (event) => {
       if (!mapRef.current || mapRef.current !== map) return
       if (paintedRef.current) return
+      const message = String(event?.error?.message || '')
+      if (/worker failed to load/i.test(message)) {
+        failMap()
+        return
+      }
       if (mapFailTimerRef.current == null) {
         mapFailTimerRef.current = window.setTimeout(failMap, 5000)
       }

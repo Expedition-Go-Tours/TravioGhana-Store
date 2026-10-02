@@ -17,11 +17,19 @@ export const TILE_ORIGIN = 'https://tiles.openfreemap.org'
 /**
  * Same-origin copy of maplibre's render worker. maplibre resolves the worker
  * from `import.meta.url` at runtime, which bundlers cannot emit; the
- * `copy-maplibre-worker` Vite plugin copies it (and its shared chunk) to
- * `public/maplibre-gl/` on every dev/build. Pinning this URL lets the warm-up
- * fetch the exact file the first real map will request.
+ * `copy-maplibre-worker` Vite plugin writes it (and its shared chunk) to
+ * `public/maplibre-gl/` under content-hashed names on every dev/build and
+ * injects the hashed URL here as `__MAP_WORKER_URL__`. The hash is what keeps
+ * a previously cached worker from being paired with a newer shared chunk —
+ * that mismatch made the worker fail to boot on deployed builds. The fallback
+ * path is only used where the plugin does not run (e.g. unit tests).
  */
-export const MAP_WORKER_URL = '/maplibre-gl/maplibre-gl-worker.mjs'
+declare const __MAP_WORKER_URL__: string | undefined
+
+export const MAP_WORKER_URL =
+  typeof __MAP_WORKER_URL__ === 'string' && __MAP_WORKER_URL__
+    ? __MAP_WORKER_URL__
+    : '/maplibre-gl/maplibre-gl-worker.mjs'
 
 /** Default camera fallback — Accra, the platform's origin market. */
 export const DEFAULT_CENTER: [number, number] = [-0.187, 5.6037]

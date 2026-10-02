@@ -2,7 +2,8 @@ import { defineConfig, type Plugin } from 'vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
 import path from 'path'
-import { copyFileSync, mkdirSync } from 'node:fs'
+import { copyFileSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { resolve } from 'node:path'
 
 // mapbox-gl's ESM worker (`dist/esm/worker.js`) must be served VERBATIM with
@@ -44,15 +45,60 @@ function copyMapboxWorker(): Plugin {
 // map can't parse tiles — it hangs until the failover watchdogs (the "map
 // takes very long to load" on Vercel). Serving the worker + its shared chunk
 // raw from `public/` keeps the relative import resolvable in dev and prod.
+//
+// Both files are emitted under CONTENT-HASHED names and the worker's import of
+// the shared chunk is rewritten to the hashed name. The URL used to be fixed
+// (`maplibre-gl-worker.mjs`), but its content changes whenever maplibre-gl is
+// upgraded — browsers that cached a previous worker (or a 404 from an older
+// broken build) under an `immutable` cache pairing it with a newer shared
+// chunk made every worker boot fail ("Worker failed to load"), leaving the map
+// blank until the Mapbox fallback took over. A content hash makes each build a
+// new URL, so stale caches can never pair mismatched chunks again.
 function copyMaplibreWorker(): Plugin {
-  const files = ['maplibre-gl-worker.mjs', 'maplibre-gl-shared.mjs']
+  let workerFileName = ''
+  let sharedFileName = ''
+  let workerSource = ''
+  let sharedSource = ''
+
   return {
     name: 'copy-maplibre-worker',
+    // `config` runs before the config is resolved, so the hashed URL can be
+    // injected as the `__MAP_WORKER_URL__` global used by src/lib/mapWarmup.ts.
+    config() {
+      const srcDir = resolve(import.meta.dirname, 'node_modules/maplibre-gl/dist')
+      workerSource = readFileSync(resolve(srcDir, 'maplibre-gl-worker.mjs'), 'utf8')
+      sharedSource = readFileSync(resolve(srcDir, 'maplibre-gl-shared.mjs'), 'utf8')
+      const hash = createHash('sha256')
+        .update(sharedSource)
+        .update(workerSource)
+        .digest('hex')
+        .slice(0, 10)
+      sharedFileName = `maplibre-gl-shared.${hash}.mjs`
+      workerFileName = `maplibre-gl-worker.${hash}.mjs`
+      workerSource = workerSource.replaceAll(
+        './maplibre-gl-shared.mjs',
+        `./${sharedFileName}`,
+      )
+      return {
+        define: {
+          __MAP_WORKER_URL__: JSON.stringify(`/maplibre-gl/${workerFileName}`),
+        },
+      }
+    },
     configResolved() {
       const outDir = resolve(import.meta.dirname, 'public/maplibre-gl')
       mkdirSync(outDir, { recursive: true })
-      for (const f of files) {
-        copyFileSync(resolve(import.meta.dirname, 'node_modules/maplibre-gl/dist', f), resolve(outDir, f))
+      writeFileSync(resolve(outDir, workerFileName), workerSource)
+      writeFileSync(resolve(outDir, sharedFileName), sharedSource)
+      // Drop previously generated hashed copies so public/ never accumulates.
+      for (const f of readdirSync(outDir)) {
+        if (
+          /^maplibre-gl-(worker|shared)\..*\.mjs$/.test(f) &&
+          f !== workerFileName &&
+          f !== sharedFileName
+        ) {
+          rmSync(resolve(outDir, f))
+        }
       }
     },
   }
