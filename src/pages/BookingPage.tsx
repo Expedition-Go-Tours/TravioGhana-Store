@@ -770,8 +770,9 @@ function ActivityDetailsStep({
 
   // Location map — shows the supplier's pickup zones / meeting point, plus the
   // traveller's picked pickup location when one is selected. Renders the
-  // Google map first (falling back to Mapbox/MapLibre/OSM), with the ETA chip
-  // (pickup ? meeting point) underneath when both coordinates exist.
+  // MapLibre/OpenFreeMap map first (falling back to Mapbox GL, then a text +
+  // Google Maps link), with the ETA chip (pickup ? meeting point) underneath
+  // when both coordinates exist.
   const locationMap = (
     <MapErrorBoundary resetKey={mapTour || tour}>
       <LocationMap

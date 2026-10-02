@@ -87,7 +87,7 @@ export default function PickupZoneMap({
   /** Extra non-interactive pins (e.g. nearby landmarks) layered on the map. */
   extraPoints?: MapPoint[]
   /** Fired when the map fatally fails (tile/style CDN down) — the layered
-      LocationMap uses this to switch to Google Maps. */
+      LocationMap uses this to switch to the Mapbox GL fallback. */
   onFatalFailure?: () => void
   /** When true, never attempt to build the map — render the text fallback
       directly (used after the Google fallback also fails). */
