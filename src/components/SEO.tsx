@@ -1,6 +1,7 @@
 import { Helmet } from 'react-helmet-async'
 import { useLocation } from 'react-router-dom'
 import { BRAND_SOCIAL_URLS } from '../lib/brandSocial'
+import { returnPolicyNode, shippingDetailsNode } from '../lib/seo/returnPolicy'
 import { tourPath } from '../lib/tourPath'
 
 const SITE_NAME = 'Travio Ghana'
@@ -334,6 +335,16 @@ export function buildProductSchema(tour: {
       priceCurrency: tour.currency || 'USD',
       availability: 'https://schema.org/InStock',
       seller: brandOrganization(),
+      // These two MUST stay identical to what the backend prerenderer emits for
+      // the same URL (`prerenderController.js` → `returnPolicyNode` /
+      // `shippingDetailsNode`). Tour pages are served to crawlers as
+      // prerendered HTML carrying the backend's copy, and this block is what
+      // takes over on hydration — so if the two disagree, the same page
+      // advertises two different refund policies depending on whether the
+      // visitor runs JavaScript. See `src/lib/seo/returnPolicy.ts` for the
+      // canonical values and why they are what they are.
+      hasMerchantReturnPolicy: returnPolicyNode(),
+      shippingDetails: shippingDetailsNode(),
     },
   }
 
@@ -449,6 +460,12 @@ export function buildHomepageItemListSchema(
         '@type': 'Product',
         name: tour.title,
         url: `${SITE_URL}${tourPath(tour.id, tour.slug)}`,
+        // Every tour here is a Travio Ghana tour, so the brand is never in
+        // doubt — leaving it off is what got 23 of these Products flagged as
+        // having no brand at all, since a Product with no brand cannot be
+        // attributed to the merchant whose refund policy the offer below
+        // declares.
+        brand: brandNode(),
         ...(tour.coverPhoto && { image: tour.coverPhoto }),
         ...(tour.city && { description: `${tour.title} in ${tour.city}, Ghana` }),
         offers: {
@@ -459,6 +476,12 @@ export function buildHomepageItemListSchema(
           availability: 'https://schema.org/InStock',
           url: `${SITE_URL}${tourPath(tour.id, tour.slug)}`,
           seller: brandOrganization(),
+          // The same policy the tour detail pages publish, from the same
+          // builders. These Offers are otherwise a strict subset of what
+          // `buildProductSchema` emits, and a homepage entry must not promise
+          // a weaker refund policy than the page it links to.
+          hasMerchantReturnPolicy: returnPolicyNode(),
+          shippingDetails: shippingDetailsNode(),
         },
         // `averageRating && reviewCount` rather than either alone: a rating with
         // no count, or a count of zero, is not an AggregateRating and Google

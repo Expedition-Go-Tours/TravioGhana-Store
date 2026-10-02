@@ -149,4 +149,47 @@ describe('buildHomepageItemListSchema', () => {
       expect(entry.item.offers.seller).toMatchObject({ '@type': 'Organization', name: 'Travio Ghana' })
     }
   })
+
+  it('names a Brand on every Product, so the offer has an owner', () => {
+    // Google flagged 9 of these as an invalid `brand` object and 13 as missing
+    // one. The real defect is that the homepage items had no brand at all —
+    // the tour detail pages were already emitting a well-formed
+    // {"@type":"Brand"} node. Without a brand, a Product cannot be attributed
+    // to the merchant whose refund policy its offer declares.
+    for (const tour of [TOUR, { ...TOUR, id: 'other', slug: 'other' }]) {
+      const [entry] = entries(buildHomepageItemListSchema([tour]))
+      expect(entry.item.brand).toBeDefined()
+      // An object, never a bare string: a string brand is the shape that
+      // produced the "invalid object type" verdict in the first place.
+      expect(typeof entry.item.brand).toBe('object')
+      expect(entry.item.brand['@type']).toBe('Brand')
+      expect(entry.item.brand.name).toBe('Travio Ghana')
+    }
+  })
+
+  it('gives every Offer the return policy and shipping the report demands', () => {
+    // "Missing field 'hasMerchantReturnPolicy' (in 'offers')" and the same for
+    // 'shippingDetails' were reported against these Products. Both are required
+    // on every offer, on every entry, including the one that has no price.
+    for (const tour of [TOUR, { ...TOUR, startingPrice: null, averageRating: null, reviewCount: 0 }]) {
+      const [entry] = entries(buildHomepageItemListSchema([tour]))
+      const offers = entry.item.offers
+      expect(offers.hasMerchantReturnPolicy).toBeDefined()
+      expect(offers.hasMerchantReturnPolicy['@type']).toBe('MerchantReturnPolicy')
+      expect(offers.shippingDetails).toBeDefined()
+      expect(offers.shippingDetails['@type']).toBe('OfferShippingDetails')
+    }
+  })
+
+  it('publishes the same policy on every entry rather than per-tour copies', () => {
+    // The homepage merges tours from several sections; the policy describes the
+    // merchant, not the tour, so it must not vary by which section won.
+    const schema = buildHomepageItemListSchema([
+      TOUR,
+      { ...TOUR, id: 'a', slug: 'a' },
+      { ...TOUR, id: 'b', slug: 'b', startingPrice: 999 },
+    ])
+    const policies = entries(schema).map((e) => JSON.stringify(e.item.offers.hasMerchantReturnPolicy))
+    expect(new Set(policies).size).toBe(1)
+  })
 })
