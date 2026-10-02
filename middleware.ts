@@ -49,7 +49,8 @@ const SKIP_PATHS = [
  */
 const PRERENDER_ROUTES = new Set([
   '/', '/about-us', '/blog', '/reviews', '/foundation', '/careers',
-  '/partnerships', '/press', '/partner-resources', '/faq', '/help-centre', '/contact-us', '/transport',
+  '/partnerships', '/press', '/partner-resources', '/faq', '/help-centre', '/contact-us',
+  '/payments-and-security', '/transport',
   '/content-creators', '/hotels', '/transport-providers', '/travel-agents',
   '/refund-policy', '/privacy-policy', '/cookies-policy',
   '/terms-and-conditions', '/supplier-terms',

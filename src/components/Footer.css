@@ -60,11 +60,13 @@
   padding-inline: max(32px, calc((100% - 1280px) / 2 + 32px));
 }
 
-/* List an Experience and the supplier application (/supplier/list-experience,
-   /supplier/register): the content column is `.wrap` — min(1200px, 100% - 40px)
-   — the same column the navbar already matches via `body:has(.le-page)`, so the
-   footer follows it too. */
-body:has(.le-page) .footer-container {
+/* List an Experience, the supplier application (/supplier/list-experience,
+   /supplier/register) and Payment and Security (/payments-and-security): the
+   content column is `.wrap` — min(1200px, 100% - 40px) — the same column the
+   navbar already matches via `body:has(.le-page)` / `body:has(.ps-page)`, so
+   the footer follows it too. */
+body:has(.le-page) .footer-container,
+body:has(.ps-page) .footer-container {
   max-width: none;
   padding-inline: max(20px, calc((100% - 1200px) / 2));
 }

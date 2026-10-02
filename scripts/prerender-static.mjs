@@ -83,6 +83,7 @@ const ROUTES = [
   '/faq',
   '/help-centre',
   '/contact-us',
+  '/payments-and-security',
   '/transport',
   '/content-creators',
   '/hotels',
@@ -428,13 +429,31 @@ async function renderRoute(browser, origin, route, { apiOrigins = new Set(), req
 
     // Walk the page so loading="lazy" images have their real src before the
     // HTML is captured, then return to the top.
+    //
+    // The positions are jumped to, not animated to. Any page that sets
+    // `scroll-behavior: smooth` — /payments-and-security does, so its jump nav
+    // animates anchor links — makes `scrollTo` queue an animation instead of
+    // moving, so this walk fell behind its own targets: each 120ms step issued
+    // the next one before the last had arrived, and the walk ended partway down
+    // the page. Anything gated on being scrolled into view never triggered, so
+    // the published HTML captured those sections still mid-animation at
+    // `opacity: 0`. Forcing `auto` for the duration of the walk keeps the dwell
+    // time (and so the lazy-loading behaviour) exactly as it was while making
+    // the walk actually reach the bottom.
     await page.evaluate(async () => {
-      const step = Math.round(window.innerHeight * 0.8)
-      for (let y = 0; y < document.body.scrollHeight; y += step) {
-        window.scrollTo(0, y)
-        await new Promise((r) => setTimeout(r, 120))
+      const root = document.documentElement
+      const previous = root.style.scrollBehavior
+      root.style.scrollBehavior = 'auto'
+      try {
+        const step = Math.round(window.innerHeight * 0.8)
+        for (let y = 0; y < document.body.scrollHeight; y += step) {
+          window.scrollTo(0, y)
+          await new Promise((r) => setTimeout(r, 120))
+        }
+        window.scrollTo(0, 0)
+      } finally {
+        root.style.scrollBehavior = previous
       }
-      window.scrollTo(0, 0)
     })
     await new Promise((r) => setTimeout(r, 400))
 

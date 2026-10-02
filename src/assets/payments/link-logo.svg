@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="30" fill="none" viewBox="0 0 150 30" class="PaymentMethodLogo ">
+  <path fill="var(--paymentMethodLogoColor, url(#paint0_linear_111_10579-payment-method-logo-CartesBancaires))" d="M91.5 0H59a5 5 0 00-5 5v20a5 5 0 005 5h32.5a5 5 0 005-5V5a5 5 0 00-5-5z"/>
+  <path fill="var(--paymentMethodLogoColor, #FFFFFE)" fill-rule="evenodd" d="M67.521 7.5c5.076 0 8.3 2.764 8.51 7.049h-8.242v.884h8.243c-.2 4.284-3.397 7.067-8.51 7.067C62.414 22.5 59 19.684 59 15c0-4.54 3.284-7.5 8.521-7.5zm19.854 7.933c.774 0 1.387.069 1.836.206.45.138.863.38 1.239.726.341.313.6.673.777 1.079.182.429.273.865.273 1.31 0 .445-.09.882-.273 1.31a3.162 3.162 0 01-.777 1.08 3.195 3.195 0 01-1.239.726c-.45.137-1.062.206-1.836.206H76.97v-6.643h10.406zm0-7.509c.774 0 1.387.069 1.836.206.45.137.863.378 1.239.723.341.312.6.671.777 1.077.182.427.273.863.273 1.307 0 .444-.09.88-.273 1.306a3.154 3.154 0 01-.777 1.077 3.195 3.195 0 01-1.239.723c-.45.137-1.062.206-1.836.206H76.97V7.924h10.406z" clip-rule="evenodd"/>
+  <defs>
+    <linearGradient id="paint0_linear_111_10579-payment-method-logo-CartesBancaires" x1="54" x2="89.409" y1="22.474" y2="-2.52" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00A26C"/>
+      <stop offset=".487" stop-color="#007DB5"/>
+      <stop offset="1" stop-color="#003877"/>
+    </linearGradient>
+  </defs>
+  <title>CartesBancaires</title>
+</svg>

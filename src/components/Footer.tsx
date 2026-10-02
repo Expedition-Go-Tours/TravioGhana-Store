@@ -234,6 +234,7 @@ export default function Footer() {
         { to: '/help-centre', label: t('footer.helpCentre') },
         { to: '/contact-us', label: t('footer.contactUs') },
         { to: '/faq', label: t('footer.faq') },
+        { to: '/payments-and-security', label: t('footer.paymentsAndSecurity') },
       ],
     },
     {

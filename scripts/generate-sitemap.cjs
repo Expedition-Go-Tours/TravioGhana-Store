@@ -270,6 +270,9 @@ const STATIC_PAGES = [
   { path: '/faq', priority: 0.5, changefreq: 'monthly' },
   { path: '/help-centre', priority: 0.4, changefreq: 'monthly' },
   { path: '/contact-us', priority: 0.4, changefreq: 'monthly' },
+  // Payment trust page. People search for payment security and refunds by name,
+  // and it is the page the checkout questions are answered on.
+  { path: '/payments-and-security', priority: 0.5, changefreq: 'monthly' },
   // Service and trade landing pages — all prerendered, but they were only
   // reachable by internal links, so nothing told Google to crawl them.
   { path: '/transport', priority: 0.7, changefreq: 'weekly' },
