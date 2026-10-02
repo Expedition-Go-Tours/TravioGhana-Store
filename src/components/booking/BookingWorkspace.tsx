@@ -1123,6 +1123,29 @@ export default function BookingWorkspace({ id, onClose }: { id?: string; onClose
               </div>
             )}
 
+            {/* Cancellation details — shown for cancelled bookings so the supplier
+                sees why the customer cancelled and what happened with the refund. */}
+            {status === 'CANCELLED' && (
+              <div className="ws-manage-section ws-cancel-details">
+                {detail.cancellationReason && (
+                  <>
+                    <p className="ws-manage-label">Cancellation reason</p>
+                    <p className="ws-cancel-reason">{detail.cancellationReason}</p>
+                  </>
+                )}
+                {detail.cancelledAt && (
+                  <p className="ws-cancel-date">
+                    Cancelled: {new Date(detail.cancelledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                )}
+                {detail.refundStatus && detail.refundStatus !== 'NOT_APPLICABLE' && (
+                  <p className="ws-refund-status">
+                    Refund: {detail.refundStatus === 'SUCCEEDED' ? 'Processed' : detail.refundStatus === 'PENDING' ? 'Pending' : detail.refundStatus === 'FAILED' ? 'Failed — contact support' : detail.refundStatus}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Contact provider */}
             {supplierName && (
               <div className="ws-manage-section ws-manage-contact">

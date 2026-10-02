@@ -549,6 +549,35 @@
   color: var(--bv-danger-text);
 }
 
+.ws-cancel-details {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--bv-danger-bg, #fef2f2);
+  border: 1px solid var(--bv-danger-border, #fecaca);
+}
+.ws-cancel-details .ws-manage-label {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bv-danger-text, #991b1b);
+  margin: 0 0 4px;
+}
+.ws-cancel-reason {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--bv-text);
+  margin: 0 0 8px;
+  line-height: 1.5;
+}
+.ws-cancel-date,
+.ws-refund-status {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--bv-text-muted);
+  margin: 4px 0 0;
+}
+
 .ws-contact {
   margin-top: 14px;
   padding-top: 12px;
