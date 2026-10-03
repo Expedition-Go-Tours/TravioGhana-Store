@@ -165,15 +165,29 @@ function useJumpPill(navRef: React.RefObject<HTMLElement | null>, active: string
         setPill((prev) => (prev.visible ? { ...prev, visible: false } : prev))
         return
       }
-      // Bleed the pill past the text so it reads as a chip; the nav's own
-      // padding absorbs the overhang.
+      // Bleed the pill past the text so it reads as a chip.
+      //
+      // Only the vertical axis was ever given it — `w` was `rect.width`, so
+      // the chip was exactly as wide as its words and they sat flush against
+      // both rounded ends. `bleedX` closes that: 10px of side room for 11px/700
+      // text, which also clears the fully-rounded ends (radius is half the pill
+      // height, so the curve takes under 1px across the cap height).
+      //
+      // The padding lives here rather than on the links or on `.wrap`, because
+      // either of those would shift the first item's text to the right — and
+      // this nav deliberately shares x=40 with the logo, the hero eyebrow and
+      // the H1. Keeping it on the pill costs only the overhang, which the page
+      // gutter absorbs.
       const bleed = 6
+      const bleedX = 10
       const wrapRect = wrap.getBoundingClientRect()
       const rect = link.getBoundingClientRect()
+      const pillX = rect.left - wrapRect.left + wrap.scrollLeft - bleedX
+      const pillWidth = rect.width + bleedX * 2
       const next: Pill = {
-        x: rect.left - wrapRect.left + wrap.scrollLeft,
+        x: pillX,
         y: rect.top - wrapRect.top - bleed,
-        w: rect.width,
+        w: pillWidth,
         h: rect.height + bleed * 2,
         visible: true,
       }
@@ -181,11 +195,19 @@ function useJumpPill(navRef: React.RefObject<HTMLElement | null>, active: string
       // On narrow screens the nav scrolls sideways, so the active item — and
       // the pill sitting on it — can be off-screen. Centre it, but only when
       // it is genuinely out of view, so the row never drifts under a reader
-      // who is scrolling through the page. The pill needs no adjustment: it is
-      // positioned in content coordinates, so it travels with the scroll.
-      const offsetInView = rect.left - wrapRect.left
-      if (offsetInView < 0 || offsetInView + rect.width > wrap.clientWidth) {
-        const target = wrap.scrollLeft + offsetInView - (wrap.clientWidth - rect.width) / 2
+      // who is scrolling through the page. Judged on the pill's extent rather
+      // than the link's: the pill is now wider than its link, so a link that
+      // reads as in-view can still have a rounded end hanging outside the
+      // scrollable box. It is positioned in content coordinates, so it travels
+      // with the scroll.
+      // Only worth scrolling when the row actually overflows. If it does not,
+      // there is nothing to bring into view, and a wrap that cannot scroll has
+      // no scroll position to centre against — a pill that overhangs its own
+      // wrap's edge simply paints into the gutter instead.
+      const scrollable = wrap.scrollWidth > wrap.clientWidth
+      const pillLeftInView = rect.left - wrapRect.left - bleedX
+      if (scrollable && (pillLeftInView < 0 || pillLeftInView + pillWidth > wrap.clientWidth)) {
+        const target = wrap.scrollLeft + pillLeftInView - (wrap.clientWidth - pillWidth) / 2
         const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
         wrap.scrollTo({
           left: Math.max(0, Math.min(target, wrap.scrollWidth - wrap.clientWidth)),

@@ -107,8 +107,23 @@ html:has(.ps-page) {
 .ps-page .proof .icon{width:27px;height:27px;color:var(--green);flex:none}
 .ps-page .proof strong{display:block;font-size:13px}
 .ps-page .proof span{font-size:11px;color:var(--muted);display:block;margin-top:4px}
+/* ------------------------------------------------------------
+   The jump nav's wrap clipped whatever it overflowed, and the first and
+   last links sit flush against its own edges (measured: l=0 and r=1200 on
+   the 1200px column). The active pill now bleeds 10px past its link, so
+   with `overflow: auto` those two items lost their rounded ends to the
+   clip whenever they were active.
+
+   Wide viewports never scroll — the labels total 458px against the
+   narrowest 521px column (a 561px viewport) — so dropping the clip costs
+   nothing there and lets the overhang run into the page gutter. Below
+   560px the labels genuinely do overflow, so that block puts the scroll
+   back together with matching horizontal padding: the pill's containing
+   block is the padding box, so the padding is exactly what gives its ends
+   room to exist without being cut.
+   ============================================================ */
 .ps-page .jump{position:sticky;top:0;background:#ffffffed;backdrop-filter:blur(12px);z-index:20;border-bottom:1px solid var(--line);margin-top:25px}
-.ps-page .jump .wrap{display:flex;justify-content:space-between;gap:28px;overflow:auto;padding-top:17px;padding-bottom:17px;white-space:nowrap;font-size:11px;font-weight:700;scrollbar-width:none}
+.ps-page .jump .wrap{display:flex;justify-content:space-between;gap:28px;overflow:visible;padding-top:17px;padding-bottom:17px;white-space:nowrap;font-size:11px;font-weight:700;scrollbar-width:none}
 .ps-page .jump a{flex:none}
 .ps-page .content{padding:94px 0}
 .ps-page .section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:50px;margin-bottom:36px}
@@ -264,6 +279,25 @@ html:has(.ps-page) {
 .ps-page .jump a {
   position: relative;
   z-index: 1;
+}
+/* The row cannot always fit. The labels total 626px — 458px of text plus
+   six 28px flex gaps, and `gap` is a minimum, so `space-between` cannot
+   shrink them below it — against a wrap of `100% - 40px`. Above ~666px it
+   fits and the wrap stays `visible` (set on the base rule), which lets the
+   pill's 10px overhang run into the gutter instead of being clipped and
+   keeps the first label on the page column at x=40 with the logo and H1.
+
+   Below 700px it does not fit, so this restores the scroll container and
+   gives it horizontal padding. The padding is not cosmetic: an absolutely
+   positioned child is clipped at the wrap's *padding* box, so those 10px
+   are exactly what lets the pill's rounded ends exist on the first and
+   last items while the row scrolls. */
+@media (max-width: 700px) {
+  .ps-page .jump .wrap {
+    overflow: auto;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
 }
 .ps-page .jump-pill {
   position: absolute;
