@@ -246,6 +246,25 @@ html:has(.ps-page) {
 .ps-page .jump .wrap {
   position: relative;
 }
+/* ------------------------------------------------------------
+   Stacking order — required, or the pill eats the label.
+
+   The pill is `position: absolute` and the links are `static`, so
+   per CSS 2.1 Appendix E the pill paints in step 6 (positioned
+   descendants) while the link text paints in step 5 (in-flow
+   inline content). The chip therefore rendered *on top of* the
+   active label: measured live at 95% mint / 0% text pixels, i.e.
+   the active item's wording was invisible while it was active.
+
+   `.wrap` needs `position: relative` above so it can position the
+   pill; that alone leaves the links underneath it. Lifting the
+   links back with `position: relative` puts them in the same
+   paint step, after the pill in tree order, so text wins.
+   ============================================================ */
+.ps-page .jump a {
+  position: relative;
+  z-index: 1;
+}
 .ps-page .jump-pill {
   position: absolute;
   left: 0;
@@ -261,8 +280,11 @@ html:has(.ps-page) {
 .ps-page .jump-pill[data-visible='true'] {
   opacity: 1;
 }
+/* Black, not `--green`: the pill already carries the active state, and
+   `--ink` is what the inactive labels use, so 14.84:1 on the mint chip
+   instead of 6.25:1. */
 .ps-page .jump a[aria-current='true'] {
-  color: var(--green);
+  color: var(--ink);
 }
 @media (prefers-reduced-motion: reduce) {
   .ps-page .jump-pill {
