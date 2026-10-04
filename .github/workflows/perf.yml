@@ -12,7 +12,7 @@ jobs:
     env:
       # CI has no local .env. Use the same public catalogue as production so
       # prerendering and the mobile audit do not request /api from Vite.
-      VITE_API_URL: https://apiv1.travioafrica.com/api/travioghana
+      VITE_API_URL: https://apiv1.travioafrica.com/api
     steps:
       - uses: actions/checkout@v4
 
