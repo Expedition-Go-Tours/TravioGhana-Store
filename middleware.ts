@@ -107,6 +107,24 @@ export default function middleware(request: Request) {
   // Let static files pass through
   if (isStatic(pathname)) return
 
+  // Old links with a trailing slash must reach the same public page. The
+  // backend treats /tours/ and /about-us/ as unknown routes and returns 404,
+  // while our sitemap and app use the bare path. Consolidate both visitors
+  // and crawlers before selecting either the prerender or SPA handler.
+  const barePath = pathname.replace(/\/+$/, '') || '/'
+  const isPublicPage = PRERENDER_ROUTES.has(barePath)
+    || barePath === '/tours'
+    || barePath === '/stories'
+    || /^\/stories\/[^/]+$/.test(barePath)
+    || /^\/tour\/[^/]+(?:\/[^/]+)?$/.test(barePath)
+  if (isReadMethod(request.method) && pathname !== barePath && isPublicPage) {
+    url.pathname = barePath
+    return new Response(null, {
+      status: 308,
+      headers: { Location: url.toString() },
+    })
+  }
+
   // Bot detection: rewrite to prerender endpoint
   if (isReadMethod(request.method) && isBot(ua) && !shouldSkip(pathname)) {
     const target = `${pathname}${url.search}`

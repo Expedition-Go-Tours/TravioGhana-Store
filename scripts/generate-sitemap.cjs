@@ -471,18 +471,6 @@ Disallow: /supplier/list-experience
 # fetch or index directly — it would be a duplicate of a live URL.
 Disallow: /__seo/
 
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 Sitemap: ${SITE_URL}/sitemap.xml
 `;
   fs.writeFileSync(path.resolve(__dirname, '../public/robots.txt'), robots, 'utf8');
