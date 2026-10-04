@@ -397,7 +397,11 @@ const escapeHtml = (s) =>
  */
 export function dedupeTitle(html, title) {
   let kept = false
-  return html.replace(/<title[^>]*>[\s\S]*?<\/title>/gi, () => {
+  // Consume comments first: index.html documents the literal `<title>` tag
+  // inside a comment. Matching that text as an element removes the comment's
+  // closing marker and makes the rest of the published document invisible.
+  return html.replace(/<!--[\s\S]*?-->|<title\b[^>]*>[\s\S]*?<\/title\s*>/gi, (match) => {
+    if (match.startsWith('<!--')) return match
     if (kept) return ''
     kept = true
     return `<title>${escapeHtml(title)}</title>`
