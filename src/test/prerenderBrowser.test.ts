@@ -125,6 +125,18 @@ describe('dedupeTitle', () => {
   const FALLBACK = 'Ghana Tours &amp; Activities | Discover Experiences'
   const head = (inner: string) => `<html><head>${inner}</head><body></body></html>`
 
+  it('preserves comment boundaries and leaves the real page visible', () => {
+    const shell = readFileSync(resolve('index.html'), 'utf8')
+    const input = shell.replace('<div id="root"></div>', '<div id="root"><h1>Book Ghana tours</h1></div>')
+      .replace('</head>', '<title>Second title</title></head>')
+    const output = dedupeTitle(input, 'Travio Ghana')
+    const page = new DOMParser().parseFromString(output, 'text/html')
+    expect(page.querySelectorAll('title')).toHaveLength(1)
+    expect(page.title).toBe('Travio Ghana')
+    expect(page.querySelector('h1')?.textContent).toBe('Book Ghana tours')
+    expect(page.querySelector('link[rel="icon"]')?.getAttribute('href')).toBe('/icons/v2/favicon.ico')
+  })
+
   it('keeps only the first title, the one document.title reported', () => {
     const out = dedupeTitle(
       head(`<title>Real Page Title</title><title>${FALLBACK}</title>`),
