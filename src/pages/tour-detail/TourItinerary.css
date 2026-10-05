@@ -31,19 +31,14 @@
 
 /* ───────────── Stops container ───────────── */
 
+/* No left padding: the rail's leftmost edge (the dot) must sit flush with the
+   "Itinerary Preview" section title. This used to indent the whole timeline 20px
+   on >=640px and cancel that indent at <=639px, so the rail sat flush under the
+   heading on phones but 20px right of it on tablet and desktop. */
 .itinerary-stops-simple {
   display: flex;
   flex-direction: column;
   max-width: 720px;
-  padding-left: 20px;
-}
-
-/* Mobile: the timeline rail (dots + connecting lines) aligns flush under the
-   section title instead of the desktop 20px indent. */
-@media (max-width: 639px) {
-  .itinerary-stops-simple {
-    padding-left: 0;
-  }
 }
 
 /* ───────────── Individual stop row ───────────── */
