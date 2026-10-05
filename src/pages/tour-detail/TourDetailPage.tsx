@@ -14,6 +14,7 @@ import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import { useExpeditionTour, useSimilarTours } from '../../hooks/useExpeditionTours'
 import { useSupplierTourCount } from '../../hooks/useSupplierTourCount'
+import { useSupplierTours } from '../../hooks/useSupplierTours'
 import { useExpeditionTourReviews, useCreateReview } from '../../hooks/useExpeditionReviews'
 import {
   useTourExternalReviews,
@@ -1081,15 +1082,23 @@ export default function TourDetailPage() {
     }
   }, [tour, t])
 
-  // Authoritative supplier tour total for the "N tours" label. Falls back to
-  // the similar-row length only until the count request resolves.
+  // Authoritative supplier tour total for the "N tours" label. Left undefined
+  // while in flight so the header omits the count instead of borrowing a number
+  // from an unrelated row.
   const { data: supplierTourCount } = useSupplierTourCount(supplierData?.supplierId)
 
-  // Same full TourCardData as the "similar experiences" row — the Supplier
-  // tab cards must carry the identical props (photos carousel, priceValue for
-  // promo pricing, badges, real slug) so they render the same as everywhere
-  // else. No degradation here.
-  const supplierTours = relatedTours
+  // The supplier's own tours, excluding the tour being viewed. This used to be
+  // aliased to `relatedTours` — the "similar experiences" row — so the Supplier
+  // tab rendered a copy of the rail directly beneath it and a supplier with one
+  // tour still showed six strangers' tours. `useSupplierTourCount` above is the
+  // separate, authoritative count for the "N tours" label; it includes the
+  // current tour, so the label and the cards intentionally differ by one.
+  const { data: supplierToursData } = useSupplierTours(
+    supplierData?.supplierId,
+    tour?.id,
+    8,
+  )
+  const supplierTours = useMemo(() => supplierToursData ?? [], [supplierToursData])
 
   const handleWriteReviewSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -1349,7 +1358,7 @@ export default function TourDetailPage() {
                       logo={supplierData.logo}
                       description={supplierData.description}
                       rating={supplierData.rating}
-                      totalTours={supplierTourCount ?? relatedTours.length}
+                      totalTours={supplierTourCount ?? undefined}
                       email={supplierData.email}
                       verified={supplierData.verified}
                       supplierType={supplierData.supplierType}

@@ -14,7 +14,12 @@ interface SupplierSectionProps {
   logo?: string
   description?: string
   rating: number | null
-  totalTours: number
+  /**
+   * The supplier's own tour count. Optional because it comes from its own
+   * request: while that is in flight the label is omitted rather than filled
+   * with a guess, so the header never claims a number we haven't fetched.
+   */
+  totalTours?: number
   email?: string
   verified?: boolean
   supplierType?: string | null
@@ -142,7 +147,9 @@ export default function SupplierSection({
                     <span className="supplier-dot">&bull;</span>
                   </>
                 )}
-                <span>{t('supplier.tours', { count: totalTours })}</span>
+                {totalTours !== undefined && (
+                  <span>{t('supplier.tours', { count: totalTours })}</span>
+                )}
               </div>
             </div>
           </div>
@@ -209,7 +216,7 @@ export default function SupplierSection({
               </button>
               <div ref={scrollRef} className="supplier-tours-scroll">
                 {tours.map((tour) => (
-                  <div key={tour.title} className="supplier-tour-card-wrap">
+                  <div key={tour.id} className="supplier-tour-card-wrap">
                     <TourCard {...tour} imageClean hideFeatures />
                   </div>
                 ))}
