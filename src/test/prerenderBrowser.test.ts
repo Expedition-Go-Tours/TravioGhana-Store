@@ -92,10 +92,13 @@ describe('prerender browser failure handling', () => {
     expect(source).toMatch(/process\.exit\(1\)/)
   })
 
-  it('still fails soft for everything else, since the backend is the fallback', () => {
-    // A per-route problem (thin page, API blip) must not block a release.
-    expect(source).toMatch(/continuing without static prerender/)
-    expect(source).not.toMatch(/process\.exit\(1\)[^\n]*\n\s*\}\)\n\s*process\.exit/)
+  it('rejects an explicitly skipped prerender instead of deploying missing crawler files', async () => {
+    const { spawnSync } = await import('node:child_process')
+    const run = spawnSync(process.execPath, ['scripts/prerender-static.mjs'], {
+      cwd: ROOT, env: { ...process.env, PRERENDER_SKIP: '1' }, encoding: 'utf8',
+    })
+    expect(run.status).toBe(1)
+    expect(run.stderr).toContain('without generated HTML')
   })
 
   it('installs a browser when none is present, independent of npm install scripts', () => {
