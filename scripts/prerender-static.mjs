@@ -37,8 +37,8 @@
  * renders them from the API per request, which is fresher than any build-time
  * snapshot.
  *
- * Fails soft. A Chromium crash or an API outage must never fail a deploy —
- * the backend prerenderer remains the fallback for every route.
+ * Fails the build when any crawler HTML is missing. Middleware rewrites
+ * these routes directly to generated files and has no runtime fallback.
  *
  * Run via `npm run build` (after `vite build`). Override the list with
  * PRERENDER_ROUTES (comma-separated) when debugging.
@@ -721,12 +721,10 @@ async function ensureBrowser() {
 
 async function main() {
   if (process.env.PRERENDER_SKIP === '1') {
-    console.warn('[prerender] PRERENDER_SKIP=1 — skipped on purpose. Bots get the backend fallback.')
-    return
+    throw new Error('PRERENDER_SKIP would leave crawler routes without generated HTML')
   }
   if (!existsSync(join(DIST(), 'index.html'))) {
-    console.warn('[prerender] dist/index.html not found — run `vite build` first. Skipping.')
-    return
+    throw new Error('dist/index.html not found — run vite build first')
   }
   const routes = process.env.PRERENDER_ROUTES
     ? process.env.PRERENDER_ROUTES.split(',').map((r) => r.trim()).filter(Boolean)
@@ -835,18 +833,14 @@ async function main() {
         '    - the API origin was not resolved (see the warning above)',
         '    - the API rejected the request, or is down',
         '    - a section stopped rendering cards (MountOnView, carousel, skeleton)',
-        '  Set PRERENDER_SKIP=1 to bypass knowingly; the backend still prerenders.',
+        '  Restore the catalogue API before deploying.',
         '',
       ].join('\n')
     )
     process.exit(1)
   }
-  if (results.length === 0) {
-    console.warn(
-      '[prerender] WARNING — every route was rejected. If this is not an API\n' +
-      '             outage, the pages have genuinely gone thin and the site has\n' +
-      '             lost the content this prerender exists to give crawlers.'
-    )
+  if (failures) {
+    throw new Error(`Missing crawler HTML for: ${skipped.map((s) => s.route).join(', ')}`)
   }
 }
 
@@ -865,15 +859,15 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
           '',
           '[prerender] FAILED — no browser, so zero routes were prerendered.',
           `  ${err.message}`,
-          '  dist/__seo/ is empty: every bot will be served the thin fallback and',
-          '  this deploy will undo the fix. Fix the browser, or set',
-          '  PRERENDER_SKIP=1 to opt out knowingly (the backend still prerenders).',
+          '  dist/__seo/ is empty: crawler rewrites would point to missing files.',
+          '  Restore a working browser before deploying.',
           '',
         ].join('\n')
       )
       process.exit(1)
     }
-    // A single bad route must not block a release: the backend still covers it.
-    console.warn(`[prerender] aborted, continuing without static prerender: ${err.message}`)
+    // Missing files would make middleware crawler rewrites fail in production.
+    console.error(`[prerender] FAILED: ${err.message}`)
+    process.exit(1)
   })
 }

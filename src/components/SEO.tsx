@@ -22,6 +22,7 @@ const SITE_NAME = 'Travio Ghana'
 // bookingTour.ts, the supplier forms) with no shared constant behind them. This
 // is the copy the schema reads, not yet the single source for all of them.
 const LEGAL_NAME = 'Expedition-Go Tours Ltd'
+const HOMEPAGE_TITLE = 'Ghana Tours & Activities | Discover Experiences | Book & Explore'
 const DEFAULT_TITLE = 'Ghana Tours & Experiences | Book Authentic African Adventures'
 const DEFAULT_DESCRIPTION = 'Discover authentic Ghana tours and experiences. Book cultural tours, wildlife safaris, food tours, and adventure activities across Accra, Cape Coast, Volta Region, and more. Free cancellation, best prices guaranteed.'
 // Canonical host. MUST match the domain the site actually serves (the other
@@ -109,24 +110,10 @@ export default function SEO({
 }: SEOProps) {
   const location = useLocation()
 
-  // The homepage leads with the brand; inner pages lead with their subject.
-  //
-  // This used to be `${DEFAULT_TITLE} | ${SITE_NAME}` on both paths, which put
-  // the brand last in a three-segment string:
-  //
-  //   Ghana Tours & Experiences | Book Authentic African Adventures | Travio Ghana
-  //
-  // Google renders about 60 characters of a title, so everything after the
-  // second pipe was cut and the brand never appeared in the result at all —
-  // on the query the brand should win outright, "travio ghana". A page whose
-  // title only mentions the brand in its last third reads as a page about
-  // generic Ghana tours, which is how the domain ended up losing its own name
-  // to a YouTube channel and two GitHub repos.
-  //
-  // Ordering stays as it is for a caller-supplied title: `Privacy Policy |
-  // Travio Ghana` is right, because nobody searches "travio ghana" to reach the
-  // privacy policy — those pages compete on their subject, not the brand.
-  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} | ${DEFAULT_TITLE}`
+  const isDefaultHomepage = location.pathname === '/' && !title
+  const fullTitle = isDefaultHomepage
+    ? HOMEPAGE_TITLE
+    : title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} | ${DEFAULT_TITLE}`
   // `place` is the only query parameter that names a real page: /tours?place=Accra
   // is its own destination and its own sitemap entry, and the prerendered copy
   // self-canonicalises to it. Every other parameter (filters, sort, tracking) is
