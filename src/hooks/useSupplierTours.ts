@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { fetchWithAuth } from '../lib/api'
+import { enrichListingCards } from './useHomepageSections'
 import type { TourCardData } from './useExpeditionTours'
 
 /**
@@ -40,6 +41,12 @@ interface SupplierTourRecord {
     startingPrice?: number | null
     currency?: string
     totalBookings?: number
+    /**
+     * Carried by `transformForListing`, but never copied onto the card — so the
+     * scraped-review matcher behind every other rail on the site was gated shut
+     * here and this section showed a hard 0 beside tours rated 4.8 elsewhere.
+     */
+    supplierName?: string | null
     supplier?: { id?: string; name?: string | null; photoURL?: string | null }
   }
 }
@@ -73,6 +80,10 @@ function mapSupplierTourToCard(r: SupplierTourRecord): TourCardData {
     image: t.coverPhoto || t.photos?.[0] || '',
     photos: t.photos,
     source: 'expedition-go',
+    // Not decoration: TourCard hands this straight to useCombinedTourStats,
+    // which only consults the scraped platforms for our own listings. Without
+    // it every card in this rail resolves to "no rating".
+    supplierName: t.supplierName ?? t.supplier?.name ?? null,
     priceValue: t.startingPrice,
   }
 }
@@ -102,7 +113,10 @@ export function useSupplierTours(
       const records: SupplierTourRecord[] = Array.isArray(payload)
         ? payload
         : (payload.data?.tours ?? [])
-      return records.map(mapSupplierTourToCard)
+      // The one listing surface that never ran the badge pass — so it rendered
+      // no difficulty, language, cancellation, pickup or offer while every
+      // section around it showed the full set. See enrichListingCards.
+      return enrichListingCards(records.map(mapSupplierTourToCard))
     },
     staleTime: 5 * 60_000,
   })

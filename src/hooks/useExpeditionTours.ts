@@ -2091,8 +2091,15 @@ export function mapRawTourToListing(t: any): TourCardData {
 // ─── Homepage badge-field enrichment ───────────────────────────────────
 
 /** Badge fields the tour card renders but the homepage endpoints never
- *  project — backfilled client-side from the full /tours listing. */
+ *  project — backfilled client-side from the full /tours listing.
+ *
+ *  `difficulty` belongs here for completeness: /tours/badges has always
+ *  returned it alongside the other six, and the pipeline silently dropped it.
+ *  Surfaces that already carry a difficulty (the homepage ships one on every
+ *  row, the raw /tours listing reads it off the column) are never touched —
+ *  the fill below only ever runs against a hole. */
 export interface TourBadgeFields {
+  difficulty?: string | null
   languages?: string[]
   cancellationPolicy?: string | null
   pickupIncluded?: boolean
@@ -2101,6 +2108,7 @@ export interface TourBadgeFields {
 }
 
 interface BadgeFieldMaps {
+  difficulty: Map<string, string>
   languages: Map<string, string[]>
   cancellation: Map<string, string | null>
   pickup: Map<string, boolean | undefined>
@@ -2111,7 +2119,7 @@ interface BadgeFieldMaps {
 let badgeMapsCache: { promise: Promise<BadgeFieldMaps>; expiresAt: number } | null = null
 
 /**
- * One shared batch fetch of the tour-card badge fields (languages,
+ * One shared batch fetch of the tour-card badge fields (difficulty, languages,
  * cancellation policy, pickup, meeting mode, accommodation) into id-keyed
  * maps. Prefers the lightweight /tours/badges endpoint when the backend
  * serves it, and falls back to the full /tours listing (same extraction as
@@ -2142,6 +2150,7 @@ function getBadgeFieldMaps(): Promise<BadgeFieldMaps> {
 
 function extractBadgeFieldMaps(allTours: any[]): BadgeFieldMaps {
   const maps: BadgeFieldMaps = {
+    difficulty: new Map(),
     languages: new Map(),
     cancellation: new Map(),
     pickup: new Map(),
@@ -2152,6 +2161,8 @@ function extractBadgeFieldMaps(allTours: any[]): BadgeFieldMaps {
     const bt = parseJsonMaybe(t.bookingAndTickets)
     // The badges endpoint returns pre-extracted fields; the full listing
     // needs the same extraction the listing mappers use.
+    const difficulty = extractDifficultyFromTour(t)
+    if (difficulty) maps.difficulty.set(t.id, difficulty)
     const languages = Array.isArray(t.languages) && t.languages.length ? t.languages : extractContentLanguage(t)
     if (languages?.length) maps.languages.set(t.id, languages)
     const cancellation = t.cancellationPolicy ?? extractCancellationFromTour(t)
@@ -2166,8 +2177,8 @@ function extractBadgeFieldMaps(allTours: any[]): BadgeFieldMaps {
 }
 
 /**
- * Backfill the tour-card badge fields (languages, cancellation policy,
- * pickup, meeting mode, accommodation) onto a list of tours that the
+ * Backfill the tour-card badge fields (difficulty, languages, cancellation
+ * policy, pickup, meeting mode, accommodation) onto a list of tours that the
  * homepage endpoints return in their slim shape. Fields the tour already
  * carries are never clobbered; tours with no match in the full listing (or
  * when the listing fetch fails) come back unchanged.
@@ -2182,17 +2193,22 @@ export async function enrichTourBadgeFields<T extends { id: string } & TourBadge
     return tours
   }
   return tours.map((tour) => {
+    const difficulty = maps.difficulty.get(tour.id)
     const languages = maps.languages.get(tour.id)
     const cancellation = maps.cancellation.get(tour.id)
     const pickup = maps.pickup.get(tour.id)
     const meetingMode = maps.meetingMode.get(tour.id)
     const accommodation = maps.accommodation.get(tour.id)
+    // The short-circuit has to list every field: a tour whose only available
+    // fact is difficulty used to fall out here and never reach the fill below.
     if (
+      !difficulty &&
       !languages?.length && !cancellation && pickup == null && !meetingMode && !accommodation
     ) {
       return tour
     }
     const enriched: any = { ...tour }
+    if (!tour.difficulty && difficulty) enriched.difficulty = difficulty
     if (!tour.languages?.length && languages?.length) enriched.languages = languages
     if (!tour.cancellationPolicy && cancellation) enriched.cancellationPolicy = cancellation
     if (tour.pickupIncluded == null && pickup != null) enriched.pickupIncluded = pickup

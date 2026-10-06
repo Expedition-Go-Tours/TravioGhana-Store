@@ -12,7 +12,7 @@ import { useQuery } from '@tanstack/react-query'
 import { fetchWithAuth } from '../lib/api'
 import { getStoredLocation } from '../lib/analytics'
 import { enrichTourBadgeFields } from './useExpeditionTours'
-import type { TourCardData } from './useExpeditionTours'
+import type { TourBadgeFields, TourCardData } from './useExpeditionTours'
 
 // â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -243,6 +243,24 @@ export function applyOffersById<T extends { id: string }>(tours: T[], byId: Map<
 /** Merge the cached /homepage/offers list onto a tour array by id. */
 export async function mergeOffersIntoTours<T extends { id: string }>(tours: T[]): Promise<T[]> {
   return applyOffersById(tours, await getOffersByIdMap())
+}
+
+/**
+ * Raw listing rows in, card-ready rows out: badge fields first, live offers
+ * second, so the offer pass can never be dropped by a badge one.
+ *
+ * Every card surface needs both, and writing the two calls by hand at each
+ * site is exactly how the supplier rail came to render with no badges and no
+ * offer at all while the sections beside it were complete. New listing
+ * surfaces should end their query with this and nothing else; the
+ * badge-only and offer-only steps stay exported for the places that already
+ * hold one half (the supplier page derives its badges from the raw row and
+ * needs only the offers, for instance).
+ */
+export async function enrichListingCards<T extends { id: string } & TourBadgeFields>(
+  tours: T[],
+): Promise<T[]> {
+  return mergeOffersIntoTours(await enrichTourBadgeFields(tours))
 }
 
 /**

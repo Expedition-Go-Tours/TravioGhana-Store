@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiFetch } from '../lib/api'
 import { mapRawTourToListing, type TourCardData } from './useExpeditionTours'
+import { mergeOffersIntoTours } from './useHomepageSections'
 import { resolveSupplierProfileTour, type SupplierIdentity } from '../lib/supplierResolution'
 import type { RawSupplierTour } from '../lib/supplierProfile'
 
@@ -66,7 +67,11 @@ export function useSupplierTours(supplierId: string | null) {
         if (!batch.length || !payload?.pagination?.hasNextPage) break
       }
 
-      return { tours, totalCount }
+      // Badge fields already come off the raw row here (bookingAndTickets,
+      // productContent, categorization), so this needs only the offer pass —
+      // the raw rows carry no specialOfferTargets, which left the grid as the
+      // one listing without an offer badge on a tour that has one.
+      return { tours: await mergeOffersIntoTours(tours), totalCount }
     },
     staleTime: 60_000,
   })
