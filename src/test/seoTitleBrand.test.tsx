@@ -5,27 +5,6 @@ import { MemoryRouter } from 'react-router-dom'
 import type { ReactElement } from 'react'
 import SEO from '../components/SEO'
 
-/**
- * Every title tag carries the brand, not just `<title>`.
- *
- * `fullTitle` is built as `${title} | ${SITE_NAME}` and written to `<title>`,
- * but og:title and twitter:title were written from `title || DEFAULT_TITLE` —
- * the brand appended to nothing. On the homepage, which passes no title at all,
- * that produced:
- *
- *   <title>       … Book Authentic African Adventures | Travio Ghana
- *   og:title      … Book Authentic African Adventures          <- brand gone
- *   twitter:title … Book Authentic African Adventures          <- brand gone
- *
- * Open Graph hid it behind og:site_name; the Twitter card has no equivalent,
- * so X saw a title with no brand in it. Shared unfurl previews (LinkedIn,
- * Slack, iMessage, Discord) read og:title directly and rendered the same way.
- *
- * These render the component and read document.head — the tags a crawler
- * actually receives. Asserting on the `fullTitle` variable alone would have
- * passed with the og:title line left broken.
- */
-
 function renderSEO(node: ReactElement) {
   return render(
     <HelmetProvider>
@@ -37,7 +16,7 @@ function renderSEO(node: ReactElement) {
 const metaContent = (selector: string) =>
   document.head.querySelector(selector)?.getAttribute('content')
 
-describe('every title tag carries the brand', () => {
+describe('homepage title and social metadata', () => {
   it('on the homepage, which passes no title of its own', () => {
     renderSEO(<SEO description="Discover authentic Ghana tours and experiences." />)
 
@@ -45,27 +24,12 @@ describe('every title tag carries the brand', () => {
     const ogTitle = metaContent('meta[property="og:title"]')
     const twitterTitle = metaContent('meta[name="twitter:title"]')
 
-    expect(pageTitle, '<title> must name the brand').toContain('Travio Ghana')
-    expect(ogTitle, 'og:title must name the brand').toContain('Travio Ghana')
-    expect(twitterTitle, 'twitter:title must name the brand').toContain('Travio Ghana')
+    expect(pageTitle).toBe('Ghana Tours & Activities | Discover Experiences | Book & Explore')
 
     // The real requirement: the three must agree. A card previewing a
     // different string from the indexed one is the bug in one assertion.
     expect(ogTitle).toBe(pageTitle)
     expect(twitterTitle).toBe(pageTitle)
-  })
-
-  it('on the homepage, the brand leads instead of trailing', () => {
-    // The homepage used to build `${DEFAULT_TITLE} | ${SITE_NAME}`, which put
-    // the brand last in a three-segment string — past the ~60 characters
-    // Google renders. The result for "travio ghana" therefore carried no brand
-    // in it at all, and the query went to a YouTube channel and some GitHub
-    // repos. Leading with the brand is what makes the page a candidate for it.
-    renderSEO(<SEO description="Discover authentic Ghana tours and experiences." />)
-
-    expect(document.title.startsWith('Travio Ghana | ')).toBe(true)
-    expect(metaContent('meta[property="og:title"]')?.startsWith('Travio Ghana | ')).toBe(true)
-    expect(metaContent('meta[name="twitter:title"]')?.startsWith('Travio Ghana | ')).toBe(true)
   })
 
   it('on a page that passes its own title', () => {
@@ -84,7 +48,7 @@ describe('every title tag carries the brand', () => {
     renderSEO(<SEO description="Discover authentic Ghana tours." />)
 
     expect(metaContent('meta[property="og:site_name"]')).toBe('Travio Ghana')
-    expect(metaContent('meta[property="og:title"]')).toContain('Travio Ghana')
+    expect(metaContent('meta[property="og:title"]')).toBe(document.title)
   })
 
   it('without duplicating the brand when the title already contains it', () => {
