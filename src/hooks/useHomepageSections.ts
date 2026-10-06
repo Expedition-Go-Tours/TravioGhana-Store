@@ -168,6 +168,11 @@ export function useHomepage({ enabled = true } = {}) {
         trending: applyOffersById(await enrichTourBadgeFields(data.trending), byId),
         new: applyOffersById(await enrichTourBadgeFields(newRowsOf(data)), byId),
         offers: await enrichTourBadgeFields(data.offers),
+        recommendedBackfill: await enrichBackfill(data.recommendedBackfill, byId),
+        topRatedBackfill: await enrichBackfill(data.topRatedBackfill, byId),
+        sellOutBackfill: await enrichBackfill(data.sellOutBackfill, byId),
+        newExperiencesBackfill: await enrichBackfill(data.newExperiencesBackfill, byId),
+        trendingBackfill: await enrichBackfill(data.trendingBackfill, byId),
       }
     },
     staleTime: 5 * 60 * 1000,
@@ -238,6 +243,23 @@ export function applyOffersById<T extends { id: string }>(tours: T[], byId: Map<
 /** Merge the cached /homepage/offers list onto a tour array by id. */
 export async function mergeOffersIntoTours<T extends { id: string }>(tours: T[]): Promise<T[]> {
   return applyOffersById(tours, await getOffersByIdMap())
+}
+
+/**
+ * Run the badge and offer pipeline over a scoped section's "nearby rail".
+ *
+ * Only a section's own rows were being enriched — the backend ships the rail as
+ * a separate `*Backfill` slice that the `...data` spread passes through
+ * untouched, and every section maps it straight onto cards. So a scoped section
+ * rendered its local rows with the full badge set and the rail behind them with
+ * difficulty alone: no pickup, language or cancellation, and no offer.
+ */
+async function enrichBackfill(
+  backfill: HomepageBackfill | null | undefined,
+  byId: Map<string, SpecialOfferData[]>,
+): Promise<HomepageBackfill | null | undefined> {
+  if (!backfill?.tours?.length) return backfill
+  return { ...backfill, tours: applyOffersById(await enrichTourBadgeFields(backfill.tours), byId) }
 }
 
 // â”€â”€â”€ Hooks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -521,6 +543,11 @@ export function useHomepageByCity(city: string | null) {
         trending: applyOffersById(await enrichTourBadgeFields(data.trending), byId),
         new: applyOffersById(await enrichTourBadgeFields(newRowsOf(data)), byId),
         offers: await enrichTourBadgeFields(data.offers),
+        recommendedBackfill: await enrichBackfill(data.recommendedBackfill, byId),
+        topRatedBackfill: await enrichBackfill(data.topRatedBackfill, byId),
+        sellOutBackfill: await enrichBackfill(data.sellOutBackfill, byId),
+        newExperiencesBackfill: await enrichBackfill(data.newExperiencesBackfill, byId),
+        trendingBackfill: await enrichBackfill(data.trendingBackfill, byId),
         city: data.city || city,
       }
     },
