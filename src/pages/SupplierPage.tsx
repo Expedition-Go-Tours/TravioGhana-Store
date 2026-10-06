@@ -379,21 +379,19 @@ export default function SupplierPage() {
               </div>
             </div>
 
-            <div className="supplier-rail-card">
-              {toursLoading && railTours.length === 0 ? (
-                <p className="supplier-rail-loading">{t('supplier.loadingTours')}</p>
-              ) : (
-                <div className="supplier-rail-clip">
-                  <div className="supplier-rail" ref={tourRailRef}>
-                    {railTours.map((tour, i) => (
-                      <div key={`${tour.id}-${i}`} className="supplier-card-wrap">
-                        <TourCard {...tour} imageClean hideFeatures priority={i === 0} />
-                      </div>
-                    ))}
-                  </div>
+            {toursLoading && railTours.length === 0 ? (
+              <p className="supplier-rail-loading">{t('supplier.loadingTours')}</p>
+            ) : (
+              <div className="supplier-rail-clip">
+                <div className="supplier-rail" ref={tourRailRef}>
+                  {railTours.map((tour, i) => (
+                    <div key={`${tour.id}-${i}`} className="supplier-card-wrap">
+                      <TourCard {...tour} imageClean hideFeatures priority={i === 0} />
+                    </div>
+                  ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </section>
         )}
 
