@@ -16,6 +16,7 @@ import HomeSectionSkeleton from './components/HomeSectionSkeleton'
 import SupportPageSkeleton from './components/support/SupportPageSkeleton'
 import HistorySections from './components/HistorySections'
 import PreviousSearchSections from './components/PreviousSearchSections'
+import ConnectivityToaster from './components/ConnectivityToaster'
 
 import Footer from './components/Footer'
 import MountOnView from './components/MountOnView'
@@ -336,6 +337,10 @@ function AppContent() {
   return (
     <>
       <Toaster position="top-center" duration={2500} closeButton />
+      {/* Offline/online status toasts — separate react-hot-toast stack at the
+          bottom so the red/green connectivity messages never mix with the
+          app's regular sonner toasts. */}
+      <ConnectivityToaster />
       {!hideNav && <Navbar onOpenAuth={handleOpenAuth} />}
       {/* Route shell: keyed so each navigation mounts a fresh subtree, but NOT
           animated to opacity 0 — an interrupted fade used to leave the new

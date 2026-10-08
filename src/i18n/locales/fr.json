@@ -159,6 +159,10 @@
     "viewDetails": "Voir les détails",
     "goBack": "Revenir en arrière"
   },
+  "connectivity": {
+    "offline": "Vous êtes actuellement hors ligne",
+    "online": "Vous êtes actuellement en ligne"
+  },
   "destinations": {
     "allRegions": "Toutes les régions",
     "destination": "destination",

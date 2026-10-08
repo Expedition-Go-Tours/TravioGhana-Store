@@ -168,6 +168,10 @@
     "viewDetails": "View details",
     "goBack": "Go back"
   },
+  "connectivity": {
+    "offline": "You are currently offline",
+    "online": "You are currently online"
+  },
   "destinations": {
     "allRegions": "All Regions",
     "destination": "destination",

@@ -159,6 +159,10 @@
     "viewDetails": "Details ansehen",
     "goBack": "Zurückgehen"
   },
+  "connectivity": {
+    "offline": "Sie sind derzeit offline",
+    "online": "Sie sind derzeit online"
+  },
   "destinations": {
     "allRegions": "Alle Regionen",
     "destination": "Reiseziel",

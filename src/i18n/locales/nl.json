@@ -159,6 +159,10 @@
     "viewDetails": "Details bekijken",
     "goBack": "Teruggaan"
   },
+  "connectivity": {
+    "offline": "Je bent momenteel offline",
+    "online": "Je bent momenteel online"
+  },
   "destinations": {
     "allRegions": "Alle regio's",
     "destination": "bestemming",
