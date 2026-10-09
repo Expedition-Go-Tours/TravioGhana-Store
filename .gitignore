@@ -12,6 +12,9 @@ node_modules/
 .kiro
 opencode.json
 
+# Vercel CLI project link (contains org/project IDs) — created by `vercel link`
+.vercel/
+
 Expedition-Go-Backend-v2/
 Expedition-Go-Backend/
 Expedition-Go-Dashboard/
@@ -28,6 +31,8 @@ IMPLEMENTATION_SUMMARY.md
 # The repo README is the one markdown file that must be tracked; the
 # analysis notes above stay ignored by the blanket *.md rule.
 !README.md
+# Developer workflow docs that are intentionally tracked.
+!docs/vercel-local-dev.md
 # Logs
 logs/
 *.log

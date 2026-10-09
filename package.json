@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "preview": "vite preview",
+    "vercel:dev": "vercel dev",
     "perf:mobile": "node scripts/perf/audit-mobile.mjs",
     "generate-favicons": "node generate-favicons.js",
     "extract": "i18next-parser",
@@ -86,6 +87,7 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.62.0",
+    "vercel": "^63.1.0",
     "vite": "^8.1.1"
   }
 }
