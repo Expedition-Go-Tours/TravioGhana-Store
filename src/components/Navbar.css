@@ -163,7 +163,7 @@ body:has(.story-detail) .navbar-compact-search {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  box-shadow: 0 0 0 4px rgba(23, 146, 55, 0.08);
+  box-shadow: 0 0 0 3px rgba(23, 146, 55, 0.08);
   opacity: 0;
   pointer-events: none;
   animation: search-glow-fade 1.6s ease-in-out infinite;
@@ -176,15 +176,15 @@ body:has(.story-detail) .navbar-compact-search {
   width: 100%;
   max-width: 640px;
   border-radius: 999px;
-  border: 2px solid rgba(23, 146, 55, 0.2);
+  border: 1px solid rgba(23, 146, 55, 0.2);
   background: #fff;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(23, 146, 55, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .navbar-search-form.focused {
   border-color: rgba(23, 146, 55, 0.5);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 0 0 3px rgba(23, 146, 55, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 0 0 2px rgba(23, 146, 55, 0.1);
 }
 
 .navbar-search-inner {
