@@ -3,6 +3,7 @@ import { render, screen, fireEvent, act } from '@testing-library/react'
 import PickupSelectModal from './PickupSelectModal'
 import { useLocationAutocomplete } from '@/hooks/useLocationAutocomplete'
 import type { LocationResult } from '@/hooks/useLocationAutocomplete'
+import { reverseGeocode } from '@/lib/locations'
 
 vi.mock('@/hooks/useLocationAutocomplete', () => ({
   useLocationAutocomplete: vi.fn(() => ({
@@ -13,6 +14,10 @@ vi.mock('@/hooks/useLocationAutocomplete', () => ({
     loading: false,
     error: null,
   })),
+}))
+
+vi.mock('@/lib/locations', () => ({
+  reverseGeocode: vi.fn(),
 }))
 
 // Capture the props handed to LocationMap so tests can fire the map's
@@ -28,6 +33,7 @@ vi.mock('./LocationMap', () => ({
 }))
 
 const mockAutocomplete = vi.mocked(useLocationAutocomplete)
+const mockReverseGeocode = vi.mocked(reverseGeocode)
 
 const searchResult: LocationResult = {
   formatted: 'Accra Mall, Spintex Road, Accra, Ghana',
@@ -91,6 +97,7 @@ beforeEach(() => {
     loading: false,
     error: null,
   })
+  mockReverseGeocode.mockResolvedValue(null)
 })
 
 describe('PickupSelectModal search', () => {
@@ -432,5 +439,56 @@ describe('PickupSelectModal search', () => {
     fireEvent.click(screen.getByText('Osu'))
     expect(screen.queryByRole('link', { name: /Open in Google Maps/ })).not.toBeInTheDocument()
     expect(mapProps.current.route).toBeUndefined()
+  })
+
+  it('places a pin from a pasted Google Maps link and commits its coordinates', async () => {
+    mockReverseGeocode.mockResolvedValueOnce(null)
+    const onContactChange = vi.fn()
+    render(<PickupSelectModal {...baseProps} onContactChange={onContactChange} />)
+    const input = screen.getByPlaceholderText('Search for your address…')
+
+    fireEvent.change(input, { target: { value: 'Kaneshie Market' } })
+    fireEvent.click(screen.getByText(/Paste a Google Maps link/))
+
+    const textarea = screen.getByLabelText('Google Maps link')
+    fireEvent.change(textarea, {
+      target: { value: 'https://www.google.com/maps/place/Kaneshie+Market/@5.5735,-0.2456,17z' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Place Pin/ }))
+
+    // The pin lands in the left-panel "Your location" row with its coordinates.
+    await screen.findByText('Your location')
+    expect(screen.getAllByText('5.57350, -0.24560').length).toBeGreaterThanOrEqual(1)
+    expect(screen.queryByLabelText('Google Maps link')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /Select/ }))
+    expect(onContactChange).toHaveBeenCalledWith('location', 'Kaneshie Market')
+    expect(onContactChange).toHaveBeenCalledWith('pickupLat', 5.5735)
+    expect(onContactChange).toHaveBeenCalledWith('pickupLng', -0.2456)
+  })
+
+  it('uses the reverse-geocoded address as the label for a pasted link', async () => {
+    mockReverseGeocode.mockResolvedValueOnce({
+      formatted: 'Kaneshie Market Road, Accra, Ghana',
+      latitude: 5.5735,
+      longitude: -0.2456,
+      city: 'Accra',
+      country: 'Ghana',
+      region: 'Greater Accra Region',
+    })
+    const onContactChange = vi.fn()
+    render(<PickupSelectModal {...baseProps} onContactChange={onContactChange} />)
+    const input = screen.getByPlaceholderText('Search for your address…')
+
+    fireEvent.change(input, { target: { value: 'Kaneshie Market' } })
+    fireEvent.click(screen.getByText(/Paste a Google Maps link/))
+    fireEvent.change(screen.getByLabelText('Google Maps link'), { target: { value: '5.5735, -0.2456' } })
+    fireEvent.click(screen.getByRole('button', { name: /Place Pin/ }))
+
+    await screen.findByText('Your location')
+    fireEvent.click(screen.getByRole('button', { name: /Select/ }))
+    expect(onContactChange).toHaveBeenCalledWith('location', 'Kaneshie Market Road, Accra, Ghana')
+    expect(onContactChange).toHaveBeenCalledWith('pickupLat', 5.5735)
+    expect(onContactChange).toHaveBeenCalledWith('pickupLng', -0.2456)
   })
 })

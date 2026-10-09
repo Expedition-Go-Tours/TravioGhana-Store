@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertTriangle, Car, Check, ChevronDown, Clock, Compass, List, Loader2, MapPin, Pencil, RefreshCw, Search, X } from 'lucide-react'
+import { AlertTriangle, Car, Check, ChevronDown, Clock, Compass, Link2, List, Loader2, MapPin, Pencil, RefreshCw, Search, X } from 'lucide-react'
 import { reverseGeocode } from '@/lib/locations'
 import { pinMatchesSelection } from '@/lib/mapUtils'
 import DirectionsPanel from './DirectionsPanel'
@@ -10,6 +10,7 @@ import type { ResolveTourSource, ResolvedTourPoint } from '@/lib/resolvePoints'
 import type { PickupZoneMapTour } from './PickupZoneMap'
 import LocationMap from './LocationMap'
 import MapErrorBoundary from './MapErrorBoundary'
+import PasteMapsLinkPanel, { type PastedPinLocation } from './PasteMapsLinkPanel'
 
 export interface PickupSelectModalTour {
   meetingMode?: 'meeting_point' | 'pickup' | 'none'
@@ -116,6 +117,8 @@ function PickupSelectModalContent({
   const [searchHighlight, setSearchHighlight] = useState(-1)
   const [searchMarker, setSearchMarker] = useState<{ lat: number; lng: number } | null>(null)
   const [searchCommitted, setSearchCommitted] = useState(false)
+  /** True while the dropdown shows the "paste a Google Maps link" panel. */
+  const [pasteOpen, setPasteOpen] = useState(false)
   /** True when the searched address falls outside the supplier's pickup zone. */
   const [searchOutOfRange, setSearchOutOfRange] = useState(false)
   /** True when the searched address is confirmed inside a pickup zone. */
@@ -237,6 +240,7 @@ function PickupSelectModalContent({
     setSelectedId(null)
     setSearchQuery('')
     setSearchOpen(false)
+    setPasteOpen(false)
     setSearchHighlight(-1)
     setSearchCommitted(true)
     setDragPreview(null)
@@ -252,6 +256,20 @@ function PickupSelectModalContent({
     }
   }
 
+  // "Place Pin" from a pasted Google Maps link: apply the parsed coordinates
+  // exactly like a search suggestion (pin + zone verdict on the map), with the
+  // reverse-geocoded label (or place name inside the link) as its address.
+  const applyPastedLocation = (location: PastedPinLocation): void => {
+    selectSearchResult({
+      formatted: location.label,
+      latitude: location.lat,
+      longitude: location.lng,
+      city: '',
+      country: '',
+      region: '',
+    })
+  }
+
   // Manual fallback: commit exactly what the traveller typed (no coords → no pin).
   const commitSearchManual = (value: string): void => {
     const v = value.trim()
@@ -260,6 +278,7 @@ function PickupSelectModalContent({
     setSearchCommitted(true)
     setSearchQuery('')
     setSearchOpen(false)
+    setPasteOpen(false)
     setSearchHighlight(-1)
     setSearchOutOfRange(false)
     setSearchInZone(false)
@@ -271,6 +290,7 @@ function PickupSelectModalContent({
   const handleSearchInput = (v: string): void => {
     setSearchQuery(v)
     setSearchHighlight(-1)
+    setPasteOpen(false)
     // Editing the text invalidates the previously pinned search result.
     setSearchMarker(null)
     setSearchCommitted(false)
@@ -316,6 +336,7 @@ function PickupSelectModalContent({
         break
       case 'Escape':
         setSearchOpen(false)
+        setPasteOpen(false)
         setSearchHighlight(-1)
         break
       default:
@@ -328,6 +349,7 @@ function PickupSelectModalContent({
     const handleClickOutside = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setSearchOpen(false)
+        setPasteOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -613,6 +635,12 @@ function PickupSelectModalContent({
           </div>
 
           {searchOpen && (
+            pasteOpen ? (
+              <PasteMapsLinkPanel
+                className="absolute inset-x-5 top-full z-50 mt-1"
+                onApply={applyPastedLocation}
+              />
+            ) : (
             <ul
               id="pickup-search-listbox"
               role="listbox"
@@ -670,6 +698,25 @@ function PickupSelectModalContent({
                     </div>
                   </li>
                 ))}
+              {/* Paste a Google Maps link — pin the exact spot from the link. */}
+              <li
+                role="option"
+                aria-selected={false}
+                onClick={() => {
+                  setPasteOpen(true)
+                  setSearchHighlight(-1)
+                }}
+                onMouseDown={(e) => e.preventDefault()}
+                className="cursor-pointer border-t border-slate-100 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50"
+              >
+                <div className="flex items-start gap-2.5">
+                  <Link2 size={14} className="mt-0.5 shrink-0 text-slate-400" />
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">Can’t find your location? Paste a Google Maps link</div>
+                    <div className="mt-0.5 text-xs text-slate-400">We’ll place the pin at the exact spot from the link.</div>
+                  </div>
+                </div>
+              </li>
               {!searching && searchQuery.trim().length >= 3 && (
                 <li
                   role="option"
@@ -691,6 +738,7 @@ function PickupSelectModalContent({
                 </li>
               )}
             </ul>
+            )
           )}
 
           {/* Out-of-zone caution for the searched address — the choice is

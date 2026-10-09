@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Search, MapPin, Loader2, AlertTriangle, RefreshCw, Check, X, Pencil, LocateFixed } from 'lucide-react'
+import { Search, MapPin, Loader2, AlertTriangle, RefreshCw, Check, X, Pencil, Link2, LocateFixed } from 'lucide-react'
 import { toast } from 'sonner'
 import { useLocationAutocomplete, type LocationSuggestion } from '../../hooks/useLocationAutocomplete'
 import { useLocationSharing } from '../../hooks/useLocationSharing'
 import { reverseGeocode } from '../../lib/locations'
+import PasteMapsLinkPanel, { type PastedPinLocation } from './PasteMapsLinkPanel'
 
 interface LocationPickerProps {
   value: string
@@ -53,6 +54,8 @@ export default function LocationPicker({
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
   const [selected, setSelected] = useState<LocationSuggestion | null>(null)
   const [locating, setLocating] = useState(false)
+  /** True while the dropdown shows the "paste a Google Maps link" panel. */
+  const [pasteOpen, setPasteOpen] = useState(false)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -78,6 +81,7 @@ export default function LocationPicker({
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false)
+        setPasteOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -88,6 +92,7 @@ export default function LocationPicker({
     setSelected(suggestion)
     setQuery(suggestion.formatted)
     setOpen(false)
+    setPasteOpen(false)
     setHighlightedIndex(-1)
     onChangeRef.current(suggestion.formatted)
     onCoordsChangeRef.current?.(suggestion.latitude ?? null, suggestion.longitude ?? null)
@@ -137,17 +142,41 @@ export default function LocationPicker({
     setSelected(null)
     setQuery(v)
     setOpen(false)
+    setPasteOpen(false)
     setHighlightedIndex(-1)
     onChangeRef.current(v)
     // A manually typed location has no coordinates to pin on the map.
     onCoordsChangeRef.current?.(null, null)
   }, [])
 
+  // "Place Pin" from a pasted Google Maps link: the parsed coordinates are
+  // committed exactly like a chosen suggestion — pin on the map, zone verdict,
+  // and the reverse-geocoded label (or the place name in the link) as the
+  // pickup location text.
+  const applyPastedLocation = useCallback((location: PastedPinLocation) => {
+    setSelected({
+      formatted: location.label,
+      latitude: location.lat,
+      longitude: location.lng,
+      city: '',
+      country: '',
+      region: '',
+    })
+    setQuery(location.label)
+    setOpen(false)
+    setPasteOpen(false)
+    setHighlightedIndex(-1)
+    onChangeRef.current(location.label)
+    onCoordsChangeRef.current?.(location.lat, location.lng)
+    clear()
+  }, [clear])
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = e.target.value
     setQuery(v)
     onChangeRef.current(v)
     setHighlightedIndex(-1)
+    setPasteOpen(false)
     if (v.trim().length >= 3) {
       search(v)
       setOpen(true)
@@ -175,6 +204,7 @@ export default function LocationPicker({
     onCoordsChangeRef.current?.(null, null)
     clear()
     setOpen(false)
+    setPasteOpen(false)
     inputRef.current?.focus()
   }
 
@@ -214,6 +244,7 @@ export default function LocationPicker({
         break
       case 'Escape':
         setOpen(false)
+        setPasteOpen(false)
         setHighlightedIndex(-1)
         break
       default:
@@ -296,9 +327,15 @@ export default function LocationPicker({
         </button>
       )}
 
-      {/* Geoapify suggestions dropdown. */}
+      {/* Suggestions dropdown — or the "paste a Google Maps link" panel. */}
       {open && (
         <div className="relative z-20">
+          {pasteOpen ? (
+            <PasteMapsLinkPanel
+              className="absolute z-30 mt-1 w-full"
+              onApply={applyPastedLocation}
+            />
+          ) : (
           <ul
             id="location-listbox"
             ref={listRef}
@@ -358,6 +395,25 @@ export default function LocationPicker({
                   </div>
                 </li>
               ))}
+            {/* Paste a Google Maps link — pin the exact spot from the link. */}
+            <li
+              role="option"
+              aria-selected={false}
+              onClick={() => {
+                setPasteOpen(true)
+                setHighlightedIndex(-1)
+              }}
+              onMouseDown={(e) => e.preventDefault()}
+              className="cursor-pointer border-t border-slate-100 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50"
+            >
+              <div className="flex items-start gap-2.5">
+                <Link2 size={14} className="mt-0.5 shrink-0 text-slate-400" />
+                <div className="min-w-0">
+                  <div className="truncate font-medium">Can’t find your location? Paste a Google Maps link</div>
+                  <div className="mt-0.5 text-xs text-slate-400">We’ll place the pin at the exact spot from the link.</div>
+                </div>
+              </div>
+            </li>
             {/* Manual fallback: whenever the user has typed a location, let them
                 commit exactly what they typed — even when autocomplete returned
                 nothing or the lookup failed. */}
@@ -382,6 +438,7 @@ export default function LocationPicker({
               </li>
             )}
           </ul>
+          )}
         </div>
       )}
 

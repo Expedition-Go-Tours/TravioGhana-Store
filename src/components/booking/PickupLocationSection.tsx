@@ -243,7 +243,7 @@ export default function PickupLocationSection({
           ? 'This location is outside the pickup zone.'
           : 'This address is not inside your pickup area.'
         : zoneStatus === 'no_coords' && geofenced && contact.location.trim().length >= 3
-          ? 'Pick an address from the suggestions to confirm it is inside the zone.'
+          ? 'We couldn’t map this address — paste a Google Maps link above, or drag the pin on the map, to set your exact pickup spot.'
           : geofenced
             ? 'Enter an address inside the pickup zone.'
             : 'Please enter your pickup location'

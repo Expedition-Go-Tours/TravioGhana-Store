@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import LocationPicker from './LocationPicker'
 import { useLocationAutocomplete } from '../../hooks/useLocationAutocomplete'
 import type { LocationResult } from '../../hooks/useLocationAutocomplete'
+import { reverseGeocode } from '../../lib/locations'
 
 vi.mock('../../hooks/useLocationAutocomplete', () => ({
   useLocationAutocomplete: vi.fn(() => ({
@@ -15,7 +16,12 @@ vi.mock('../../hooks/useLocationAutocomplete', () => ({
   })),
 }))
 
+vi.mock('../../lib/locations', () => ({
+  reverseGeocode: vi.fn(),
+}))
+
 const mockAutocomplete = vi.mocked(useLocationAutocomplete)
+const mockReverseGeocode = vi.mocked(reverseGeocode)
 
 const sample: LocationResult = {
   formatted: 'Accra, Ghana',
@@ -57,6 +63,7 @@ beforeEach(() => {
     loading: false,
     error: null,
   })
+  mockReverseGeocode.mockResolvedValue(null)
 })
 
 describe('LocationPicker', () => {
@@ -153,5 +160,110 @@ describe('LocationPicker', () => {
   it('renders the "Use my current location" button (geolocation entry point)', () => {
     renderPicker()
     expect(screen.getByRole('button', { name: 'Use my current location' })).toBeInTheDocument()
+  })
+
+  it('places a pin from a pasted Google Maps link and emits its coordinates', async () => {
+    mockAutocomplete.mockReturnValue({
+      search: vi.fn(),
+      retry: vi.fn(),
+      clear: vi.fn(),
+      results: [],
+      loading: false,
+      error: null,
+    })
+    mockReverseGeocode.mockResolvedValueOnce(null)
+    const onChange = vi.fn()
+    const onCoordsChange = vi.fn()
+    renderPicker({ onChange, onCoordsChange })
+
+    const input = screen.getByPlaceholderText('e.g. Accra, Ghana')
+    fireEvent.change(input, { target: { value: 'Kaneshie Market' } })
+    fireEvent.click(screen.getByText(/Paste a Google Maps link/))
+
+    const textarea = screen.getByLabelText('Google Maps link')
+    fireEvent.change(textarea, {
+      target: { value: 'https://www.google.com/maps/place/Kaneshie+Market/@5.5735,-0.2456,17z' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Place Pin/ }))
+
+    await waitFor(() => expect(onCoordsChange).toHaveBeenCalledWith(5.5735, -0.2456))
+    expect(onChange).toHaveBeenLastCalledWith('Kaneshie Market')
+    // The panel closes once the pin is placed.
+    expect(screen.queryByLabelText('Google Maps link')).not.toBeInTheDocument()
+  })
+
+  it('uses the reverse-geocoded address as the label when available', async () => {
+    mockAutocomplete.mockReturnValue({
+      search: vi.fn(),
+      retry: vi.fn(),
+      clear: vi.fn(),
+      results: [],
+      loading: false,
+      error: null,
+    })
+    mockReverseGeocode.mockResolvedValueOnce({
+      formatted: 'Kaneshie Market Road, Accra, Ghana',
+      latitude: 5.5735,
+      longitude: -0.2456,
+      city: 'Accra',
+      country: 'Ghana',
+      region: 'Greater Accra Region',
+    })
+    const onChange = vi.fn()
+    const onCoordsChange = vi.fn()
+    renderPicker({ onChange, onCoordsChange })
+
+    const input = screen.getByPlaceholderText('e.g. Accra, Ghana')
+    fireEvent.change(input, { target: { value: 'Kaneshie Market' } })
+    fireEvent.click(screen.getByText(/Paste a Google Maps link/))
+    fireEvent.change(screen.getByLabelText('Google Maps link'), {
+      target: { value: '5.5735, -0.2456' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Place Pin/ }))
+
+    await waitFor(() => expect(onCoordsChange).toHaveBeenCalledWith(5.5735, -0.2456))
+    expect(onChange).toHaveBeenLastCalledWith('Kaneshie Market Road, Accra, Ghana')
+  })
+
+  it('explains that shortened Google links cannot be read directly', () => {
+    mockAutocomplete.mockReturnValue({
+      search: vi.fn(),
+      retry: vi.fn(),
+      clear: vi.fn(),
+      results: [],
+      loading: false,
+      error: null,
+    })
+    renderPicker()
+
+    const input = screen.getByPlaceholderText('e.g. Accra, Ghana')
+    fireEvent.change(input, { target: { value: 'My hotel' } })
+    fireEvent.click(screen.getByText(/Paste a Google Maps link/))
+    fireEvent.change(screen.getByLabelText('Google Maps link'), {
+      target: { value: 'https://maps.app.goo.gl/AbC123' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Place Pin/ }))
+
+    expect(screen.getByText(/shortened Google link/i)).toBeInTheDocument()
+  })
+
+  it('shows a helpful error when the pasted text has no coordinates', () => {
+    mockAutocomplete.mockReturnValue({
+      search: vi.fn(),
+      retry: vi.fn(),
+      clear: vi.fn(),
+      results: [],
+      loading: false,
+      error: null,
+    })
+    renderPicker()
+
+    const input = screen.getByPlaceholderText('e.g. Accra, Ghana')
+    fireEvent.change(input, { target: { value: 'My hotel' } })
+    fireEvent.click(screen.getByText(/Paste a Google Maps link/))
+    fireEvent.change(screen.getByLabelText('Google Maps link'), { target: { value: 'my hotel near the beach' } })
+    fireEvent.click(screen.getByRole('button', { name: /Place Pin/ }))
+
+    expect(screen.getByText(/Couldn’t find coordinates/)).toBeInTheDocument()
   })
 })
