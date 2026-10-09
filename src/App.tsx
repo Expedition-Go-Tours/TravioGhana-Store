@@ -11,6 +11,7 @@ import RecommendSection from './components/RecommendSection'
 import PopularLocations from './components/PopularLocations'
 import ExternalReviewsSection from './components/ExternalReviewsSection'
 import NewsletterSection from './components/NewsletterSection'
+import GhanaTravelSection from './components/GhanaTravelSection'
 import LocationSearchSkeleton from './components/LocationSearchSkeleton'
 import HomeSectionSkeleton from './components/HomeSectionSkeleton'
 import SupportPageSkeleton from './components/support/SupportPageSkeleton'
@@ -161,7 +162,7 @@ function HomePage() {
         title={hasActiveSearch ? `Tours in ${currentLocation} | Ghana Tours & Experiences` : undefined}
         description={hasActiveSearch
           ? `Discover the best tours and experiences in ${currentLocation}, Ghana. Book cultural tours, food tours, wildlife safaris, and adventure activities. Free cancellation, best prices guaranteed.`
-          : 'Discover authentic Ghana tours and experiences. Book cultural tours, wildlife safaris, food tours, and adventure activities across Accra, Cape Coast, Volta Region, and more. 50+ experiences, free cancellation, best prices guaranteed.'
+          : 'Book Ghana tours and activities with Travio Ghana. Explore Accra city tours, Cape Coast heritage trips, food tours and outdoor adventures for your Ghana vacation.'
         }
         keywords={hasActiveSearch
           ? `${currentLocation} tours, things to do in ${currentLocation}, ${currentLocation} Ghana, Ghana tours, book tours in ${currentLocation}`
@@ -213,6 +214,7 @@ function HomePage() {
           content-visibility, so the newsletter is in the page from first
           paint and its card never pops in with a blank image. */}
       <NewsletterSection />
+      {!hasActiveSearch && <GhanaTravelSection />}
       <Footer />
     </SellOutProvider>
   )
