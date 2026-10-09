@@ -37,7 +37,10 @@
   font-weight: 400;
   font-size: clamp(16px, 2vw, 20px);
   line-height: 1.5;
-  margin-top: 8px;
+  /* Keep the tagline close to the headline and let the space sit between it
+     and the search bar below. */
+  margin-top: 4px;
+  margin-bottom: 20px;
   color: #64748b;
   max-width: 500px;
 }
@@ -68,6 +71,7 @@ html:lang(en) .hero-tagline {
   }
 
   .hero-tagline {
-    margin-top: 6px;
+    margin-top: 3px;
+    margin-bottom: 16px;
   }
 }
