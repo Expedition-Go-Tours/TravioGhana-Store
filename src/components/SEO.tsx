@@ -124,7 +124,8 @@ export default function SEO({
   const indexableSearch = place ? `?place=${encodeURIComponent(place)}` : ''
   const currentUrl = url || `${SITE_URL}${location.pathname}${indexableSearch}`
   const canonicalUrl = canonical || `${SITE_URL}${location.pathname}${indexableSearch}`
-  const ogImage = image?.startsWith('http') ? image : `${SITE_URL}${image}`
+  const selectedImage = location.pathname === '/' ? `${SITE_URL}/search-logo.png` : image
+  const ogImage = selectedImage?.startsWith('http') ? selectedImage : `${SITE_URL}${selectedImage}`
 
   return (
     <Helmet>
@@ -197,9 +198,9 @@ export function buildOrganizationSchema() {
     // ImageObject with the intrinsic size, matching what the prerender serves.
     logo: {
       '@type': 'ImageObject',
-      url: `${SITE_URL}/logo.png`,
-      width: 512,
-      height: 512,
+      url: `${SITE_URL}/search-logo.png`,
+      width: 1254,
+      height: 1254,
     },
     // Same profile list the footer renders and the prerender publishes — a
     // schema that names a different set than the crawler-facing one splits the
