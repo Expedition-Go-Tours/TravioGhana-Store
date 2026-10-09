@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { Mail } from 'lucide-react'
 import newsletterImg from '../assets/newsletter-square-card.webp'
 import './NewsletterSection.css'
@@ -35,11 +36,11 @@ export default function NewsletterSection() {
 
           <div className="newsletter-content">
             <h2 className="newsletter-title">
-              Never Miss a Deal or Destination
+              Your travel journey starts here
             </h2>
             <p className="newsletter-sub">
-              Get exclusive travel tips, early-bird offers, and curated Ghana experiences
-              delivered straight to your inbox. No spam, just adventures.
+              Sign up now for travel tips, personalised itineraries and holiday
+              inspiration straight to your inbox.
             </p>
 
             <form className="newsletter-form" onSubmit={handleSubmit}>
@@ -47,21 +48,32 @@ export default function NewsletterSection() {
                 <input
                   type="email"
                   className="newsletter-input"
-                  placeholder="Email"
+                  placeholder="EMAIL"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   aria-label="Email address"
                 />
-                <Mail className="newsletter-input-icon" size={20} />
-                <button
-                  type="submit"
-                  className="newsletter-btn"
-                  aria-label="Sign up"
-                >
-                  Sign up
-                </button>
+                <Mail
+                  className="newsletter-input-icon"
+                  size={20}
+                  aria-hidden="true"
+                />
               </div>
+              <button
+                type="submit"
+                className="newsletter-btn"
+                aria-label="Sign up"
+              >
+                Sign up
+              </button>
             </form>
+
+            <p className="newsletter-legal">
+              By signing up, you agree to receive promotional emails on
+              activities and insider tips. You can unsubscribe or withdraw your
+              consent at any time with future effect. For more information, read
+              our <Link to="/privacy-policy">Privacy policy</Link>.
+            </p>
           </div>
         </div>
       </div>

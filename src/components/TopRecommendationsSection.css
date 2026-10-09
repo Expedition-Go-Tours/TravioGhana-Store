@@ -41,12 +41,29 @@
   align-items: start;
 }
 
+/* Expanded: the card takes its full row width — a small image and a wide
+   text column, so the full description reads horizontally like the tour
+   detail page instead of a narrow ribbon. */
+@media (min-width: 1024px) {
+  .top-rec-item--expanded {
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(220px, 25%) minmax(0, 1fr);
+    gap: 28px;
+  }
+}
+
 .top-rec-image {
   display: block;
   border-radius: 12px;
   overflow: hidden;
   aspect-ratio: 16 / 10;
   background: #f1f5f9;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.top-rec-image:hover {
+  opacity: 0.92;
 }
 
 .top-rec-img {
@@ -111,23 +128,21 @@
 .top-rec-toggle {
   align-self: flex-end;
   margin-top: 12px;
-  border: 1px solid #1a1a1a;
-  border-radius: 2px;
-  background: #fff;
-  padding: 5px 12px;
+  border: none;
+  background: none;
+  padding: 0;
   font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #166534;
   text-decoration: underline;
   text-underline-offset: 2px;
   cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
+  transition: color 0.2s;
 }
 
 .top-rec-toggle:hover {
-  border-color: var(--primary);
-  color: var(--primary);
+  color: #14532d;
 }
 
 /* Loading skeleton — same two-column rhythm as the real grid. */

@@ -17,7 +17,9 @@
   align-items: stretch;
   border-radius: 20px;
   overflow: hidden;
-  height: 320px;
+  /* The content side (title + copy + form + legal line) sets the height;
+     the photo stretches to match instead of clipping on narrower screens. */
+  min-height: 320px;
 }
 
 /* --- Image side --- */
@@ -28,11 +30,13 @@
 }
 
 /* The markup uses <picture> so the eager image only downloads on the
-   breakpoints where it is shown; keep the wrapper transparent to layout. */
+   breakpoints where it is shown. Keep it absolutely positioned so the tall
+   portrait source can't inflate the card height; the content side (with its
+   320px min-height) governs instead and the photo covers whatever remains. */
 .newsletter-image-wrap picture {
+  position: absolute;
+  inset: 0;
   display: block;
-  width: 100%;
-  height: 100%;
 }
 
 .newsletter-image {
@@ -57,7 +61,7 @@
 .newsletter-title {
   margin: 0 0 8px;
   font-family: var(--font-heading);
-  font-size: clamp(1.2rem, 2vw, 1.5rem);
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
   font-weight: 800;
   line-height: 1.2;
   color: #1a1a2e;
@@ -73,20 +77,28 @@
 }
 
 /* --- Form --- */
+/* Mirrors the reference layout: a white rounded input with the envelope
+   icon inline at its right edge, and a separate pill button beside it.
+   Colors stay on the section's existing palette (dark green #14513D on
+   the mint #C6F0DE panel). */
 .newsletter-form {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 14px;
 }
 
 .newsletter-input-wrap {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
-  gap: 0;
-  border-radius: 50px;
-  border: 2px solid #d1d5db;
+  gap: 10px;
+  height: 52px;
+  padding: 0 16px 0 18px;
+  border-radius: 12px;
+  border: 1.5px solid #d1d5db;
   background: #ffffff;
-  padding: 4px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -98,23 +110,28 @@
 .newsletter-input {
   flex: 1;
   min-width: 0;
-  padding: 10px 16px;
+  height: 100%;
+  padding: 0;
   border: 0;
   background: transparent;
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 15px;
   color: #1a1a2e;
   outline: none;
 }
 
+/* "EMAIL" reads as a small caps label in the reference; only the
+   placeholder is styled, so typed text keeps its normal casing. */
 .newsletter-input::placeholder {
   color: #9a9ab0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
 }
 
 .newsletter-input-icon {
   flex-shrink: 0;
   color: #9a9ab0;
-  margin-right: 12px;
 }
 
 .newsletter-btn {
@@ -122,13 +139,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 28px;
+  padding: 0 32px;
   border: 0;
   border-radius: 50px;
   background: #14513D;
   color: #fff;
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
@@ -149,6 +166,32 @@
 .newsletter-btn:focus-visible {
   outline: 3px solid rgba(20, 81, 61, 0.35);
   outline-offset: 2px;
+}
+
+/* --- Small print --- */
+.newsletter-legal {
+  margin: 14px 0 0;
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.55;
+  color: #4a5568;
+}
+
+.newsletter-legal a {
+  color: #14513D;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.newsletter-legal a:hover {
+  color: #0e3a2c;
+}
+
+.newsletter-legal a:focus-visible {
+  outline: 3px solid rgba(20, 81, 61, 0.35);
+  outline-offset: 2px;
+  border-radius: 3px;
 }
 
 /* --- Success state --- */
@@ -182,7 +225,7 @@
   }
 
   .newsletter-card {
-    height: auto;
+    min-height: 0;
     border-radius: 16px;
   }
 
@@ -195,19 +238,11 @@
   }
 
   .newsletter-form {
-    flex-direction: row;
-    align-items: center;
     gap: 10px;
   }
 
   .newsletter-input-wrap {
-    flex: 1;
-    border-radius: 50px;
-  }
-
-  .newsletter-input {
-    padding: 12px 16px;
-    text-align: left;
+    height: 48px;
   }
 
   .newsletter-input-icon {
@@ -215,13 +250,28 @@
   }
 
   .newsletter-btn {
-    flex-shrink: 0;
-    border-radius: 50px;
-    padding: 12px 24px;
+    padding: 0 24px;
   }
 
   .newsletter-success {
     justify-content: flex-start;
+  }
+}
+
+/* Stack the input and button once the row would get cramped. */
+@media (max-width: 560px) {
+  .newsletter-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .newsletter-input-wrap {
+    width: 100%;
+  }
+
+  .newsletter-btn {
+    width: 100%;
+    min-height: 48px;
   }
 }
 

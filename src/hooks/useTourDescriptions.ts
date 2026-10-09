@@ -1,31 +1,22 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQueries } from '@tanstack/react-query'
 import { fetchWithAuth } from '../lib/api'
 
 /**
- * The tour catalogue with descriptions.
+ * Full tour descriptions for the "top recommendations" section, fetched from
+ * the same endpoint the tour detail page uses (GET /tours/:id).
  *
- * The homepage endpoints don't project tour descriptions, but the bottom-of-
- * page "top recommendations" section needs an excerpt per row. The catalogue
- * listing carries them (one page today — the endpoint caps `limit` at 50), so
- * this hook loads it once and serves both the description excerpts and the
- * last-resort filler. It is only mounted by the section itself (below the
- * page, behind MountOnView), so the homepage never pays for it until the
- * visitor approaches the section.
+ * The curated catalogue endpoint (`/travioghana/tours`) is not used: its rows
+ * truncate descriptions at 300 characters — and it intermittently serves rows
+ * with no description at all and without the tour ids the homepage ranks — so
+ * joining against it left cards with no text. The detail endpoint is
+ * id-addressable and always carries the complete description; the section
+ * loads exactly the tours it displays (ten), in parallel, once it scrolls
+ * into view, and react-query caches each one for repeat visits.
  */
 
-export interface TourCatalogItem {
-  id: string
-  title: string
-  slug: string
-  image: string
-  description: string
-}
-
-/**
- * Trim + normalize the multi-line descriptions the catalogue stores. Each
- * non-empty line becomes a paragraph (joined back with `\n`) so the expanded
- * card can render the same paragraph structure as the tour detail page.
- */
+/** Trim + normalize the multi-line descriptions the API stores. Each
+ *  non-empty line becomes a paragraph (joined back with `\n`) so cards can
+ *  render the same paragraph structure as the tour detail page. */
 export function cleanTourDescription(value: unknown): string {
   if (typeof value !== 'string') return ''
   return value
@@ -35,36 +26,36 @@ export function cleanTourDescription(value: unknown): string {
     .join('\n')
 }
 
-function toCatalogItem(raw: Record<string, unknown> | null | undefined): TourCatalogItem | null {
-  if (!raw) return null
-  const id = typeof raw.id === 'string' ? raw.id : ''
-  const title = typeof raw.title === 'string' ? raw.title : ''
-  if (!id || !title) return null
-  const photos = Array.isArray(raw.photos)
-    ? raw.photos.filter((photo): photo is string => typeof photo === 'string' && photo.length > 0)
-    : []
-  const cover = typeof raw.coverPhoto === 'string' ? raw.coverPhoto : ''
-  return {
-    id,
-    title,
-    slug: typeof raw.slug === 'string' ? raw.slug : '',
-    image: cover || photos[0] || '',
-    description: cleanTourDescription(raw.description),
-  }
-}
-
-export function useTourDescriptions(enabled = true) {
-  return useQuery({
-    queryKey: ['tour-catalog', 'descriptions'],
-    queryFn: async (): Promise<TourCatalogItem[]> => {
-      const res = await fetchWithAuth('/travioghana/tours?limit=50')
+function fetchTourDescription(tourId: string) {
+  return fetchWithAuth(`/tours/${encodeURIComponent(tourId)}`)
+    .then(async (res) => {
       const payload = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(payload?.message || `Request failed (${res.status})`)
-      const data = payload?.data ?? payload
-      const rows: unknown[] = Array.isArray(data?.tours) ? data.tours : Array.isArray(payload?.tours) ? payload.tours : []
-      return rows.map((row) => toCatalogItem(row as Record<string, unknown>)).filter((item): item is TourCatalogItem => item !== null)
+      const tour = payload?.data?.tour ?? payload?.tour ?? payload
+      return cleanTourDescription(tour?.description)
+    })
+}
+
+/**
+ * A map of tour id → full description for the given ids. Queries are
+ * independent, so one missing/failed tour never blocks the others; callers
+ * render a card without its excerpt when its id is absent from the map.
+ */
+export function useTourDescriptionsByIds(ids: string[], enabled = true) {
+  return useQueries({
+    queries: ids.map((id) => ({
+      queryKey: ['tour-full-description', id],
+      queryFn: () => fetchTourDescription(id),
+      staleTime: 5 * 60 * 1000,
+      enabled: enabled && id.length > 0,
+    })),
+    combine: (results): Map<string, string> => {
+      const descriptions = new Map<string, string>()
+      results.forEach((result, index) => {
+        const id = ids[index]
+        if (id && result.data) descriptions.set(id, result.data)
+      })
+      return descriptions
     },
-    staleTime: 5 * 60 * 1000,
-    enabled,
   })
 }

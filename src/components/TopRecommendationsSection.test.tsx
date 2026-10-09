@@ -2,18 +2,18 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import TopRecommendationsSection from './TopRecommendationsSection'
-import { useTourDescriptions, type TourCatalogItem } from '../hooks/useTourDescriptions'
+import { useTourDescriptionsByIds } from '../hooks/useTourDescriptions'
 import type { HomepageTour } from '../hooks/useHomepageSections'
 
 vi.mock('../hooks/useTourDescriptions', () => ({
-  useTourDescriptions: vi.fn(),
+  useTourDescriptionsByIds: vi.fn(),
 }))
 
 vi.mock('@/components/shared/OptimizedImage', () => ({
   default: ({ alt }: { alt?: string }) => <img alt={alt} />,
 }))
 
-const mockCatalog = vi.mocked(useTourDescriptions)
+const mockDescriptions = vi.mocked(useTourDescriptionsByIds)
 
 const tour = (id: string, title: string): HomepageTour => ({
   id,
@@ -35,22 +35,14 @@ const tour = (id: string, title: string): HomepageTour => ({
   supplier: null,
 })
 
-const catalogRow = (id: string, description = ''): TourCatalogItem => ({
-  id,
-  title: `Catalog ${id}`,
-  slug: id,
-  image: `https://img/${id}.jpg`,
-  description,
-})
-
-// Long enough to pass the detail page's 300-char long-description gate.
+// Full description paragraphs from the tour-detail endpoint (>300 chars).
 const PARA_ONE =
   "Escape the city and discover the natural beauty, culture and hidden gems of Ghana's Eastern Region on this unforgettable full-day tour from Accra."
 const PARA_TWO =
   "Your journey begins with a scenic drive into the beautiful Akuapem Mountains, where you will enjoy breathtaking views, refreshing mountain air and the peaceful charm of Ghana's countryside."
 
-function setCatalog(rows: TourCatalogItem[]) {
-  mockCatalog.mockReturnValue({ data: rows } as unknown as ReturnType<typeof useTourDescriptions>)
+function setDescriptions(entries: [string, string][]) {
+  mockDescriptions.mockReturnValue(new Map(entries) as unknown as ReturnType<typeof useTourDescriptionsByIds>)
 }
 
 function renderSection(props: Parameters<typeof TopRecommendationsSection>[0]) {
@@ -62,8 +54,8 @@ function renderSection(props: Parameters<typeof TopRecommendationsSection>[0]) {
 }
 
 beforeEach(() => {
-  mockCatalog.mockReset()
-  setCatalog([])
+  mockDescriptions.mockReset()
+  setDescriptions([])
 })
 
 describe('TopRecommendationsSection', () => {
@@ -82,68 +74,71 @@ describe('TopRecommendationsSection', () => {
     ).toBeInTheDocument()
   })
 
-  it('routes only the title to the tour detail page', () => {
-    renderSection({ preloaded: [tour('abc', 'Cape Coast Castle')] })
+  it('routes the title and the image to the tour detail page', () => {
+    const { container } = renderSection({ preloaded: [tour('abc', 'Cape Coast Castle')] })
 
-    expect(screen.getByRole('link', { name: 'Cape Coast Castle' })).toHaveAttribute(
-      'href',
-      '/tour/abc/abc',
-    )
-    // Image, excerpt and toggle are not links — the title is the only route in.
-    expect(screen.getAllByRole('link')).toHaveLength(1)
+    // Both the cover image and the title link to the same canonical tour page.
+    const links = screen.getAllByRole('link')
+    expect(links).toHaveLength(2)
+    for (const link of links) {
+      expect(link).toHaveAttribute('href', '/tour/abc/abc')
+    }
+    const imageLink = container.querySelector('a.top-rec-image')
+    expect(imageLink).toHaveAttribute('href', '/tour/abc/abc')
+    expect(imageLink).toHaveAttribute('aria-label', 'Cape Coast Castle')
   })
 
-  it('joins description excerpts by id from the catalogue', () => {
-    setCatalog([catalogRow('r0', 'A scenic drive from Accra to Cape Coast.')])
+  it('renders the full-description excerpt from the detail data', () => {
+    setDescriptions([
+      ['r0', 'A scenic drive from Accra to Cape Coast.'],
+      ['r1', ''],
+    ])
 
     renderSection({
       preloaded: [tour('r0', 'Cape Coast Castle'), tour('r1', 'No Description')],
     })
 
     expect(screen.getByText('A scenic drive from Accra to Cape Coast.')).toBeInTheDocument()
-    // The row without a catalogue description still renders, just without an excerpt.
+    // The row without a description still renders, just without an excerpt.
     expect(screen.getAllByRole('article')).toHaveLength(2)
     expect(document.querySelectorAll('.top-rec-excerpt')).toHaveLength(1)
+    // Descriptions are requested for exactly the displayed tours.
+    expect(mockDescriptions).toHaveBeenCalledWith(['r0', 'r1'], true)
   })
 
   it('expands the full description in place via See more / See less', () => {
-    setCatalog([catalogRow('r0', `${PARA_ONE}\n${PARA_TWO}`)])
+    setDescriptions([['r0', `${PARA_ONE}\n${PARA_TWO}`]])
 
     renderSection({ preloaded: [tour('r0', 'Waterfalls Day Tour')] })
+    const card = screen.getByRole('article')
 
     // Collapsed: clamped single block, second paragraph not its own element.
     expect(screen.getByRole('button', { name: 'See more' })).toBeInTheDocument()
     expect(screen.queryByText(PARA_TWO, { exact: true })).not.toBeInTheDocument()
+    expect(card).not.toHaveClass('top-rec-item--expanded')
 
     fireEvent.click(screen.getByRole('button', { name: 'See more' }))
 
+    // Expanded: the card takes its full row width (wide text column).
+    expect(card).toHaveClass('top-rec-item--expanded')
     expect(screen.getByRole('button', { name: 'See less' })).toHaveAttribute('aria-expanded', 'true')
     expect(screen.getByText(PARA_ONE, { exact: true })).toBeInTheDocument()
     expect(screen.getByText(PARA_TWO, { exact: true })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'See less' }))
 
+    expect(card).not.toHaveClass('top-rec-item--expanded')
     expect(screen.getByRole('button', { name: 'See more' })).toHaveAttribute('aria-expanded', 'false')
     expect(screen.queryByText(PARA_TWO, { exact: true })).not.toBeInTheDocument()
   })
 
   it('hides the toggle when the description is short', () => {
-    setCatalog([catalogRow('r0', 'A short blurb that fits without clamping.')])
+    setDescriptions([['r0', 'A short blurb that fits without clamping.']])
 
     renderSection({ preloaded: [tour('r0', 'Short Tour')] })
 
     expect(screen.getByText('A short blurb that fits without clamping.')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'See more' })).not.toBeInTheDocument()
-  })
-
-  it('fills up to ten rows from the catalogue when the payload is short', () => {
-    setCatalog(Array.from({ length: 12 }, (_, i) => catalogRow(`c${i}`)))
-
-    renderSection({ preloaded: [tour('r0', 'Recommended 0')] })
-
-    expect(screen.getAllByRole('article')).toHaveLength(10)
-    expect(screen.getByText('Catalog c0')).toBeInTheDocument()
-    expect(screen.queryByText('Catalog c9')).not.toBeInTheDocument()
   })
 
   it('renders nothing without rows and without loading', () => {

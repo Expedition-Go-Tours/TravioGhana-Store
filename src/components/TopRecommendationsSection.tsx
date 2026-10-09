@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import OptimizedImage from '@/components/shared/OptimizedImage'
-import { useTourDescriptions, type TourCatalogItem } from '../hooks/useTourDescriptions'
+import { useTourDescriptionsByIds } from '../hooks/useTourDescriptions'
 import type { HomepageTour, HomepageBackfill } from '../hooks/useHomepageSections'
 import { tourPath } from '../lib/tourPath'
 import './TopRecommendationsSection.css'
@@ -30,8 +30,6 @@ interface TopRecItem {
   title: string
   slug: string
   image: string
-  /** Paragraphs joined with `\n` (see useTourDescriptions). */
-  description: string
 }
 
 function toItem(tour: HomepageTour): TopRecItem {
@@ -40,7 +38,6 @@ function toItem(tour: HomepageTour): TopRecItem {
     title: tour.title,
     slug: tour.slug,
     image: tour.coverPhoto || tour.photos?.[0] || '',
-    description: '',
   }
 }
 
@@ -58,29 +55,33 @@ function dedupe(tours: HomepageTour[]): HomepageTour[] {
 
 /**
  * One recommendation row: image, title (the only link — it routes to the
- * tour's detail page), a clamped description excerpt, and an inline
- * "See more" / "See less" toggle that reveals the full description in place.
+ * tour's detail page), the description excerpt, and an inline "See more" /
+ * "See less" toggle that reveals the full description in place.
+ *
+ * The text is the tour's full description from the detail endpoint (the same
+ * source the tour detail page renders); the collapsed state simply clamps it
+ * to three lines, and "See more" un-clamps the entire text.
  */
-function TopRecommendationItem({ item }: { item: TopRecItem }) {
+function TopRecommendationItem({ item, description }: { item: TopRecItem; description: string }) {
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
 
-  const href = tourPath(item.id, item.slug)
-  const paragraphs = item.description
+  const paragraphs = description
     .split('\n')
     .map((paragraph) => paragraph.trim())
     .filter(Boolean)
-  const longDescription = item.description.length > LONG_DESCRIPTION_CHARS
+  const longDescription = description.length > LONG_DESCRIPTION_CHARS
+  const href = tourPath(item.id, item.slug)
 
   return (
-    <article className="top-rec-item">
-      <div className="top-rec-image">
+    <article className={`top-rec-item${expanded ? ' top-rec-item--expanded' : ''}`}>
+      <Link to={href} className="top-rec-image" aria-label={item.title}>
         {item.image ? (
           <OptimizedImage src={item.image} alt="" width={640} className="top-rec-img" />
         ) : (
           <span className="top-rec-image-fallback" />
         )}
-      </div>
+      </Link>
       <div className="top-rec-body">
         <h3 className="top-rec-title">
           <Link to={href}>{item.title}</Link>
@@ -115,9 +116,9 @@ function TopRecommendationItem({ item }: { item: TopRecItem }) {
  * editorial section: ten tours, five rows of two. The rows come from the
  * homepage's already-fetched ranked slices — the backend "recommended"
  * ranking first (quality + bookings), then the nearby rail, momentum and
- * quality slices if it ships fewer than ten. Descriptions are joined by id
- * from the catalogue (see useTourDescriptions); when one is missing the
- * excerpt is simply omitted.
+ * quality slices if it ships fewer than ten. Descriptions are fetched per id
+ * from the tour detail endpoint (see useTourDescriptionsByIds); a tour whose
+ * description is unavailable still renders, just without an excerpt.
  */
 export default function TopRecommendationsSection({
   preloaded,
@@ -129,36 +130,23 @@ export default function TopRecommendationsSection({
 }: Props) {
   const { t } = useTranslation()
 
-  const hasPayloadRows = (preloaded?.length ?? 0) > 0
-  const { data: catalog = [] } = useTourDescriptions(hasPayloadRows || !!isLoading)
+  const items = useMemo<TopRecItem[]>(
+    () =>
+      dedupe([
+        ...(preloaded ?? []),
+        ...(backfill?.tours ?? []),
+        ...(trending ?? []),
+        ...(topRated ?? []),
+      ])
+        .slice(0, RECOMMENDATION_COUNT)
+        .map(toItem),
+    [preloaded, backfill, trending, topRated],
+  )
 
-  const items = useMemo<TopRecItem[]>(() => {
-    const descriptionById = new Map(catalog.map((row) => [row.id, row.description]))
-    const withDescription = (tour: HomepageTour): TopRecItem => {
-      const item = toItem(tour)
-      return { ...item, description: descriptionById.get(item.id) ?? '' }
-    }
-
-    const preferred = dedupe([
-      ...(preloaded ?? []),
-      ...(backfill?.tours ?? []),
-      ...(trending ?? []),
-      ...(topRated ?? []),
-    ]).map(withDescription)
-
-    if (preferred.length >= RECOMMENDATION_COUNT) {
-      return preferred.slice(0, RECOMMENDATION_COUNT)
-    }
-
-    // Last resort: fill the grid from the catalogue already fetched for the
-    // descriptions, so the section still shows ten rows whenever the
-    // catalogue has enough tours.
-    const seen = new Set(preferred.map((item) => item.id))
-    const filler: TourCatalogItem[] = catalog
-      .filter((row) => !seen.has(row.id))
-      .slice(0, RECOMMENDATION_COUNT - preferred.length)
-    return [...preferred, ...filler]
-  }, [preloaded, backfill, trending, topRated, catalog])
+  const descriptions = useTourDescriptionsByIds(
+    useMemo(() => items.map((item) => item.id), [items]),
+    items.length > 0,
+  )
 
   if (items.length === 0) {
     if (!isLoading) return null
@@ -191,7 +179,11 @@ export default function TopRecommendationsSection({
         </h2>
         <div className="top-recs-grid">
           {items.map((item) => (
-            <TopRecommendationItem item={item} key={item.id} />
+            <TopRecommendationItem
+              item={item}
+              description={descriptions.get(item.id) ?? ''}
+              key={item.id}
+            />
           ))}
         </div>
       </div>
