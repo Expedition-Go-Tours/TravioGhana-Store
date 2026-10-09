@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import {
+import middleware, {
   DEFAULT_GHANA_ORIGIN,
+  handleMapsSearch,
   normalizeResults,
   searchGhanaPlaces,
   SERPAPI_SEARCH_ENDPOINT,
-} from '../../server/serpApiMaps'
-import middleware, { handleMapsSearch } from '../../middleware'
+} from '../../middleware'
 
 const fetchMock = vi.fn()
 

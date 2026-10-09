@@ -5,7 +5,7 @@ import path from 'path'
 import { copyFileSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { resolve } from 'node:path'
-import { searchGhanaPlaces } from './server/serpApiMaps.ts'
+import { searchGhanaPlaces } from './middleware.ts'
 import { noClientSerpKeyPlugin } from './server/noClientSerpKey.ts'
 
 // mapbox-gl's ESM worker (`dist/esm/worker.js`) must be served VERBATIM with
