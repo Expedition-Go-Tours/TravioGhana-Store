@@ -11,7 +11,6 @@ import RecommendSection from './components/RecommendSection'
 import PopularLocations from './components/PopularLocations'
 import ExternalReviewsSection from './components/ExternalReviewsSection'
 import NewsletterSection from './components/NewsletterSection'
-import GhanaTravelSection from './components/GhanaTravelSection'
 import LocationSearchSkeleton from './components/LocationSearchSkeleton'
 import HomeSectionSkeleton from './components/HomeSectionSkeleton'
 import SupportPageSkeleton from './components/support/SupportPageSkeleton'
@@ -214,7 +213,6 @@ function HomePage() {
           content-visibility, so the newsletter is in the page from first
           paint and its card never pops in with a blank image. */}
       <NewsletterSection />
-      {!hasActiveSearch && <GhanaTravelSection />}
       <Footer />
     </SellOutProvider>
   )
