@@ -1,10 +1,12 @@
-import { defineConfig, type Plugin } from 'vite'
+import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
 import path from 'path'
 import { copyFileSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { resolve } from 'node:path'
+import { searchGhanaPlaces } from './server/serpApiMaps.ts'
+import { noClientSerpKeyPlugin } from './server/noClientSerpKey.ts'
 
 // mapbox-gl's ESM worker (`dist/esm/worker.js`) must be served VERBATIM with
 // its whole module closure: Vite's production build rewrites its `?url` asset
@@ -104,6 +106,58 @@ function copyMaplibreWorker(): Plugin {
   }
 }
 
+// Serves the same-origin SerpApi Google Maps search route that production's
+// Vercel middleware (middleware.ts) owns, so `vite dev` behaves like the
+// deployed site. Without this, /api/maps-search would fall through to the SPA
+// shell and the pickup picker's "Search Google Maps" option would be dead in
+// local development.
+function serpApiMapsDevRoute(): Plugin {
+  let apiKey = ''
+  return {
+    name: 'serpapi-maps-dev-route',
+    configResolved(config) {
+      // `loadEnv` with an empty prefix reads every variable (VITE_-prefixed or
+      // not) into this dev-server process only — the client bundle is governed
+      // by Vite's own env handling, and the no-client-serp-key guard makes the
+      // key impossible to inline there. Falls back to the original
+      // SERPAPI_API_KEY alias.
+      const env = loadEnv(config.mode, config.envDir, '')
+      apiKey =
+        env.VITE_SERP_API_KEY ||
+        env.SERPAPI_API_KEY ||
+        process.env.VITE_SERP_API_KEY ||
+        process.env.SERPAPI_API_KEY ||
+        ''
+    },
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const url = new URL(req.url || '/', 'http://localhost')
+        if (url.pathname !== '/api/maps-search') {
+          next()
+          return
+        }
+        void (async () => {
+          const q = (url.searchParams.get('q') || '').trim()
+          const latRaw = url.searchParams.get('lat')
+          const lngRaw = url.searchParams.get('lng')
+          let result: unknown
+          if (q.length < 3 || q.length > 120 || (latRaw != null) !== (lngRaw != null)) {
+            res.statusCode = 400
+            result = { ok: false, reason: 'invalid' }
+          } else {
+            const lat = latRaw == null ? NaN : Number(latRaw)
+            const lng = lngRaw == null ? NaN : Number(lngRaw)
+            const origin = Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null
+            result = await searchGhanaPlaces(q, origin, apiKey)
+          }
+          res.setHeader('Content-Type', 'application/json; charset=utf-8')
+          res.end(JSON.stringify(result))
+        })()
+      })
+    },
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -111,6 +165,8 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] }),
     copyMapboxWorker(),
     copyMaplibreWorker(),
+    serpApiMapsDevRoute(),
+    noClientSerpKeyPlugin(),
   ],
   resolve: {
     alias: {

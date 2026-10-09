@@ -11,6 +11,8 @@ import type { PickupZoneMapTour } from './PickupZoneMap'
 import LocationMap from './LocationMap'
 import MapErrorBoundary from './MapErrorBoundary'
 import PasteMapsLinkPanel, { type PastedPinLocation } from './PasteMapsLinkPanel'
+import { searchGhanaLocations, type GhanaMapPlace } from '@/lib/serpApiMapsSearch'
+import { hasRelevantLocationSuggestion, isClearlyOutsideGhana } from '@/lib/locationRelevance'
 
 export interface PickupSelectModalTour {
   meetingMode?: 'meeting_point' | 'pickup' | 'none'
@@ -119,6 +121,11 @@ function PickupSelectModalContent({
   const [searchCommitted, setSearchCommitted] = useState(false)
   /** True while the dropdown shows the "paste a Google Maps link" panel. */
   const [pasteOpen, setPasteOpen] = useState(false)
+  /** Google Maps (SerpApi) fallback search state for the dropdown. `off`
+      means the server has no SerpApi key configured — the option hides. */
+  const [googleState, setGoogleState] = useState<'idle' | 'loading' | 'done' | 'error' | 'off'>('idle')
+  const [googleResults, setGoogleResults] = useState<GhanaMapPlace[]>([])
+  const [googleNote, setGoogleNote] = useState<string | null>(null)
   /** True when the searched address falls outside the supplier's pickup zone. */
   const [searchOutOfRange, setSearchOutOfRange] = useState(false)
   /** True when the searched address is confirmed inside a pickup zone. */
@@ -153,6 +160,24 @@ function PickupSelectModalContent({
   // Tours with several pickup spots: no free address search — the traveller
   // must choose from the listed options only.
   const multiplePickups = selectable.length > 1
+
+  // Origin for the Google Maps (SerpApi) fallback search: the meeting point,
+  // or the first located pickup spot/zone — keeps results biased to the
+  // tour's own area instead of the whole country.
+  const googleSearchOrigin = useMemo<{ lat: number; lng: number } | null>(() => {
+    if (meetingPoint?.lat != null && meetingPoint?.lng != null) {
+      return { lat: meetingPoint.lat, lng: meetingPoint.lng }
+    }
+    const spot = selectable.find((p) => p.lat != null && p.lng != null)
+    if (spot?.lat != null && spot?.lng != null) return { lat: spot.lat, lng: spot.lng }
+    const vertex = selectable.find((p) => Array.isArray(p.polygon) && p.polygon.length >= 3)?.polygon?.[0]
+    return vertex ? { lat: vertex[0], lng: vertex[1] } : null
+  }, [meetingPoint, selectable])
+
+  // Suggestions the search may act on: clearly non-Ghana matches (a Ghana
+  // storefront never picks up abroad) are dropped so they can neither be
+  // selected nor hide the Google Maps fallback. Unknown-country results stay.
+  const visibleResults = results.filter((result) => !isClearlyOutsideGhana(result))
 
   // Supplier-set pickup area/zone — searches/drags outside it are cautioned.
   const zoneAreas = useMemo(
@@ -243,6 +268,7 @@ function PickupSelectModalContent({
     setPasteOpen(false)
     setSearchHighlight(-1)
     setSearchCommitted(true)
+    resetGoogleSearch()
     setDragPreview(null)
     setDragAddress('')
     if (suggestion.latitude != null && suggestion.longitude != null) {
@@ -270,6 +296,59 @@ function PickupSelectModalContent({
     })
   }
 
+  const resetGoogleSearch = (): void => {
+    setGoogleState('idle')
+    setGoogleResults([])
+    setGoogleNote(null)
+  }
+
+  // "Can't find your location? Search Google Maps" — a SerpApi-backed search
+  // for Ghana places, run only on explicit request (each search can spend a
+  // limited SerpApi credit). One search per click; results are cached.
+  const runGoogleSearch = async (): Promise<void> => {
+    const q = searchQuery.trim()
+    if (q.length < 3 || googleState === 'loading') return
+    setGoogleState('loading')
+    setGoogleNote(null)
+    const { status, results: places } = await searchGhanaLocations(q, googleSearchOrigin)
+    if (status === 'ok') {
+      setGoogleResults(places)
+      setGoogleState('done')
+      return
+    }
+    setGoogleResults([])
+    if (status === 'empty') {
+      setGoogleState('done')
+      setGoogleNote('No matching places found on Google Maps.')
+      return
+    }
+    if (status === 'not_configured') {
+      // No server key configured — hide the option entirely.
+      setGoogleState('off')
+      return
+    }
+    setGoogleState('error')
+    setGoogleNote(
+      status === 'quota'
+        ? 'Google Maps search is temporarily unavailable. Paste a Google Maps link or pin your location on the map instead.'
+        : 'Couldn’t reach Google Maps. Please try again.',
+    )
+  }
+
+  // A chosen Google Maps place applies exactly like a search suggestion — its
+  // exact coordinates pin on the map and the existing zone verdict runs. The
+  // label is the place's Google Maps title.
+  const commitGooglePlace = (place: GhanaMapPlace): void => {
+    selectSearchResult({
+      formatted: place.title,
+      latitude: place.lat,
+      longitude: place.lng,
+      city: '',
+      country: 'Ghana',
+      region: '',
+    })
+  }
+
   // Manual fallback: commit exactly what the traveller typed (no coords → no pin).
   const commitSearchManual = (value: string): void => {
     const v = value.trim()
@@ -280,6 +359,7 @@ function PickupSelectModalContent({
     setSearchOpen(false)
     setPasteOpen(false)
     setSearchHighlight(-1)
+    resetGoogleSearch()
     setSearchOutOfRange(false)
     setSearchInZone(false)
     setDragPreview(null)
@@ -291,6 +371,7 @@ function PickupSelectModalContent({
     setSearchQuery(v)
     setSearchHighlight(-1)
     setPasteOpen(false)
+    resetGoogleSearch()
     // Editing the text invalidates the previously pinned search result.
     setSearchMarker(null)
     setSearchCommitted(false)
@@ -317,19 +398,19 @@ function PickupSelectModalContent({
     }
     switch (e.key) {
       case 'ArrowDown':
-        if (results.length === 0) break
+        if (visibleResults.length === 0) break
         e.preventDefault()
-        setSearchHighlight((prev) => (prev < results.length - 1 ? prev + 1 : 0))
+        setSearchHighlight((prev) => (prev < visibleResults.length - 1 ? prev + 1 : 0))
         break
       case 'ArrowUp':
-        if (results.length === 0) break
+        if (visibleResults.length === 0) break
         e.preventDefault()
-        setSearchHighlight((prev) => (prev > 0 ? prev - 1 : results.length - 1))
+        setSearchHighlight((prev) => (prev > 0 ? prev - 1 : visibleResults.length - 1))
         break
       case 'Enter':
         e.preventDefault()
-        if (results.length > 0 && searchHighlight >= 0) {
-          selectSearchResult(results[searchHighlight])
+        if (visibleResults.length > 0 && searchHighlight >= 0) {
+          selectSearchResult(visibleResults[searchHighlight])
         } else if (searchQuery.trim().length >= 2) {
           commitSearchManual(searchQuery)
         }
@@ -366,6 +447,7 @@ function PickupSelectModalContent({
     setSearchInZone(false)
     setDragPreview(null)
     setDragAddress('')
+    resetGoogleSearch()
     clear()
   }
 
@@ -611,7 +693,7 @@ function PickupSelectModalContent({
               onChange={(e) => handleSearchInput(e.target.value)}
               onKeyDown={handleSearchKeyDown}
               onFocus={() => {
-                if (results.length > 0) setSearchOpen(true)
+                if (visibleResults.length > 0) setSearchOpen(true)
               }}
               placeholder="Search for your address…"
               className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-9 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-[#179237] focus:ring-2 focus:ring-[#179237]/15"
@@ -672,7 +754,7 @@ function PickupSelectModalContent({
                 </li>
               )}
               {!searching &&
-                results.map((r, index) => (
+                visibleResults.map((r, index) => (
                   <li
                     key={`${r.source}-${index}`}
                     id={`pickup-search-option-${index}`}
@@ -698,6 +780,77 @@ function PickupSelectModalContent({
                     </div>
                   </li>
                 ))}
+              {/* Google Maps fallback (SerpApi) — offered when the regular
+                  autocomplete found nothing: one explicit, credit-cached search
+                  for the typed place, hard-filtered to Ghana. */}
+              {googleState === 'loading' && (
+                <li className="flex items-center gap-2 border-t border-slate-100 px-4 py-3 text-sm text-slate-500">
+                  <Loader2 size={14} className="animate-spin text-[#179237]" />
+                  Searching Google Maps…
+                </li>
+              )}
+              {googleState === 'idle' && !searching && !hasRelevantLocationSuggestion(searchQuery, visibleResults) && searchQuery.trim().length >= 3 && (
+                <li
+                  role="option"
+                  aria-selected={false}
+                  onClick={() => void runGoogleSearch()}
+                  onMouseDown={(e) => e.preventDefault()}
+                  className="cursor-pointer border-t border-slate-100 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50"
+                >
+                  <div className="flex items-start gap-2.5">
+                    <Search size={14} className="mt-0.5 shrink-0 text-slate-400" />
+                    <div className="min-w-0">
+                      <div className="truncate font-medium">Can’t find your location? Search Google Maps</div>
+                      <div className="mt-0.5 text-xs text-slate-400">We’ll look it up on Google Maps in Ghana.</div>
+                    </div>
+                  </div>
+                </li>
+              )}
+              {googleState === 'done' && googleResults.length > 0 && (
+                <>
+                  <li className="border-t border-slate-100 px-4 pb-1 pt-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Google Maps · Ghana
+                  </li>
+                  {googleResults.map((place, index) => (
+                    <li
+                      key={place.placeId || `${place.title}-${index}`}
+                      id={`pickup-google-option-${index}`}
+                      role="option"
+                      aria-selected={false}
+                      onClick={() => commitGooglePlace(place)}
+                      onMouseDown={(e) => e.preventDefault()}
+                      className="cursor-pointer px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <MapPin size={14} className="mt-0.5 shrink-0 text-[#179237]" />
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate font-medium">{place.title}</div>
+                          {place.address && <div className="truncate text-xs text-slate-400">{place.address}</div>}
+                        </div>
+                        <span className="shrink-0 rounded-full bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-600">
+                          Google Maps
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </>
+              )}
+              {googleState === 'done' && googleResults.length === 0 && googleNote && (
+                <li className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500">{googleNote}</li>
+              )}
+              {googleState === 'error' && googleNote && (
+                <li className="border-t border-slate-100 px-4 py-3">
+                  <p className="text-xs leading-relaxed text-slate-500">{googleNote}</p>
+                  <button
+                    type="button"
+                    onClick={() => void runGoogleSearch()}
+                    className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-[#179237] hover:underline"
+                  >
+                    <RefreshCw size={11} />
+                    Try again
+                  </button>
+                </li>
+              )}
               {/* Paste a Google Maps link — pin the exact spot from the link. */}
               <li
                 role="option"
@@ -720,12 +873,12 @@ function PickupSelectModalContent({
               {!searching && searchQuery.trim().length >= 3 && (
                 <li
                   role="option"
-                  aria-selected={searchHighlight === results.length}
+                  aria-selected={searchHighlight === visibleResults.length}
                   onClick={() => commitSearchManual(searchQuery)}
-                  onMouseEnter={() => setSearchHighlight(results.length)}
+                  onMouseEnter={() => setSearchHighlight(visibleResults.length)}
                   onMouseDown={(e) => e.preventDefault()}
                   className={`cursor-pointer border-t border-slate-100 px-4 py-3 text-sm ${
-                    searchHighlight === results.length ? 'bg-emerald-50 text-emerald-900' : 'text-slate-700 hover:bg-slate-50'
+                    searchHighlight === visibleResults.length ? 'bg-emerald-50 text-emerald-900' : 'text-slate-700 hover:bg-slate-50'
                   }`}
                 >
                   <div className="flex items-start gap-2.5">

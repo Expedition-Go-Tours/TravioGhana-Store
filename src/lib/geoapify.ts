@@ -57,6 +57,14 @@ function fromGeoapify(feature: GeoapifyFeature | null | undefined): LocationResu
  * the PRIMARY search source (Geoapify first). The API is CORS-enabled
  * (Access-Control-Allow-Origin: *) so it works straight from the browser.
  *
+ * Results are hard-filtered to Ghana (`filter=countrycode:gh`): this is a
+ * Ghana storefront, and without the filter brand-name queries like "Four
+ * Points by Sheraton" return only foreign hotels (Lagos, Italy, …) that are
+ * never valid pickup locations — and which used to suppress the Google Maps
+ * fallback because they matched the typed tokens. Geoapify has no OSM entry
+ * for such places, so the list comes back empty and the picker falls through
+ * to the Google Maps (SerpApi) search.
+ *
  * Returns [] on any failure (no key, network, rate limit) so the caller can
  * fall back to the backend location service.
  */
@@ -67,7 +75,7 @@ export async function geoapifyAutocomplete(query: string, limit = 5): Promise<Lo
   const url =
     'https://api.geoapify.com/v1/geocode/autocomplete' +
     `?text=${encodeURIComponent(query)}&apiKey=${encodeURIComponent(apiKey)}` +
-    `&limit=${limit}&format=geojson`
+    `&limit=${limit}&format=geojson&filter=countrycode:gh`
 
   try {
     const res = await fetch(url)

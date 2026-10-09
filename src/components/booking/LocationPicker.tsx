@@ -4,6 +4,8 @@ import { toast } from 'sonner'
 import { useLocationAutocomplete, type LocationSuggestion } from '../../hooks/useLocationAutocomplete'
 import { useLocationSharing } from '../../hooks/useLocationSharing'
 import { reverseGeocode } from '../../lib/locations'
+import { searchGhanaLocations, type GhanaMapPlace } from '../../lib/serpApiMapsSearch'
+import { hasRelevantLocationSuggestion, isClearlyOutsideGhana } from '../../lib/locationRelevance'
 import PasteMapsLinkPanel, { type PastedPinLocation } from './PasteMapsLinkPanel'
 
 interface LocationPickerProps {
@@ -22,6 +24,9 @@ interface LocationPickerProps {
       point tapped on the map) — the input shows the tick instead of the
       clear × until the traveller edits the text. */
   confirmed?: boolean
+  /** Tour-area origin for the Google Maps (SerpApi) fallback search — keeps
+      results biased to the tour's pickup region. */
+  searchOrigin?: { lat: number; lng: number } | null
 }
 
 /**
@@ -45,6 +50,7 @@ export default function LocationPicker({
   disabled,
   minimal,
   confirmed,
+  searchOrigin,
 }: LocationPickerProps) {
   const { search, retry, clear, results, loading, error: searchError } = useLocationAutocomplete()
   const { enable: enableLocationSharing } = useLocationSharing()
@@ -56,6 +62,11 @@ export default function LocationPicker({
   const [locating, setLocating] = useState(false)
   /** True while the dropdown shows the "paste a Google Maps link" panel. */
   const [pasteOpen, setPasteOpen] = useState(false)
+  /** Google Maps (SerpApi) fallback search state for the dropdown. `off`
+      means the server has no SerpApi key configured — the option hides. */
+  const [googleState, setGoogleState] = useState<'idle' | 'loading' | 'done' | 'error' | 'off'>('idle')
+  const [googleResults, setGoogleResults] = useState<GhanaMapPlace[]>([])
+  const [googleNote, setGoogleNote] = useState<string | null>(null)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -88,15 +99,27 @@ export default function LocationPicker({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // Suggestions the dropdown may act on: clearly non-Ghana matches (a Ghana
+  // storefront never picks up abroad) are dropped so they can neither be
+  // selected nor hide the Google Maps fallback. Unknown-country results stay.
+  const visibleResults = results.filter((result) => !isClearlyOutsideGhana(result))
+
+  const resetGoogleSearch = useCallback(() => {
+    setGoogleState('idle')
+    setGoogleResults([])
+    setGoogleNote(null)
+  }, [])
+
   const commit = useCallback((suggestion: LocationSuggestion) => {
     setSelected(suggestion)
     setQuery(suggestion.formatted)
     setOpen(false)
     setPasteOpen(false)
     setHighlightedIndex(-1)
+    resetGoogleSearch()
     onChangeRef.current(suggestion.formatted)
     onCoordsChangeRef.current?.(suggestion.latitude ?? null, suggestion.longitude ?? null)
-  }, [])
+  }, [resetGoogleSearch])
 
   // "Use my current location": a user gesture that turns location sharing on
   // (persisted) and resolves the device position — the only path that can
@@ -144,10 +167,11 @@ export default function LocationPicker({
     setOpen(false)
     setPasteOpen(false)
     setHighlightedIndex(-1)
+    resetGoogleSearch()
     onChangeRef.current(v)
     // A manually typed location has no coordinates to pin on the map.
     onCoordsChangeRef.current?.(null, null)
-  }, [])
+  }, [resetGoogleSearch])
 
   // "Place Pin" from a pasted Google Maps link: the parsed coordinates are
   // committed exactly like a chosen suggestion — pin on the map, zone verdict,
@@ -166,10 +190,58 @@ export default function LocationPicker({
     setOpen(false)
     setPasteOpen(false)
     setHighlightedIndex(-1)
+    resetGoogleSearch()
     onChangeRef.current(location.label)
     onCoordsChangeRef.current?.(location.lat, location.lng)
     clear()
-  }, [clear])
+  }, [clear, resetGoogleSearch])
+
+  // "Can't find your location? Search Google Maps" — a SerpApi-backed search
+  // for Ghana places, run only on explicit request (each search can spend a
+  // limited SerpApi credit). One search per click; results are cached.
+  const runGoogleSearch = useCallback(async () => {
+    const q = query.trim()
+    if (q.length < 3 || googleState === 'loading') return
+    setGoogleState('loading')
+    setGoogleNote(null)
+    const { status, results: places } = await searchGhanaLocations(q, searchOrigin)
+    if (status === 'ok') {
+      setGoogleResults(places)
+      setGoogleState('done')
+      return
+    }
+    setGoogleResults([])
+    if (status === 'empty') {
+      setGoogleState('done')
+      setGoogleNote('No matching places found on Google Maps.')
+      return
+    }
+    if (status === 'not_configured') {
+      // No server key configured — hide the option entirely.
+      setGoogleState('off')
+      return
+    }
+    setGoogleState('error')
+    setGoogleNote(
+      status === 'quota'
+        ? 'Google Maps search is temporarily unavailable. Paste a Google Maps link or pin your location on the map instead.'
+        : 'Couldn’t reach Google Maps. Please try again.',
+    )
+  }, [query, searchOrigin, googleState])
+
+  // A chosen Google Maps place commits exactly like an autocomplete
+  // suggestion — its exact coordinates pin on the map and the existing zone
+  // verdict runs. The label is the place's Google Maps title.
+  const commitGooglePlace = useCallback((place: GhanaMapPlace) => {
+    commit({
+      formatted: place.title,
+      latitude: place.lat,
+      longitude: place.lng,
+      city: '',
+      country: 'Ghana',
+      region: '',
+    })
+  }, [commit])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = e.target.value
@@ -177,6 +249,7 @@ export default function LocationPicker({
     onChangeRef.current(v)
     setHighlightedIndex(-1)
     setPasteOpen(false)
+    resetGoogleSearch()
     if (v.trim().length >= 3) {
       search(v)
       setOpen(true)
@@ -205,6 +278,7 @@ export default function LocationPicker({
     clear()
     setOpen(false)
     setPasteOpen(false)
+    resetGoogleSearch()
     inputRef.current?.focus()
   }
 
@@ -212,34 +286,34 @@ export default function LocationPicker({
     if (!open) return
     switch (e.key) {
       case 'ArrowDown':
-        if (results.length === 0) break
+        if (visibleResults.length === 0) break
         e.preventDefault()
-        setHighlightedIndex((prev) => (prev < results.length - 1 ? prev + 1 : 0))
+        setHighlightedIndex((prev) => (prev < visibleResults.length - 1 ? prev + 1 : 0))
         break
       case 'ArrowUp':
-        if (results.length === 0) break
+        if (visibleResults.length === 0) break
         e.preventDefault()
-        setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : results.length - 1))
+        setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : visibleResults.length - 1))
         break
       case 'Enter':
         e.preventDefault()
         // No suggestions available → commit the manually typed location.
-        if (results.length === 0) {
+        if (visibleResults.length === 0) {
           if (query.trim().length >= 2) commitManual(query)
           break
         }
         if (highlightedIndex >= 0) {
-          handleSelect(results[highlightedIndex])
+          handleSelect(visibleResults[highlightedIndex])
         } else if (
-          results[0] &&
-          results[0].formatted.toLowerCase().includes(query.trim().toLowerCase())
+          visibleResults[0] &&
+          visibleResults[0].formatted.toLowerCase().includes(query.trim().toLowerCase())
         ) {
           // Dropdown open with nothing highlighted: pressing Enter after
           // typing an address must resolve coordinates (and get a real zone
           // verdict) instead of silently doing nothing. Commit the top
           // suggestion only when it actually contains what the traveller
           // typed, so a bad first hit never pins a different place.
-          handleSelect(results[0])
+          handleSelect(visibleResults[0])
         }
         break
       case 'Escape':
@@ -282,7 +356,7 @@ export default function LocationPicker({
           onBlur={onBlur}
           onKeyDown={handleKeyDown}
           onFocus={() => {
-            if (results.length > 0) setOpen(true)
+            if (visibleResults.length > 0) setOpen(true)
           }}
           disabled={disabled}
           placeholder={placeholder}
@@ -369,7 +443,7 @@ export default function LocationPicker({
               </li>
             )}
             {!loading &&
-              results.map((r, index) => (
+              visibleResults.map((r, index) => (
                 <li
                   key={`${r.source}-${index}`}
                   id={`location-option-${index}`}
@@ -395,6 +469,77 @@ export default function LocationPicker({
                   </div>
                 </li>
               ))}
+            {/* Google Maps fallback (SerpApi) — offered when the regular
+                autocomplete found nothing: one explicit, credit-cached search
+                for the typed place, hard-filtered to Ghana. */}
+            {googleState === 'loading' && (
+              <li className="flex items-center gap-2 border-t border-slate-100 px-4 py-3 text-sm text-slate-500">
+                <Loader2 size={14} className="animate-spin text-[#179237]" />
+                Searching Google Maps…
+              </li>
+            )}
+            {googleState === 'idle' && !loading && !hasRelevantLocationSuggestion(query, visibleResults) && query.trim().length >= 3 && (
+              <li
+                role="option"
+                aria-selected={false}
+                onClick={() => void runGoogleSearch()}
+                onMouseDown={(e) => e.preventDefault()}
+                className="cursor-pointer border-t border-slate-100 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50"
+              >
+                <div className="flex items-start gap-2.5">
+                  <Search size={14} className="mt-0.5 shrink-0 text-slate-400" />
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">Can’t find your location? Search Google Maps</div>
+                    <div className="mt-0.5 text-xs text-slate-400">We’ll look it up on Google Maps in Ghana.</div>
+                  </div>
+                </div>
+              </li>
+            )}
+            {googleState === 'done' && googleResults.length > 0 && (
+              <>
+                <li className="border-t border-slate-100 px-4 pb-1 pt-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Google Maps · Ghana
+                </li>
+                {googleResults.map((place, index) => (
+                  <li
+                    key={place.placeId || `${place.title}-${index}`}
+                    id={`location-google-option-${index}`}
+                    role="option"
+                    aria-selected={false}
+                    onClick={() => commitGooglePlace(place)}
+                    onMouseDown={(e) => e.preventDefault()}
+                    className="cursor-pointer px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
+                  >
+                    <div className="flex items-start gap-2.5">
+                      <MapPin size={14} className="mt-0.5 shrink-0 text-[#179237]" />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate font-medium">{place.title}</div>
+                        {place.address && <div className="truncate text-xs text-slate-400">{place.address}</div>}
+                      </div>
+                      <span className="shrink-0 rounded-full bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-600">
+                        Google Maps
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </>
+            )}
+            {googleState === 'done' && googleResults.length === 0 && googleNote && (
+              <li className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500">{googleNote}</li>
+            )}
+            {googleState === 'error' && googleNote && (
+              <li className="border-t border-slate-100 px-4 py-3">
+                <p className="text-xs leading-relaxed text-slate-500">{googleNote}</p>
+                <button
+                  type="button"
+                  onClick={() => void runGoogleSearch()}
+                  className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-[#179237] hover:underline"
+                >
+                  <RefreshCw size={11} />
+                  Try again
+                </button>
+              </li>
+            )}
             {/* Paste a Google Maps link — pin the exact spot from the link. */}
             <li
               role="option"
@@ -420,12 +565,12 @@ export default function LocationPicker({
             {!loading && query.trim().length >= 3 && (
               <li
                 role="option"
-                aria-selected={highlightedIndex === results.length}
+                aria-selected={highlightedIndex === visibleResults.length}
                 onClick={() => commitManual(query)}
-                onMouseEnter={() => setHighlightedIndex(results.length)}
+                onMouseEnter={() => setHighlightedIndex(visibleResults.length)}
                 onMouseDown={(e) => e.preventDefault()}
                 className={`cursor-pointer border-t border-slate-100 px-4 py-3 text-sm ${
-                  highlightedIndex === results.length ? 'bg-emerald-50 text-emerald-900' : 'text-slate-700 hover:bg-slate-50'
+                  highlightedIndex === visibleResults.length ? 'bg-emerald-50 text-emerald-900' : 'text-slate-700 hover:bg-slate-50'
                 }`}
               >
                 <div className="flex items-start gap-2.5">

@@ -55,6 +55,10 @@ describe('geoapifyAutocomplete', () => {
     expect(fetch).toHaveBeenCalledWith(expect.stringContaining('text=Accra%20Mall'))
     expect(fetch).toHaveBeenCalledWith(expect.stringContaining('apiKey=test-key'))
     expect(fetch).toHaveBeenCalledWith(expect.stringContaining('limit=5'))
+    // Ghana-only: foreign brand matches (e.g. "Four Points by Sheraton Lagos")
+    // must never reach the picker — Geoapify has no Ghana entry for them, so
+    // the search falls through to the Google Maps (SerpApi) fallback.
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('filter=countrycode:gh'))
 
     expect(results).toHaveLength(2)
     expect(results[0]).toEqual({

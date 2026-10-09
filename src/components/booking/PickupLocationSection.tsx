@@ -310,6 +310,14 @@ export default function PickupLocationSection({
     [resolvedPoints],
   )
 
+  // Origin for the Google Maps (SerpApi) fallback search: the meeting point,
+  // or the first designated pickup spot/zone — keeps the search biased to the
+  // tour's own area instead of the whole country.
+  const googleSearchOrigin = useMemo<{ lat: number; lng: number } | null>(
+    () => meetingPointCoords ?? designatedPoints[0] ?? null,
+    [meetingPointCoords, designatedPoints],
+  )
+
   // The one designated pickup point for single-point tours (resolved first,
   // raw entry as the pre-geocode fallback).
   const singlePointInfo = useMemo(() => {
@@ -642,6 +650,7 @@ export default function PickupLocationSection({
                   placeholder="Search for hotel, address, etc."
                   valid={locationValid}
                   error={locationInvalidMessage}
+                  searchOrigin={googleSearchOrigin}
                   minimal
                 />
 

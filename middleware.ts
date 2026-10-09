@@ -1,3 +1,5 @@
+import { searchGhanaPlaces } from './server/serpApiMaps'
+
 export const config = { runtime: 'nodejs' }
 
 const BOT_AGENTS = [
@@ -91,10 +93,84 @@ function isReadMethod(method: string) {
   return method === 'GET' || method === 'HEAD'
 }
 
-export default function middleware(request: Request) {
+const MAPS_SEARCH_PATH = '/api/maps-search'
+const MAX_QUERY_LENGTH = 120
+
+/**
+ * Reads the server-side SerpApi key without referencing a Node `process`
+ * global by name — this file is also type-checked against DOM typings (the
+ * app project pulls it in via its tests), where `process` is not declared.
+ *
+ * The key is stored under its VITE_-prefixed deployment name (tooling
+ * convention), but this is the SERVER runtime: it never reaches the browser.
+ * A Vite build guard (`server/noClientSerpKey.ts`) fails the build if any
+ * client code references it or the bare `import.meta.env` object.
+ * `SERPAPI_API_KEY` is still accepted as a legacy alias.
+ */
+function getSerpApiKey(): string {
+  const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env
+  return env?.VITE_SERP_API_KEY?.trim() || env?.SERPAPI_API_KEY?.trim() || ''
+}
+
+function jsonResponse(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      // SerpApi caches identical searches for one hour (those repeats are
+      // free); letting the CDN reuse the response for the same window means
+      // repeated searches never even reach the upstream API.
+      'Cache-Control': 'public, max-age=300, s-maxage=3600',
+    },
+  })
+}
+
+/**
+ * `GET /api/maps-search?q=…&lat=…&lng=…` — proxies a Ghana-biased Google
+ * Maps place search through SerpApi for the booking pickup picker.
+ *
+ * SerpApi sends no CORS headers and its key must stay server-side, so this
+ * same-origin route is the only place the browser can reach Google Maps
+ * search from. Input is validated, the key never leaves the server, and
+ * failures map to `{ ok: false, reason }` so the client can fall back to the
+ * paste-link / manual-pin options.
+ */
+export async function handleMapsSearch(request: Request): Promise<Response> {
+  if (request.method !== 'GET') return jsonResponse({ ok: false, reason: 'method' }, 405)
+
+  const url = new URL(request.url)
+  const q = (url.searchParams.get('q') || '').trim()
+  if (q.length < 3 || q.length > MAX_QUERY_LENGTH) {
+    return jsonResponse({ ok: false, reason: 'invalid' }, 400)
+  }
+
+  const latRaw = url.searchParams.get('lat')
+  const lngRaw = url.searchParams.get('lng')
+  let origin: { lat: number; lng: number } | null = null
+  if ((latRaw != null) !== (lngRaw != null)) {
+    return jsonResponse({ ok: false, reason: 'invalid' }, 400)
+  }
+  if (latRaw != null && lngRaw != null) {
+    const lat = Number(latRaw)
+    const lng = Number(lngRaw)
+    if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+      return jsonResponse({ ok: false, reason: 'invalid' }, 400)
+    }
+    origin = { lat, lng }
+  }
+
+  const result = await searchGhanaPlaces(q, origin, getSerpApiKey())
+  return jsonResponse(result)
+}
+
+export default async function middleware(request: Request) {
   const url = new URL(request.url)
   const pathname = url.pathname
   const ua = request.headers.get('user-agent') || ''
+
+  // SerpApi-backed Google Maps search proxy — handled before every rewrite so
+  // it can never be SPA-rewritten or served the bot prerender.
+  if (pathname === MAPS_SEARCH_PATH) return handleMapsSearch(request)
 
   // Vercel's Image Optimization endpoint carries every parameter in the query
   // string, so `/_vercel/image` has no file extension. Without this guard it
