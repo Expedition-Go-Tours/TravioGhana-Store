@@ -92,6 +92,7 @@ const SellOutSection = lazy(() => import('./components/SellOutSection'))
 const LastMinuteDealsSection = lazy(() => import('./components/LastMinuteDealsSection'))
 const NewExperiencesSection = lazy(() => import('./components/NewExperiencesSection'))
 const TopAttractionsNearbySection = lazy(() => import('./components/TopAttractionsNearbySection'))
+const TopRecommendationsSection = lazy(() => import('./components/TopRecommendationsSection'))
 
 
 type PageView = 'home' | 'signin' | 'signup'
@@ -213,6 +214,20 @@ function HomePage() {
           content-visibility, so the newsletter is in the page from first
           paint and its card never pops in with a blank image. */}
       <NewsletterSection />
+      {/* Bottom-of-page editorial recommendations — five rows of two, from the
+          homepage's ranked slices plus catalogue descriptions. Mounted on
+          scroll so neither its chunk nor the description fetch loads early. */}
+      <MountOnView>
+        <Suspense fallback={<HomeSectionSkeleton />}>
+          <TopRecommendationsSection
+            preloaded={data?.recommended}
+            backfill={data?.recommendedBackfill}
+            trending={data?.trending}
+            topRated={data?.topRated}
+            isLoading={loading}
+          />
+        </Suspense>
+      </MountOnView>
       <Footer />
     </SellOutProvider>
   )
