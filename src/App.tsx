@@ -162,7 +162,7 @@ function HomePage() {
         title={hasActiveSearch ? `Tours in ${currentLocation} | Ghana Tours & Experiences` : undefined}
         description={hasActiveSearch
           ? `Discover the best tours and experiences in ${currentLocation}, Ghana. Book cultural tours, food tours, wildlife safaris, and adventure activities. Free cancellation, best prices guaranteed.`
-          : 'Book Ghana tours and activities with Travio Ghana. Explore Accra city tours, Cape Coast heritage trips, food tours and outdoor adventures for your Ghana vacation.'
+          : 'Discover, compare and book Ghana tours, activities and experiences from local providers on Travio Ghana. Explore things to do in Accra, Cape Coast and beyond.'
         }
         keywords={hasActiveSearch
           ? `${currentLocation} tours, things to do in ${currentLocation}, ${currentLocation} Ghana, Ghana tours, book tours in ${currentLocation}`
