@@ -49,7 +49,7 @@ function brandOrganization() {
     '@type': 'Organization',
     name: SITE_NAME,
     url: SITE_URL,
-    logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo.png`, width: 512, height: 512 },
+    logo: { '@type': 'ImageObject', url: `${SITE_URL}/search-logo.png`, width: 1254, height: 1254 },
     sameAs: [...BRAND_SAME_AS],
   }
 }
