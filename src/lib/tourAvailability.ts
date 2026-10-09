@@ -195,3 +195,24 @@ export function formatTimeSlotList(timeSlots?: { startTime: string; endTime?: st
     .map((t) => (t.endTime ? `${formatTime12h(t.startTime)} – ${formatTime12h(t.endTime)}` : formatTime12h(t.startTime)))
     .join(' · ')
 }
+
+/**
+ * Time label for the booking summary's date/time row: time-slot tours show the
+ * chosen slot; opening-hours tours show the selected day's opening hours,
+ * falling back to the weekly range so the supplier's choice is never hidden
+ * behind a fake "9:00 AM" default.
+ */
+export function scheduleTimeLabel(
+  tour: TourScheduleInfo & { dateISO?: string; time?: string },
+): string {
+  if (tour.scheduleType === 'operatingHours') {
+    if (tour.dateISO) {
+      const dayHours = openingHoursForDay(tour, new Date(`${tour.dateISO}T00:00:00`))
+      if (dayHours) return dayHours
+    }
+    const range = weeklyHoursRange(tour)
+    if (range) return range
+    return 'Flexible time'
+  }
+  return tour.time || '9:00 AM'
+}
