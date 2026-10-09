@@ -21,10 +21,18 @@ export interface TourCatalogItem {
   description: string
 }
 
-/** Trim + collapse the multi-line descriptions the catalogue stores. */
+/**
+ * Trim + normalize the multi-line descriptions the catalogue stores. Each
+ * non-empty line becomes a paragraph (joined back with `\n`) so the expanded
+ * card can render the same paragraph structure as the tour detail page.
+ */
 export function cleanTourDescription(value: unknown): string {
   if (typeof value !== 'string') return ''
-  return value.replace(/\s+/g, ' ').trim()
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.replace(/[ \t]+/g, ' ').trim())
+    .filter((line) => line.length > 0)
+    .join('\n')
 }
 
 function toCatalogItem(raw: Record<string, unknown> | null | undefined): TourCatalogItem | null {

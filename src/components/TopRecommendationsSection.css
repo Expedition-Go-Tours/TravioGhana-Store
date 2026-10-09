@@ -9,7 +9,10 @@
 }
 
 .top-recs-container {
-  max-width: 1280px;
+  /* Matches the homepage's content column (five 295px cards + four 16px gaps)
+     plus the 32px gutters, so this section's edges line up with every other
+     homepage section. */
+  max-width: calc(295px * 5 + 16px * 4 + 64px);
   margin: 0 auto;
   padding: 0 32px;
 }
@@ -92,26 +95,39 @@
   line-height: 1.55;
   color: #666;
   margin: 10px 0 0;
+}
+
+.top-rec-excerpt + .top-rec-excerpt {
+  margin-top: 8px;
+}
+
+.top-rec-excerpt--clamped {
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.top-rec-more {
+.top-rec-toggle {
   align-self: flex-end;
   margin-top: 12px;
+  border: 1px solid #1a1a1a;
+  border-radius: 2px;
+  background: #fff;
+  padding: 5px 12px;
   font-family: 'DM Sans', sans-serif;
   font-size: 14px;
-  font-weight: 600;
-  color: var(--primary);
+  font-weight: 700;
+  color: #1a1a1a;
   text-decoration: underline;
-  text-underline-offset: 3px;
-  transition: opacity 0.2s;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
 }
 
-.top-rec-more:hover {
-  opacity: 0.8;
+.top-rec-toggle:hover {
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 /* Loading skeleton — same two-column rhythm as the real grid. */
@@ -173,6 +189,7 @@
 
   .top-recs-container {
     padding: 0 16px;
+    max-width: 100%;
   }
 
   .top-recs-title {

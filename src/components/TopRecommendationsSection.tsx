@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import OptimizedImage from '@/components/shared/OptimizedImage'
@@ -9,6 +9,8 @@ import './TopRecommendationsSection.css'
 
 /** Five rows of two — the editorial grid the image specifies. */
 const RECOMMENDATION_COUNT = 10
+/** Same long-description gate the tour detail page uses for its toggle. */
+const LONG_DESCRIPTION_CHARS = 300
 
 interface Props {
   /** Backend-ranked "recommended" rows (great reviews + booking momentum). */
@@ -28,6 +30,7 @@ interface TopRecItem {
   title: string
   slug: string
   image: string
+  /** Paragraphs joined with `\n` (see useTourDescriptions). */
   description: string
 }
 
@@ -54,15 +57,67 @@ function dedupe(tours: HomepageTour[]): HomepageTour[] {
 }
 
 /**
+ * One recommendation row: image, title (the only link — it routes to the
+ * tour's detail page), a clamped description excerpt, and an inline
+ * "See more" / "See less" toggle that reveals the full description in place.
+ */
+function TopRecommendationItem({ item }: { item: TopRecItem }) {
+  const { t } = useTranslation()
+  const [expanded, setExpanded] = useState(false)
+
+  const href = tourPath(item.id, item.slug)
+  const paragraphs = item.description
+    .split('\n')
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
+  const longDescription = item.description.length > LONG_DESCRIPTION_CHARS
+
+  return (
+    <article className="top-rec-item">
+      <div className="top-rec-image">
+        {item.image ? (
+          <OptimizedImage src={item.image} alt="" width={640} className="top-rec-img" />
+        ) : (
+          <span className="top-rec-image-fallback" />
+        )}
+      </div>
+      <div className="top-rec-body">
+        <h3 className="top-rec-title">
+          <Link to={href}>{item.title}</Link>
+        </h3>
+        {paragraphs.length > 0 &&
+          (expanded && longDescription ? (
+            paragraphs.map((paragraph, index) => (
+              <p className="top-rec-excerpt" key={index}>
+                {paragraph}
+              </p>
+            ))
+          ) : (
+            <p className="top-rec-excerpt top-rec-excerpt--clamped">{paragraphs.join(' ')}</p>
+          ))}
+        {longDescription && (
+          <button
+            type="button"
+            className="top-rec-toggle"
+            onClick={() => setExpanded((value) => !value)}
+            aria-expanded={expanded}
+          >
+            {expanded ? t('tourDetail.seeLess') : t('tourDetail.seeMore')}
+          </button>
+        )}
+      </div>
+    </article>
+  )
+}
+
+/**
  * "Our top recommendations for things to do in Ghana" — the bottom-of-page
- * editorial section: ten tours, five rows of two, each with an image, title,
- * three-line excerpt and a "See more" link.
- *
- * The rows come from the homepage's already-fetched ranked slices — the
- * backend "recommended" ranking first (quality + bookings), then the nearby
- * rail, momentum and quality slices if it ships fewer than ten. Descriptions
- * are joined by id from the catalogue (see useTourDescriptions); when one is
- * missing the excerpt is simply omitted.
+ * editorial section: ten tours, five rows of two. The rows come from the
+ * homepage's already-fetched ranked slices — the backend "recommended"
+ * ranking first (quality + bookings), then the nearby rail, momentum and
+ * quality slices if it ships fewer than ten. Descriptions are joined by id
+ * from the catalogue (see useTourDescriptions); when one is missing the
+ * excerpt is simply omitted.
  */
 export default function TopRecommendationsSection({
   preloaded,
@@ -135,31 +190,9 @@ export default function TopRecommendationsSection({
           {title || t('sections.topRecommendations')}
         </h2>
         <div className="top-recs-grid">
-          {items.map((item) => {
-            const href = tourPath(item.id, item.slug)
-            return (
-              <article className="top-rec-item" key={item.id}>
-                {/* Decorative duplicate of the title link — kept out of the tab
-                    order so each row exposes one link per destination. */}
-                <Link to={href} className="top-rec-image" tabIndex={-1} aria-hidden="true">
-                  {item.image ? (
-                    <OptimizedImage src={item.image} alt="" width={640} className="top-rec-img" />
-                  ) : (
-                    <span className="top-rec-image-fallback" />
-                  )}
-                </Link>
-                <div className="top-rec-body">
-                  <h3 className="top-rec-title">
-                    <Link to={href}>{item.title}</Link>
-                  </h3>
-                  {item.description && <p className="top-rec-excerpt">{item.description}</p>}
-                  <Link to={href} className="top-rec-more">
-                    {t('tourDetail.seeMore')}
-                  </Link>
-                </div>
-              </article>
-            )
-          })}
+          {items.map((item) => (
+            <TopRecommendationItem item={item} key={item.id} />
+          ))}
         </div>
       </div>
     </section>

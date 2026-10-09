@@ -61,7 +61,9 @@ describe('useTourDescriptions', () => {
         title: 'Cape Coast Castle',
         slug: 'cape-coast',
         image: 'https://img/1.jpg',
-        description: 'Line one Line two extra',
+        // Paragraph breaks are preserved; each line is trimmed and its inner
+        // spacing normalized.
+        description: 'Line one\nLine two extra',
       },
       {
         id: 't2',
