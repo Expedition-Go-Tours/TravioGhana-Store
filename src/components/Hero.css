@@ -24,8 +24,6 @@
 .hero-headline {
   font-family: 'Manrope', sans-serif;
   font-weight: 800;
-  /* Floor matches the 24px phone size so the headline never gets smaller at
-     ~769-800px than it is on a phone (clamp would dip to 22px there). */
   font-size: clamp(24px, 2.8vw, 38px);
   line-height: 1.15;
   letter-spacing: -0.03em;
@@ -44,19 +42,32 @@
   max-width: 500px;
 }
 
+/* English hero: keep the headline AND the tagline on a single line at every
+   screen size — the text shrinks with the viewport instead of wrapping.
+   The font sizes are tuned against the measured Manrope glyph widths
+   (headline ~16.15px per 1px of font, tagline ~25.27px per 1px of font) so a
+   full line always fits within the 20px side padding from 320px viewports up:
+     headline: (100vw - 48px) / 16.15
+     tagline:  (100vw - 52px) / 25.27
+   Desktop is capped at the previous maximums (38px / 20px). */
+html:lang(en) .hero-headline {
+  font-size: clamp(16px, calc((100vw - 48px) / 16.15), 38px);
+  white-space: nowrap;
+}
+
+html:lang(en) .hero-tagline {
+  font-size: clamp(10px, calc((100vw - 52px) / 25.27), 20px);
+  max-width: none;
+  white-space: nowrap;
+}
+
 @media (max-width: 768px) {
   .hero,
   .hero-content {
     min-height: 35vh;
   }
 
-  .hero-headline {
-    font-size: 24px;
-    letter-spacing: -0.03em;
-  }
-
   .hero-tagline {
-    font-size: 15px;
     margin-top: 6px;
   }
 }
