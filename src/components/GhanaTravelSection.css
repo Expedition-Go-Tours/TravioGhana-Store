@@ -1,0 +1,16 @@
+.ghana-travel {
+  max-width: 1539px;
+  margin: 0 auto;
+  padding: 40px 32px;
+  line-height: 1.65;
+}
+.ghana-travel h2 { font-size: clamp(24px, 3vw, 32px); margin: 0 0 12px; }
+.ghana-travel h3 { font-size: 20px; margin: 0 0 10px; }
+.ghana-travel p { margin: 0 0 20px; }
+.ghana-travel a { color: #176b45; text-decoration: underline; text-underline-offset: 3px; }
+.ghana-travel a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+.ghana-travel-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; margin-top: 24px; }
+@media (max-width: 768px) {
+  .ghana-travel { padding: 30px 16px; }
+  .ghana-travel-grid { grid-template-columns: 1fr; gap: 8px; }
+}
