@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import OptimizedImage from '@/components/shared/OptimizedImage'
 import { useTourDescriptionsByIds } from '../hooks/useTourDescriptions'
@@ -54,9 +53,10 @@ function dedupe(tours: HomepageTour[]): HomepageTour[] {
 }
 
 /**
- * One recommendation row: image, title (the only link — it routes to the
- * tour's detail page), the description excerpt, and an inline "See more" /
- * "See less" toggle that reveals the full description in place.
+ * One recommendation row: image and title (both open the tour's detail page
+ * in a new tab, mirroring expeditiongotours.com), the description excerpt,
+ * and an inline "See more" / "See less" toggle that reveals the full
+ * description in place.
  *
  * The text is the tour's full description from the detail endpoint (the same
  * source the tour detail page renders); the collapsed state simply clamps it
@@ -75,16 +75,24 @@ function TopRecommendationItem({ item, description }: { item: TopRecItem; descri
 
   return (
     <article className={`top-rec-item${expanded ? ' top-rec-item--expanded' : ''}`}>
-      <Link to={href} className="top-rec-image" aria-label={item.title}>
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener"
+        className="top-rec-image"
+        aria-label={item.title}
+      >
         {item.image ? (
           <OptimizedImage src={item.image} alt="" width={640} className="top-rec-img" />
         ) : (
           <span className="top-rec-image-fallback" />
         )}
-      </Link>
+      </a>
       <div className="top-rec-body">
         <h3 className="top-rec-title">
-          <Link to={href}>{item.title}</Link>
+          <a href={href} target="_blank" rel="noopener">
+            {item.title}
+          </a>
         </h3>
         {paragraphs.length > 0 &&
           (expanded && longDescription ? (

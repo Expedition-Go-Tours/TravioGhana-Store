@@ -74,17 +74,22 @@ describe('TopRecommendationsSection', () => {
     ).toBeInTheDocument()
   })
 
-  it('routes the title and the image to the tour detail page', () => {
+  it('opens the title and the image to the tour detail page in a new tab', () => {
     const { container } = renderSection({ preloaded: [tour('abc', 'Cape Coast Castle')] })
 
-    // Both the cover image and the title link to the same canonical tour page.
+    // Both the cover image and the title link to the same canonical tour page
+    // and open it in a new tab (mirrors expeditiongotours.com), so the
+    // homepage keeps its scroll position behind the new tab.
     const links = screen.getAllByRole('link')
     expect(links).toHaveLength(2)
     for (const link of links) {
       expect(link).toHaveAttribute('href', '/tour/abc/abc')
+      expect(link).toHaveAttribute('target', '_blank')
+      expect(link).toHaveAttribute('rel', 'noopener')
     }
     const imageLink = container.querySelector('a.top-rec-image')
     expect(imageLink).toHaveAttribute('href', '/tour/abc/abc')
+    expect(imageLink).toHaveAttribute('target', '_blank')
     expect(imageLink).toHaveAttribute('aria-label', 'Cape Coast Castle')
   })
 
