@@ -89,7 +89,10 @@
 }
 
 .newsletter-input-wrap {
-  flex: 1;
+  /* Basis `auto` (not `0%`) so the explicit height survives when the form
+     switches to a column stack on mobile — a 0% basis would override the
+     height there and collapse the field. */
+  flex: 1 1 auto;
   min-width: 0;
   display: flex;
   align-items: center;
@@ -245,8 +248,10 @@
     height: 48px;
   }
 
-  .newsletter-input-icon {
-    display: none;
+  /* ≥16px stops iOS Safari from auto-zooming the page when the field is
+     focused; the label-sized "EMAIL" placeholder is unaffected. */
+  .newsletter-input {
+    font-size: 16px;
   }
 
   .newsletter-btn {
