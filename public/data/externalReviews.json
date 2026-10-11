@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-10-10T12:12:11.339Z",
+  "generatedAt": "2026-10-11T12:24:12.702Z",
   "stats": {
-    "totalReviews": 1203,
+    "totalReviews": 1204,
     "averageRating": 4.9,
     "platforms": [
       {
         "source": "GETYOURGUIDE",
-        "reviewCount": 315,
+        "reviewCount": 316,
         "averageRating": 4.8
       },
       {
@@ -144,7 +144,7 @@
       "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
       "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
       "rating": 4.7,
-      "reviewCount": 211,
+      "reviewCount": 213,
       "distribution": null,
       "mappedTourTitle": "Cape Coast Castle, Elmina Castle & Kakum National Park Tour"
     },
@@ -216,7 +216,7 @@
       "originalDate": "2026-08-31T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_2af10d9c992b",
@@ -235,7 +235,7 @@
       "originalDate": "2026-08-28T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_d3e71a6e9bde",
@@ -254,7 +254,7 @@
       "originalDate": "2026-09-02T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_ec9cee4841df",
@@ -273,26 +273,7 @@
       "originalDate": "2026-08-05T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_f6d380c0736a",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Selina – Sweden",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "This has been our 3rd tour with Expedition-go Tours and every single on of our tours has been amazing. We have been very pleased with all the tour guides we have had and for this tour we had Wisdom. Wisdom was both our driver and guide and he was excellent in both rolls! The roads were truly a challenge but Wisdom did a phenominal job in getting us to our location and home safely. Cape Cost Castle was the highligt of our tour. What an informative and moving tour. As a Ghanaian myself I am truly proud of all the guides and Mr. Nana Akoh Appiah at the Cape Cost Castle was an outstanding tour guide! I have never come across better. I highly recommend this tour!",
-      "textTruncated": "This has been our 3rd tour with Expedition-go Tours and every single on of our tours has been amazing. We have been very pleased with all the tour guides we have had and for this tour we had Wisdom...",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2026-08-08T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_73f604ba8a79",
@@ -311,7 +292,26 @@
       "originalDate": "2026-08-25T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_f6d380c0736a",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Selina – Sweden",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "This has been our 3rd tour with Expedition-go Tours and every single on of our tours has been amazing. We have been very pleased with all the tour guides we have had and for this tour we had Wisdom. Wisdom was both our driver and guide and he was excellent in both rolls! The roads were truly a challenge but Wisdom did a phenominal job in getting us to our location and home safely. Cape Cost Castle was the highligt of our tour. What an informative and moving tour. As a Ghanaian myself I am truly proud of all the guides and Mr. Nana Akoh Appiah at the Cape Cost Castle was an outstanding tour guide! I have never come across better. I highly recommend this tour!",
+      "textTruncated": "This has been our 3rd tour with Expedition-go Tours and every single on of our tours has been amazing. We have been very pleased with all the tour guides we have had and for this tour we had Wisdom...",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2026-08-08T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
     },
     {
       "id": "gyg_78b82a2b101d",
@@ -330,7 +330,7 @@
       "originalDate": "2026-07-23T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_e5e1aa43fea3",
@@ -349,64 +349,7 @@
       "originalDate": "2026-08-21T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_a265bd0cd0ba",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Caira – United Kingdom",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "Mr. T transported us, his knowledge of Ghana is unmatched! Such a potent part of human history, would suggest anyone visiting Ghana do this!!!",
-      "textTruncated": "Mr. T transported us, his knowledge of Ghana is unmatched! Such a potent part of human history, would suggest anyone visiting Ghana do this!!!",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2026-04-30T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_211fce4e7323",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Thomas – Greece",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "We had an absolute blast. The guides were very friendly, accommodating and knowledgeable. We highly recommend booking with them.",
-      "textTruncated": "We had an absolute blast. The guides were very friendly, accommodating and knowledgeable. We highly recommend booking with them.",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2026-04-17T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_75eaedffab10",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Vera – United States",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "Our day trip with Mr. Emanuel was great! It was well organized and communication of all details before the trip was wonderful. our guide answered all our questions about Ghanian history and culture, and made the whole experience comfortable and fun. We learning about the history of Cape Coast and Elmina castle which was very eye opening. Kankum canopy walk was very exciting and we made some friends along the way. Overall we recommend this tour for someone who wants to learn more about the history. Thank you for a good experience.",
-      "textTruncated": "Our day trip with Mr. Emanuel was great! It was well organized and communication of all details before the trip was wonderful. our guide answered all our questions about Ghanian history and culture...",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2026-06-01T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_6d06b3ad4fe9",
@@ -425,26 +368,64 @@
       "originalDate": "2026-05-31T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
-      "id": "gyg_29eb288d1e1e",
+      "id": "gyg_211fce4e7323",
       "source": "GETYOURGUIDE",
-      "reviewerName": "Elizabeth – United Kingdom",
+      "reviewerName": "Thomas – Greece",
       "reviewerAvatar": null,
       "rating": 5,
       "title": null,
-      "text": "It was a great day. The guide, Micheal, was brilliant. It was a shame that another driver ruined the end of the trip my driving into our van! But our driver and Michael handled the situation very well. The restaurant at Kakum Park wasn't the best... their fish kebab was good. That's about it.",
-      "textTruncated": "It was a great day. The guide, Micheal, was brilliant. It was a shame that another driver ruined the end of the trip my driving into our van! But our driver and Michael handled the situation very w...",
+      "text": "We had an absolute blast. The guides were very friendly, accommodating and knowledgeable. We highly recommend booking with them.",
+      "textTruncated": "We had an absolute blast. The guides were very friendly, accommodating and knowledgeable. We highly recommend booking with them.",
       "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
       "tourThumbnail": null,
       "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
       "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
       "coverPhoto": null,
-      "originalDate": "2026-04-07T00:00:00.000Z",
+      "originalDate": "2026-04-17T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_a265bd0cd0ba",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Caira – United Kingdom",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "Mr. T transported us, his knowledge of Ghana is unmatched! Such a potent part of human history, would suggest anyone visiting Ghana do this!!!",
+      "textTruncated": "Mr. T transported us, his knowledge of Ghana is unmatched! Such a potent part of human history, would suggest anyone visiting Ghana do this!!!",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2026-04-30T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_75eaedffab10",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Vera – United States",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "Our day trip with Mr. Emanuel was great! It was well organized and communication of all details before the trip was wonderful. our guide answered all our questions about Ghanian history and culture, and made the whole experience comfortable and fun. We learning about the history of Cape Coast and Elmina castle which was very eye opening. Kankum canopy walk was very exciting and we made some friends along the way. Overall we recommend this tour for someone who wants to learn more about the history. Thank you for a good experience.",
+      "textTruncated": "Our day trip with Mr. Emanuel was great! It was well organized and communication of all details before the trip was wonderful. our guide answered all our questions about Ghanian history and culture...",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2026-06-01T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
     },
     {
       "id": "gyg_a3b75db06df9",
@@ -463,7 +444,26 @@
       "originalDate": "2026-05-21T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_29eb288d1e1e",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Elizabeth – United Kingdom",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "It was a great day. The guide, Micheal, was brilliant. It was a shame that another driver ruined the end of the trip my driving into our van! But our driver and Michael handled the situation very well. The restaurant at Kakum Park wasn't the best... their fish kebab was good. That's about it.",
+      "textTruncated": "It was a great day. The guide, Micheal, was brilliant. It was a shame that another driver ruined the end of the trip my driving into our van! But our driver and Michael handled the situation very w...",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2026-04-07T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
     },
     {
       "id": "gyg_fcd9e6901937",
@@ -482,26 +482,7 @@
       "originalDate": "2025-11-22T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_819bcbc56cc0",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Sammuella – Netherlands",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "This was truly the best trip ever! George was our guide, and he went above and beyond to make the experience unforgettable. He was incredibly helpful, knowledgeable, and attentive to every detail, which made everything so easy and enjoyable. We couldn’t have asked for a better guide thank you, George, for making this such a fantastic experience! Diana",
-      "textTruncated": "This was truly the best trip ever! George was our guide, and he went above and beyond to make the experience unforgettable. He was incredibly helpful, knowledgeable, and attentive to every detail, ...",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2025-10-03T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_b1db3aba069d",
@@ -520,64 +501,7 @@
       "originalDate": "2025-10-24T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_1d93530e9e3b",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Evan – United States",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "This trip was great!!!! The travel day was long and sometimes annoying… but our guide was the best. He always checked in and made sure we had everything we needed, and was very accommodating to our stops or requests. The tours themselves are mind blowing and definitely a must when in Ghana.",
-      "textTruncated": "This trip was great!!!! The travel day was long and sometimes annoying… but our guide was the best. He always checked in and made sure we had everything we needed, and was very accommodating to our...",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2025-10-14T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_d916a1423014",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Fabian – United States",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "amazing trip from pick up to drop offer. Our guide Moses was amazing he helped me conquer my fears of height on the canopy walk. the castles a must see and experience thing to do when you visit Ghana . thank you for a great experience",
-      "textTruncated": "amazing trip from pick up to drop offer. Our guide Moses was amazing he helped me conquer my fears of height on the canopy walk. the castles a must see and experience thing to do when you visit Gha...",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2025-10-10T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_5f98fc871397",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Flor – United States",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "Thompson was an excellent tours guide. Very attentive to each of us. Great customer service",
-      "textTruncated": "Thompson was an excellent tours guide. Very attentive to each of us. Great customer service",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2025-10-09T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_3b802e143b15",
@@ -596,121 +520,26 @@
       "originalDate": "2026-03-25T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
-      "id": "gyg_085b0880afae",
+      "id": "gyg_819bcbc56cc0",
       "source": "GETYOURGUIDE",
-      "reviewerName": "Damien – United States",
+      "reviewerName": "Sammuella – Netherlands",
       "reviewerAvatar": null,
       "rating": 5,
       "title": null,
-      "text": "The trip was educational and fun! The historic value was worth the trip alone. Be advised that it’s a full day trip. They state 3 hours there and 3 hours back to and from Accra, however it’s a much more time consuming journey. It took us 6 hours to get back with traffic and road blocks. Everyone go and enjoy at least once.",
-      "textTruncated": "The trip was educational and fun! The historic value was worth the trip alone. Be advised that it’s a full day trip. They state 3 hours there and 3 hours back to and from Accra, however it’s a much...",
+      "text": "This was truly the best trip ever! George was our guide, and he went above and beyond to make the experience unforgettable. He was incredibly helpful, knowledgeable, and attentive to every detail, which made everything so easy and enjoyable. We couldn’t have asked for a better guide thank you, George, for making this such a fantastic experience! Diana",
+      "textTruncated": "This was truly the best trip ever! George was our guide, and he went above and beyond to make the experience unforgettable. He was incredibly helpful, knowledgeable, and attentive to every detail, ...",
       "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
       "tourThumbnail": null,
       "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
       "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
       "coverPhoto": null,
-      "originalDate": "2026-02-08T00:00:00.000Z",
+      "originalDate": "2025-10-03T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_56947401a453",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Mark – Canada",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "I like how things were organized I just wish the tour guides at Cape Coast and Elmina Castle didn't rush the Tour. We didn't get enough time to experience the moment properly.",
-      "textTruncated": "I like how things were organized I just wish the tour guides at Cape Coast and Elmina Castle didn't rush the Tour. We didn't get enough time to experience the moment properly.",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2026-03-10T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_4f03a5355243",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Cherry – United Kingdom",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "My guide was Thomas - he was amazing! So helpful and patient with us. He was knowledgeable and answered all our questions. The tour was worth the money. I learnt so much history and saw a different part of Ghana. I would recommend booking.",
-      "textTruncated": "My guide was Thomas - he was amazing! So helpful and patient with us. He was knowledgeable and answered all our questions. The tour was worth the money. I learnt so much history and saw a different...",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2026-02-25T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_a211dbdf8c3c",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Steven – United Kingdom",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "Firstly I want to say our guide Emmanuel was wonderful. He was helpful and kind throughout. It was a long day for us all but he was always great even after so much driving in bad weather. The tour itself was very interesting. Kukum was beautiful. Both the castles were difficult reminders of a dark chapter in history and a deep look into the black mirror of the human soul. It is a tour that is definitely worth taking.",
-      "textTruncated": "Firstly I want to say our guide Emmanuel was wonderful. He was helpful and kind throughout. It was a long day for us all but he was always great even after so much driving in bad weather. The tour ...",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2025-10-02T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_3aca416fd768",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "David – United Kingdom",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "Had a very good experience with Daniel! He was a great guide for us today and the guides we had for the Castle Tours were excellent too. The Hike and Bridge was was nice but due to my fear of heights, I couldn’t do all of it. My Mother however, did it all and had a fantastic time. The Castle Tours were very eye opening too, learning about the dark history of slavery. Overall, it was a great tour and the only negative is how far the Journey is to get there, but of course that’s not the tour operators fault! Good day",
-      "textTruncated": "Had a very good experience with Daniel! He was a great guide for us today and the guides we had for the Castle Tours were excellent too. The Hike and Bridge was was nice but due to my fear of heigh...",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2025-10-28T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_ebd415b45eeb",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Nkwa – United Kingdom",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "The trip was exceptional. If you are lucky enough to get Thompson you are in for a memorable experience. He is incredibly knowledgeable and a wonderful conversationalist. I learned so much about Ghana through the journey and he knows the best spot for lunch. He appreciated our emotional responses to the castles, which themselves are extremely impactful. I would recommend this excursion to anyone",
-      "textTruncated": "The trip was exceptional. If you are lucky enough to get Thompson you are in for a memorable experience. He is incredibly knowledgeable and a wonderful conversationalist. I learned so much about Gh...",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2026-01-12T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_d303162544f0",
@@ -729,178 +558,45 @@
       "originalDate": "2026-03-28T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
-      "id": "gyg_5d084562917d",
+      "id": "gyg_1d93530e9e3b",
       "source": "GETYOURGUIDE",
-      "reviewerName": "donald – United States",
+      "reviewerName": "Evan – United States",
       "reviewerAvatar": null,
       "rating": 5,
       "title": null,
-      "text": "We had a wonderful time on our tour. Our guide, Michael was great-extremely polite, knowledgeable, and very engaging. He worked to ensure everyone was safe and accommodated throughout the entire trip. This was our third tour with this company and wished all were with them.",
-      "textTruncated": "We had a wonderful time on our tour. Our guide, Michael was great-extremely polite, knowledgeable, and very engaging. He worked to ensure everyone was safe and accommodated throughout the entire tr...",
+      "text": "This trip was great!!!! The travel day was long and sometimes annoying… but our guide was the best. He always checked in and made sure we had everything we needed, and was very accommodating to our stops or requests. The tours themselves are mind blowing and definitely a must when in Ghana.",
+      "textTruncated": "This trip was great!!!! The travel day was long and sometimes annoying… but our guide was the best. He always checked in and made sure we had everything we needed, and was very accommodating to our...",
       "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
       "tourThumbnail": null,
       "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
       "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
       "coverPhoto": null,
-      "originalDate": "2025-12-03T00:00:00.000Z",
+      "originalDate": "2025-10-14T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
-      "id": "gyg_bbb2a4d27e9c",
+      "id": "gyg_085b0880afae",
       "source": "GETYOURGUIDE",
-      "reviewerName": "kirsty – United Kingdom",
+      "reviewerName": "Damien – United States",
       "reviewerAvatar": null,
       "rating": 5,
       "title": null,
-      "text": "The trip was an altogether good experience, we enjoyed the history and knowledge bestowed upon us. Kakum national park was awesome and if it wasn’t for the gentle persuasion and championing of our guide I wouldn’t have completed all 7 bridges, which I was really proud of. Our driver Daniel was actually the best very kind and quiet jokes. I would recommend this trip to others as I did enjoy myself and think it’s good value for money",
-      "textTruncated": "The trip was an altogether good experience, we enjoyed the history and knowledge bestowed upon us. Kakum national park was awesome and if it wasn’t for the gentle persuasion and championing of our ...",
+      "text": "The trip was educational and fun! The historic value was worth the trip alone. Be advised that it’s a full day trip. They state 3 hours there and 3 hours back to and from Accra, however it’s a much more time consuming journey. It took us 6 hours to get back with traffic and road blocks. Everyone go and enjoy at least once.",
+      "textTruncated": "The trip was educational and fun! The historic value was worth the trip alone. Be advised that it’s a full day trip. They state 3 hours there and 3 hours back to and from Accra, however it’s a much...",
       "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
       "tourThumbnail": null,
       "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
       "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
       "coverPhoto": null,
-      "originalDate": "2026-01-29T00:00:00.000Z",
+      "originalDate": "2026-02-08T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_3322d3d8143b",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Beverley – Ghana",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "it was well organised, the tour guide Thompson was kind, professional, efficient. it's a bit expensive so maybe snacks could have been included because it's a very long day. I would recommend this tour.",
-      "textTruncated": "it was well organised, the tour guide Thompson was kind, professional, efficient. it's a bit expensive so maybe snacks could have been included because it's a very long day. I would recommend this ...",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2025-11-17T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_5102a8e210d0",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Beverley – United Kingdom",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "it was a great and eye opening experience. The tour guide was very knowledgeable and I learnt history. Some of the horrific experiences of our fore fathers would not have given me and others this opportunity. Improvements of the roads is a must , to make this journey shorter.",
-      "textTruncated": "it was a great and eye opening experience. The tour guide was very knowledgeable and I learnt history. Some of the horrific experiences of our fore fathers would not have given me and others this o...",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2025-11-13T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_36553bd90c1d",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Selihom – Netherlands",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "Our day trip was amazing! Godfrey was a great host. He told us so much about the history of the places we passed and made sure to get the group acquainted with eachother. He also made sure we were all comfortable and safe. Definitely would join again! Greetings, Selihom",
-      "textTruncated": "Our day trip was amazing! Godfrey was a great host. He told us so much about the history of the places we passed and made sure to get the group acquainted with eachother. He also made sure we were ...",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2025-11-13T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_00f6d12166e7",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Richard – United Kingdom",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "Our hosts Eben & Michael were fantastic. They were constantly feeding us with knowledgeable facts throughout the whole day. They arrived on time with a transport vehicle that was very clean and cool. This is a necessary trip for EVERYONE! It's a long and emotive day, but so worth it as it's important to see the truth is slavery. Kakum canopy walk was lots of fun too. I would highly recommend doing this trip.",
-      "textTruncated": "Our hosts Eben & Michael were fantastic. They were constantly feeding us with knowledgeable facts throughout the whole day. They arrived on time with a transport vehicle that was very clean and coo...",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2025-10-29T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_647acb09336a",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Maris – Germany",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "Very well organised, meticulous timing, very safe driving. We were in a small group of 6 people. Great lunch as well!",
-      "textTruncated": "Very well organised, meticulous timing, very safe driving. We were in a small group of 6 people. Great lunch as well!",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2026-01-30T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_7395c171ee98",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Frank – Canada",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "Our guide Emannuel was extremely friendly, professional and well informed. His driving was excellent in spite of some road challenges. He asked about our comfort several times during the 10 hour day. our party of 3 joined another 2 people for a comfortable and friendly trip. Was a GOOD day!",
-      "textTruncated": "Our guide Emannuel was extremely friendly, professional and well informed. His driving was excellent in spite of some road challenges. He asked about our comfort several times during the 10 hour da...",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2026-02-21T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_fd26490f0cbc",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Hellen – United States",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "Fred was great! He was knowledgeable about the history of Ghana, and his love for the people and the country added a pleasant touch. The venues were astonishing and heartfelt. History should not be hidden or whitewashed, no matter how horrific. The guides did a great job explaining and answering questions. This is a tour that all people should experience, especially those on the side of the oppressors. If we are to heal and move forward, we need to acknowledge the past and deal with it. Do not act as if it did not happen.",
-      "textTruncated": "Fred was great! He was knowledgeable about the history of Ghana, and his love for the people and the country added a pleasant touch. The venues were astonishing and heartfelt. History should not be...",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2025-11-25T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_419954eb3943",
@@ -919,7 +615,140 @@
       "originalDate": "2026-02-03T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_7395c171ee98",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Frank – Canada",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "Our guide Emannuel was extremely friendly, professional and well informed. His driving was excellent in spite of some road challenges. He asked about our comfort several times during the 10 hour day. our party of 3 joined another 2 people for a comfortable and friendly trip. Was a GOOD day!",
+      "textTruncated": "Our guide Emannuel was extremely friendly, professional and well informed. His driving was excellent in spite of some road challenges. He asked about our comfort several times during the 10 hour da...",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2026-02-21T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_d916a1423014",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Fabian – United States",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "amazing trip from pick up to drop offer. Our guide Moses was amazing he helped me conquer my fears of height on the canopy walk. the castles a must see and experience thing to do when you visit Ghana . thank you for a great experience",
+      "textTruncated": "amazing trip from pick up to drop offer. Our guide Moses was amazing he helped me conquer my fears of height on the canopy walk. the castles a must see and experience thing to do when you visit Gha...",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2025-10-10T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_56947401a453",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Mark – Canada",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "I like how things were organized I just wish the tour guides at Cape Coast and Elmina Castle didn't rush the Tour. We didn't get enough time to experience the moment properly.",
+      "textTruncated": "I like how things were organized I just wish the tour guides at Cape Coast and Elmina Castle didn't rush the Tour. We didn't get enough time to experience the moment properly.",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2026-03-10T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_5d084562917d",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "donald – United States",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "We had a wonderful time on our tour. Our guide, Michael was great-extremely polite, knowledgeable, and very engaging. He worked to ensure everyone was safe and accommodated throughout the entire trip. This was our third tour with this company and wished all were with them.",
+      "textTruncated": "We had a wonderful time on our tour. Our guide, Michael was great-extremely polite, knowledgeable, and very engaging. He worked to ensure everyone was safe and accommodated throughout the entire tr...",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2025-12-03T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_4f03a5355243",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Cherry – United Kingdom",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "My guide was Thomas - he was amazing! So helpful and patient with us. He was knowledgeable and answered all our questions. The tour was worth the money. I learnt so much history and saw a different part of Ghana. I would recommend booking.",
+      "textTruncated": "My guide was Thomas - he was amazing! So helpful and patient with us. He was knowledgeable and answered all our questions. The tour was worth the money. I learnt so much history and saw a different...",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2026-02-25T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_5102a8e210d0",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Beverley – United Kingdom",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "it was a great and eye opening experience. The tour guide was very knowledgeable and I learnt history. Some of the horrific experiences of our fore fathers would not have given me and others this opportunity. Improvements of the roads is a must , to make this journey shorter.",
+      "textTruncated": "it was a great and eye opening experience. The tour guide was very knowledgeable and I learnt history. Some of the horrific experiences of our fore fathers would not have given me and others this o...",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2025-11-13T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_36553bd90c1d",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Selihom – Netherlands",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "Our day trip was amazing! Godfrey was a great host. He told us so much about the history of the places we passed and made sure to get the group acquainted with eachother. He also made sure we were all comfortable and safe. Definitely would join again! Greetings, Selihom",
+      "textTruncated": "Our day trip was amazing! Godfrey was a great host. He told us so much about the history of the places we passed and made sure to get the group acquainted with eachother. He also made sure we were ...",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2025-11-13T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
     },
     {
       "id": "gyg_ee7210cf04b7",
@@ -938,45 +767,178 @@
       "originalDate": "2026-01-27T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
-      "id": "gyg_0865e3213760",
+      "id": "gyg_5f98fc871397",
       "source": "GETYOURGUIDE",
-      "reviewerName": "Njambi – United States",
+      "reviewerName": "Flor – United States",
       "reviewerAvatar": null,
       "rating": 5,
       "title": null,
-      "text": "The day started a bit later than usual but the guide George was communicative and let me know when the pickup would happen. What I enjoyed most was that after the cape castle visit, he did an emotional check in and it was nice to see everyone interacting and discussing the very emotional trip that this ended up being. I would definitely recommend this tour as it is rich in history and especially as an East African, who got to understand better what the West African people went through during the Trans Atlantic slave trade.",
-      "textTruncated": "The day started a bit later than usual but the guide George was communicative and let me know when the pickup would happen. What I enjoyed most was that after the cape castle visit, he did an emoti...",
+      "text": "Thompson was an excellent tours guide. Very attentive to each of us. Great customer service",
+      "textTruncated": "Thompson was an excellent tours guide. Very attentive to each of us. Great customer service",
       "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
       "tourThumbnail": null,
       "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
       "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
       "coverPhoto": null,
-      "originalDate": "2026-01-02T00:00:00.000Z",
+      "originalDate": "2025-10-09T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
-      "id": "gyg_fd0e2037642c",
+      "id": "gyg_3322d3d8143b",
       "source": "GETYOURGUIDE",
-      "reviewerName": "Tamara – Romania",
+      "reviewerName": "Beverley – Ghana",
       "reviewerAvatar": null,
       "rating": 5,
       "title": null,
-      "text": "The tour was very interesting and the guide was a nice guy to hang out with!",
-      "textTruncated": "The tour was very interesting and the guide was a nice guy to hang out with!",
+      "text": "it was well organised, the tour guide Thompson was kind, professional, efficient. it's a bit expensive so maybe snacks could have been included because it's a very long day. I would recommend this tour.",
+      "textTruncated": "it was well organised, the tour guide Thompson was kind, professional, efficient. it's a bit expensive so maybe snacks could have been included because it's a very long day. I would recommend this ...",
       "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
       "tourThumbnail": null,
       "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
       "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
       "coverPhoto": null,
-      "originalDate": "2026-03-19T00:00:00.000Z",
+      "originalDate": "2025-11-17T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_a211dbdf8c3c",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Steven – United Kingdom",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "Firstly I want to say our guide Emmanuel was wonderful. He was helpful and kind throughout. It was a long day for us all but he was always great even after so much driving in bad weather. The tour itself was very interesting. Kukum was beautiful. Both the castles were difficult reminders of a dark chapter in history and a deep look into the black mirror of the human soul. It is a tour that is definitely worth taking.",
+      "textTruncated": "Firstly I want to say our guide Emmanuel was wonderful. He was helpful and kind throughout. It was a long day for us all but he was always great even after so much driving in bad weather. The tour ...",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2025-10-02T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_3aca416fd768",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "David – United Kingdom",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "Had a very good experience with Daniel! He was a great guide for us today and the guides we had for the Castle Tours were excellent too. The Hike and Bridge was was nice but due to my fear of heights, I couldn’t do all of it. My Mother however, did it all and had a fantastic time. The Castle Tours were very eye opening too, learning about the dark history of slavery. Overall, it was a great tour and the only negative is how far the Journey is to get there, but of course that’s not the tour operators fault! Good day",
+      "textTruncated": "Had a very good experience with Daniel! He was a great guide for us today and the guides we had for the Castle Tours were excellent too. The Hike and Bridge was was nice but due to my fear of heigh...",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2025-10-28T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_ebd415b45eeb",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Nkwa – United Kingdom",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "The trip was exceptional. If you are lucky enough to get Thompson you are in for a memorable experience. He is incredibly knowledgeable and a wonderful conversationalist. I learned so much about Ghana through the journey and he knows the best spot for lunch. He appreciated our emotional responses to the castles, which themselves are extremely impactful. I would recommend this excursion to anyone",
+      "textTruncated": "The trip was exceptional. If you are lucky enough to get Thompson you are in for a memorable experience. He is incredibly knowledgeable and a wonderful conversationalist. I learned so much about Gh...",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2026-01-12T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_bbb2a4d27e9c",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "kirsty – United Kingdom",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "The trip was an altogether good experience, we enjoyed the history and knowledge bestowed upon us. Kakum national park was awesome and if it wasn’t for the gentle persuasion and championing of our guide I wouldn’t have completed all 7 bridges, which I was really proud of. Our driver Daniel was actually the best very kind and quiet jokes. I would recommend this trip to others as I did enjoy myself and think it’s good value for money",
+      "textTruncated": "The trip was an altogether good experience, we enjoyed the history and knowledge bestowed upon us. Kakum national park was awesome and if it wasn’t for the gentle persuasion and championing of our ...",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2026-01-29T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_fd26490f0cbc",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Hellen – United States",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "Fred was great! He was knowledgeable about the history of Ghana, and his love for the people and the country added a pleasant touch. The venues were astonishing and heartfelt. History should not be hidden or whitewashed, no matter how horrific. The guides did a great job explaining and answering questions. This is a tour that all people should experience, especially those on the side of the oppressors. If we are to heal and move forward, we need to acknowledge the past and deal with it. Do not act as if it did not happen.",
+      "textTruncated": "Fred was great! He was knowledgeable about the history of Ghana, and his love for the people and the country added a pleasant touch. The venues were astonishing and heartfelt. History should not be...",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2025-11-25T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_00f6d12166e7",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Richard – United Kingdom",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "Our hosts Eben & Michael were fantastic. They were constantly feeding us with knowledgeable facts throughout the whole day. They arrived on time with a transport vehicle that was very clean and cool. This is a necessary trip for EVERYONE! It's a long and emotive day, but so worth it as it's important to see the truth is slavery. Kakum canopy walk was lots of fun too. I would highly recommend doing this trip.",
+      "textTruncated": "Our hosts Eben & Michael were fantastic. They were constantly feeding us with knowledgeable facts throughout the whole day. They arrived on time with a transport vehicle that was very clean and coo...",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2025-10-29T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_647acb09336a",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Maris – Germany",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "Very well organised, meticulous timing, very safe driving. We were in a small group of 6 people. Great lunch as well!",
+      "textTruncated": "Very well organised, meticulous timing, very safe driving. We were in a small group of 6 people. Great lunch as well!",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2026-01-30T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
     },
     {
       "id": "gyg_960dd3fbd08f",
@@ -995,7 +957,45 @@
       "originalDate": "2026-03-20T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_fd0e2037642c",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Tamara – Romania",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "The tour was very interesting and the guide was a nice guy to hang out with!",
+      "textTruncated": "The tour was very interesting and the guide was a nice guy to hang out with!",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2026-03-19T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_0865e3213760",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Njambi – United States",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "The day started a bit later than usual but the guide George was communicative and let me know when the pickup would happen. What I enjoyed most was that after the cape castle visit, he did an emotional check in and it was nice to see everyone interacting and discussing the very emotional trip that this ended up being. I would definitely recommend this tour as it is rich in history and especially as an East African, who got to understand better what the West African people went through during the Trans Atlantic slave trade.",
+      "textTruncated": "The day started a bit later than usual but the guide George was communicative and let me know when the pickup would happen. What I enjoyed most was that after the cape castle visit, he did an emoti...",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2026-01-02T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
     },
     {
       "id": "gyg_91cf4ac4ec6d",
@@ -1014,26 +1014,7 @@
       "originalDate": "2025-10-08T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
-    },
-    {
-      "id": "gyg_b0366caaaee8",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Flor de Maria Gamboa – Mexico",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "It was a wonderful immersion in the fascinating culture of Ghana as well as in its stunning nature. Every moment of the excursion was emotionally very significant and memorable. I highly recommend taking the time and the opportunity to go on this excursion. Many thanks to Patrick and all the staff who made it possible.",
-      "textTruncated": "It was a wonderful immersion in the fascinating culture of Ghana as well as in its stunning nature. Every moment of the excursion was emotionally very significant and memorable. I highly recommend ...",
-      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
-      "coverPhoto": null,
-      "originalDate": "2026-08-03T00:00:00.000Z",
-      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
-      "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_2d985cbff7f4",
@@ -1052,7 +1033,7 @@
       "originalDate": "2026-07-24T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_d299065dea77",
@@ -1071,7 +1052,26 @@
       "originalDate": "2026-07-25T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_b0366caaaee8",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Flor de Maria Gamboa – Mexico",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "It was a wonderful immersion in the fascinating culture of Ghana as well as in its stunning nature. Every moment of the excursion was emotionally very significant and memorable. I highly recommend taking the time and the opportunity to go on this excursion. Many thanks to Patrick and all the staff who made it possible.",
+      "textTruncated": "It was a wonderful immersion in the fascinating culture of Ghana as well as in its stunning nature. Every moment of the excursion was emotionally very significant and memorable. I highly recommend ...",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2026-08-03T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
     },
     {
       "id": "gyg_728a904c3c2f",
@@ -1090,7 +1090,7 @@
       "originalDate": "2026-04-22T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_6383f78f808a",
@@ -1109,7 +1109,7 @@
       "originalDate": "2025-10-29T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_561fc5756310",
@@ -1128,7 +1128,7 @@
       "originalDate": "2026-01-27T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_846d4d416ae0",
@@ -1147,7 +1147,26 @@
       "originalDate": "2025-11-09T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
+    },
+    {
+      "id": "gyg_be0d6f4f0143",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Kassandra – Canada",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "Emmanuel our tour guide was exceptional. Perfect guide for our tour. Calm yet enthusiastic very knowledgeable, respectful, helpful and friendly. I would highly recommend choosing this company for tours and excursions. You’ve helped make my dream trip even better than I imagined it would be. Thank you! I can not wait to return to Ghana!",
+      "textTruncated": "Emmanuel our tour guide was exceptional. Perfect guide for our tour. Calm yet enthusiastic very knowledgeable, respectful, helpful and friendly. I would highly recommend choosing this company for t...",
+      "tourTitle": "From Accra: The Cape Coast Day Tour Guided Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/from-accra-the-cape-coast-day-tour-guided-experience-t834942/",
+      "coverPhoto": null,
+      "originalDate": "2026-10-10T00:00:00.000Z",
+      "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
+      "productRating": 4.7,
+      "productReviewCount": 213
     },
     {
       "id": "gyg_9fe1265b9d78",
@@ -1166,7 +1185,7 @@
       "originalDate": "2026-09-10T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_3334abe4da9d",
@@ -1185,7 +1204,7 @@
       "originalDate": "2026-07-25T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_50571ea2a901",
@@ -1204,7 +1223,7 @@
       "originalDate": "2026-06-27T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_ec669ad79a07",
@@ -1223,7 +1242,7 @@
       "originalDate": "2026-06-23T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_3c606fb4753a",
@@ -1242,7 +1261,7 @@
       "originalDate": "2026-06-23T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_96fda44b7617",
@@ -1261,7 +1280,7 @@
       "originalDate": "2026-06-11T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_d55d2afa7fc8",
@@ -1280,7 +1299,7 @@
       "originalDate": "2026-05-22T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_2ee74c1b8ed8",
@@ -1299,7 +1318,7 @@
       "originalDate": "2026-05-01T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_f65c04007308",
@@ -1318,7 +1337,7 @@
       "originalDate": "2026-04-26T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_9c719edf6868",
@@ -1337,7 +1356,7 @@
       "originalDate": "2026-04-24T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_5725e414d738",
@@ -1356,7 +1375,7 @@
       "originalDate": "2026-04-18T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_9446c39dd551",
@@ -1375,7 +1394,7 @@
       "originalDate": "2026-04-12T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_d3ed36e1bd99",
@@ -1394,7 +1413,7 @@
       "originalDate": "2026-04-07T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_ebbc85449c90",
@@ -1413,7 +1432,7 @@
       "originalDate": "2026-04-04T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_7ac7ad97c897",
@@ -1432,7 +1451,7 @@
       "originalDate": "2026-03-29T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_774eea0954e5",
@@ -1451,7 +1470,7 @@
       "originalDate": "2026-03-11T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_929f02bdbf30",
@@ -1470,7 +1489,7 @@
       "originalDate": "2026-02-23T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_12c03e98dbb8",
@@ -1489,7 +1508,7 @@
       "originalDate": "2026-01-30T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_27fb64d814db",
@@ -1508,7 +1527,7 @@
       "originalDate": "2026-01-21T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_e4a2e7c2723f",
@@ -1527,7 +1546,7 @@
       "originalDate": "2026-01-08T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_aa056cb7dd87",
@@ -1546,7 +1565,7 @@
       "originalDate": "2025-12-28T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_21ce136fcf25",
@@ -1565,7 +1584,7 @@
       "originalDate": "2025-12-18T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_512a93043be3",
@@ -1584,7 +1603,7 @@
       "originalDate": "2025-12-16T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_2fcc0bff3b16",
@@ -1603,7 +1622,7 @@
       "originalDate": "2025-12-07T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_c17c7a9ff1f3",
@@ -1622,7 +1641,7 @@
       "originalDate": "2025-11-15T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_3f1784815df6",
@@ -1641,7 +1660,7 @@
       "originalDate": "2025-11-03T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_b7d1e40d5d3d",
@@ -1660,7 +1679,7 @@
       "originalDate": "2025-10-12T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_01cfb1c10f48",
@@ -1679,7 +1698,7 @@
       "originalDate": "2025-10-07T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_6e565752d930",
@@ -1698,7 +1717,7 @@
       "originalDate": "2025-09-30T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_3cc31484b03e",
@@ -1717,7 +1736,7 @@
       "originalDate": "2025-09-28T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_68953028e51d",
@@ -1736,7 +1755,7 @@
       "originalDate": "2025-09-24T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_0880e4547d68",
@@ -1755,7 +1774,7 @@
       "originalDate": "2025-09-17T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_45d8fc0cb224",
@@ -1774,7 +1793,7 @@
       "originalDate": "2025-09-13T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_c44ea480d23f",
@@ -1793,7 +1812,7 @@
       "originalDate": "2025-09-07T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_1d4b38a16828",
@@ -1812,7 +1831,7 @@
       "originalDate": "2025-09-07T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_e6c3a9f4cb2d",
@@ -1831,7 +1850,7 @@
       "originalDate": "2025-09-05T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_e04d95e21501",
@@ -1850,7 +1869,7 @@
       "originalDate": "2025-09-05T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_3d41e44a8336",
@@ -1869,7 +1888,7 @@
       "originalDate": "2025-08-19T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_0ae967040f49",
@@ -1888,7 +1907,7 @@
       "originalDate": "2025-08-18T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_cc87352b878c",
@@ -1907,7 +1926,7 @@
       "originalDate": "2025-08-15T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_3f6f3edba841",
@@ -1926,7 +1945,7 @@
       "originalDate": "2025-08-12T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_203e56966ad6",
@@ -1945,7 +1964,7 @@
       "originalDate": "2025-07-27T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_465256daed28",
@@ -1964,7 +1983,7 @@
       "originalDate": "2025-07-04T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_c5ee8d7aeabe",
@@ -1983,7 +2002,7 @@
       "originalDate": "2025-07-02T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_64966fec5743",
@@ -2002,7 +2021,7 @@
       "originalDate": "2025-06-18T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_6f9829d59962",
@@ -2021,7 +2040,7 @@
       "originalDate": "2025-05-30T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_21418434cc5c",
@@ -2040,7 +2059,7 @@
       "originalDate": "2025-05-14T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_e0abeae239f5",
@@ -2059,7 +2078,7 @@
       "originalDate": "2025-04-27T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_18952291e8a0",
@@ -2078,7 +2097,7 @@
       "originalDate": "2025-04-26T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_2958bf9e3388",
@@ -2097,7 +2116,7 @@
       "originalDate": "2025-04-22T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_09057e7b8c97",
@@ -2116,7 +2135,7 @@
       "originalDate": "2025-04-21T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_25968cdd0f86",
@@ -2135,7 +2154,7 @@
       "originalDate": "2025-04-13T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_fc0d834c3e2b",
@@ -2154,7 +2173,7 @@
       "originalDate": "2025-04-11T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_0e3b11aebd78",
@@ -2173,7 +2192,7 @@
       "originalDate": "2025-03-21T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_bd0da938ea7a",
@@ -2192,7 +2211,7 @@
       "originalDate": "2025-03-17T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_bdc764e30baf",
@@ -2211,7 +2230,7 @@
       "originalDate": "2025-03-16T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_672c2fbca004",
@@ -2230,7 +2249,7 @@
       "originalDate": "2025-03-04T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_e6260ecf7813",
@@ -2249,7 +2268,7 @@
       "originalDate": "2025-03-01T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_19fa508d69a3",
@@ -2268,7 +2287,7 @@
       "originalDate": "2025-03-01T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_a7bd16a57ce0",
@@ -2287,7 +2306,7 @@
       "originalDate": "2025-02-28T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_d10463f1d68f",
@@ -2306,7 +2325,7 @@
       "originalDate": "2025-02-24T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_3ee285c980c7",
@@ -2325,7 +2344,7 @@
       "originalDate": "2025-02-20T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_2ac769586e1a",
@@ -2344,7 +2363,7 @@
       "originalDate": "2025-02-18T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_971f50e4e925",
@@ -2363,7 +2382,7 @@
       "originalDate": "2025-02-14T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_09e110e65c26",
@@ -2382,7 +2401,7 @@
       "originalDate": "2025-02-10T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_0ebfe5e3f6cb",
@@ -2401,7 +2420,7 @@
       "originalDate": "2025-02-01T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_9ec0141004dd",
@@ -2420,7 +2439,7 @@
       "originalDate": "2025-01-28T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_13499ed4b3a8",
@@ -2439,7 +2458,7 @@
       "originalDate": "2025-01-09T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_61517d58ff78",
@@ -2458,7 +2477,7 @@
       "originalDate": "2025-01-04T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_3e81eebe3d5e",
@@ -2477,7 +2496,7 @@
       "originalDate": "2024-12-29T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_ae0c67352093",
@@ -2496,7 +2515,7 @@
       "originalDate": "2024-12-28T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_667c44bb5616",
@@ -2515,7 +2534,7 @@
       "originalDate": "2024-12-27T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_3d254751387b",
@@ -2534,7 +2553,7 @@
       "originalDate": "2024-12-26T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_f3fa323bdcf0",
@@ -2553,7 +2572,7 @@
       "originalDate": "2024-12-13T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_e3403ec3904f",
@@ -2572,7 +2591,7 @@
       "originalDate": "2024-12-05T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_dfea818faca1",
@@ -2591,7 +2610,7 @@
       "originalDate": "2024-11-17T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_6b7bacc28637",
@@ -2610,7 +2629,7 @@
       "originalDate": "2024-11-01T00:00:00.000Z",
       "productId": "getyourguide-from-accra-the-cape-coast-day-tour-guided-experience-t834942",
       "productRating": 4.7,
-      "productReviewCount": 211
+      "productReviewCount": 213
     },
     {
       "id": "gyg_48ea3f604da2",
@@ -2708,25 +2727,6 @@
       "productReviewCount": 158
     },
     {
-      "id": "gyg_96b856754739",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Hazel – United Kingdom",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "It was a very detailed tour. Our tour guide Emmanuel was very helpful, he helped with pictures, and also took us to a nice restaurant spot to eat afterwards, and the drive between all the spots for the tour was smooth.",
-      "textTruncated": "It was a very detailed tour. Our tour guide Emmanuel was very helpful, he helped with pictures, and also took us to a nice restaurant spot to eat afterwards, and the drive between all the spots for...",
-      "tourTitle": "Accra Guided City Tour Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "coverPhoto": null,
-      "originalDate": "2026-09-08T00:00:00.000Z",
-      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
-      "productRating": 4.7,
-      "productReviewCount": 158
-    },
-    {
       "id": "gyg_bce04141a553",
       "source": "GETYOURGUIDE",
       "reviewerName": "Martina – United Kingdom",
@@ -2741,6 +2741,25 @@
       "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
       "coverPhoto": null,
       "originalDate": "2026-09-18T00:00:00.000Z",
+      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
+      "productRating": 4.7,
+      "productReviewCount": 158
+    },
+    {
+      "id": "gyg_96b856754739",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Hazel – United Kingdom",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "It was a very detailed tour. Our tour guide Emmanuel was very helpful, he helped with pictures, and also took us to a nice restaurant spot to eat afterwards, and the drive between all the spots for the tour was smooth.",
+      "textTruncated": "It was a very detailed tour. Our tour guide Emmanuel was very helpful, he helped with pictures, and also took us to a nice restaurant spot to eat afterwards, and the drive between all the spots for...",
+      "tourTitle": "Accra Guided City Tour Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "coverPhoto": null,
+      "originalDate": "2026-09-08T00:00:00.000Z",
       "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
       "productRating": 4.7,
       "productReviewCount": 158
@@ -2841,25 +2860,6 @@
       "productReviewCount": 158
     },
     {
-      "id": "gyg_269a2362b3ef",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Leanne – Australia",
-      "reviewerAvatar": null,
-      "rating": 4,
-      "title": null,
-      "text": "Daniel was great. Informative tour. Would have liked to visit Jamestown lighthouse and see the beach but I can’t find a tour that does this.",
-      "textTruncated": "Daniel was great. Informative tour. Would have liked to visit Jamestown lighthouse and see the beach but I can’t find a tour that does this.",
-      "tourTitle": "Accra Guided City Tour Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "coverPhoto": null,
-      "originalDate": "2026-08-02T00:00:00.000Z",
-      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
-      "productRating": 4.7,
-      "productReviewCount": 158
-    },
-    {
       "id": "gyg_644fa0d8f6ee",
       "source": "GETYOURGUIDE",
       "reviewerName": "Kameelah – United States",
@@ -2874,6 +2874,25 @@
       "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
       "coverPhoto": null,
       "originalDate": "2026-07-21T00:00:00.000Z",
+      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
+      "productRating": 4.7,
+      "productReviewCount": 158
+    },
+    {
+      "id": "gyg_269a2362b3ef",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Leanne – Australia",
+      "reviewerAvatar": null,
+      "rating": 4,
+      "title": null,
+      "text": "Daniel was great. Informative tour. Would have liked to visit Jamestown lighthouse and see the beach but I can’t find a tour that does this.",
+      "textTruncated": "Daniel was great. Informative tour. Would have liked to visit Jamestown lighthouse and see the beach but I can’t find a tour that does this.",
+      "tourTitle": "Accra Guided City Tour Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "coverPhoto": null,
+      "originalDate": "2026-08-02T00:00:00.000Z",
       "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
       "productRating": 4.7,
       "productReviewCount": 158
@@ -2936,25 +2955,6 @@
       "productReviewCount": 158
     },
     {
-      "id": "gyg_28185c5be933",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "cherie – United Kingdom",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "I had a very lovely time touring around Accra today. The tour guides are very knowledgeable with a good sense of humour. Michael and Patrick were really genuine to all of us guests today. Thank you.",
-      "textTruncated": "I had a very lovely time touring around Accra today. The tour guides are very knowledgeable with a good sense of humour. Michael and Patrick were really genuine to all of us guests today. Thank you.",
-      "tourTitle": "Accra Guided City Tour Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "coverPhoto": null,
-      "originalDate": "2026-04-24T00:00:00.000Z",
-      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
-      "productRating": 4.7,
-      "productReviewCount": 158
-    },
-    {
       "id": "gyg_b3c736b4e9ce",
       "source": "GETYOURGUIDE",
       "reviewerName": "Akimey – United States",
@@ -2969,6 +2969,25 @@
       "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
       "coverPhoto": null,
       "originalDate": "2026-06-04T00:00:00.000Z",
+      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
+      "productRating": 4.7,
+      "productReviewCount": 158
+    },
+    {
+      "id": "gyg_28185c5be933",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "cherie – United Kingdom",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "I had a very lovely time touring around Accra today. The tour guides are very knowledgeable with a good sense of humour. Michael and Patrick were really genuine to all of us guests today. Thank you.",
+      "textTruncated": "I had a very lovely time touring around Accra today. The tour guides are very knowledgeable with a good sense of humour. Michael and Patrick were really genuine to all of us guests today. Thank you.",
+      "tourTitle": "Accra Guided City Tour Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "coverPhoto": null,
+      "originalDate": "2026-04-24T00:00:00.000Z",
       "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
       "productRating": 4.7,
       "productReviewCount": 158
@@ -3031,6 +3050,25 @@
       "productReviewCount": 158
     },
     {
+      "id": "gyg_1a925fbea5da",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Cassandra – United States",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "This tour was great and Mr. Emmanuel was an amazing guide",
+      "textTruncated": "This tour was great and Mr. Emmanuel was an amazing guide",
+      "tourTitle": "Accra Guided City Tour Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "coverPhoto": null,
+      "originalDate": "2026-03-23T00:00:00.000Z",
+      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
+      "productRating": 4.7,
+      "productReviewCount": 158
+    },
+    {
       "id": "gyg_cdbd07d94c66",
       "source": "GETYOURGUIDE",
       "reviewerName": "Ifunanya – Nigeria",
@@ -3088,25 +3126,6 @@
       "productReviewCount": 158
     },
     {
-      "id": "gyg_1a925fbea5da",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Cassandra – United States",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "This tour was great and Mr. Emmanuel was an amazing guide",
-      "textTruncated": "This tour was great and Mr. Emmanuel was an amazing guide",
-      "tourTitle": "Accra Guided City Tour Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "coverPhoto": null,
-      "originalDate": "2026-03-23T00:00:00.000Z",
-      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
-      "productRating": 4.7,
-      "productReviewCount": 158
-    },
-    {
       "id": "gyg_30ccade61da7",
       "source": "GETYOURGUIDE",
       "reviewerName": "Penelope – Zimbabwe",
@@ -3115,158 +3134,6 @@
       "title": null,
       "text": "I was picked up on time and as a group we went to the Kwame Nkrumah Museum , National Museum , Du Bois House & The black Star Gate.I didnt realise we were going to spend the whole day doing this.The tour was quite informative and interesting.Learning Ghanas culture & background was great thing.I would recommend it.Michael was the best guide😊",
       "textTruncated": "I was picked up on time and as a group we went to the Kwame Nkrumah Museum , National Museum , Du Bois House & The black Star Gate.I didnt realise we were going to spend the whole day doing this.Th...",
-      "tourTitle": "Accra Guided City Tour Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "coverPhoto": null,
-      "originalDate": "2026-01-03T00:00:00.000Z",
-      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
-      "productRating": 4.7,
-      "productReviewCount": 158
-    },
-    {
-      "id": "gyg_28bd1d713a57",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Sarah – Germany",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "The tour was very entertaining and informative! 😊 Our guides, Eden and Michael, were super friendly and supportive, and made the whole experience both fun and informative. We learned so many things about the city that we would’ve never discovered on our own. Definitely recommend — would love to do it again!",
-      "textTruncated": "The tour was very entertaining and informative! 😊 Our guides, Eden and Michael, were super friendly and supportive, and made the whole experience both fun and informative. We learned so many thing...",
-      "tourTitle": "Accra Guided City Tour Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "coverPhoto": null,
-      "originalDate": "2025-10-12T00:00:00.000Z",
-      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
-      "productRating": 4.7,
-      "productReviewCount": 158
-    },
-    {
-      "id": "gyg_0978a8dc66eb",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "GWENDOLYN – United Kingdom",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "WELL I WOULD SAY MY TRIP WAS BRILLIANT. IT STARTED OFF WITH OUR WELL EXPERIENCE TOUR GUIDE. HE WAS VERY KNOWLEDGEABLE ABOUT ANY QUESTION I WOULD ASK. HE WAS WELL MANNER AND MAKE EVERY BIT OF MY TRIP SO GOOD. I WILL RECOMMEND EXPEDITION GO TOUR TO ANY ONE WHO WOULD LIKE A COMFORTABLE TOUR. PICK UP WAS ON TIME. THANKS FOR A MEMORABLE DAY. GWEN MARCHANT",
-      "textTruncated": "WELL I WOULD SAY MY TRIP WAS BRILLIANT. IT STARTED OFF WITH OUR WELL EXPERIENCE TOUR GUIDE. HE WAS VERY KNOWLEDGEABLE ABOUT ANY QUESTION I WOULD ASK. HE WAS WELL MANNER AND MAKE EVERY BIT OF MY TRI...",
-      "tourTitle": "Accra Guided City Tour Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "coverPhoto": null,
-      "originalDate": "2025-10-05T00:00:00.000Z",
-      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
-      "productRating": 4.7,
-      "productReviewCount": 158
-    },
-    {
-      "id": "gyg_9e3f7928ef40",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Nanayaa – United States",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "A packed tour with so much to see. The shuttle bus was nice and comfortable and the tour guides were all very good. Lunch could’ve been better but overall really enjoyed the tour.",
-      "textTruncated": "A packed tour with so much to see. The shuttle bus was nice and comfortable and the tour guides were all very good. Lunch could’ve been better but overall really enjoyed the tour.",
-      "tourTitle": "Accra Guided City Tour Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "coverPhoto": null,
-      "originalDate": "2025-12-27T00:00:00.000Z",
-      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
-      "productRating": 4.7,
-      "productReviewCount": 158
-    },
-    {
-      "id": "gyg_c43eccfdf760",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Amma – United Kingdom",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "Fantastic experience, highly recommend! It’s great for solo travellers and a great way to make friends.",
-      "textTruncated": "Fantastic experience, highly recommend! It’s great for solo travellers and a great way to make friends.",
-      "tourTitle": "Accra Guided City Tour Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "coverPhoto": null,
-      "originalDate": "2025-12-17T00:00:00.000Z",
-      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
-      "productRating": 4.7,
-      "productReviewCount": 158
-    },
-    {
-      "id": "gyg_58ff255bf7a1",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Shay – United States",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "We had a great time on the tour with our guide Emmanuel. He was very helpful, knowledgeable and good at checking that we were doing fine and enjoying ourselves. I would definitely recommend.",
-      "textTruncated": "We had a great time on the tour with our guide Emmanuel. He was very helpful, knowledgeable and good at checking that we were doing fine and enjoying ourselves. I would definitely recommend.",
-      "tourTitle": "Accra Guided City Tour Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "coverPhoto": null,
-      "originalDate": "2025-11-22T00:00:00.000Z",
-      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
-      "productRating": 4.7,
-      "productReviewCount": 158
-    },
-    {
-      "id": "gyg_31793d80d033",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Joanne – United States",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "Emanuel was excellent - knowledgeable, personable, flexible and professional. The tour is well thought out and gives a great basis for understanding Accra’s and Ghana’s history and culture. Appreciated the help at Makola Market. Thank you for a lovely day.",
-      "textTruncated": "Emanuel was excellent - knowledgeable, personable, flexible and professional. The tour is well thought out and gives a great basis for understanding Accra’s and Ghana’s history and culture. Appreci...",
-      "tourTitle": "Accra Guided City Tour Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "coverPhoto": null,
-      "originalDate": "2026-02-04T00:00:00.000Z",
-      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
-      "productRating": 4.7,
-      "productReviewCount": 158
-    },
-    {
-      "id": "gyg_cfb88603ab07",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Ndong – United Arab Emirates",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "If l am to be honest, l will say the experience was 110/100. My expectations were exceeded. I value alot what l learnt to add to what l knew already. From getting to know much more than just superficially about the great W.E.B Dubois, his struggles and being stripped off of his identity then our great Osagyefo doing him the honors of giving him Ghanaian nationality was something l never knew. We are pleased with our experience and it fulfilled our value for money",
-      "textTruncated": "If l am to be honest, l will say the experience was 110/100. My expectations were exceeded. I value alot what l learnt to add to what l knew already. From getting to know much more than just superf...",
-      "tourTitle": "Accra Guided City Tour Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "coverPhoto": null,
-      "originalDate": "2025-10-31T00:00:00.000Z",
-      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
-      "productRating": 4.7,
-      "productReviewCount": 158
-    },
-    {
-      "id": "gyg_c6431abfa2f3",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Diahna – United States",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "Excellent tour. Great value for money. We visited a number of sites and Michael was a wonderful tour guide who was super knowledgeable and personable. He also helped us bargain at the market. Transportation was comfortable and had AC and WIFI. Highly recommend.",
-      "textTruncated": "Excellent tour. Great value for money. We visited a number of sites and Michael was a wonderful tour guide who was super knowledgeable and personable. He also helped us bargain at the market. Trans...",
       "tourTitle": "Accra Guided City Tour Experience",
       "tourThumbnail": null,
       "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
@@ -3297,14 +3164,128 @@
       "productReviewCount": 158
     },
     {
-      "id": "gyg_18aeb7d08254",
+      "id": "gyg_cfb88603ab07",
       "source": "GETYOURGUIDE",
-      "reviewerName": "Rachel – United Kingdom",
+      "reviewerName": "Ndong – United Arab Emirates",
       "reviewerAvatar": null,
       "rating": 5,
       "title": null,
-      "text": "The tour was a great introduction to Accra. Godfred was a very friendly and informative guide. He was very happy to answer all of my questions and show me the sights. I had a very enjoyable tour and would highly recommend it.",
-      "textTruncated": "The tour was a great introduction to Accra. Godfred was a very friendly and informative guide. He was very happy to answer all of my questions and show me the sights. I had a very enjoyable tour an...",
+      "text": "If l am to be honest, l will say the experience was 110/100. My expectations were exceeded. I value alot what l learnt to add to what l knew already. From getting to know much more than just superficially about the great W.E.B Dubois, his struggles and being stripped off of his identity then our great Osagyefo doing him the honors of giving him Ghanaian nationality was something l never knew. We are pleased with our experience and it fulfilled our value for money",
+      "textTruncated": "If l am to be honest, l will say the experience was 110/100. My expectations were exceeded. I value alot what l learnt to add to what l knew already. From getting to know much more than just superf...",
+      "tourTitle": "Accra Guided City Tour Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "coverPhoto": null,
+      "originalDate": "2025-10-31T00:00:00.000Z",
+      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
+      "productRating": 4.7,
+      "productReviewCount": 158
+    },
+    {
+      "id": "gyg_28bd1d713a57",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Sarah – Germany",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "The tour was very entertaining and informative! 😊 Our guides, Eden and Michael, were super friendly and supportive, and made the whole experience both fun and informative. We learned so many things about the city that we would’ve never discovered on our own. Definitely recommend — would love to do it again!",
+      "textTruncated": "The tour was very entertaining and informative! 😊 Our guides, Eden and Michael, were super friendly and supportive, and made the whole experience both fun and informative. We learned so many thing...",
+      "tourTitle": "Accra Guided City Tour Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "coverPhoto": null,
+      "originalDate": "2025-10-12T00:00:00.000Z",
+      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
+      "productRating": 4.7,
+      "productReviewCount": 158
+    },
+    {
+      "id": "gyg_31793d80d033",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Joanne – United States",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "Emanuel was excellent - knowledgeable, personable, flexible and professional. The tour is well thought out and gives a great basis for understanding Accra’s and Ghana’s history and culture. Appreciated the help at Makola Market. Thank you for a lovely day.",
+      "textTruncated": "Emanuel was excellent - knowledgeable, personable, flexible and professional. The tour is well thought out and gives a great basis for understanding Accra’s and Ghana’s history and culture. Appreci...",
+      "tourTitle": "Accra Guided City Tour Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "coverPhoto": null,
+      "originalDate": "2026-02-04T00:00:00.000Z",
+      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
+      "productRating": 4.7,
+      "productReviewCount": 158
+    },
+    {
+      "id": "gyg_9e3f7928ef40",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Nanayaa – United States",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "A packed tour with so much to see. The shuttle bus was nice and comfortable and the tour guides were all very good. Lunch could’ve been better but overall really enjoyed the tour.",
+      "textTruncated": "A packed tour with so much to see. The shuttle bus was nice and comfortable and the tour guides were all very good. Lunch could’ve been better but overall really enjoyed the tour.",
+      "tourTitle": "Accra Guided City Tour Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "coverPhoto": null,
+      "originalDate": "2025-12-27T00:00:00.000Z",
+      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
+      "productRating": 4.7,
+      "productReviewCount": 158
+    },
+    {
+      "id": "gyg_f99c79585eeb",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Yosra – Tunisia",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "the guide themessen was excellent detailed explanations, answers to questions, taking photos he was amazing, professional and serious giving us valuable information, also very well organized and systematic, je know well how to monitor his schedule. I enjoyed my day",
+      "textTruncated": "the guide themessen was excellent detailed explanations, answers to questions, taking photos he was amazing, professional and serious giving us valuable information, also very well organized and sy...",
+      "tourTitle": "Accra Guided City Tour Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "coverPhoto": null,
+      "originalDate": "2026-01-05T00:00:00.000Z",
+      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
+      "productRating": 4.7,
+      "productReviewCount": 158
+    },
+    {
+      "id": "gyg_7dbd2dc09f58",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Sharon – United States",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "Our Accra Guided City Tour with Eben was absolutely outstanding! From start to finish, he made the entire day both enriching and comfortable. Eben is incredibly knowledgeable about the city, its history, and its culture, and he shared everything with such clarity and passion. He was professional throughout, yet warm and approachable, which made the experience even more enjoyable. What really stood out was how well-connected he was with the staff and guides at each museum and site. It felt like doors opened more easily for us because of the respect he’s earned in the community. As three American women exploring the city together, we deeply appreciated how caring and protective he was, especially at the busy Makola Market, where he not only guided us safely but also made sure we received fair prices. Hands down, this was one of our favorite experiences in Accra. Eben elevated the tour from great to unforgettable, and I can’t recommend him highly enough. If he’s available, request him!",
+      "textTruncated": "Our Accra Guided City Tour with Eben was absolutely outstanding! From start to finish, he made the entire day both enriching and comfortable. Eben is incredibly knowledgeable about the city, its hi...",
+      "tourTitle": "Accra Guided City Tour Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "coverPhoto": null,
+      "originalDate": "2025-09-29T00:00:00.000Z",
+      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
+      "productRating": 4.7,
+      "productReviewCount": 158
+    },
+    {
+      "id": "gyg_58ff255bf7a1",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Shay – United States",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "We had a great time on the tour with our guide Emmanuel. He was very helpful, knowledgeable and good at checking that we were doing fine and enjoying ourselves. I would definitely recommend.",
+      "textTruncated": "We had a great time on the tour with our guide Emmanuel. He was very helpful, knowledgeable and good at checking that we were doing fine and enjoying ourselves. I would definitely recommend.",
       "tourTitle": "Accra Guided City Tour Experience",
       "tourThumbnail": null,
       "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
@@ -3316,20 +3297,39 @@
       "productReviewCount": 158
     },
     {
-      "id": "gyg_4f60f80e9cd9",
+      "id": "gyg_0978a8dc66eb",
       "source": "GETYOURGUIDE",
-      "reviewerName": "David – United Kingdom",
+      "reviewerName": "GWENDOLYN – United Kingdom",
       "reviewerAvatar": null,
       "rating": 5,
       "title": null,
-      "text": "Had a very good Tour with Peter. It was very fun seeing all the places/landmarks/museums. Peter was very helpful at the Market too, helping us with our purchases. It’s a great way to see many key parts of the city in one day. Transport was great too, as it was hot outside the air conditioning in the van was very handy",
-      "textTruncated": "Had a very good Tour with Peter. It was very fun seeing all the places/landmarks/museums. Peter was very helpful at the Market too, helping us with our purchases. It’s a great way to see many key p...",
+      "text": "WELL I WOULD SAY MY TRIP WAS BRILLIANT. IT STARTED OFF WITH OUR WELL EXPERIENCE TOUR GUIDE. HE WAS VERY KNOWLEDGEABLE ABOUT ANY QUESTION I WOULD ASK. HE WAS WELL MANNER AND MAKE EVERY BIT OF MY TRIP SO GOOD. I WILL RECOMMEND EXPEDITION GO TOUR TO ANY ONE WHO WOULD LIKE A COMFORTABLE TOUR. PICK UP WAS ON TIME. THANKS FOR A MEMORABLE DAY. GWEN MARCHANT",
+      "textTruncated": "WELL I WOULD SAY MY TRIP WAS BRILLIANT. IT STARTED OFF WITH OUR WELL EXPERIENCE TOUR GUIDE. HE WAS VERY KNOWLEDGEABLE ABOUT ANY QUESTION I WOULD ASK. HE WAS WELL MANNER AND MAKE EVERY BIT OF MY TRI...",
       "tourTitle": "Accra Guided City Tour Experience",
       "tourThumbnail": null,
       "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
       "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
       "coverPhoto": null,
-      "originalDate": "2025-10-30T00:00:00.000Z",
+      "originalDate": "2025-10-05T00:00:00.000Z",
+      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
+      "productRating": 4.7,
+      "productReviewCount": 158
+    },
+    {
+      "id": "gyg_c43eccfdf760",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Amma – United Kingdom",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "Fantastic experience, highly recommend! It’s great for solo travellers and a great way to make friends.",
+      "textTruncated": "Fantastic experience, highly recommend! It’s great for solo travellers and a great way to make friends.",
+      "tourTitle": "Accra Guided City Tour Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "coverPhoto": null,
+      "originalDate": "2025-12-17T00:00:00.000Z",
       "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
       "productRating": 4.7,
       "productReviewCount": 158
@@ -3354,6 +3354,25 @@
       "productReviewCount": 158
     },
     {
+      "id": "gyg_18aeb7d08254",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Rachel – United Kingdom",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "The tour was a great introduction to Accra. Godfred was a very friendly and informative guide. He was very happy to answer all of my questions and show me the sights. I had a very enjoyable tour and would highly recommend it.",
+      "textTruncated": "The tour was a great introduction to Accra. Godfred was a very friendly and informative guide. He was very happy to answer all of my questions and show me the sights. I had a very enjoyable tour an...",
+      "tourTitle": "Accra Guided City Tour Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "coverPhoto": null,
+      "originalDate": "2025-11-22T00:00:00.000Z",
+      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
+      "productRating": 4.7,
+      "productReviewCount": 158
+    },
+    {
       "id": "gyg_b8a797948d1a",
       "source": "GETYOURGUIDE",
       "reviewerName": "Michael – United States",
@@ -3373,20 +3392,39 @@
       "productReviewCount": 158
     },
     {
-      "id": "gyg_f99c79585eeb",
+      "id": "gyg_4f60f80e9cd9",
       "source": "GETYOURGUIDE",
-      "reviewerName": "Yosra – Tunisia",
+      "reviewerName": "David – United Kingdom",
       "reviewerAvatar": null,
       "rating": 5,
       "title": null,
-      "text": "the guide themessen was excellent detailed explanations, answers to questions, taking photos he was amazing, professional and serious giving us valuable information, also very well organized and systematic, je know well how to monitor his schedule. I enjoyed my day",
-      "textTruncated": "the guide themessen was excellent detailed explanations, answers to questions, taking photos he was amazing, professional and serious giving us valuable information, also very well organized and sy...",
+      "text": "Had a very good Tour with Peter. It was very fun seeing all the places/landmarks/museums. Peter was very helpful at the Market too, helping us with our purchases. It’s a great way to see many key parts of the city in one day. Transport was great too, as it was hot outside the air conditioning in the van was very handy",
+      "textTruncated": "Had a very good Tour with Peter. It was very fun seeing all the places/landmarks/museums. Peter was very helpful at the Market too, helping us with our purchases. It’s a great way to see many key p...",
       "tourTitle": "Accra Guided City Tour Experience",
       "tourThumbnail": null,
       "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
       "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
       "coverPhoto": null,
-      "originalDate": "2026-01-05T00:00:00.000Z",
+      "originalDate": "2025-10-30T00:00:00.000Z",
+      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
+      "productRating": 4.7,
+      "productReviewCount": 158
+    },
+    {
+      "id": "gyg_c6431abfa2f3",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Diahna – United States",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "Excellent tour. Great value for money. We visited a number of sites and Michael was a wonderful tour guide who was super knowledgeable and personable. He also helped us bargain at the market. Transportation was comfortable and had AC and WIFI. Highly recommend.",
+      "textTruncated": "Excellent tour. Great value for money. We visited a number of sites and Michael was a wonderful tour guide who was super knowledgeable and personable. He also helped us bargain at the market. Trans...",
+      "tourTitle": "Accra Guided City Tour Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "coverPhoto": null,
+      "originalDate": "2026-01-03T00:00:00.000Z",
       "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
       "productRating": 4.7,
       "productReviewCount": 158
@@ -3468,25 +3506,6 @@
       "productReviewCount": 158
     },
     {
-      "id": "gyg_53bf8c606044",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Edgar – Germany",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "The Accra City Tour was a great opportunity to learn more about the history of Accra and some of the most important persons, like the first President Dr. Kwame Nkrumah, who announced the independency of the country. As our guide Fred was telling us, you should have seen all those places, like the Kwame Nkrumah Memorial Park, the Independence Square, the W.E.B. Du Bois Center and also the National Museum of Ghana, before you leave the country. I enjoyed this City tour on my last day in Ghana and I'm especially grateful to our guide Fred, who led us through the heavy traffic in Accra on Friday afternoon. Absolutely recommendable !",
-      "textTruncated": "The Accra City Tour was a great opportunity to learn more about the history of Accra and some of the most important persons, like the first President Dr. Kwame Nkrumah, who announced the independen...",
-      "tourTitle": "Accra Guided City Tour Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "coverPhoto": null,
-      "originalDate": "2025-11-23T00:00:00.000Z",
-      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
-      "productRating": 4.7,
-      "productReviewCount": 158
-    },
-    {
       "id": "gyg_b9b4fb07e7a0",
       "source": "GETYOURGUIDE",
       "reviewerName": "Sandra – Kenya",
@@ -3501,6 +3520,25 @@
       "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
       "coverPhoto": null,
       "originalDate": "2025-12-15T00:00:00.000Z",
+      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
+      "productRating": 4.7,
+      "productReviewCount": 158
+    },
+    {
+      "id": "gyg_53bf8c606044",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Edgar – Germany",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "The Accra City Tour was a great opportunity to learn more about the history of Accra and some of the most important persons, like the first President Dr. Kwame Nkrumah, who announced the independency of the country. As our guide Fred was telling us, you should have seen all those places, like the Kwame Nkrumah Memorial Park, the Independence Square, the W.E.B. Du Bois Center and also the National Museum of Ghana, before you leave the country. I enjoyed this City tour on my last day in Ghana and I'm especially grateful to our guide Fred, who led us through the heavy traffic in Accra on Friday afternoon. Absolutely recommendable !",
+      "textTruncated": "The Accra City Tour was a great opportunity to learn more about the history of Accra and some of the most important persons, like the first President Dr. Kwame Nkrumah, who announced the independen...",
+      "tourTitle": "Accra Guided City Tour Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "coverPhoto": null,
+      "originalDate": "2025-11-23T00:00:00.000Z",
       "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
       "productRating": 4.7,
       "productReviewCount": 158
@@ -3525,25 +3563,6 @@
       "productReviewCount": 158
     },
     {
-      "id": "gyg_9dd904d1ee6c",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Roderica – United Kingdom",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "Kwaku Nyame Michael was truly amazing!! He was knowledgable, so funny and the definition of calm, cool and collected! The tour packed in so much! We learnt so much about Ghanaian history, culture as well as fun little facts! The aircon and WiFi on the bus was dreamy! Being picked up and dropped off at hotels was fantastic! Michael went the extra mile when on the way back to our hotel, he spent a considerable amount of time coaching me to improve my Twi! He was patient and reassuring! Other twi speakers laugh at my twi! Michael instead took his time to increase my confidence!! Such a fantastic tour, a fantastic host and a fantastic day! My only suggestion would be to add a food stop around 12/1pm. We would highly recommend this experience!! We cannot sing Michael’s praises enough",
-      "textTruncated": "Kwaku Nyame Michael was truly amazing!! He was knowledgable, so funny and the definition of calm, cool and collected! The tour packed in so much! We learnt so much about Ghanaian history, culture a...",
-      "tourTitle": "Accra Guided City Tour Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "coverPhoto": null,
-      "originalDate": "2025-12-09T00:00:00.000Z",
-      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
-      "productRating": 4.7,
-      "productReviewCount": 158
-    },
-    {
       "id": "gyg_0f873975df10",
       "source": "GETYOURGUIDE",
       "reviewerName": "Edith – United Kingdom",
@@ -3563,20 +3582,20 @@
       "productReviewCount": 158
     },
     {
-      "id": "gyg_7dbd2dc09f58",
+      "id": "gyg_9dd904d1ee6c",
       "source": "GETYOURGUIDE",
-      "reviewerName": "Sharon – United States",
+      "reviewerName": "Roderica – United Kingdom",
       "reviewerAvatar": null,
       "rating": 5,
       "title": null,
-      "text": "Our Accra Guided City Tour with Eben was absolutely outstanding! From start to finish, he made the entire day both enriching and comfortable. Eben is incredibly knowledgeable about the city, its history, and its culture, and he shared everything with such clarity and passion. He was professional throughout, yet warm and approachable, which made the experience even more enjoyable. What really stood out was how well-connected he was with the staff and guides at each museum and site. It felt like doors opened more easily for us because of the respect he’s earned in the community. As three American women exploring the city together, we deeply appreciated how caring and protective he was, especially at the busy Makola Market, where he not only guided us safely but also made sure we received fair prices. Hands down, this was one of our favorite experiences in Accra. Eben elevated the tour from great to unforgettable, and I can’t recommend him highly enough. If he’s available, request him!",
-      "textTruncated": "Our Accra Guided City Tour with Eben was absolutely outstanding! From start to finish, he made the entire day both enriching and comfortable. Eben is incredibly knowledgeable about the city, its hi...",
+      "text": "Kwaku Nyame Michael was truly amazing!! He was knowledgable, so funny and the definition of calm, cool and collected! The tour packed in so much! We learnt so much about Ghanaian history, culture as well as fun little facts! The aircon and WiFi on the bus was dreamy! Being picked up and dropped off at hotels was fantastic! Michael went the extra mile when on the way back to our hotel, he spent a considerable amount of time coaching me to improve my Twi! He was patient and reassuring! Other twi speakers laugh at my twi! Michael instead took his time to increase my confidence!! Such a fantastic tour, a fantastic host and a fantastic day! My only suggestion would be to add a food stop around 12/1pm. We would highly recommend this experience!! We cannot sing Michael’s praises enough",
+      "textTruncated": "Kwaku Nyame Michael was truly amazing!! He was knowledgable, so funny and the definition of calm, cool and collected! The tour packed in so much! We learnt so much about Ghanaian history, culture a...",
       "tourTitle": "Accra Guided City Tour Experience",
       "tourThumbnail": null,
       "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
       "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
       "coverPhoto": null,
-      "originalDate": "2025-09-29T00:00:00.000Z",
+      "originalDate": "2025-12-09T00:00:00.000Z",
       "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
       "productRating": 4.7,
       "productReviewCount": 158
@@ -3639,25 +3658,6 @@
       "productReviewCount": 158
     },
     {
-      "id": "gyg_8e19e59d9beb",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Cl. – Germany",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "Very informative, you could immerse yourself in history and culture, our guide - Immanuel - was very flexible, accommodating and personable",
-      "textTruncated": "Very informative, you could immerse yourself in history and culture, our guide - Immanuel - was very flexible, accommodating and personable",
-      "tourTitle": "Accra Guided City Tour Experience",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
-      "coverPhoto": null,
-      "originalDate": "2025-11-24T00:00:00.000Z",
-      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
-      "productRating": 4.7,
-      "productReviewCount": 158
-    },
-    {
       "id": "gyg_8d5746ad5e30",
       "source": "GETYOURGUIDE",
       "reviewerName": "Gerard – Canada",
@@ -3672,6 +3672,25 @@
       "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
       "coverPhoto": null,
       "originalDate": "2026-02-19T00:00:00.000Z",
+      "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
+      "productRating": 4.7,
+      "productReviewCount": 158
+    },
+    {
+      "id": "gyg_8e19e59d9beb",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Cl. – Germany",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "Very informative, you could immerse yourself in history and culture, our guide - Immanuel - was very flexible, accommodating and personable",
+      "textTruncated": "Very informative, you could immerse yourself in history and culture, our guide - Immanuel - was very flexible, accommodating and personable",
+      "tourTitle": "Accra Guided City Tour Experience",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/accra-guided-city-tour-experience-t839108/",
+      "coverPhoto": null,
+      "originalDate": "2025-11-24T00:00:00.000Z",
       "productId": "getyourguide-accra-guided-city-tour-experience-t839108",
       "productRating": 4.7,
       "productReviewCount": 158
@@ -4513,44 +4532,6 @@
       "productReviewCount": 127
     },
     {
-      "id": "gyg_4197c6e49f16",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Nelly – Kenya",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "our guide Emmanuel was the best! punctual, polite and very knowledgeable. He made the experience 5 star!!!",
-      "textTruncated": "our guide Emmanuel was the best! punctual, polite and very knowledgeable. He made the experience 5 star!!!",
-      "tourTitle": "Boti Falls, Umbrella Rock, Aburi Gardens & Cocoa Farm Tour",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
-      "coverPhoto": null,
-      "originalDate": "2026-07-21T00:00:00.000Z",
-      "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
-      "productRating": 4.6,
-      "productReviewCount": 127
-    },
-    {
-      "id": "gyg_1f368ba2b11a",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Kameelah – United States",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "This trip was one for the books. This was the perfect way to end my visit to Accra. First of all our guide Emmanuel was amazing. Words cannot describe how special he made our visit here. He is very informational and we learned so much from him on the trip to and from our destinations. Aburi gardens was so informative and our guide there was hilarious. Tho cocoa farm was interesting and we were able to see the entire process of the cocoa beans. The most beautiful part was the waterfalls. I could stay there forever. It was so beautiful and scene. Emmanuel (Coffie) was very helpful during this time also. He was truly a blessing to us on this tour. I do not think we would have been as satisfied if it was not for him. This trip was the perfect way to end a vacation that we will NEVER forget. 🇬🇭🇬🇭. Thank you!!!!",
-      "textTruncated": "This trip was one for the books. This was the perfect way to end my visit to Accra. First of all our guide Emmanuel was amazing. Words cannot describe how special he made our visit here. He is very...",
-      "tourTitle": "Boti Falls, Umbrella Rock, Aburi Gardens & Cocoa Farm Tour",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
-      "coverPhoto": null,
-      "originalDate": "2026-07-26T00:00:00.000Z",
-      "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
-      "productRating": 4.6,
-      "productReviewCount": 127
-    },
-    {
       "id": "gyg_03563aeada84",
       "source": "GETYOURGUIDE",
       "reviewerName": "Amy – United Kingdom",
@@ -4570,6 +4551,25 @@
       "productReviewCount": 127
     },
     {
+      "id": "gyg_4197c6e49f16",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Nelly – Kenya",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "our guide Emmanuel was the best! punctual, polite and very knowledgeable. He made the experience 5 star!!!",
+      "textTruncated": "our guide Emmanuel was the best! punctual, polite and very knowledgeable. He made the experience 5 star!!!",
+      "tourTitle": "Boti Falls, Umbrella Rock, Aburi Gardens & Cocoa Farm Tour",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
+      "coverPhoto": null,
+      "originalDate": "2026-07-21T00:00:00.000Z",
+      "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
+      "productRating": 4.6,
+      "productReviewCount": 127
+    },
+    {
       "id": "gyg_39710ad86829",
       "source": "GETYOURGUIDE",
       "reviewerName": "Selina – Sweden",
@@ -4584,6 +4584,25 @@
       "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
       "coverPhoto": null,
       "originalDate": "2026-08-03T00:00:00.000Z",
+      "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
+      "productRating": 4.6,
+      "productReviewCount": 127
+    },
+    {
+      "id": "gyg_1f368ba2b11a",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Kameelah – United States",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "This trip was one for the books. This was the perfect way to end my visit to Accra. First of all our guide Emmanuel was amazing. Words cannot describe how special he made our visit here. He is very informational and we learned so much from him on the trip to and from our destinations. Aburi gardens was so informative and our guide there was hilarious. Tho cocoa farm was interesting and we were able to see the entire process of the cocoa beans. The most beautiful part was the waterfalls. I could stay there forever. It was so beautiful and scene. Emmanuel (Coffie) was very helpful during this time also. He was truly a blessing to us on this tour. I do not think we would have been as satisfied if it was not for him. This trip was the perfect way to end a vacation that we will NEVER forget. 🇬🇭🇬🇭. Thank you!!!!",
+      "textTruncated": "This trip was one for the books. This was the perfect way to end my visit to Accra. First of all our guide Emmanuel was amazing. Words cannot describe how special he made our visit here. He is very...",
+      "tourTitle": "Boti Falls, Umbrella Rock, Aburi Gardens & Cocoa Farm Tour",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
+      "coverPhoto": null,
+      "originalDate": "2026-07-26T00:00:00.000Z",
       "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
       "productRating": 4.6,
       "productReviewCount": 127
@@ -4798,25 +4817,6 @@
       "productReviewCount": 127
     },
     {
-      "id": "gyg_0a1b2587bc96",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Georgios – Greece",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "Had a great time. Both Emmanuel and Thomas were very helpful and informative.They are the best part of this trip",
-      "textTruncated": "Had a great time. Both Emmanuel and Thomas were very helpful and informative.They are the best part of this trip",
-      "tourTitle": "Boti Falls, Umbrella Rock, Aburi Gardens & Cocoa Farm Tour",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
-      "coverPhoto": null,
-      "originalDate": "2026-02-08T00:00:00.000Z",
-      "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
-      "productRating": 4.6,
-      "productReviewCount": 127
-    },
-    {
       "id": "gyg_a0b5a4a1ee89",
       "source": "GETYOURGUIDE",
       "reviewerName": "Bree – United States",
@@ -4855,77 +4855,20 @@
       "productReviewCount": 127
     },
     {
-      "id": "gyg_8c5418012804",
+      "id": "gyg_0a1b2587bc96",
       "source": "GETYOURGUIDE",
-      "reviewerName": "David – United Kingdom",
+      "reviewerName": "Georgios – Greece",
       "reviewerAvatar": null,
       "rating": 5,
       "title": null,
-      "text": "Had a Great Tour with Emmanuel today. It was just My Mother and I so it felt like a more personal tour. We had a great time at every stop. Each place was unique and beautiful in its own way. We had a great time and also found the Cocoa Farm demonstration very interesting. The other guide we had just for Aburi Gardens was brilliant too. He was very funny. I think his name was Martin but I can’t remember. This was a great way to spend our very first day in Ghana!",
-      "textTruncated": "Had a Great Tour with Emmanuel today. It was just My Mother and I so it felt like a more personal tour. We had a great time at every stop. Each place was unique and beautiful in its own way. We had...",
+      "text": "Had a great time. Both Emmanuel and Thomas were very helpful and informative.They are the best part of this trip",
+      "textTruncated": "Had a great time. Both Emmanuel and Thomas were very helpful and informative.They are the best part of this trip",
       "tourTitle": "Boti Falls, Umbrella Rock, Aburi Gardens & Cocoa Farm Tour",
       "tourThumbnail": null,
       "tourUrl": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
       "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
       "coverPhoto": null,
-      "originalDate": "2025-10-26T00:00:00.000Z",
-      "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
-      "productRating": 4.6,
-      "productReviewCount": 127
-    },
-    {
-      "id": "gyg_add44b0c19ea",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Emily-Mae – Australia",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "Guide Emmanuel was 10/10, transport was great. Spacious, charger ports and much needed air conditioning! Driver Elvis was responsible and felt safe leaving our belongings with him in the car. Great experience because of the guide and driver.",
-      "textTruncated": "Guide Emmanuel was 10/10, transport was great. Spacious, charger ports and much needed air conditioning! Driver Elvis was responsible and felt safe leaving our belongings with him in the car. Great...",
-      "tourTitle": "Boti Falls, Umbrella Rock, Aburi Gardens & Cocoa Farm Tour",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
-      "coverPhoto": null,
-      "originalDate": "2025-11-13T00:00:00.000Z",
-      "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
-      "productRating": 4.6,
-      "productReviewCount": 127
-    },
-    {
-      "id": "gyg_5e4fd0689679",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Kwame – United Kingdom",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "The waterfall was beautiful. The cocoa farm was interesting. Got so many good shots. The guide was accommodating and amazing - even let me go to the toilet and rest up when I wasn't feeling well at the beginning! Thank you!",
-      "textTruncated": "The waterfall was beautiful. The cocoa farm was interesting. Got so many good shots. The guide was accommodating and amazing - even let me go to the toilet and rest up when I wasn't feeling well at...",
-      "tourTitle": "Boti Falls, Umbrella Rock, Aburi Gardens & Cocoa Farm Tour",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
-      "coverPhoto": null,
-      "originalDate": "2026-02-27T00:00:00.000Z",
-      "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
-      "productRating": 4.6,
-      "productReviewCount": 127
-    },
-    {
-      "id": "gyg_36bc7a5c2d4c",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Joanne – United States",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "All round excellent. Enjoyed getting out of the city and experiencing the surrounding rural areas. Second trip with Emanuel as a guide and he has been personable, knowledgeable and professional both times - a credit to your organization.",
-      "textTruncated": "All round excellent. Enjoyed getting out of the city and experiencing the surrounding rural areas. Second trip with Emanuel as a guide and he has been personable, knowledgeable and professional bot...",
-      "tourTitle": "Boti Falls, Umbrella Rock, Aburi Gardens & Cocoa Farm Tour",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
-      "coverPhoto": null,
-      "originalDate": "2026-02-07T00:00:00.000Z",
+      "originalDate": "2026-02-08T00:00:00.000Z",
       "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
       "productRating": 4.6,
       "productReviewCount": 127
@@ -4950,39 +4893,58 @@
       "productReviewCount": 127
     },
     {
-      "id": "gyg_fd32ebb2d43a",
+      "id": "gyg_5e4fd0689679",
       "source": "GETYOURGUIDE",
-      "reviewerName": "Njambi – United States",
+      "reviewerName": "Kwame – United Kingdom",
       "reviewerAvatar": null,
       "rating": 5,
       "title": null,
-      "text": "Amazing, amazing, amazing. I was lucky to be part of a small group of 4 with our guide Thompson always being very helpful from pick up to drop off. The information shared at the cocoa farms, the hike up to umbrella rock (be prepared, fairly easy hike, however, not recommended if unfit), all of it was great. The only thing i regret was not carrying a costume to swim in Boti Falls, otherwise, fantastic tour to Eastern Region of Ghana",
-      "textTruncated": "Amazing, amazing, amazing. I was lucky to be part of a small group of 4 with our guide Thompson always being very helpful from pick up to drop off. The information shared at the cocoa farms, the hi...",
+      "text": "The waterfall was beautiful. The cocoa farm was interesting. Got so many good shots. The guide was accommodating and amazing - even let me go to the toilet and rest up when I wasn't feeling well at the beginning! Thank you!",
+      "textTruncated": "The waterfall was beautiful. The cocoa farm was interesting. Got so many good shots. The guide was accommodating and amazing - even let me go to the toilet and rest up when I wasn't feeling well at...",
       "tourTitle": "Boti Falls, Umbrella Rock, Aburi Gardens & Cocoa Farm Tour",
       "tourThumbnail": null,
       "tourUrl": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
       "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
       "coverPhoto": null,
-      "originalDate": "2026-01-07T00:00:00.000Z",
+      "originalDate": "2026-02-27T00:00:00.000Z",
       "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
       "productRating": 4.6,
       "productReviewCount": 127
     },
     {
-      "id": "gyg_0bebd1d5229b",
+      "id": "gyg_add44b0c19ea",
       "source": "GETYOURGUIDE",
-      "reviewerName": "Graeme – Ghana",
+      "reviewerName": "Emily-Mae – Australia",
       "reviewerAvatar": null,
       "rating": 5,
       "title": null,
-      "text": "just held up with traffic which cannot be helped but guide Joseph I think tried to make up time but you can never and went to other falls as time getting on, we were eating at 5pm which was a decent time, would recommend this one scenery etc",
-      "textTruncated": "just held up with traffic which cannot be helped but guide Joseph I think tried to make up time but you can never and went to other falls as time getting on, we were eating at 5pm which was a decen...",
+      "text": "Guide Emmanuel was 10/10, transport was great. Spacious, charger ports and much needed air conditioning! Driver Elvis was responsible and felt safe leaving our belongings with him in the car. Great experience because of the guide and driver.",
+      "textTruncated": "Guide Emmanuel was 10/10, transport was great. Spacious, charger ports and much needed air conditioning! Driver Elvis was responsible and felt safe leaving our belongings with him in the car. Great...",
       "tourTitle": "Boti Falls, Umbrella Rock, Aburi Gardens & Cocoa Farm Tour",
       "tourThumbnail": null,
       "tourUrl": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
       "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
       "coverPhoto": null,
-      "originalDate": "2026-02-18T00:00:00.000Z",
+      "originalDate": "2025-11-13T00:00:00.000Z",
+      "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
+      "productRating": 4.6,
+      "productReviewCount": 127
+    },
+    {
+      "id": "gyg_36bc7a5c2d4c",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Joanne – United States",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "All round excellent. Enjoyed getting out of the city and experiencing the surrounding rural areas. Second trip with Emanuel as a guide and he has been personable, knowledgeable and professional both times - a credit to your organization.",
+      "textTruncated": "All round excellent. Enjoyed getting out of the city and experiencing the surrounding rural areas. Second trip with Emanuel as a guide and he has been personable, knowledgeable and professional bot...",
+      "tourTitle": "Boti Falls, Umbrella Rock, Aburi Gardens & Cocoa Farm Tour",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
+      "coverPhoto": null,
+      "originalDate": "2026-02-07T00:00:00.000Z",
       "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
       "productRating": 4.6,
       "productReviewCount": 127
@@ -5007,6 +4969,44 @@
       "productReviewCount": 127
     },
     {
+      "id": "gyg_8c5418012804",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "David – United Kingdom",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "Had a Great Tour with Emmanuel today. It was just My Mother and I so it felt like a more personal tour. We had a great time at every stop. Each place was unique and beautiful in its own way. We had a great time and also found the Cocoa Farm demonstration very interesting. The other guide we had just for Aburi Gardens was brilliant too. He was very funny. I think his name was Martin but I can’t remember. This was a great way to spend our very first day in Ghana!",
+      "textTruncated": "Had a Great Tour with Emmanuel today. It was just My Mother and I so it felt like a more personal tour. We had a great time at every stop. Each place was unique and beautiful in its own way. We had...",
+      "tourTitle": "Boti Falls, Umbrella Rock, Aburi Gardens & Cocoa Farm Tour",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
+      "coverPhoto": null,
+      "originalDate": "2025-10-26T00:00:00.000Z",
+      "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
+      "productRating": 4.6,
+      "productReviewCount": 127
+    },
+    {
+      "id": "gyg_fd32ebb2d43a",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Njambi – United States",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "Amazing, amazing, amazing. I was lucky to be part of a small group of 4 with our guide Thompson always being very helpful from pick up to drop off. The information shared at the cocoa farms, the hike up to umbrella rock (be prepared, fairly easy hike, however, not recommended if unfit), all of it was great. The only thing i regret was not carrying a costume to swim in Boti Falls, otherwise, fantastic tour to Eastern Region of Ghana",
+      "textTruncated": "Amazing, amazing, amazing. I was lucky to be part of a small group of 4 with our guide Thompson always being very helpful from pick up to drop off. The information shared at the cocoa farms, the hi...",
+      "tourTitle": "Boti Falls, Umbrella Rock, Aburi Gardens & Cocoa Farm Tour",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
+      "coverPhoto": null,
+      "originalDate": "2026-01-07T00:00:00.000Z",
+      "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
+      "productRating": 4.6,
+      "productReviewCount": 127
+    },
+    {
       "id": "gyg_f3085fd07e28",
       "source": "GETYOURGUIDE",
       "reviewerName": "Mark – Canada",
@@ -5021,6 +5021,44 @@
       "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
       "coverPhoto": null,
       "originalDate": "2026-03-10T00:00:00.000Z",
+      "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
+      "productRating": 4.6,
+      "productReviewCount": 127
+    },
+    {
+      "id": "gyg_0bebd1d5229b",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Graeme – Ghana",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "just held up with traffic which cannot be helped but guide Joseph I think tried to make up time but you can never and went to other falls as time getting on, we were eating at 5pm which was a decent time, would recommend this one scenery etc",
+      "textTruncated": "just held up with traffic which cannot be helped but guide Joseph I think tried to make up time but you can never and went to other falls as time getting on, we were eating at 5pm which was a decen...",
+      "tourTitle": "Boti Falls, Umbrella Rock, Aburi Gardens & Cocoa Farm Tour",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
+      "coverPhoto": null,
+      "originalDate": "2026-02-18T00:00:00.000Z",
+      "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
+      "productRating": 4.6,
+      "productReviewCount": 127
+    },
+    {
+      "id": "gyg_1ceeef78416f",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Kim – Germany",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "We really enjoyed the tour with Emmanuel. All stops are really worth a visit, especially the Aburi Gardens and Boti Falls. At Boti Falls you have the choice of taking a hike to Umbrella Rock (approx. 2h total) or drive there after visiting the waterfalls. We chose to do the hike and dont regret it at all. Just make sure to bring water. For lunch, we stopped at a restaurant before visiting the waterfalls to place our orders, so when we came back the meals would be ready. Beacuse we spent alot of time at the falls, we ate at around 5pm. At no point during the Tour are there any hidden fees and we never felt pressured to buy anything. The restaurant has a menu with prices. Van has AC. Emmanuel was always in contact with the staff to ensure we didnt have to wait.",
+      "textTruncated": "We really enjoyed the tour with Emmanuel. All stops are really worth a visit, especially the Aburi Gardens and Boti Falls. At Boti Falls you have the choice of taking a hike to Umbrella Rock (appro...",
+      "tourTitle": "Boti Falls, Umbrella Rock, Aburi Gardens & Cocoa Farm Tour",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
+      "coverPhoto": null,
+      "originalDate": "2026-01-09T00:00:00.000Z",
       "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
       "productRating": 4.6,
       "productReviewCount": 127
@@ -5059,25 +5097,6 @@
       "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
       "coverPhoto": null,
       "originalDate": "2026-01-18T00:00:00.000Z",
-      "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
-      "productRating": 4.6,
-      "productReviewCount": 127
-    },
-    {
-      "id": "gyg_1ceeef78416f",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Kim – Germany",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "We really enjoyed the tour with Emmanuel. All stops are really worth a visit, especially the Aburi Gardens and Boti Falls. At Boti Falls you have the choice of taking a hike to Umbrella Rock (approx. 2h total) or drive there after visiting the waterfalls. We chose to do the hike and dont regret it at all. Just make sure to bring water. For lunch, we stopped at a restaurant before visiting the waterfalls to place our orders, so when we came back the meals would be ready. Beacuse we spent alot of time at the falls, we ate at around 5pm. At no point during the Tour are there any hidden fees and we never felt pressured to buy anything. The restaurant has a menu with prices. Van has AC. Emmanuel was always in contact with the staff to ensure we didnt have to wait.",
-      "textTruncated": "We really enjoyed the tour with Emmanuel. All stops are really worth a visit, especially the Aburi Gardens and Boti Falls. At Boti Falls you have the choice of taking a hike to Umbrella Rock (appro...",
-      "tourTitle": "Boti Falls, Umbrella Rock, Aburi Gardens & Cocoa Farm Tour",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
-      "coverPhoto": null,
-      "originalDate": "2026-01-09T00:00:00.000Z",
       "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
       "productRating": 4.6,
       "productReviewCount": 127
@@ -5159,25 +5178,6 @@
       "productReviewCount": 127
     },
     {
-      "id": "gyg_a847077bc8a8",
-      "source": "GETYOURGUIDE",
-      "reviewerName": "Djieuwke – Netherlands",
-      "reviewerAvatar": null,
-      "rating": 5,
-      "title": null,
-      "text": "Our guide Peter did everything to make it a successful day. Communication was good, except that the email says you'll get a pick-up time 48-24 hours in advance, which turns out to be 12 hours in advance. Peter was super nice and helpful. Because we were delayed by the heavy traffic, we adjusted the program a bit in consultation. We were out all day, from 7:00 a.m. to 10:00 p.m. Lunch isn't included, but it's cheap. Heads up! The short hike to the waterfall is a tough climb of almost 1 hour. Not suitable for people with poor physical condition or who have difficulty walking.",
-      "textTruncated": "Our guide Peter did everything to make it a successful day. Communication was good, except that the email says you'll get a pick-up time 48-24 hours in advance, which turns out to be 12 hours in ad...",
-      "tourTitle": "Boti Falls, Umbrella Rock, Aburi Gardens & Cocoa Farm Tour",
-      "tourThumbnail": null,
-      "tourUrl": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
-      "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
-      "coverPhoto": null,
-      "originalDate": "2025-10-26T00:00:00.000Z",
-      "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
-      "productRating": 4.6,
-      "productReviewCount": 127
-    },
-    {
       "id": "gyg_4c08d6af2ea6",
       "source": "GETYOURGUIDE",
       "reviewerName": "Kimberly – Germany",
@@ -5192,6 +5192,25 @@
       "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
       "coverPhoto": null,
       "originalDate": "2026-01-05T00:00:00.000Z",
+      "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
+      "productRating": 4.6,
+      "productReviewCount": 127
+    },
+    {
+      "id": "gyg_a847077bc8a8",
+      "source": "GETYOURGUIDE",
+      "reviewerName": "Djieuwke – Netherlands",
+      "reviewerAvatar": null,
+      "rating": 5,
+      "title": null,
+      "text": "Our guide Peter did everything to make it a successful day. Communication was good, except that the email says you'll get a pick-up time 48-24 hours in advance, which turns out to be 12 hours in advance. Peter was super nice and helpful. Because we were delayed by the heavy traffic, we adjusted the program a bit in consultation. We were out all day, from 7:00 a.m. to 10:00 p.m. Lunch isn't included, but it's cheap. Heads up! The short hike to the waterfall is a tough climb of almost 1 hour. Not suitable for people with poor physical condition or who have difficulty walking.",
+      "textTruncated": "Our guide Peter did everything to make it a successful day. Communication was good, except that the email says you'll get a pick-up time 48-24 hours in advance, which turns out to be 12 hours in ad...",
+      "tourTitle": "Boti Falls, Umbrella Rock, Aburi Gardens & Cocoa Farm Tour",
+      "tourThumbnail": null,
+      "tourUrl": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
+      "tourLink": "https://www.getyourguide.com/accra-l506/boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545/",
+      "coverPhoto": null,
+      "originalDate": "2025-10-26T00:00:00.000Z",
       "productId": "getyourguide-boti-falls-umbrella-rock-aburi-gardens-cocoa-farm-tour-t866545",
       "productRating": 4.6,
       "productReviewCount": 127
