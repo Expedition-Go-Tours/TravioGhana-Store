@@ -35,6 +35,7 @@ import { consumeHandoff } from './lib/ssoHandoff'
 import { AuthProvider } from './context/AuthContext'
 import { startSessionWatchdog, stopSessionWatchdog } from './auth/sessionManager'
 import { trackPageView } from './lib/analytics'
+import LenisProvider from './lib/LenisProvider'
 import { useHomepage, useHomepageByCity } from './hooks/useHomepageSections'
 import { enrichToursWithCombinedStats, useExternalReviewStatsData } from './hooks/useExternalReviews'
 
@@ -509,25 +510,27 @@ function AppContent() {
 function App() {
   return (
     <MotionConfig reducedMotion="user">
-      <BrowserRouter>
-        <CookieConsentProvider>
-          <WishlistProvider>
-            <AuthProvider>
-              <ContinuePlanningProvider>
-                <LocationSearchProvider>
-                  <SearchInputProvider>
-                    <AppContent />
-                    {/* Consent UI lives outside the route tree so a choice can
-                        be made (or revisited) on any page, including the dashboard. */}
-                    <CookieBanner />
-                    <CookiePreferences />
-                  </SearchInputProvider>
-                </LocationSearchProvider>
-              </ContinuePlanningProvider>
-            </AuthProvider>
-          </WishlistProvider>
-        </CookieConsentProvider>
-      </BrowserRouter>
+      <LenisProvider>
+        <BrowserRouter>
+          <CookieConsentProvider>
+            <WishlistProvider>
+              <AuthProvider>
+                <ContinuePlanningProvider>
+                  <LocationSearchProvider>
+                    <SearchInputProvider>
+                      <AppContent />
+                      {/* Consent UI lives outside the route tree so a choice can
+                          be made (or revisited) on any page, including the dashboard. */}
+                      <CookieBanner />
+                      <CookiePreferences />
+                    </SearchInputProvider>
+                  </LocationSearchProvider>
+                </ContinuePlanningProvider>
+              </AuthProvider>
+            </WishlistProvider>
+          </CookieConsentProvider>
+        </BrowserRouter>
+      </LenisProvider>
     </MotionConfig>
   )
 }
