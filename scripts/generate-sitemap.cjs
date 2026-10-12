@@ -53,6 +53,9 @@ const OUTPUT = path.resolve(__dirname, '../public/sitemap.xml');
 /** Catalogue paging, for the destination list. See the loop in main(). */
 const CATALOGUE_PAGE_SIZE = 50; // the API rejects limit above 50
 const MAX_CATALOGUE_PAGES = 20;
+/** Same shape for the published-article list (limit is capped at 50 too). */
+const BLOG_PAGE_SIZE = 50;
+const MAX_BLOG_PAGES = 20;
 
 function fetchJson(url) {
   return new Promise((resolve, reject) => {
@@ -315,6 +318,36 @@ async function main() {
     console.error(`WARN: could not read travelStories.json: ${err.message}`);
   }
 
+  // Blog articles — the admin's publish flow lives in the shared API (routes
+  // at /blog, not under the brand prefix), so a published post lands here
+  // without a hand-edit. Fail-soft by design: a broken blog fetch warns and
+  // still ships the tours/stories/marketing URLs, because freezing the whole
+  // sitemap to preserve six article links would cost far more than it saves.
+  const blogArticles = [];
+  try {
+    const blogBase = API_URL.replace(new RegExp(`/${BRAND}$`, 'i'), '');
+    let blogTotal = null;
+    let blogTruncated = false;
+    for (let page = 1; page <= MAX_BLOG_PAGES; page++) {
+      const data = await fetchJson(`${blogBase}/blog/articles?limit=${BLOG_PAGE_SIZE}&page=${page}`);
+      if (page === 1) blogTotal = data?.pagination?.totalCount ?? null;
+      const rows = data?.data?.articles || [];
+      for (const a of rows) {
+        if (a?.slug) blogArticles.push({ slug: a.slug, lastmod: isoDate(a.publishedAt || a.createdAt) });
+      }
+      if (rows.length < BLOG_PAGE_SIZE) break;
+      if (page === MAX_BLOG_PAGES) blogTruncated = true;
+    }
+    if (blogTruncated) {
+      console.warn(`WARN: more published articles than ${MAX_BLOG_PAGES} pages of ${BLOG_PAGE_SIZE} — raise MAX_BLOG_PAGES.`);
+    }
+    if (blogTotal != null && blogTotal > blogArticles.length) {
+      console.error(`ERROR: sitemap covers ${blogArticles.length}/${blogTotal} published blog articles.`);
+    }
+  } catch (err) {
+    console.error(`WARN: could not fetch blog articles: ${err.message}`);
+  }
+
   // Tours + destinations from the API (canonical /tour/{id}/{slug} URLs).
   let tourEntries = [];
   let places = [];
@@ -417,6 +450,17 @@ async function main() {
     }));
   }
 
+  // Admin-published articles — /blog/<slug> is the SPA route; crawlers are
+  // served the backend's prerendered copy of the same URL (see the
+  // prerenderController /blog/:slug branch).
+  for (const b of blogArticles) {
+    urls.push(urlEntry(`${SITE_URL}/blog/${encodeURIComponent(b.slug)}`, {
+      priority: 0.6,
+      changefreq: 'weekly',
+      lastmod: b.lastmod,
+    }));
+  }
+
   for (const t of tourEntries) {
     urls.push(urlEntry(t.url, { priority: 0.8, changefreq: 'weekly', lastmod: t.lastmod }));
   }
@@ -443,7 +487,7 @@ ${urls.join('\n')}
 
   fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
   fs.writeFileSync(OUTPUT, xml, 'utf8');
-  console.log(`Sitemap written: ${urls.length} URLs (${tourEntries.length} tours, ${places.length} destinations, ${STATIC_PAGES.length} static, ${stories.length} stories) — ${entriesWithLastmod}/${urls.length} with lastmod — ${(Buffer.byteLength(xml) / 1024).toFixed(1)} KB`);
+  console.log(`Sitemap written: ${urls.length} URLs (${tourEntries.length} tours, ${places.length} destinations, ${STATIC_PAGES.length} static, ${stories.length} stories, ${blogArticles.length} blog articles) — ${entriesWithLastmod}/${urls.length} with lastmod — ${(Buffer.byteLength(xml) / 1024).toFixed(1)} KB`);
 
   // robots.txt — generated so the Sitemap directive always uses the canonical
   // host (a hardcoded file drifts whenever the host changes).

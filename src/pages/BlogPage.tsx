@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { MotionConfig, motion, useReducedMotion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { travelStories, storySlug } from '../components/data'
 import type { TravelStory } from '../components/data'
+import { BLOG_PLACEHOLDER_IMAGE, fetchPublishedArticles, type BlogArticleSummary } from '../lib/blogApi'
 import Footer from '../components/Footer'
 import SEO, { buildBreadcrumbSchema, buildItemListSchema } from '../components/SEO'
 import OptimizedImage from '@/components/shared/OptimizedImage'
@@ -61,27 +62,111 @@ const EXPERIENCES = [
   { titleKey: 'blog.exp3Title', descKey: 'blog.exp3Desc' },
 ]
 
+/**
+ * One card, two sources: admin-published articles (the live feed) and the
+ * static travel stories (the evergreen floor, so the hub is never empty and
+ * every /stories/* link keeps resolving when the API is down).
+ */
+interface BlogCard {
+  key: string
+  title: string
+  excerpt: string
+  image: string
+  author: string
+  date: string
+  dateISO?: string
+  categories: StoryCategory[]
+  /** Admin-authored category name — shown verbatim when there is one. */
+  categoryLabel?: string
+  readTime: number
+  href: string
+}
+
+/**
+ * Admin categories are free-form slugs ("adventure-travel", "cultural-tours",
+ * …); the filter rail speaks the five curated keys. Map what matches — an
+ * article whose topic maps nowhere still lists (under "All"), it just doesn't
+ * claim a topic it isn't.
+ */
+const CATEGORY_MATCHERS: [StoryCategory, RegExp][] = [
+  ['nature', /nature|wildlife|park|safari|outdoor|eco/i],
+  ['adventure', /adventure|hik|trek|kayak|climb|raft/i],
+  ['food', /food|culin|cuisine|gastron|kitchen/i],
+  ['heritage', /heritage|histor|castle|fort|unesco|traditional/i],
+  ['culture', /culture|cultural|art|museu|music|festival/i],
+]
+
+export function mapApiCategories(article: BlogArticleSummary): {
+  categories: StoryCategory[]
+  label: string | null
+} {
+  const label = article.category?.name ?? null
+  const slug = article.category?.slug ?? ''
+  if (slug !== 'all' && (CATEGORY_KEYS as readonly string[]).includes(slug)) {
+    return { categories: [slug as StoryCategory], label }
+  }
+  const haystack = [slug, label ?? '', ...article.tags.map((tag) => `${tag.name} ${tag.slug}`)].join(' ')
+  const categories = CATEGORY_MATCHERS.filter(([, pattern]) => pattern.test(haystack)).map(([key]) => key)
+  return { categories: [...new Set(categories)], label }
+}
+
+function formatArticleDate(value: string | null | undefined): string {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+}
+
+export function articleToCard(article: BlogArticleSummary): BlogCard {
+  const { categories, label } = mapApiCategories(article)
+  return {
+    key: `article:${article.slug}`,
+    title: article.title,
+    excerpt: article.excerpt,
+    image: article.featuredImage || BLOG_PLACEHOLDER_IMAGE,
+    author: article.author?.name || 'Travio Ghana Team',
+    date: formatArticleDate(article.publishedAt) || formatArticleDate(article.createdAt),
+    dateISO: article.publishedAt || article.createdAt,
+    categories,
+    categoryLabel: label ?? undefined,
+    readTime: article.readTime ?? 4,
+    href: `/blog/${article.slug}`,
+  }
+}
+
+function storyToCard(story: TravelStory): BlogCard {
+  const slug = storySlug(story.title)
+  return {
+    key: `story:${slug}`,
+    title: story.title,
+    excerpt: story.excerpt,
+    image: story.image,
+    author: story.author,
+    date: story.date,
+    dateISO: story.dateISO,
+    categories: storyCategories(story),
+    readTime: story.readTime ?? 4,
+    href: `/stories/${slug}`,
+  }
+}
+
 function storyCategories(story: TravelStory): StoryCategory[] {
   return (story.categories ?? []).filter((key): key is StoryCategory =>
     CATEGORY_KEYS.includes(key as CategoryKey) && key !== 'all'
   )
 }
 
-function storyLink(story: TravelStory) {
-  return `/stories/${storySlug(story.title)}`
-}
-
-function StoryMeta({ story }: { story: TravelStory }) {
+function StoryMeta({ card }: { card: BlogCard }) {
   const { t } = useTranslation()
   return (
     <>
       <span>
         <User size={12} aria-hidden="true" />
-        {story.author}
+        {card.author}
       </span>
       <span>
         <Clock size={12} aria-hidden="true" />
-        {t('blog.readTime', { count: story.readTime ?? 4 })}
+        {t('blog.readTime', { count: card.readTime })}
       </span>
     </>
   )
@@ -94,29 +179,55 @@ export default function BlogPage() {
   const [activeCategory, setActiveCategory] = useState<CategoryKey>('all')
   const [email, setEmail] = useState('')
 
-  const filteredStories = useMemo(() => {
+  // Admin-published articles arrive from the backend; the static stories stay
+  // as the floor beneath them (null → still loading → static only).
+  const [liveArticles, setLiveArticles] = useState<BlogArticleSummary[] | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    fetchPublishedArticles()
+      .then((articles) => {
+        if (!cancelled) setLiveArticles(articles)
+      })
+      .catch(() => {
+        if (!cancelled) setLiveArticles([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const cards = useMemo<BlogCard[]>(
+    () => [...(liveArticles ?? []).map(articleToCard), ...travelStories.map(storyToCard)],
+    [liveArticles],
+  )
+
+  const filteredCards = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
-    return travelStories.filter((story) => {
-      const matchesCategory =
-        activeCategory === 'all' || storyCategories(story).includes(activeCategory)
+    return cards.filter((card) => {
+      const matchesCategory = activeCategory === 'all' || card.categories.includes(activeCategory)
       if (!matchesCategory) return false
       if (!query) return true
       return (
-        story.title.toLowerCase().includes(query) ||
-        story.excerpt.toLowerCase().includes(query) ||
-        story.author.toLowerCase().includes(query)
+        card.title.toLowerCase().includes(query) ||
+        card.excerpt.toLowerCase().includes(query) ||
+        card.author.toLowerCase().includes(query)
       )
     })
-  }, [searchQuery, activeCategory])
+  }, [cards, searchQuery, activeCategory])
 
   const isFiltering = activeCategory !== 'all' || searchQuery.trim().length > 0
-  const featured = travelStories[0]
-  const sideStories = travelStories.slice(1, 3)
-  const gridStories = isFiltering ? filteredStories : filteredStories.slice(1)
+  const featured = cards[0]
+  const sideStories = cards.slice(1, 3)
+  const gridCards = isFiltering ? filteredCards : filteredCards.slice(1)
 
-  const heroPrimary = travelStories[0]
+  const heroPrimary = cards[0]
   const heroSecondary =
-    travelStories.find((story) => storyCategories(story).includes('food')) ?? travelStories[2]
+    cards.find((card) => card.categories.includes('food')) ?? cards[2] ?? cards[0]
+
+  /** Chip label: the admin's category name, else the translated filter label. */
+  const tagLabel = (card: BlogCard) =>
+    card.categoryLabel ?? t(CATEGORY_LABELS[card.categories[0] ?? 'culture'])
 
   const scrollToGuides = () => {
     document.getElementById('allGuides')?.scrollIntoView({
@@ -163,10 +274,10 @@ export default function BlogPage() {
               { name: 'Blog', url: 'https://www.travioghana.com/blog' },
             ]),
             buildItemListSchema(
-              travelStories.map((story) => ({
-                name: story.title,
-                url: `https://www.travioghana.com${storyLink(story)}`,
-                image: story.image,
+              cards.map((card) => ({
+                name: card.title,
+                url: `https://www.travioghana.com${card.href}`,
+                image: card.image,
               }))
             ),
           ]}
@@ -214,7 +325,7 @@ export default function BlogPage() {
               <motion.ul className="blog-hero-meta" variants={staggerItem}>
                 <li>
                   <BookOpen size={15} aria-hidden="true" />
-                  {t('blog.heroStories', { count: travelStories.length })}
+                  {t('blog.heroStories', { count: cards.length })}
                 </li>
                 <li>
                   <Sparkles size={15} aria-hidden="true" />
@@ -283,15 +394,15 @@ export default function BlogPage() {
                 variants={stagger}
               >
                 <motion.div className="blog-feature-wrap" variants={staggerItem}>
-                  <Link to={storyLink(featured)} className="blog-feature">
+                  <Link to={featured.href} className="blog-feature">
                     <OptimizedImage src={featured.image} alt={featured.title} width={1200} />
                     <div className="blog-feature-body">
                       <span className="blog-feature-tag">
-                        {t('blog.featured')} · {t(CATEGORY_LABELS[storyCategories(featured)[0] ?? 'culture'])}
+                        {t('blog.featured')} · {tagLabel(featured)}
                       </span>
                       <h3 className="blog-feature-title">{featured.title}</h3>
                       <div className="blog-feature-meta">
-                        <StoryMeta story={featured} />
+                        <StoryMeta card={featured} />
                       </div>
                       <span className="blog-feature-read">
                         {t('blog.readGuide')}
@@ -302,22 +413,22 @@ export default function BlogPage() {
                 </motion.div>
 
                 <div className="blog-side">
-                  {sideStories.map((story) => {
-                    const [primaryCategory = 'culture'] = storyCategories(story)
+                  {sideStories.map((card) => {
+                    const [primaryCategory = 'culture'] = card.categories
                     const Icon = CATEGORY_ICONS[primaryCategory]
                     return (
-                      <motion.div key={story.title} className="blog-side-item" variants={staggerItem}>
-                        <Link to={storyLink(story)} className="blog-side-card">
+                      <motion.div key={card.key} className="blog-side-item" variants={staggerItem}>
+                        <Link to={card.href} className="blog-side-card">
                           <div>
                             <span className="blog-side-icon" aria-hidden="true">
                               <Icon size={22} />
                             </span>
-                            <h3>{story.title}</h3>
-                            <p>{story.excerpt}</p>
+                            <h3>{card.title}</h3>
+                            <p>{card.excerpt}</p>
                           </div>
                           <div className="blog-side-foot">
                             <span>
-                              {t(CATEGORY_LABELS[primaryCategory])} · {t('blog.readTime', { count: story.readTime ?? 4 })}
+                              {tagLabel(card)} · {t('blog.readTime', { count: card.readTime })}
                             </span>
                             <span className="blog-side-arrow" aria-hidden="true">
                               <ArrowUpRight size={16} />
@@ -349,11 +460,11 @@ export default function BlogPage() {
               </motion.div>
               <motion.span className="blog-count" variants={fadeUp}>
                 <BookOpen size={15} aria-hidden="true" />
-                {t('blog.guidesCount', { count: gridStories.length })}
+                {t('blog.guidesCount', { count: gridCards.length })}
               </motion.span>
             </motion.div>
 
-            {gridStories.length > 0 && (
+            {gridCards.length > 0 && (
               <motion.div
                 className="blog-grid"
                 initial="hidden"
@@ -361,34 +472,31 @@ export default function BlogPage() {
                 viewport={revealViewport}
                 variants={stagger}
               >
-                {gridStories.map((story) => {
-                  const [primaryCategory = 'culture'] = storyCategories(story)
-                  return (
-                    <motion.article key={story.title} className="blog-card-wrap" variants={staggerItem}>
-                      <Link to={storyLink(story)} className="blog-card">
-                        <div className="blog-card-media">
-                          <OptimizedImage src={story.image} alt={story.title} width={600} />
-                          <span className="blog-card-tag">{t(CATEGORY_LABELS[primaryCategory])}</span>
+                {gridCards.map((card) => (
+                  <motion.article key={card.key} className="blog-card-wrap" variants={staggerItem}>
+                    <Link to={card.href} className="blog-card">
+                      <div className="blog-card-media">
+                        <OptimizedImage src={card.image} alt={card.title} width={600} />
+                        <span className="blog-card-tag">{tagLabel(card)}</span>
+                      </div>
+                      <div className="blog-card-body">
+                        <div className="blog-card-meta">
+                          <StoryMeta card={card} />
                         </div>
-                        <div className="blog-card-body">
-                          <div className="blog-card-meta">
-                            <StoryMeta story={story} />
-                          </div>
-                          <h3>{story.title}</h3>
-                          <p>{story.excerpt}</p>
-                          <span className="blog-card-read">
-                            {t('blog.readMore')}
-                            <ArrowRight size={15} aria-hidden="true" />
-                          </span>
-                        </div>
-                      </Link>
-                    </motion.article>
-                  )
-                })}
+                        <h3>{card.title}</h3>
+                        <p>{card.excerpt}</p>
+                        <span className="blog-card-read">
+                          {t('blog.readMore')}
+                          <ArrowRight size={15} aria-hidden="true" />
+                        </span>
+                      </div>
+                    </Link>
+                  </motion.article>
+                ))}
               </motion.div>
             )}
 
-            {filteredStories.length === 0 && (
+            {filteredCards.length === 0 && (
               <div className="blog-empty" role="status">
                 <Compass size={26} aria-hidden="true" />
                 <p>{t('blog.emptyText')}</p>

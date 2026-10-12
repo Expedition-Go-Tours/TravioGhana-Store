@@ -83,6 +83,7 @@ const HotelsProviderPage = lazy(() => import('./pages/HotelsProviderPage'))
 const TransportPage = lazy(() => import('./pages/TransportPage'))
 const TransportProviderPage = lazy(() => import('./pages/TransportProviderPage'))
 const BlogPage = lazy(() => import('./pages/BlogPage'))
+const BlogArticlePage = lazy(() => import('./pages/BlogArticlePage'))
 const PressPage = lazy(() => import('./pages/PressPage'))
 const PartnerResourcesPage = lazy(() => import('./pages/PartnerResourcesPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
@@ -459,6 +460,10 @@ function AppContent() {
           <Route path="/stories/:slug" element={<StoryDetailPage />} />
           <Route path="/reviews" element={<AllReviewsPage />} />
           <Route path="/blog" element={<BlogPage />} />
+          {/* Admin-published articles (shared backend API). Declared ahead of
+              /:tourId/booking so static "blog" wins the rank; the static
+              stories keep living under /stories/*. */}
+          <Route path="/blog/:slug" element={<BlogArticlePage />} />
           {/* Home + the state-driven auth overlay. handleOpenAuth() navigates
               to "/" and only then sets currentPage, so the signin/signup
               branch has to stay on this route rather than move to the
