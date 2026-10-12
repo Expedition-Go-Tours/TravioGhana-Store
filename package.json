@@ -5,10 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/generate-sitemap.cjs && node scripts/generate-story-pages.cjs && node scripts/build-review-stats.cjs && node scripts/check-icons.cjs",
+    "prebuild": "node scripts/generate-sitemap.cjs && node scripts/build-review-stats.cjs && node scripts/check-icons.cjs",
     "build": "tsc -b && vite build && npm run prerender",
     "sitemap": "node scripts/generate-sitemap.cjs",
-    "story-pages": "node scripts/generate-story-pages.cjs",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",

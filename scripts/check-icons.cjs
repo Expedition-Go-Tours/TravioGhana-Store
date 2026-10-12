@@ -111,12 +111,6 @@ function main() {
 
   checkHtml('index.html', readFileSync(join(ROOT, 'index.html'), 'utf8'))
 
-  const storiesDir = join(PUBLIC, 'stories')
-  const storyPages = readdirSync(storiesDir).filter((name) => name.endsWith('.html'))
-  for (const page of storyPages) {
-    checkHtml(`public/stories/${page}`, readFileSync(join(storiesDir, page), 'utf8'))
-  }
-
   const manifest = JSON.parse(readFileSync(publicPath(MANIFEST_HREF), 'utf8'))
   const purposes = new Set()
   for (const icon of manifest.icons ?? []) {

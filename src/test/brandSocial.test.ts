@@ -288,68 +288,6 @@ describe('every page gets the Organization', () => {
   })
 })
 
-/**
- * The story pages are generated as standalone HTML by a .cjs build script, so
- * they never reach the React `SEO` component that now injects the Organization
- * everywhere else. They carry their own copies of the brand, which is why they
- * were the last page type asserting a publisher that connected to nothing.
- *
- * A .cjs script cannot import a TypeScript module, so the list is necessarily
- * written twice. These tests are the tie between the two copies.
- */
-describe('the story generator agrees with the brand module', () => {
-  const generator = read('scripts/generate-story-pages.cjs')
-
-  it('declares the same profiles the shared module does', () => {
-    const body = generator.match(/const BRAND_SAME_AS = \[(.*?)\]/s)?.[1] ?? ''
-    // Single-quoted, so pull the literals rather than handing them to JSON.
-    const list = [...body.matchAll(/'([^']+)'/g)].map((m) => m[1])
-    expect(list.length, 'could not read BRAND_SAME_AS out of the generator').toBeGreaterThan(0)
-    expect(list, 'the generator\\u2019s sameAs has drifted from brandSocial.ts').toEqual([
-      ...BRAND_SOCIAL_URLS,
-    ])
-  })
-
-  it('gives the Article publisher and the hub ItemList the brand', () => {
-    expect(generator).toMatch(/publisher: brandOrganization\(\)/)
-    // Once for the Article, once for the /stories hub ItemList.
-    expect(generator.match(/publisher: brandOrganization\(\)/g)).toHaveLength(2)
-  })
-
-  it('emits a top-level Organization on every page it generates', () => {
-    // The same invariant the React SEO component now holds. These pages reach
-    // the brand twice over — the list's publisher, and this — and that is the
-    // same duplication the tour pages already have in Product.brand and
-    // offers.seller. What matters is that the site-wide rule is now actually
-    // true everywhere, not true of the pages that remembered.
-    //
-    // Checked per template rather than by counting occurrences: a count is
-    // satisfied by adding a fourth call to a helper nobody renders, whereas
-    // this asks whether the first thing each page emits is the brand.
-    const EMIT = /<script type="application\/ld\+json">\$\{JSON\.stringify\((\w+)\(.*?\)\}<\/script>/g
-    const templates = [
-      // The story page template, and the /stories hub template. Each starts at
-      // the schema it is built around and runs to the next one.
-      generator.slice(0, generator.indexOf('const itemListSchema')),
-      generator.slice(generator.indexOf('const itemListSchema')),
-    ]
-
-    expect(templates).toHaveLength(2)
-    for (const [i, source] of templates.entries()) {
-      const first = [...source.matchAll(EMIT)].map((m) => m[1])
-      expect(first.length, `template ${i} emits no JSON-LD at all`).toBeGreaterThan(0)
-      expect(first[0], `template ${i} does not open with the brand`).toBe('brandOrganization')
-    }
-  })
-
-  it('no longer hand-rolls a publisher that names no profile', () => {
-    const handRolled = generator.match(/'@type': 'Organization',[\s\S]{0,400}?\n\s*\}/g) ?? []
-    for (const block of handRolled) {
-      expect(block, 'a hand-rolled Organization has no sameAs').toContain('sameAs')
-    }
-  })
-})
-
 describe('footer links agree with the schema', () => {
   const footer = read('src/components/Footer.tsx')
 

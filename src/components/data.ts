@@ -1,5 +1,3 @@
-import travelStoriesData from './travelStories.json'
-
 export interface Tour {
   title: string
   category: string
@@ -610,52 +608,7 @@ const reviews: Review[] = [
   },
 ]
 
-export interface TravelStorySection {
-  heading: string
-  body: string
-}
 
-export interface TravelStoryContent {
-  category: string
-  sections: TravelStorySection[]
-  highlights: string[]
-  quote: string
-}
-
-export interface TravelStory {
-  /** Stable half of /stories/<slug>, kept next to the title so the sitemap and
-   *  the prerendered story pages cannot drift from what the app links. */
-  slug: string
-  title: string
-  excerpt: string
-  image: string
-  author: string
-  date: string
-  /** ISO 8601 form of `date` — what article:published_time and the Article
-   *  schema need; the human string stays for display. */
-  dateISO?: string
-  /** Topic filters the story belongs to (nature, culture, food, adventure, heritage). */
-  categories?: string[]
-  /** Estimated reading time in minutes, shown on blog/story cards. */
-  readTime?: number
-  /** Full article body, precomputed so the static /stories/<slug>.html that
-   *  crawlers read renders exactly what the React page shows. */
-  content: TravelStoryContent
-}
-
-// Single source of truth: scripts/generate-sitemap.cjs and
-// scripts/generate-story-pages.cjs read this same file, so a story can never
-// be promised in the sitemap and404 when fetched.
-const travelStories: TravelStory[] = travelStoriesData
-
-export function storySlug(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/['’]/g, '')
-    .replace(/&/g, 'and')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-}
 
 export interface TourWithMeta extends Tour {
   section: string
@@ -719,4 +672,4 @@ export const priceRanges = [
   { value: 'over-200', label: '$200+', match: (p: number) => p > 200 },
 ]
 
-export { dayTours, multiDayTours, travioTours, reviews, travelStories }
+export { dayTours, multiDayTours, travioTours, reviews }

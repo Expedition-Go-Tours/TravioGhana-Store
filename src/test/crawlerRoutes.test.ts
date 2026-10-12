@@ -39,11 +39,11 @@ const prerenderRoutes = stringArray(read('scripts/prerender-static.mjs'), 'ROUTE
 const middlewareRoutes = stringArray(read('middleware.ts'), 'PRERENDER_ROUTES')
 
 /**
- * Sitemap static pages, minus the two that are served elsewhere on purpose:
+ * Sitemap static pages, minus the one that is served elsewhere on purpose:
  * `/tours` is the backend's (live catalogue, and `?place=` faceting has no
- * static equivalent) and `/stories` is generate-story-pages.cjs's.
+ * static equivalent).
  */
-const BACKEND_OWNED = new Set(['/tours', '/stories'])
+const BACKEND_OWNED = new Set(['/tours'])
 // STATIC_PAGES entries are objects (`{ path, priority, changefreq }`), so pull
 // the path field out of each rather than treating it as a flat string array.
 const sitemapRoutes = stringArray(read('scripts/generate-sitemap.cjs'), 'STATIC_PAGES')
@@ -68,7 +68,7 @@ describe('crawler route lists agree', () => {
     expect(missing).toEqual([])
   })
 
-  it('leaves /tours and /stories to the handlers that own their data', () => {
+  it('leaves /tours to the live handler and keeps the retired /stories unprerendered', () => {
     expect(prerenderRoutes).not.toContain('/tours')
     expect(prerenderRoutes).not.toContain('/stories')
   })

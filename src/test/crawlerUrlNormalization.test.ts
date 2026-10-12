@@ -12,7 +12,7 @@ describe('public URL normalization', () => {
       it(`preserves public links for ${agent} ${method}`, async () => {
         for (const path of [
           '/about-us/', '/tours/?place=Cape%20Coast&utm_source=old-link',
-          '/stories/', '/stories/ghana-guide/', '/tour/tour-id/tour-slug/',
+          '/tour/tour-id/tour-slug/',
           '/tour/old-slug/', '/privacy-policy//',
         ]) {
           const request = new Request(`${origin}${path}`, {
@@ -45,6 +45,24 @@ describe('public URL normalization', () => {
       expect((await middleware(new Request(`${origin}${path}`)))?.status).not.toBe(308)
     }
     expect(await middleware(new Request(`${origin}/about-us/`, { method: 'POST' }))).toBeUndefined()
+  })
+
+  it('redirects the retired /stories/* URLs to the guides that replaced them', async () => {
+    const response = async (path: string) => middleware(new Request(`${origin}${path}`, {
+      headers: { 'user-agent': 'Googlebot' },
+    }))
+    const mapped = await response('/stories/exploring-the-canopy-a-guide-to-kakum-national-park')
+    expect(mapped?.status).toBe(308)
+    expect(mapped?.headers.get('Location'))
+      .toBe(`${origin}/blog/kakum-national-park-canopy-walkway`)
+    // A story with no successor still lands somewhere useful, and a legacy
+    // .html suffix (the old static-file URLs) resolves like the bare slug.
+    for (const path of ['/stories', '/stories/the-best-beaches-in-ghana-for-a-weekend-escape',
+      '/stories/a-food-lovers-guide-to-accra.html']) {
+      const res = await response(path)
+      expect(res?.status).toBe(308)
+      expect(res?.headers.get('Location')).toBe(`${origin}/blog`)
+    }
   })
 })
 

@@ -65,10 +65,6 @@ const OUT_ROOT = () => join(DIST(), '__seo')
  * Fixed marketing + legal routes. Must stay in step with the prerender route
  * list in middleware.ts and with STATIC_PAGES in generate-sitemap.cjs;
  * `npm test` asserts all three agree.
- *
- * /stories and /stories/<slug> are absent on purpose — scripts/generate-story-
- * pages.cjs already writes real static HTML for them from travelStories.json,
- * and the React /stories route only adds client-side filtering on top.
  */
 const ROUTES = [
   '/',

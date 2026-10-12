@@ -260,7 +260,6 @@ function marketingLastmod(route, sources, catalogueDate) {
 const STATIC_PAGES = [
   { path: '/tours', priority: 0.9, changefreq: 'daily' },
   { path: '/about-us', priority: 0.6, changefreq: 'monthly' },
-  { path: '/stories', priority: 0.6, changefreq: 'weekly' },
   { path: '/blog', priority: 0.6, changefreq: 'weekly' },
   { path: '/reviews', priority: 0.6, changefreq: 'weekly' },
   { path: '/foundation', priority: 0.4, changefreq: 'monthly' },
@@ -300,28 +299,14 @@ async function main() {
   // Google uses lastmod to decide what to re-crawl, and an inaccurate date is
   // ignored — or worse, discounted for the whole sitemap.
   //
-  // "Actual data" is read per source: tours and stories carry their API /
+  // "Actual data" is read per source: tours and blog articles carry their API /
   // publish date, and the marketing pages carry the git history of the files
   // that render them (gitLastModified).
-
-  // Travel stories — the same travelStories.json the app renders and
-  // scripts/generate-story-pages.cjs prerenders, so a story is only listed if
-  // the crawler copy of it actually exists.
-  const stories = [];
-  try {
-    const raw = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../src/components/travelStories.json'), 'utf8'));
-    for (const s of raw) {
-      if (!s?.slug) continue;
-      stories.push({ slug: s.slug, lastmod: isoDate(s.dateISO || s.date) });
-    }
-  } catch (err) {
-    console.error(`WARN: could not read travelStories.json: ${err.message}`);
-  }
 
   // Blog articles — the admin's publish flow lives in the shared API (routes
   // at /blog, not under the brand prefix), so a published post lands here
   // without a hand-edit. Fail-soft by design: a broken blog fetch warns and
-  // still ships the tours/stories/marketing URLs, because freezing the whole
+  // still ships the tours/blog/marketing URLs, because freezing the whole
   // sitemap to preserve six article links would cost far more than it saves.
   const blogArticles = [];
   try {
@@ -407,7 +392,7 @@ async function main() {
   }
 
   // ── 2. Dates ─────────────────────────────────────────────────────────
-  const contentDates = [...stories.map((s) => s.lastmod), ...tourEntries.map((t) => t.lastmod)]
+  const contentDates = [...tourEntries.map((t) => t.lastmod)]
     .filter(Boolean)
     .sort();
   // Pages whose body is the catalogue itself (home, /tours, /reviews) change
@@ -440,14 +425,6 @@ async function main() {
         lastmod: marketingLastmod(p.path, sources, newestContentDate),
       })
     );
-  }
-
-  for (const s of stories) {
-    urls.push(urlEntry(`${SITE_URL}/stories/${encodeURIComponent(s.slug)}`, {
-      priority: 0.6,
-      changefreq: 'monthly',
-      lastmod: s.lastmod,
-    }));
   }
 
   // Admin-published articles — /blog/<slug> is the SPA route; crawlers are
@@ -487,7 +464,7 @@ ${urls.join('\n')}
 
   fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
   fs.writeFileSync(OUTPUT, xml, 'utf8');
-  console.log(`Sitemap written: ${urls.length} URLs (${tourEntries.length} tours, ${places.length} destinations, ${STATIC_PAGES.length} static, ${stories.length} stories, ${blogArticles.length} blog articles) — ${entriesWithLastmod}/${urls.length} with lastmod — ${(Buffer.byteLength(xml) / 1024).toFixed(1)} KB`);
+  console.log(`Sitemap written: ${urls.length} URLs (${tourEntries.length} tours, ${places.length} destinations, ${STATIC_PAGES.length} static, ${blogArticles.length} blog articles) — ${entriesWithLastmod}/${urls.length} with lastmod — ${(Buffer.byteLength(xml) / 1024).toFixed(1)} KB`);
 
   // robots.txt — generated so the Sitemap directive always uses the canonical
   // host (a hardcoded file drifts whenever the host changes).

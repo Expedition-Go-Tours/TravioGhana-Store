@@ -351,8 +351,6 @@ export default async function middleware(request: Request) {
   const barePath = pathname.replace(/\/+$/, '') || '/'
   const isPublicPage = PRERENDER_ROUTES.has(barePath)
     || barePath === '/tours'
-    || barePath === '/stories'
-    || /^\/stories\/[^/]+$/.test(barePath)
     || /^\/tour\/[^/]+(?:\/[^/]+)?$/.test(barePath)
   if (isReadMethod(request.method) && pathname !== barePath && isPublicPage) {
     url.pathname = barePath
@@ -362,36 +360,29 @@ export default async function middleware(request: Request) {
     })
   }
 
+  // The /stories/* placeholder pages are retired; every published story URL
+  // now 308s to the closest real guide so old sitemap entries and backlinks
+  // keep resolving. Keep this map in step with src/lib/storyRedirects.ts —
+  // this file cannot import it (see the self-contained warning at the top).
+  const storySlug = barePath.match(/^\/stories\/([^/]+)$/)?.[1]
+  if (isReadMethod(request.method) && (barePath === '/stories' || storySlug !== undefined)) {
+    const STORY_REDIRECTS: Record<string, string> = {
+      'exploring-the-canopy-a-guide-to-kakum-national-park': '/blog/kakum-national-park-canopy-walkway',
+      'the-history-and-heritage-of-cape-coast-castle': '/blog/cape-coast-and-elmina-castles-guide',
+      'wildlife-encounters-mole-national-park-safari': '/blog/mole-national-park-safari-guide',
+      'exploring-ashanti-culture-in-kumasi': '/blog/kumasi-ashanti-heritage-guide',
+    }
+    const key = (storySlug ?? '').replace(/\.html$/, '')
+    url.pathname = STORY_REDIRECTS[key] ?? '/blog'
+    return new Response(null, {
+      status: 308,
+      headers: { Location: url.toString() },
+    })
+  }
+
   // Bot detection: rewrite to prerender endpoint
   if (isReadMethod(request.method) && isBot(ua) && !shouldSkip(pathname)) {
     const target = `${pathname}${url.search}`
-
-    // Stories are client-side data the backend cannot read, so the prerenderer
-    // can only answer them with a hub that links to none of them (detail pages
-    // with 404/noindex). They are rendered to static HTML at build time
-    // (scripts/generate-story-pages.cjs) and served straight from the
-    // filesystem instead: /stories for the hub, /stories/<slug> for the page.
-    if (pathname === '/stories' || pathname === '/stories/') {
-      return new Response(null, {
-        status: 200,
-        headers: {
-          'x-middleware-rewrite': '/stories/index.html',
-          'X-Prerender-Bot': 'true',
-        },
-      })
-    }
-    const storySlug = pathname.match(/^\/stories\/([^/]+)\/?$/)?.[1]
-    // Already-suffixed paths (/stories/x.html) must fall through to the
-    // prerenderer, which answers them with a real 404 instead of x.html.html.
-    if (storySlug && !storySlug.endsWith('.html')) {
-      return new Response(null, {
-        status: 200,
-        headers: {
-          'x-middleware-rewrite': `/stories/${encodeURIComponent(storySlug)}.html`,
-          'X-Prerender-Bot': 'true',
-        },
-      })
-    }
 
     // The real app, rendered at build time. Served only to bots; humans keep
     // the SPA shell. Path shape mirrors what the prerenderer writes

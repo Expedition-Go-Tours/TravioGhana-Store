@@ -18,8 +18,6 @@ import {
   Waves,
   type LucideIcon,
 } from 'lucide-react'
-import { travelStories, storySlug } from '../components/data'
-import type { TravelStory } from '../components/data'
 import { BLOG_PLACEHOLDER_IMAGE, fetchPublishedArticles, type BlogArticleSummary } from '../lib/blogApi'
 import Footer from '../components/Footer'
 import SEO, { buildBreadcrumbSchema, buildItemListSchema } from '../components/SEO'
@@ -63,9 +61,8 @@ const EXPERIENCES = [
 ]
 
 /**
- * One card, two sources: admin-published articles (the live feed) and the
- * static travel stories (the evergreen floor, so the hub is never empty and
- * every /stories/* link keeps resolving when the API is down).
+ * One card per admin-published article — the live feed is the only source; the
+ * placeholder stories that used to pad this hub are gone for good.
  */
 interface BlogCard {
   key: string
@@ -134,28 +131,6 @@ export function articleToCard(article: BlogArticleSummary): BlogCard {
   }
 }
 
-function storyToCard(story: TravelStory): BlogCard {
-  const slug = storySlug(story.title)
-  return {
-    key: `story:${slug}`,
-    title: story.title,
-    excerpt: story.excerpt,
-    image: story.image,
-    author: story.author,
-    date: story.date,
-    dateISO: story.dateISO,
-    categories: storyCategories(story),
-    readTime: story.readTime ?? 4,
-    href: `/stories/${slug}`,
-  }
-}
-
-function storyCategories(story: TravelStory): StoryCategory[] {
-  return (story.categories ?? []).filter((key): key is StoryCategory =>
-    CATEGORY_KEYS.includes(key as CategoryKey) && key !== 'all'
-  )
-}
-
 function StoryMeta({ card }: { card: BlogCard }) {
   const { t } = useTranslation()
   return (
@@ -179,8 +154,8 @@ export default function BlogPage() {
   const [activeCategory, setActiveCategory] = useState<CategoryKey>('all')
   const [email, setEmail] = useState('')
 
-  // Admin-published articles arrive from the backend; the static stories stay
-  // as the floor beneath them (null → still loading → static only).
+  // Admin-published articles arrive from the backend; until they do (or if the
+  // fetch fails) the hub shows its empty state rather than placeholder cards.
   const [liveArticles, setLiveArticles] = useState<BlogArticleSummary[] | null>(null)
 
   useEffect(() => {
@@ -198,7 +173,7 @@ export default function BlogPage() {
   }, [])
 
   const cards = useMemo<BlogCard[]>(
-    () => [...(liveArticles ?? []).map(articleToCard), ...travelStories.map(storyToCard)],
+    () => (liveArticles ?? []).map(articleToCard),
     [liveArticles],
   )
 
@@ -335,12 +310,16 @@ export default function BlogPage() {
             </motion.div>
 
             <div className="blog-hero-side" aria-hidden="true">
-              <div className="blog-hero-card blog-hero-card--one">
-                <OptimizedImage src={heroPrimary.image} alt="" width={800} priority />
-              </div>
-              <div className="blog-hero-card blog-hero-card--two">
-                <OptimizedImage src={heroSecondary.image} alt="" width={600} />
-              </div>
+              {heroPrimary && (
+                <div className="blog-hero-card blog-hero-card--one">
+                  <OptimizedImage src={heroPrimary.image} alt="" width={800} priority />
+                </div>
+              )}
+              {heroSecondary && (
+                <div className="blog-hero-card blog-hero-card--two">
+                  <OptimizedImage src={heroSecondary.image} alt="" width={600} />
+                </div>
+              )}
               <span className="blog-hero-badge">
                 <Sparkles size={14} aria-hidden="true" />
                 {t('blog.heroBadgeLabel')}

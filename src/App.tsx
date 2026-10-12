@@ -38,6 +38,7 @@ import { trackPageView } from './lib/analytics'
 import LenisProvider from './lib/LenisProvider'
 import { useHomepage, useHomepageByCity } from './hooks/useHomepageSections'
 import { enrichToursWithCombinedStats, useExternalReviewStatsData } from './hooks/useExternalReviews'
+import { resolveStoryRedirect } from './lib/storyRedirects'
 
 // Route-level code splitting
 const AuthForm = lazy(() => import('./pages/AuthForm'))
@@ -45,8 +46,6 @@ const DashboardApp = lazy(() => import('./pages/dashboard/DashboardApp'))
 const TourDetailPage = lazy(() => import('./pages/tour-detail/TourDetailPage'))
 const AllToursPage = lazy(() => import('./pages/AllToursPage'))
 const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage'))
-const AllStoriesPage = lazy(() => import('./pages/AllStoriesPage'))
-const StoryDetailPage = lazy(() => import('./pages/StoryDetailPage'))
 const AllReviewsPage = lazy(() => import('./pages/AllReviewsPage'))
 const ReviewExperiencePage = lazy(() => import('./pages/ReviewExperiencePage'))
 const SupplierPage = lazy(() => import('./pages/SupplierPage'))
@@ -57,6 +56,12 @@ const BookingConfirmationPage = lazy(() => import('./pages/BookingConfirmationPa
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'))
 const CancellationChoicePage = lazy(() => import('./pages/CancellationChoicePage'))
 const BookingPickupPage = lazy(() => import('./pages/BookingPickupPage'))
+
+/** /stories/<slug> → the real guide that replaced the old placeholder story. */
+function StoryRedirect() {
+  const { slug } = useParams()
+  return <Navigate to={resolveStoryRedirect(slug)} replace />
+}
 
 /** Old flat "Edit trip" URL → the dashboard-hosted page (keeps deep links working). */
 function BookingModifyRedirect() {
@@ -456,13 +461,14 @@ function AppContent() {
               <div className="spinner" />
             </div>
           } />
-          <Route path="/stories" element={<AllStoriesPage />} />
-          <Route path="/stories/:slug" element={<StoryDetailPage />} />
+          {/* The placeholder /stories/* pages are gone; their published URLs
+              now land on the closest real guide (or the blog hub). */}
+          <Route path="/stories" element={<Navigate to="/blog" replace />} />
+          <Route path="/stories/:slug" element={<StoryRedirect />} />
           <Route path="/reviews" element={<AllReviewsPage />} />
           <Route path="/blog" element={<BlogPage />} />
           {/* Admin-published articles (shared backend API). Declared ahead of
-              /:tourId/booking so static "blog" wins the rank; the static
-              stories keep living under /stories/*. */}
+              /:tourId/booking so static "blog" wins the rank. */}
           <Route path="/blog/:slug" element={<BlogArticlePage />} />
           {/* Home + the state-driven auth overlay. handleOpenAuth() navigates
               to "/" and only then sets currentPage, so the signin/signup

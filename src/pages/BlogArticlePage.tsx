@@ -10,13 +10,12 @@ import {
   type BlogArticleDetail,
   type BlogArticleSummary,
 } from '../lib/blogApi'
-import { travelStories, storySlug } from '../components/data'
 import ArticleBody from '../components/ArticleBody'
 import Footer from '../components/Footer'
 import SEO, { buildArticleSchema, buildBreadcrumbSchema, SITE_URL } from '../components/SEO'
 import { tourPath } from '../lib/tourPath'
 import OptimizedImage from '@/components/shared/OptimizedImage'
-import './StoryDetailPage.css'
+import './articleDetail.css'
 import './BlogArticlePage.css'
 
 type Status = 'loading' | 'ready' | 'missing' | 'error'
@@ -79,18 +78,11 @@ function BlogArticlePage() {
             if (!cancelled) setRelatedResult({ slug, items })
           })
           .catch(() => {
-            /* section falls back to the static stories */
+            /* the related section just stays hidden */
           })
       })
       .catch((err: unknown) => {
         if (cancelled) return
-        // The static stories predate this route and live at /stories/<slug>;
-        // send hand-made/legacy links there instead of a dead end.
-        const staticStory = travelStories.find((s) => s.slug === slug || storySlug(s.title) === slug)
-        if (staticStory) {
-          navigate(`/stories/${staticStory.slug}`, { replace: true })
-          return
-        }
         setFailure({ slug, kind: err instanceof ApiError && err.status === 404 ? 'missing' : 'error' })
       })
 
@@ -183,27 +175,17 @@ function BlogArticlePage() {
     .filter((a) => a.slug && a.slug !== article.slug)
     .map((a) => ({ lang: a.locale, href: `${SITE_URL}/blog/${a.slug}` }))
 
-  // API-sourced cards first, static stories as the floor so the section is
-  // never empty for a fresh article with no siblings yet.
-  const relatedCards: RelatedCard[] = [
-    ...related.map((r) => ({
+  // Sibling articles from the API; the section simply stays hidden while an
+  // article has no siblings yet.
+  const relatedCards: RelatedCard[] = related
+    .map((r) => ({
       key: `article:${r.slug}`,
       title: r.title,
       date: formatDate(r.publishedAt) || formatDate(r.createdAt),
       image: r.featuredImage || BLOG_PLACEHOLDER_IMAGE,
       href: `/blog/${r.slug}`,
-    })),
-    ...travelStories
-      .filter((s) => storySlug(s.title) !== slug)
-      .slice(0, 3)
-      .map((s) => ({
-        key: `story:${s.slug}`,
-        title: s.title,
-        date: s.date,
-        image: s.image,
-        href: `/stories/${storySlug(s.title)}`,
-      })),
-  ].slice(0, 3)
+    }))
+    .slice(0, 3)
 
   return (
     <div className="story-detail">
