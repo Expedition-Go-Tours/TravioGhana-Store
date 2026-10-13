@@ -11,6 +11,8 @@ import { useLocationSearch } from '../context/LocationSearchContext'
 import SEO, { buildItemListSchema, buildBreadcrumbSchema } from '../components/SEO'
 import { useAllExpeditionTours, useTourFilterOptions, type TourCardData } from '../hooks/useExpeditionTours'
 import { useSectionTourIds, useHomepageOffers, useAttractionTours, useLikelySellOut, type HomepageOfferTour } from '../hooks/useHomepageSections'
+import { useTourDescriptionsByIds } from '../hooks/useTourDescriptions'
+import TopRecommendationsGrid, { type TopRecItem } from '../components/TopRecommendationsGrid'
 import Footer from '../components/Footer'
 import './AllToursPage.css'
 
@@ -178,6 +180,7 @@ export default function AllToursPage() {
     'Last Minute Deals': t('allTours.sectionSpecial'),
     'Top Attractions Nearby': t('allTours.sectionAttractions'),
     'New Experiences': t('allTours.sectionNew'),
+    'Top Recommendations': t('allTours.sectionTopRecommendations'),
   }), [t])
 
   const sortOptions = useMemo(() => [
@@ -232,8 +235,11 @@ export default function AllToursPage() {
             : sortByVal
   const { data: filterOptionData } = useTourFilterOptions()
 
-  // Single lightweight call to get section tour IDs (reads pre-computed Redis cache)
-  const { data: sectionTourIdList } = useSectionTourIds(sectionParam)
+  // Single lightweight call to get section tour IDs (reads pre-computed Redis
+  // cache). The backend's curated cache for the homepage's top recommendations
+  // is named "Recommended"; the chip and URL keep the user-facing section name.
+  const sectionIdFetchName = sectionParam === 'Top Recommendations' ? 'Recommended' : sectionParam
+  const { data: sectionTourIdList } = useSectionTourIds(sectionIdFetchName)
   const isOffersSection = sectionParam === 'Last Minute Deals'
   const { data: offerTours } = useHomepageOffers(50)
   const { data: sellOutTours } = useLikelySellOut(50)
@@ -381,6 +387,24 @@ export default function AllToursPage() {
   // Cheap slice — no manual memo (React Compiler memoizes it, and a manual one
   // it can't preserve makes it skip the whole component).
   const displayTours = filteredTours.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  // The Top Recommendations section renders the homepage's card design (the
+  // shared grid: stacked cards in a desktop grid, the swipe rail on mobile)
+  // instead of the standard TourCard grid. Descriptions come from the tour
+  // detail endpoint per visible page, exactly like the homepage section.
+  const isTopRecommendationsSection = sectionParam === 'Top Recommendations'
+  const topRecItems: TopRecItem[] = isTopRecommendationsSection
+    ? displayTours.map((tour) => ({
+        id: tour.id,
+        title: tour.title,
+        slug: tour.slug,
+        image: tour.image,
+      }))
+    : []
+  const topRecDescriptions = useTourDescriptionsByIds(
+    isTopRecommendationsSection ? displayTours.map((tour) => tour.id) : [],
+    isTopRecommendationsSection && displayTours.length > 0,
+  )
 
   const filterOptions = useMemo(() => {
     const optionDestinations = [...(filterOptionData?.destinations || [])]
@@ -666,11 +690,15 @@ export default function AllToursPage() {
         )}
 
         {isBusy && displayTours.length === 0 && (
-          <div className="all-tours-grid">
-            {Array.from({ length: PAGE_SIZE }).map((_, i) => (
-              <TourCardSkeleton key={i} />
-            ))}
-          </div>
+          isTopRecommendationsSection ? (
+            <TopRecommendationsGrid items={[]} descriptions={topRecDescriptions} isLoading layout="cards" />
+          ) : (
+            <div className="all-tours-grid">
+              {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+                <TourCardSkeleton key={i} />
+              ))}
+            </div>
+          )
         )}
 
         {isError && (
@@ -681,6 +709,9 @@ export default function AllToursPage() {
         )}
 
         {!isBusy && !isError && (
+          isTopRecommendationsSection ? (
+            <TopRecommendationsGrid items={topRecItems} descriptions={topRecDescriptions} layout="cards" />
+          ) : (
           <div className="all-tours-grid">
             <AnimatePresence mode="popLayout">
               {displayTours.map((tour) => (
@@ -726,6 +757,7 @@ export default function AllToursPage() {
               ))}
             </AnimatePresence>
           </div>
+          )
         )}
 
         {!isBusy && !isError && !hasZeroAttractionTours && displayTours.length === 0 && (

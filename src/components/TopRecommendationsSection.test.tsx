@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import TopRecommendationsSection from './TopRecommendationsSection'
@@ -74,12 +74,12 @@ describe('TopRecommendationsSection', () => {
     ).toBeInTheDocument()
   })
 
-  it('links "View All" to the dedicated top recommendations page', () => {
+  it('links "View All" to the All Tours Top Recommendations filter view', () => {
     renderSection({ preloaded: [tour('abc', 'Cape Coast Castle')] })
 
     expect(screen.getByRole('link', { name: 'View All' })).toHaveAttribute(
       'href',
-      '/top-recommendations',
+      '/tours?section=Top Recommendations',
     )
   })
 
@@ -164,5 +164,66 @@ describe('TopRecommendationsSection', () => {
   it('shows the ten-row skeleton while loading', () => {
     const { container } = renderSection({ isLoading: true })
     expect(container.querySelectorAll('.top-rec-item--skeleton')).toHaveLength(10)
+  })
+})
+
+/**
+ * Touch layouts (≤1023px): the "See more" toggle is hidden, so the clamped
+ * description itself becomes the affordance and opens the whole text in a
+ * dialog. jsdom has no matchMedia — mock it to the compact branch (the same
+ * approach TourCard/Wishlist tests use).
+ */
+describe('TopRecommendationsSection — tap-to-read on touch layouts', () => {
+  const originalMatchMedia = window.matchMedia
+
+  beforeEach(() => {
+    window.matchMedia = ((query: string) => ({
+      matches: query.includes('1023'),
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    })) as unknown as typeof window.matchMedia
+  })
+
+  afterEach(() => {
+    window.matchMedia = originalMatchMedia
+  })
+
+  it('opens the whole description in a dialog when the clamped text is tapped', () => {
+    setDescriptions([['r0', `${PARA_ONE}\n${PARA_TWO}`]])
+    renderSection({ preloaded: [tour('r0', 'Waterfalls Day Tour')] })
+
+    // Compact: the text itself is the affordance — no See more toggle.
+    expect(screen.queryByRole('button', { name: 'See more' })).not.toBeInTheDocument()
+    const textButton = screen.getByRole('button', { name: new RegExp(PARA_ONE.slice(0, 30)) })
+
+    fireEvent.click(textButton)
+
+    const dialog = screen.getByRole('dialog')
+    expect(dialog).toHaveAttribute('aria-modal', 'true')
+    expect(within(dialog).getByText(PARA_ONE, { exact: true })).toBeInTheDocument()
+    expect(within(dialog).getByText(PARA_TWO, { exact: true })).toBeInTheDocument()
+
+    // Escape closes it.
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+
+    // Re-open and close via the ✕ button.
+    fireEvent.click(textButton)
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Close' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('keeps short descriptions as plain, inert text', () => {
+    setDescriptions([['r0', 'A short blurb that fits without clamping.']])
+    renderSection({ preloaded: [tour('r0', 'Short Tour')] })
+
+    expect(screen.getByText('A short blurb that fits without clamping.')).toBeInTheDocument()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
   })
 })

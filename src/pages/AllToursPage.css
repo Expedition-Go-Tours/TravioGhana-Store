@@ -8,15 +8,12 @@
 }
 
 .all-tours-container {
-  max-width: 1400px;
+  /* The homepage content column (five 295px cards + four 16px gaps) plus the
+     32px gutters — the same column the navbar and footer are aligned to, so
+     the listing's edges line up with both at every width. */
+  max-width: calc(295px * 5 + 16px * 4 + 64px);
   margin: 0 auto;
-  padding: 32px 40px 60px;
-}
-
-@media (max-width: 1024px) {
-  .all-tours-container {
-    padding: 24px 24px 40px;
-  }
+  padding: 32px 32px 60px;
 }
 
 @media (max-width: 768px) {

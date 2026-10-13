@@ -34,8 +34,9 @@ interface Props {
  * description is unavailable still renders, just without an excerpt.
  *
  * The cards are the shared TopRecommendationsGrid, so this section and the
- * /top-recommendations view-all page (which shows the same ten tours) can
- * never drift apart. "View all" opens that page.
+ * All Tours "Top Recommendations" filter view (which shows the same tours)
+ * can never drift apart. "View all" opens that filtered listing, where the
+ * section renders as a highlighted chip among the regular filters.
  */
 export default function TopRecommendationsSection({
   preloaded,
@@ -81,7 +82,7 @@ export default function TopRecommendationsSection({
       <div className="top-recs-container">
         <SectionHeading
           title={title || t('sections.topRecommendations')}
-          viewAllLink="/top-recommendations"
+          viewAllLink="/tours?section=Top Recommendations"
         />
         <TopRecommendationsGrid items={items} descriptions={descriptions} />
       </div>

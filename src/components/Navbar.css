@@ -1247,13 +1247,12 @@ body:has(.story-detail) .navbar-compact-search {
     padding: 0 8px;
   }
 
-  /* All Tours keeps the page's own 24px tablet gutter (see
-     .all-tours-container) instead of the compact 8px search-bar gutter, so
-     the logo and the right-hand icons stay aligned with the content column. */
+  /* All Tours keeps its own bar shadow at tablet widths (the page's sticky
+     filter row sits right beneath the navbar). Its column rules are gone:
+     the page now uses the default homepage column, which the navbar's base
+     padding already matches. */
   .page-all-tours .navbar {
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-    padding-left: 24px;
-    padding-right: 24px;
   }
 
   /* Mobile/tablet: hamburger drawer becomes a full-screen sheet (GYG-style) */
@@ -1297,12 +1296,7 @@ body:has(.story-detail) .navbar-compact-search {
     padding-right: 16px;
   }
 
-  /* All Tours: match .all-tours-container's 16px phone gutter. Declared after
-     the 24px tablet rule above so it wins at equal specificity. */
-  .page-all-tours .navbar {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
+  /* All Tours' phone gutter is the navbar default (16px), so no override. */
 
   .nav-logo-img {
     /* Same wordmark fit on phones (≈138px wide) so it leaves room for the
@@ -1525,12 +1519,11 @@ body:has(.story-detail) .navbar-compact-search {
   padding-right: max(20px, calc((100% - 1200px) / 2));
 }
 
-/* All Tours (/tours — homepage "View all", mood/location/attraction filters)
-   and Search results (/search — city/free-text search): the content column is
+/* Search results (/search — city/free-text search): the content column is
    max-width 1400px with 40px gutters. Desktop+ aligns the navbar items on that
-   column's inner content edges, matching the support-page fix. */
+   column's inner content edges, matching the support-page fix. All Tours no
+   longer needs a rule here — its page uses the default homepage column. */
 @media (min-width: 1025px) {
-  .page-all-tours .navbar,
   .page-search .navbar {
     padding-left: max(40px, calc((100% - 1400px) / 2 + 40px));
     padding-right: max(40px, calc((100% - 1400px) / 2 + 40px));
