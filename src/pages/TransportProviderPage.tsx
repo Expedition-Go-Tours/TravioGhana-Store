@@ -11,12 +11,13 @@
    ========================================================================== */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { setAuthReturnTo } from '../lib/auth'
+import { useAuthUser } from '../hooks/useAuthUser'
 import Footer from '../components/Footer'
 import SEO from '../components/SEO'
 import '../styles/partner-pages.css'
 import '../styles/TransportProviders.css'
-
-const CONTACT = 'https://www.travioghana.com/contact-us'
 
 /** The template's illustrated map, with its SMIL vehicle animations. */
 function GhanaMap({ svgRef }: { svgRef: React.RefObject<SVGSVGElement | null> }) {
@@ -67,7 +68,13 @@ const BENEFITS = [
   { number: '04', title: 'Coordinate with a local team.', body: 'Work with people in Ghana to discuss pickup details, changes and the journeys ahead.' },
 ]
 
-export default function TransportProviderPage() {
+interface TransportProviderPageProps {
+  onOpenAuth?: (mode: 'signin' | 'signup') => void
+}
+
+export default function TransportProviderPage({ onOpenAuth }: TransportProviderPageProps) {
+  const navigate = useNavigate()
+  const user = useAuthUser()
   const pageRef = useRef<HTMLDivElement>(null)
   const heroRef = useRef<HTMLElement>(null)
   const storyRef = useRef<HTMLDivElement>(null)
@@ -76,6 +83,23 @@ export default function TransportProviderPage() {
   const queuedRef = useRef(false)
   const journeyVisibleRef = useRef(true)
   const [motionPaused, setMotionPaused] = useState(false)
+
+  useEffect(() => {
+    setAuthReturnTo('/transport-providers')
+  }, [])
+
+  /**
+   * Signed-in visitors go straight to the supplier registration form; everyone
+   * else signs up first and is returned to it.
+   */
+  const handleApply = () => {
+    if (!user) {
+      setAuthReturnTo('/supplier/register')
+      onOpenAuth?.('signup')
+      return
+    }
+    navigate('/supplier/register')
+  }
 
   // ── Reveal on scroll (the template's .reveal observer) ──────────────────
   useEffect(() => {
@@ -232,9 +256,9 @@ export default function TransportProviderPage() {
                 Bring your vehicles and local knowledge, and grow with the travellers already planning their trip.
               </p>
               <div className="hero-actions">
-                <a className="button" href={CONTACT}>
+                <button type="button" className="button" onClick={handleApply}>
                   Become a transport partner <span className="link-arrow" aria-hidden="true">↗</span>
-                </a>
+                </button>
                 <a className="button outline" href="#journey">Explore the journeys</a>
               </div>
               <div className="hero-route-caption">
@@ -305,9 +329,9 @@ export default function TransportProviderPage() {
             </div>
           </div>
           <div className="wrap journey-join">
-            <a className="button" href={CONTACT}>
+            <button type="button" className="button" onClick={handleApply}>
               Start the conversation <span className="link-arrow" aria-hidden="true">↗</span>
-            </a>
+            </button>
           </div>
         </section>
 

@@ -416,7 +416,7 @@ function AppContent() {
             <TransportPage onOpenAuth={handleOpenAuth} />
           } />
           <Route path="/transport-providers" element={
-            <TransportProviderPage />
+            <TransportProviderPage onOpenAuth={handleOpenAuth} />
           } />
           <Route path="/partners/:type/apply" element={
             <PartnerApplyPage onOpenAuth={handleOpenAuth} />
