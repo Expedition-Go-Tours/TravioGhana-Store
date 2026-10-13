@@ -138,7 +138,21 @@ function DescriptionDialog({
  * source the tour detail page renders); the collapsed state simply clamps it
  * to three lines.
  */
-function TopRecommendationItem({ item, description }: { item: TopRecItem; description: string }) {
+function TopRecommendationItem({
+  item,
+  description,
+  seeMoreOpensModal = false,
+}: {
+  item: TopRecItem
+  description: string
+  /**
+   * Cards layout (the All Tours section view): "See more" opens the dialog
+   * even on desktop — the card never inline-expands, mirroring
+   * expeditiongotours.com. The editorial homepage layout keeps the inline
+   * expansion.
+   */
+  seeMoreOpensModal?: boolean
+}) {
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
   const [fullTextOpen, setFullTextOpen] = useState(false)
@@ -211,10 +225,15 @@ function TopRecommendationItem({ item, description }: { item: TopRecItem; descri
           <button
             type="button"
             className="top-rec-toggle"
-            onClick={() => setExpanded((value) => !value)}
-            aria-expanded={expanded}
+            onClick={() =>
+              seeMoreOpensModal ? setFullTextOpen(true) : setExpanded((value) => !value)
+            }
+            aria-expanded={seeMoreOpensModal ? undefined : expanded}
+            aria-haspopup={seeMoreOpensModal ? 'dialog' : undefined}
           >
-            {expanded ? t('tourDetail.seeLess') : t('tourDetail.seeMore')}
+            {!seeMoreOpensModal && expanded
+              ? t('tourDetail.seeLess')
+              : t('tourDetail.seeMore')}
           </button>
         )}
       </div>
@@ -279,6 +298,7 @@ export default function TopRecommendationsGrid({ items, descriptions, isLoading,
         <TopRecommendationItem
           item={item}
           description={descriptions.get(item.id) ?? ''}
+          seeMoreOpensModal={layout === 'cards'}
           key={item.id}
         />
       ))}

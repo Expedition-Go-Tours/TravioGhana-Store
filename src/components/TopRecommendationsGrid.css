@@ -250,13 +250,6 @@
   .top-recs-grid--cards .top-rec-excerpt {
     font-size: 14px;
   }
-
-  /* Expanded stays inside its cell in the grid — no full-row span. */
-  .top-recs-grid--cards .top-rec-item--expanded {
-    grid-column: auto;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 14px;
-  }
 }
 
 @media (min-width: 1024px) and (max-width: 1200px) {

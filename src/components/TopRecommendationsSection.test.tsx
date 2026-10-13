@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import TopRecommendationsSection from './TopRecommendationsSection'
+import TopRecommendationsGrid from './TopRecommendationsGrid'
 import { useTourDescriptionsByIds } from '../hooks/useTourDescriptions'
 import type { HomepageTour } from '../hooks/useHomepageSections'
 
@@ -225,5 +226,33 @@ describe('TopRecommendationsSection — tap-to-read on touch layouts', () => {
     expect(screen.getByText('A short blurb that fits without clamping.')).toBeInTheDocument()
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * The All Tours section view renders the grid in its "cards" layout: there,
+ * "See more" opens the description dialog even on desktop (mirroring
+ * expeditiongotours.com) — the card never inline-expands.
+ */
+describe('TopRecommendationsGrid — cards layout', () => {
+  it('opens the dialog from "See more" on desktop instead of expanding the card', () => {
+    render(
+      <TopRecommendationsGrid
+        layout="cards"
+        items={[{ id: 'r0', title: 'Waterfalls Day Tour', slug: 'r0', image: 'https://img/r0.jpg' }]}
+        descriptions={new Map([['r0', `${PARA_ONE}\n${PARA_TWO}`]])}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'See more' }))
+
+    const dialog = screen.getByRole('dialog')
+    expect(within(dialog).getByText(PARA_ONE, { exact: true })).toBeInTheDocument()
+    expect(within(dialog).getByText(PARA_TWO, { exact: true })).toBeInTheDocument()
+
+    // The card itself never expands in this layout and the label stays "See more".
+    expect(document.querySelector('.top-rec-item--expanded')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'See less' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'See more' })).toBeInTheDocument()
   })
 })
