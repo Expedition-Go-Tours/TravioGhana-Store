@@ -250,6 +250,12 @@
   .top-recs-grid--cards .top-rec-excerpt {
     font-size: 14px;
   }
+
+  /* The view-all cards put the link on the card's left edge, flush with the
+     excerpt (the homepage editorial rows keep it on the right). */
+  .top-recs-grid--cards .top-rec-toggle {
+    align-self: flex-start;
+  }
 }
 
 @media (min-width: 1024px) and (max-width: 1200px) {
