@@ -188,15 +188,36 @@
   50% { opacity: 0.55; }
 }
 
-/* Tablet: one full-width row per tour (image still beside the text). */
+/* Tablet + mobile: the grid becomes a swipe rail — one card per view with
+   the next card peeking in, snapping one card per swipe. The card geometry
+   stays per breakpoint: image-beside-text rows on tablet (see below), stacked
+   cards on phones. */
 @media (max-width: 1023px) {
   .top-recs-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 32px;
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    align-items: stretch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 4px 0 8px;
+  }
+
+  .top-recs-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .top-rec-item {
+    flex: 0 0 auto;
+    width: min(85%, 720px);
+    scroll-snap-align: start;
   }
 }
 
-/* Mobile: stacked rows — full-width image, then the text block. */
+/* Mobile: stacked cards in the swipe rail — full-width image, then the text
+   block; one card per view with the next peeking in. */
 @media (max-width: 768px) {
   .top-recs {
     padding: 30px 0;
@@ -214,6 +235,7 @@
   .top-rec-item {
     grid-template-columns: minmax(0, 1fr);
     gap: 14px;
+    width: min(85%, 340px);
   }
 
   .top-rec-image,
