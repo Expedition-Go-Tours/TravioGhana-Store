@@ -60,6 +60,28 @@
   padding-inline: max(32px, calc((100% - 1280px) / 2 + 32px));
 }
 
+/* All Tours (/tours — every homepage section's "View all"): the page's content
+   column is `.all-tours-container` — max-width 1400px with 40px gutters
+   (24px ≤1024px, 16px ≤768px, see AllToursPage.css). Mirror the matching
+   `.page-all-tours` navbar rules so the footer's content edges line up with
+   the page and the navbar instead of the default homepage grid. */
+.page-all-tours .footer-container {
+  max-width: none;
+  padding-inline: max(40px, calc((100% - 1400px) / 2 + 40px));
+}
+
+@media (max-width: 1024px) {
+  .page-all-tours .footer-container {
+    padding-inline: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-all-tours .footer-container {
+    padding-inline: 16px;
+  }
+}
+
 /* List an Experience, the supplier application (/supplier/list-experience,
    /supplier/register) and Payment and Security (/payments-and-security): the
    content column is `.wrap` — min(1200px, 100% - 40px) — the same column the

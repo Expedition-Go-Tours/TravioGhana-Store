@@ -92,6 +92,7 @@ const BlogArticlePage = lazy(() => import('./pages/BlogArticlePage'))
 const PressPage = lazy(() => import('./pages/PressPage'))
 const PartnerResourcesPage = lazy(() => import('./pages/PartnerResourcesPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
+const TopRecommendationsPage = lazy(() => import('./pages/TopRecommendationsPage'))
 
 // Below-fold homepage sections (lazy loaded, mounted on scroll)
 const TopRatedSection = lazy(() => import('./components/TopRatedSection'))
@@ -322,6 +323,7 @@ function AppContent() {
       ['/refund-policy', 'page-support page-support-1200'],
       ['/cookies-policy', 'page-support page-support-1200'],
       ['/tours', 'page-all-tours'],
+      ['/top-recommendations', 'page-top-recommendations'],
       ['/search', 'page-search'],
       ['/booking/confirmation', 'page-confirmation'],
     ]
@@ -387,6 +389,11 @@ function AppContent() {
           } />
           <Route path="/tours" element={
             <AllToursPage />
+          } />
+          {/* "View all" for the homepage's top recommendations section — the
+              same ten editorial cards the section shows, on their own page. */}
+          <Route path="/top-recommendations" element={
+            <TopRecommendationsPage />
           } />
           <Route path="/search" element={
             <SearchResultsPage />

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import TopRecommendationsSection from './TopRecommendationsSection'
 import { useTourDescriptionsByIds } from '../hooks/useTourDescriptions'
@@ -74,13 +74,23 @@ describe('TopRecommendationsSection', () => {
     ).toBeInTheDocument()
   })
 
+  it('links "View All" to the dedicated top recommendations page', () => {
+    renderSection({ preloaded: [tour('abc', 'Cape Coast Castle')] })
+
+    expect(screen.getByRole('link', { name: 'View All' })).toHaveAttribute(
+      'href',
+      '/top-recommendations',
+    )
+  })
+
   it('opens the title and the image to the tour detail page in a new tab', () => {
     const { container } = renderSection({ preloaded: [tour('abc', 'Cape Coast Castle')] })
 
     // Both the cover image and the title link to the same canonical tour page
     // and open it in a new tab (mirrors expeditiongotours.com), so the
-    // homepage keeps its scroll position behind the new tab.
-    const links = screen.getAllByRole('link')
+    // homepage keeps its scroll position behind the new tab. Scoped to the
+    // card: the heading's "View All" is a link too.
+    const links = within(screen.getByRole('article')).getAllByRole('link')
     expect(links).toHaveLength(2)
     for (const link of links) {
       expect(link).toHaveAttribute('href', '/tour/abc/abc')
