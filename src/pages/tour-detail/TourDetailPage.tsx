@@ -100,16 +100,6 @@ function TourDetailSkeleton() {
         <div className="skeleton-block skeleton-breadcrumb-line" />
       </div>
       <div className="tour-detail-container">
-        {/* Header skeleton */}
-        <div className="tour-detail-header-row">
-          <div className="min-w-0 flex-1">
-            {/* Matches the 36px title's line box (h-9 = 2.25rem; :root is 18px on desktop) */}
-            <div className="skeleton-block h-9 w-2/3 max-w-md rounded-lg" />
-            <div className="skeleton-block mt-3 h-4 w-1/3 max-w-xs rounded-md" />
-            <div className="skeleton-block mt-2 h-4 w-1/4 max-w-[140px] rounded-md" />
-          </div>
-        </div>
-
         <div className="tour-detail-content">
           {/* Image gallery skeleton — mirrors the loaded mosaic (square on mobile) */}
           <div className="tour-detail-main">
@@ -123,6 +113,16 @@ function TourDetailSkeleton() {
                   <div className="skeleton-block" />
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Header skeleton — after the gallery, mirroring the loaded order */}
+          <div className="tour-detail-header-row">
+            <div className="min-w-0 flex-1">
+              {/* Matches the 36px title's line box (h-9 = 2.25rem; :root is 18px on desktop) */}
+              <div className="skeleton-block h-9 w-2/3 max-w-md rounded-lg" />
+              <div className="skeleton-block mt-3 h-4 w-1/3 max-w-xs rounded-md" />
+              <div className="skeleton-block mt-2 h-4 w-1/4 max-w-[140px] rounded-md" />
             </div>
           </div>
 
@@ -1170,43 +1170,6 @@ export default function TourDetailPage() {
             it *below* the fixed navbar instead of underneath it. */}
         <Breadcrumb tour={tour} />
         <div className="tour-detail-container">
-          <div className="tour-detail-header-row">
-            <TourHeader
-              title={selectedTourTitle}
-              rating={selectedTourRating}
-              reviewCount={selectedTourReviews}
-              location={tour.location}
-              supplierName={tour.supplierName}
-              onReviewsClick={handleReviewsTab}
-            />
-            <div className="tour-detail-header-actions">
-              <button
-                type="button"
-                onClick={() => handleWishlistToggle(true)}
-                className="tour-detail-action-btn tour-detail-wishlist-btn"
-                aria-label={isFavorited ? t('common.removeFromWishlist') : t('common.addToWishlist')}
-                aria-pressed={isFavorited}
-              >
-                <Heart size={20} className={isFavorited ? 'wishlist-active' : ''} />
-              </button>
-              <button
-                type="button"
-                onClick={handleShare}
-                className="tour-detail-action-btn"
-                aria-label={t('common.share', { defaultValue: 'Share' })}
-              >
-                <Upload size={20} />
-              </button>
-              <button
-                type="button"
-                onClick={handleWriteReview}
-                className="tour-detail-write-review-btn"
-              >
-                {t('reviews.writeAReview')}
-              </button>
-            </div>
-          </div>
-
           <div
             className="tour-detail-content"
             style={heroHeight ? ({ '--tour-hero-height': `${heroHeight}px` } as CSSProperties) : undefined}
@@ -1219,6 +1182,48 @@ export default function TourDetailPage() {
                 onBack={handleBack}
                 hideBack={showStickyTitle || tabsStuck}
               />
+            </div>
+
+            {/* Title/rating block — after the gallery so the stacked layout
+                (below 1024px) leads with the photo carousel right under the
+                navbar and everything else follows below it. The desktop grid
+                re-places this row on top, spanning both columns (see
+                `.tour-detail-header-row` in TourDetailPage.css). */}
+            <div className="tour-detail-header-row">
+              <TourHeader
+                title={selectedTourTitle}
+                rating={selectedTourRating}
+                reviewCount={selectedTourReviews}
+                location={tour.location}
+                supplierName={tour.supplierName}
+                onReviewsClick={handleReviewsTab}
+              />
+              <div className="tour-detail-header-actions">
+                <button
+                  type="button"
+                  onClick={() => handleWishlistToggle(true)}
+                  className="tour-detail-action-btn tour-detail-wishlist-btn"
+                  aria-label={isFavorited ? t('common.removeFromWishlist') : t('common.addToWishlist')}
+                  aria-pressed={isFavorited}
+                >
+                  <Heart size={20} className={isFavorited ? 'wishlist-active' : ''} />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  className="tour-detail-action-btn"
+                  aria-label={t('common.share', { defaultValue: 'Share' })}
+                >
+                  <Upload size={20} />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleWriteReview}
+                  className="tour-detail-write-review-btn"
+                >
+                  {t('reviews.writeAReview')}
+                </button>
+              </div>
             </div>
 
             <aside className="tour-detail-sidebar" ref={pricingRef}>

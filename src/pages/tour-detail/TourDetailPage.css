@@ -9,8 +9,8 @@
      offset it renders at y=0 and the fixed navbar paints straight over it (it
      was visible in the skeleton, which has its own 64px, then vanished on load).
      And below 1025px the breadcrumb is `display: none`, so it contributes no
-     height — the title itself landed at y=16 under the 64px navbar. Do not
-     reduce this without re-measuring both. */
+     height — the gallery (the first block of the stacked layout) landed at
+     y=16 under the 64px navbar. Do not reduce this without re-measuring both. */
   padding-top: 64px;
   /* Defensive: clip any residual horizontal overflow so a stray wide child
      can never introduce a page-level horizontal scrollbar. `clip` does not
@@ -37,13 +37,14 @@
   }
 }
 
-/* Content Layout */
+/* Content Layout — mobile-first DOM order: gallery, then the title/rating
+   block, then the booking widget and the tab content. Desktop re-places the
+   header row above both columns via explicit grid rows. */
 .tour-detail-content {
   display: grid;
   grid-template-columns: 1fr;
   gap: 20px 32px;
   padding-bottom: 40px;
-  margin-top: 24px;
 }
 
 @media (min-width: 1024px) {
@@ -203,14 +204,16 @@
 }
 
 @media (min-width: 1024px) {
+  /* Row 2 — the header row spans both columns above the gallery. */
   .tour-detail-main {
     grid-column: 1;
-    grid-row: 1;
+    grid-row: 2;
     min-width: 0;
   }
 }
 
-/* Sidebar - after gallery on mobile, right of header+gallery on desktop */
+/* Sidebar - after the gallery + title on mobile; right column (rows 2-3,
+   under the header row) beside the gallery on desktop */
 .tour-detail-sidebar {
   width: 100%;
   min-width: 0;
@@ -219,7 +222,7 @@
 @media (min-width: 1024px) {
   .tour-detail-sidebar {
     grid-column: 2;
-    grid-row: 1 / span 2;
+    grid-row: 2 / span 2;
     position: sticky;
     top: 100px;
     align-self: start;
@@ -237,7 +240,7 @@
 @media (min-width: 1024px) {
   .tour-detail-bottom {
     grid-column: 1;
-    grid-row: 2;
+    grid-row: 3;
   }
 }
 
@@ -248,11 +251,8 @@
   }
 }
 
-/* Header Row - title left, write review right */
-.tour-detail-header-row {
-  margin-bottom: 20px;
-}
-
+/* Header Row - title left, write review right. It lives inside
+   `.tour-detail-content` after the gallery; the grid gap owns the spacing. */
 .tour-detail-header-row .tour-header-new {
   margin-bottom: 0;
 }
@@ -281,7 +281,11 @@
     font-size: 16px;
   }
 
+  /* Row 1: on desktop the header returns to the top, spanning both columns
+     so its title/actions grid stays aligned with the gallery/widget columns. */
   .tour-detail-header-row {
+    grid-column: 1 / -1;
+    grid-row: 1;
     display: grid;
     grid-template-columns: 1fr 380px;
     align-items: start;
