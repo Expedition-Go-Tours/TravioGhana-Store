@@ -19,6 +19,10 @@
 .tour-quick-facts {
   display: flex;
   flex-wrap: nowrap;
+  /* Tiles hug their own content instead of stretching to the tallest tile in
+     the row: a long badge (e.g. the cancellation sentence) would otherwise
+     force every tile to its height, leaving short tiles with empty bottoms. */
+  align-items: flex-start;
   gap: 10px;
   margin-top: 20px;
   margin-bottom: 0;
@@ -291,6 +295,8 @@
   .tour-quick-facts,
   .tour-quick-facts-expanded {
     display: grid;
+    /* Row-wide equal heights are wanted again on the desktop grid. */
+    align-items: stretch;
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
     overflow: visible;

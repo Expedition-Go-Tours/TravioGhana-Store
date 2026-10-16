@@ -4,7 +4,7 @@
    next three photos stacked as equal tiles — the column bases are set inline
    by TourImageGallery.tsx. 4px gaps, 12px outer radius, and the whole box is
    pinned to the booking card's measured height beside it. Below 768px the
-   square swipe carousel replaces the mosaic.
+   4:3 swipe carousel replaces the mosaic.
    Every tile is cropped at the CDN to the exact box it renders in
    (`c_fill,g_auto`), so the browser never crops or upscales. */
 
@@ -12,13 +12,15 @@
   position: relative;
 }
 
-/* ---------- Mobile (<768px): square swipe carousel ----------
-   The reference is GYG's square, flush gallery; we keep the square carousel
-   but round the corners so it reads as a card inside the page's 16px gutter. */
+/* ---------- Mobile (<768px): 4:3 swipe carousel ----------
+   GYG leads with a square flush gallery; we keep the swipe carousel but use
+   a shorter 4:3 frame — it trims ~25% of the height so the title, facts and
+   booking card land higher on the first screen — and round the corners so it
+   reads as a card inside the page's 16px gutter. */
 .tour-gallery-mobile {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 3;
   border-radius: 12px;
   overflow: hidden;
   background: #f1f5f9;
@@ -231,7 +233,7 @@
   }
 }
 
-/* Phones: the square carousel's bottom edge belongs to the pagination dots
+/* Phones: the carousel's bottom edge belongs to the pagination dots
    (bottom: 12px, centred), so "View all" sits above them. */
 @media (max-width: 767px) {
   .tour-gallery-show-all {

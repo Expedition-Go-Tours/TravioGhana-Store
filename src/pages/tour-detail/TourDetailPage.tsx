@@ -101,10 +101,10 @@ function TourDetailSkeleton() {
       </div>
       <div className="tour-detail-container">
         <div className="tour-detail-content">
-          {/* Image gallery skeleton — mirrors the loaded mosaic (square on mobile) */}
+          {/* Image gallery skeleton — mirrors the loaded mosaic (4:3 on mobile) */}
           <div className="tour-detail-main">
             <div className="tour-detail-gallery-skeleton">
-              <div className="skeleton-block skeleton-gallery-square" />
+              <div className="skeleton-block skeleton-gallery-mobile" />
               <div className="skeleton-gallery-mosaic">
                 <div className="skeleton-block" />
                 <div className="skeleton-gallery-mosaic-col">

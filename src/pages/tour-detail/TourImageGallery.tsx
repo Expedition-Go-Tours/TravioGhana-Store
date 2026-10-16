@@ -114,11 +114,17 @@ export default function TourImageGallery({ images, title, fallbackImage, onBack,
       return same ? prev : next
     })
 
-    // The mobile carousel is square, so one measurement covers every slide.
+    // The mobile carousel shows one slide at a time, so a single measurement
+    // covers every slide: its 4:3 box drives the CDN crop (and the <img>
+    // width/height hints) for every photo in the carousel.
     const slide = mobileSlideRef.current
     if (slide) {
-      const w = Math.round(slide.getBoundingClientRect().width)
-      if (w > 0) setMobileSize((prev) => (prev && prev.w === w ? prev : { w, h: w }))
+      const rect = slide.getBoundingClientRect()
+      const w = Math.round(rect.width)
+      const h = Math.round(rect.height)
+      if (w > 0 && h > 0) {
+        setMobileSize((prev) => (prev && prev.w === w && prev.h === h ? prev : { w, h }))
+      }
     }
   }, [desktopIndexes])
 
@@ -238,7 +244,7 @@ export default function TourImageGallery({ images, title, fallbackImage, onBack,
           </div>
         )}
 
-        {/* Mobile (<768px) — GetYourGuide square swipe carousel */}
+        {/* Mobile (<768px) — 4:3 swipe carousel */}
         <div
           className="tour-gallery-mobile"
           onTouchStart={handleTouchStart}
