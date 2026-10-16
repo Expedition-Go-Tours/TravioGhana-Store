@@ -45,19 +45,7 @@
   max-width: 500px;
 }
 
-/* English hero: keep the headline AND the tagline on a single line at every
-   screen size — the text shrinks with the viewport instead of wrapping.
-   The font sizes are tuned against the measured Manrope glyph widths
-   (headline ~16.15px per 1px of font, tagline ~25.27px per 1px of font) so a
-   full line always fits within the 20px side padding from 320px viewports up:
-     headline: (100vw - 48px) / 16.15
-     tagline:  (100vw - 52px) / 25.27
-   Desktop is capped at the previous maximums (38px / 20px). */
-html:lang(en) .hero-headline {
-  font-size: clamp(16px, calc((100vw - 48px) / 16.15), 38px);
-  white-space: nowrap;
-}
-
+/* Keep English tagline sizing independent from the responsive heading. */
 html:lang(en) .hero-tagline {
   font-size: clamp(10px, calc((100vw - 52px) / 25.27), 20px);
   max-width: none;
@@ -75,3 +63,16 @@ html:lang(en) .hero-tagline {
     margin-bottom: 16px;
   }
 }
+/* Keep the English title on two readable lines on mobile. */
+@media (max-width: 768px) {
+  html:lang(en) .hero-headline {
+    font-size: clamp(22px, 6.1vw, 38px);
+    white-space: normal;
+  }
+
+  .hero-headline-line {
+    display: block;
+    white-space: nowrap;
+  }
+}
+
