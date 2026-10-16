@@ -148,3 +148,23 @@ describe('when consent is withdrawn', () => {
     expect(calls.length).toBe(before)
   })
 })
+
+describe('the queueing stub', () => {
+  it('pushes an arguments object, which is the shape gtag.js dispatches', async () => {
+    // Drop the recorder so the module installs its real queueing stub.
+    delete (window as { gtag?: unknown }).gtag
+    window.dataLayer = []
+
+    vi.resetModules()
+    const mod = (await import('../googleAnalytics')) as GaModule
+    stop = mod.initGoogleAnalytics()
+
+    const first = window.dataLayer![0]
+    // A plain Array here is silently ignored by gtag.js: consent never
+    // registers and every hit is dropped, with no error to notice. See the
+    // comment on ensureStub().
+    expect(Array.isArray(first)).toBe(false)
+    expect((first as unknown[])[0]).toBe('consent')
+    expect((first as unknown[])[1]).toBe('default')
+  })
+})

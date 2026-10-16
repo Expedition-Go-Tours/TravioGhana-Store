@@ -45,15 +45,25 @@ function setDisableFlag(value: boolean): void {
 }
 
 /**
- * Install gtag's queueing stub. The real library replaces `gtag` when it loads
- * and drains whatever is already queued, so nothing issued here is lost.
+ * Install gtag's queueing stub. The library drains this queue once it loads, so
+ * nothing issued here is lost while it is still arriving.
+ *
+ * The one subtlety is the shape of each entry. gtag.js reads a queue entry as a
+ * command tuple and expects an *`arguments` object* — pushing a plain Array is
+ * silently ignored, which is worse than it sounds: consent never registers
+ * (`google_tag_data.ics.usedDefault` stays false) and every hit is dropped, with
+ * no error anywhere. Google's own snippet is `gtag(){dataLayer.push(arguments)}`,
+ * so copy that shape exactly rather than "tidying" it into a rest parameter.
  */
 function ensureStub(): void {
   if (typeof window === 'undefined') return
   window.dataLayer = window.dataLayer || []
   if (typeof window.gtag !== 'function') {
-    window.gtag = (...args: unknown[]) => {
-      window.dataLayer!.push(args)
+    window.gtag = function gtag(): void {
+      // gtag.js dispatches only `arguments`-shaped tuples; a rest array is
+      // silently ignored (see above).
+      // eslint-disable-next-line prefer-rest-params
+      window.dataLayer!.push(arguments as unknown as unknown[])
     }
   }
 }
