@@ -6,8 +6,6 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import StarRating from '../../components/StarRating'
-import SourceBadge from '../../components/SourceBadge'
-import '../../components/SourceBadge.css'
 import './OverviewSection.css'
 
 interface OverviewSectionProps {
@@ -163,14 +161,7 @@ export default function OverviewSection({
                         <p className="overview-traveller-name">{review.name}</p>
                         <div className="overview-traveller-meta">
                           <span>{review.date}</span>
-                          {review.source ? (
-                            <span className="overview-traveller-source">
-                              <SourceBadge
-                                source={review.source}
-                                url={review.source === 'GOOGLE' ? undefined : review.externalUrl}
-                              />
-                            </span>
-                          ) : (
+                          {!review.source && (
                             <span className="overview-traveller-verified">
                               <Check size={10} strokeWidth={3} />
                               {t('tourDetail.verifiedBooking')}

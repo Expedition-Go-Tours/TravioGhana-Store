@@ -285,22 +285,6 @@
   min-width: 0;
 }
 
-/* Source badge for external (platform) reviews — keeps the internal card look */
-.review-card-source {
-  margin-left: auto;
-  flex-shrink: 0;
-}
-
-.review-card-source .ext-source-badge {
-  font-size: 9px;
-  padding: 2px 7px 2px 2px;
-}
-
-.review-card-source .ext-source-badge__icon {
-  width: 18px;
-  height: 18px;
-}
-
 .review-card-author {
   font-size: 14px;
   font-weight: 700;

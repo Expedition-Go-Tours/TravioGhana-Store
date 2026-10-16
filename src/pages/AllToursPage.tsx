@@ -491,12 +491,29 @@ export default function AllToursPage() {
 
   const handleScroll = useCallback(() => updateArrows(), [updateArrows])
 
+  // Pagination controls sit at the very bottom of the list: after a page swap,
+  // glide back to the top of the page and take keyboard focus along, so the
+  // new results are never left off-screen behind the user. Honours the user's
+  // reduced-motion preference (instant jump instead of a smooth glide).
+  const headingRef = useRef<HTMLHeadingElement>(null)
+  const returnToResultsTop = () => {
+    const reduceMotion =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' })
+    headingRef.current?.focus({ preventScroll: true })
+  }
+
   const goNextPage = () => {
-    if (hasNextPage) setPage(p => p + 1)
+    if (!hasNextPage) return
+    setPage(p => p + 1)
+    returnToResultsTop()
   }
 
   const goPrevPage = () => {
-    if (hasPrevPage) setPage(p => Math.max(1, p - 1))
+    if (!hasPrevPage) return
+    setPage(p => Math.max(1, p - 1))
+    returnToResultsTop()
   }
 
   // Real back navigation when the user arrived from within the app; otherwise
@@ -560,7 +577,7 @@ export default function AllToursPage() {
               {isBusy ? (
                 <div className="all-tours-title-skeleton" aria-hidden="true" />
               ) : (
-                <h1 className="all-tours-title">{pageTitle}</h1>
+                <h1 className="all-tours-title" ref={headingRef} tabIndex={-1}>{pageTitle}</h1>
               )}
               {isBusy ? (
                 <p className="all-tours-count">{t('allTours.loading')}</p>
@@ -779,7 +796,7 @@ export default function AllToursPage() {
                 <ChevronLeft size={14} />
                 {t('allTours.prev')}
               </button>
-              <span className="pagination-indicator">
+              <span className="pagination-indicator" aria-live="polite">
                 {t('allTours.pageOf', { page, total: totalPages })}
               </span>
               <button

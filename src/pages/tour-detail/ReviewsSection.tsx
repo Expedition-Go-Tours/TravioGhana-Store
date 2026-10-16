@@ -5,8 +5,6 @@ import { X, ChevronLeft, ChevronRight, Camera } from 'lucide-react'
 import './ReviewsSection.css'
 import OptimizedImage from '@/components/shared/OptimizedImage'
 import StarRating from '@/components/StarRating'
-import SourceBadge from '@/components/SourceBadge'
-import '@/components/SourceBadge.css'
 
 interface Review {
   id: string
@@ -28,7 +26,7 @@ interface Review {
   supplierResponseAt?: string | null
   /** Present on external (TripAdvisor / GetYourGuide / Google) reviews. */
   source?: 'TRIPADVISOR' | 'GETYOURGUIDE' | 'GOOGLE'
-  /** Platform listing URL for the source badge (external reviews only). */
+  /** Platform listing URL (external reviews only). */
   externalUrl?: string
 }
 
@@ -258,14 +256,6 @@ export default function ReviewsSection({
                             )}
                           </p>
                         </div>
-                        {review.source && (
-                          <span className="review-card-source">
-                            <SourceBadge
-                              source={review.source}
-                              url={review.source === 'GOOGLE' ? undefined : review.externalUrl}
-                            />
-                          </span>
-                        )}
                       </div>
 
                       {review.title && <p className="review-card-title">{review.title}</p>}

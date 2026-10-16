@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, type ReactNode } from 'react'
+import { useState, useMemo, useEffect, useRef, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, X, Star, ArrowLeft } from 'lucide-react'
@@ -159,6 +159,31 @@ export default function AllReviewsPage() {
   const hasNextPage = page < totalPages
   const hasPrevPage = page > 1
 
+  // Pagination controls sit at the very bottom of the list: after a page swap,
+  // glide back to the top of the page and take keyboard focus along, so the
+  // new reviews are never left off-screen behind the user. Honours the user's
+  // reduced-motion preference (instant jump instead of a smooth glide).
+  const headingRef = useRef<HTMLHeadingElement>(null)
+  const returnToResultsTop = () => {
+    const reduceMotion =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' })
+    headingRef.current?.focus({ preventScroll: true })
+  }
+
+  const goNextPage = () => {
+    if (!hasNextPage) return
+    setPage(p => p + 1)
+    returnToResultsTop()
+  }
+
+  const goPrevPage = () => {
+    if (!hasPrevPage) return
+    setPage(p => Math.max(1, p - 1))
+    returnToResultsTop()
+  }
+
   const displayReviews = useMemo(
     () => filteredReviews.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
     [filteredReviews, page],
@@ -204,7 +229,7 @@ export default function AllReviewsPage() {
               <ArrowLeft size={20} />
             </button>
             <div>
-              <h1 className="all-reviews-title">What Travelers Are Saying</h1>
+              <h1 className="all-reviews-title" ref={headingRef} tabIndex={-1}>What Travelers Are Saying</h1>
               {isLoading ? (
                 <p className="all-reviews-count">Loading reviews...</p>
               ) : (
@@ -238,46 +263,8 @@ export default function AllReviewsPage() {
             </div>
             <span className="all-reviews-stats__divider" />
             <span className="all-reviews-stats__text">
-              From <strong>{stats.totalReviews}</strong> reviews across
+              From <strong>{stats.totalReviews}</strong> reviews
             </span>
-            <div className="all-reviews-stats__platforms">
-              <span className="all-reviews-stats__platform all-reviews-stats__platform--ta">
-                <svg className="all-reviews-stats__platform-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="32" cy="32" r="32" fill="#34E0A1" />
-                  <g transform="translate(10, 14)">
-                    <circle cx="10" cy="14" r="8" fill="#000" />
-                    <circle cx="10" cy="14" r="5" fill="#34E0A1" />
-                    <circle cx="10" cy="14" r="2.5" fill="#000" />
-                    <circle cx="34" cy="14" r="8" fill="#000" />
-                    <circle cx="34" cy="14" r="5" fill="#34E0A1" />
-                    <circle cx="34" cy="14" r="2.5" fill="#000" />
-                    <path d="M22 18 L20 24 L24 24 Z" fill="#000" />
-                    <path d="M4 8 L8 2 L12 8" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" />
-                    <path d="M32 8 L36 2 L40 8" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" />
-                    <path d="M4 8 Q4 28 22 28 Q40 28 40 8" fill="none" stroke="#000" strokeWidth="2" />
-                  </g>
-                </svg>
-                TripAdvisor
-              </span>
-              <span className="all-reviews-stats__platform all-reviews-stats__platform--gyg">
-                <svg className="all-reviews-stats__platform-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="64" height="64" rx="8" fill="#E63C2F" />
-                  <text x="32" y="28" textAnchor="middle" fill="#fff" fontFamily="Arial Black, sans-serif" fontWeight="900" fontSize="16" letterSpacing="-0.5">GET</text>
-                  <text x="32" y="44" textAnchor="middle" fill="#fff" fontFamily="Arial Black, sans-serif" fontWeight="900" fontSize="16" letterSpacing="-0.5">YOUR</text>
-                  <text x="32" y="58" textAnchor="middle" fill="#fff" fontFamily="Arial Black, sans-serif" fontWeight="900" fontSize="13" letterSpacing="-0.5">GUIDE</text>
-                </svg>
-                GetYourGuide
-              </span>
-              <span className="all-reviews-stats__platform all-reviews-stats__platform--google">
-                <svg className="all-reviews-stats__platform-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="64" height="64" rx="12" fill="#fff" stroke="#e5e7eb" strokeWidth="1" />
-                  <path d="M32 16c4.2 0 7.6 1.4 10.4 4.1l-4.3 4.3c-1.6-1.6-3.5-2.4-6.1-2.4-5.2 0-9.4 4.3-9.4 9.5s4.2 9.5 9.4 9.5c4.5 0 7.5-2.6 8.3-6.3H32v-5.6h14.8c.2.9.3 1.9.3 3.1 0 8.2-5.5 14.1-15.1 14.1C22.6 46.3 16 39.7 16 31.4S22.6 16.5 32 16.5z" fill="#4285F4"/>
-                  <path d="M32 16c4.2 0 7.6 1.4 10.4 4.1l-4.3 4.3c-1.6-1.6-3.5-2.4-6.1-2.4" fill="#EA4335"/>
-                  <path d="M16.9 31.4c0-2.8.8-5.4 2.1-7.6l-5.1-4C11.3 23.2 10 27.1 10 31.4s1.3 8.2 3.9 11.6l5.1-4c-1.3-2.2-2.1-4.8-2.1-7.6z" fill="#FBBC05"/>
-                </svg>
-                Google
-              </span>
-            </div>
           </div>
         )}
 
@@ -353,19 +340,19 @@ export default function AllReviewsPage() {
             <div className="pagination-controls">
               <button
                 className="all-reviews-load-btn"
-                onClick={() => setPage(p => Math.max(1, p - 1))}
+                onClick={goPrevPage}
                 disabled={!hasPrevPage}
                 style={{ opacity: hasPrevPage ? 1 : 0.4 }}
               >
                 <ChevronLeft size={14} />
                 Previous
               </button>
-              <span className="pagination-indicator">
+              <span className="pagination-indicator" aria-live="polite">
                 Page {page} of {totalPages}
               </span>
               <button
                 className="all-reviews-load-btn"
-                onClick={() => setPage(p => p + 1)}
+                onClick={goNextPage}
                 disabled={!hasNextPage}
                 style={{ opacity: hasNextPage ? 1 : 0.4 }}
               >

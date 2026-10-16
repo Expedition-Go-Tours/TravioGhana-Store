@@ -2,9 +2,7 @@ import { useState, useRef, useLayoutEffect } from 'react'
 import { Link } from 'react-router-dom'
 import type { ExternalReview } from '../hooks/useExternalReviews'
 import { useReviewTourLink } from '../hooks/useReviewTourLink'
-import SourceBadge from './SourceBadge'
 import StarRating from './StarRating'
-import './SourceBadge.css'
 import './ExternalReviewCard.css'
 
 interface ExternalReviewCardProps {
@@ -35,8 +33,8 @@ export default function ExternalReviewCard({ review }: ExternalReviewCardProps) 
     <>
       <div className="ext-review-card">
         <div className="ext-review-card__body">
-          {/* Tour title — non-interactive; only the source badge and the
-              availability CTA may navigate away from this card. */}
+          {/* Tour title — non-interactive; only the "View Experience" CTA
+              navigates away from this card. */}
           <span className="ext-review-card__tour-title">
             {review.tourTitle}
           </span>
@@ -85,15 +83,16 @@ export default function ExternalReviewCard({ review }: ExternalReviewCardProps) 
             </button>
           )}
 
-          {/* Footer: source badge + check availability */}
-          <div className="ext-review-card__footer">
-            <SourceBadge source={review.source} url={review.source !== 'GOOGLE' ? review.tourUrl : undefined} />
-            {review.source !== 'GOOGLE' && (
+          {/* Footer: internal link to the matched experience. Google rows are
+              business-level reviews with no tour to link to, so they get no
+              footer at all. */}
+          {review.source !== 'GOOGLE' && (
+            <div className="ext-review-card__footer">
               <Link to={tourLink} className="ext-review-card__cta">
-                Check Availability
+                View Experience
               </Link>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -142,14 +141,13 @@ export default function ExternalReviewCard({ review }: ExternalReviewCardProps) 
 
             <p className="ext-review-modal__text">{review.text}</p>
 
-            <div className="ext-review-modal__footer">
-              <SourceBadge source={review.source} url={review.source !== 'GOOGLE' ? review.tourUrl : undefined} />
-              {review.source !== 'GOOGLE' && (
+            {review.source !== 'GOOGLE' && (
+              <div className="ext-review-modal__footer">
                 <Link to={tourLink} className="ext-review-card__cta">
-                  Check Availability
+                  View Experience
                 </Link>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       )}

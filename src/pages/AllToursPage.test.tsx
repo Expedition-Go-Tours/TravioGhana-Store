@@ -1,6 +1,6 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import type { ReactNode } from 'react'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import AllToursPage from './AllToursPage'
 import { useAllExpeditionTours, type TourCardData } from '../hooks/useExpeditionTours'
@@ -134,5 +134,44 @@ describe('AllToursPage — Top Recommendations section', () => {
     expect(screen.getByText('Recommended Tour')).toBeInTheDocument()
     expect(screen.getByText('Other Tour')).toBeInTheDocument()
     expect(mockSectionIds).toHaveBeenCalledWith('')
+  })
+})
+
+describe('AllToursPage — pagination', () => {
+  beforeEach(() => {
+    // 13 tours → 2 pages, so both pagination buttons are meaningful.
+    mockAllTours.mockReturnValue({
+      data: { tours: Array.from({ length: 13 }, (_, i) => tourCard(`t${i}`, `Tour ${i}`)) },
+      isPending: false,
+      isError: false,
+      error: null,
+    } as unknown as ReturnType<typeof useAllExpeditionTours>)
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('returns to the top of the page (and the heading) when the page changes', async () => {
+    // jsdom has no scroll implementation: spy on scrollTo so the assertion can
+    // verify the target, and so nothing trips the "Not implemented" path.
+    const scrollSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+
+    const { container } = renderPage('/tours')
+    expect(await screen.findByText('Page 1 of 2')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+
+    expect(screen.getByText('Page 2 of 2')).toBeInTheDocument()
+    expect(scrollSpy).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' })
+    // Focus travels with the page: keyboard users aren't stranded on the
+    // off-screen button at the bottom of the list.
+    expect(document.activeElement).toBe(container.querySelector('h1.all-tours-title'))
+
+    scrollSpy.mockClear()
+    fireEvent.click(screen.getByRole('button', { name: 'Previous' }))
+
+    expect(screen.getByText('Page 1 of 2')).toBeInTheDocument()
+    expect(scrollSpy).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' })
   })
 })

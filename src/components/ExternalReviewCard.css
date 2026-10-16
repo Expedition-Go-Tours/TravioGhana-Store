@@ -133,16 +133,6 @@
   min-width: 0;
 }
 
-.ext-source-badge {
-  min-width: 0;
-  overflow: hidden;
-}
-
-.ext-source-badge__text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .ext-review-card__cta {
   font-family: 'DM Sans', sans-serif;
   font-size: 12px;

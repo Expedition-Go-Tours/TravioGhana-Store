@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useTourFilterOptions } from './useExpeditionTours'
 import { STATIC_DESTINATIONS, buildTourLink, matchDestination } from '../lib/reviewTourLink'
 
-/** Local-first "Check Availability" link for an external review. */
+/** Local-first "View Experience" link for an external review. */
 export function useReviewTourLink(title: string): string {
   const { data } = useTourFilterOptions()
 
