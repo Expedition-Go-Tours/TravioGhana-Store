@@ -22,7 +22,7 @@ const SITE_NAME = 'Travio Ghana'
 // bookingTour.ts, the supplier forms) with no shared constant behind them. This
 // is the copy the schema reads, not yet the single source for all of them.
 const LEGAL_NAME = 'Expedition-Go Tours Ltd'
-const HOMEPAGE_TITLE = 'Ghana Tours & Activities | Discover Experiences | Book & Explore'
+const HOMEPAGE_TITLE = 'Ghana Tours & Activities | Discover & Book | Travio Ghana'
 const DEFAULT_TITLE = 'Ghana Tours & Experiences | Book Authentic African Adventures'
 const DEFAULT_DESCRIPTION = 'Discover authentic Ghana tours and experiences. Book cultural tours, wildlife safaris, food tours, and adventure activities across Accra, Cape Coast, Volta Region, and more. Free cancellation, best prices guaranteed.'
 // Canonical host. MUST match the domain the site actually serves (the other
