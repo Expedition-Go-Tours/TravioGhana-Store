@@ -1418,7 +1418,8 @@
         "locationSharing": "Merkt sich, dass Sie die Standortfreigabe aktiviert haben, damit Routen von Ihrem aktuellen Standort starten",
         "onetapDismissal": "Merkt sich, dass Sie den Google-Anmeldehinweis geschlossen haben",
         "maps": "Zeigt Karten für Abholpunkte und Treffpunkte",
-        "analyticsEvents": "Misst Seitenaufrufe, Suchen und Klicks, um die Website zu verbessern"
+        "analyticsEvents": "Misst Seitenaufrufe, Suchen und Klicks, um die Website zu verbessern",
+        "googleAnalytics": "Misst Seitenaufrufe, Suchen und Klicks mit Google Analytics, um die Website zu verbessern"
       },
       "durations": {
         "session": "Sitzung",
@@ -1430,6 +1431,7 @@
         "days7": "7 Tage",
         "days180": "180 Tage",
         "days365": "1 Jahr",
+        "days730": "2 Jahre",
         "persistent": "Bis Sie sie löschen",
         "untilSignOut": "Bis Sie sich abmelden",
         "untilBookingCompletes": "Bis die Buchung abgeschlossen ist",

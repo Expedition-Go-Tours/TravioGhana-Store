@@ -222,14 +222,39 @@ export const COOKIE_INVENTORY: readonly CookieEntry[] = [
   },
 
   // ── Analytics and performance ─────────────────────────────────────────
-  // First-party only today: events are batched to our own API and nothing is
-  // stored on the device, so this is a network request rather than a cookie —
-  // which is what the Type column shows. No third-party analytics vendor is
-  // configured — see CookiesPolicyPage §3.3.
+  // Our own events are batched to our API and store nothing on the device, so
+  // that row's Type is a network request. Google Analytics is a third-party
+  // vendor (lib/googleAnalytics.ts): it is loaded through the consent gate so
+  // it only runs after the visitor accepts analytics, and it writes first-party
+  // `_ga` cookies. See CookiesPolicyPage §3.3.
   {
     name: 'Analytics events',
     provider: US,
     purposeKey: 'analyticsEvents',
+    category: 'analytics',
+    durationKey: 'session',
+    kind: 'network',
+  },
+  {
+    name: '_ga',
+    provider: 'Google',
+    purposeKey: 'googleAnalytics',
+    category: 'analytics',
+    durationKey: 'days730',
+    kind: 'cookie',
+  },
+  {
+    name: '_ga_<measurement ID>',
+    provider: 'Google',
+    purposeKey: 'googleAnalytics',
+    category: 'analytics',
+    durationKey: 'days730',
+    kind: 'cookie',
+  },
+  {
+    name: 'googletagmanager.com / google-analytics.com',
+    provider: 'Google',
+    purposeKey: 'googleAnalytics',
     category: 'analytics',
     durationKey: 'session',
     kind: 'network',

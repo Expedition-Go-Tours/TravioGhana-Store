@@ -35,6 +35,7 @@ import { consumeHandoff } from './lib/ssoHandoff'
 import { AuthProvider } from './context/AuthContext'
 import { startSessionWatchdog, stopSessionWatchdog } from './auth/sessionManager'
 import { trackPageView } from './lib/analytics'
+import { trackGaPageView } from './lib/googleAnalytics'
 import LenisProvider from './lib/LenisProvider'
 import { useHomepage, useHomepageByCity } from './hooks/useHomepageSections'
 import { enrichToursWithCombinedStats, useExternalReviewStatsData } from './hooks/useExternalReviews'
@@ -291,7 +292,9 @@ function AppContent() {
   }, [])
   useEffect(() => {
     window.scrollTo(0, 0)
-    trackPageView(location.pathname + location.search)
+    const path = location.pathname + location.search
+    trackPageView(path)
+    trackGaPageView(path)
   }, [location.pathname, location.search])
 
   // Set body classes based on the current route so the navbar CSS can align

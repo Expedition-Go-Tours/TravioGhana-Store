@@ -7,6 +7,7 @@ import './index.css'
 import './i18n/config'
 import { queryClient } from './lib/queryClient'
 import { installChunkReloadGuard } from './lib/chunkReloadGuard'
+import { initGoogleAnalytics } from './lib/googleAnalytics'
 import { CurrencyProvider } from './contexts/CurrencyContext'
 import App from './App.tsx'
 
@@ -15,6 +16,11 @@ import App from './App.tsx'
 // manifest. See src/lib/chunkReloadGuard.ts — in particular why the handler
 // must not call preventDefault() unless it actually reloads.
 installChunkReloadGuard()
+
+// Start Google Analytics only if the visitor has already allowed analytics
+// cookies; the loader also subscribes to later changes. See
+// src/lib/googleAnalytics.ts for why the tag is not in index.html.
+initGoogleAnalytics()
 
 // Light, app-wide map warm-up after first paint was removed: fetching the
 // ~250 KB tile style JSON + worker on every homepage load competes with LCP on

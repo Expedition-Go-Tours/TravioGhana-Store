@@ -1418,7 +1418,8 @@
         "locationSharing": "Onthoudt dat u locatie delen hebt ingeschakeld, zodat routebeschrijvingen vanaf uw huidige locatie starten",
         "onetapDismissal": "Onthoudt dat u de Google-inlogprompt hebt gesloten",
         "maps": "Toont kaarten voor ophaalpunten en ontmoetingslocaties",
-        "analyticsEvents": "Meet bekeken pagina's, zoekopdrachten en kliks om de site te verbeteren"
+        "analyticsEvents": "Meet bekeken pagina's, zoekopdrachten en kliks om de site te verbeteren",
+        "googleAnalytics": "Meet bekeken pagina's, zoekopdrachten en kliks met Google Analytics om de site te verbeteren"
       },
       "durations": {
         "session": "Sessie",
@@ -1430,6 +1431,7 @@
         "days7": "7 dagen",
         "days180": "180 dagen",
         "days365": "1 jaar",
+        "days730": "2 jaar",
         "persistent": "Tot u deze wist",
         "untilSignOut": "Tot u uitlogt",
         "untilBookingCompletes": "Tot de boeking is afgerond",

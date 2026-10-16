@@ -1474,7 +1474,8 @@
         "locationSharing": "Remembers that you turned location sharing on, so directions can start from your current location",
         "onetapDismissal": "Remembers that you dismissed the Google sign-in prompt",
         "maps": "Displays maps for pick-up points and meeting locations",
-        "analyticsEvents": "Measures pages viewed, searches and clicks so we can improve the site"
+        "analyticsEvents": "Measures pages viewed, searches and clicks so we can improve the site",
+        "googleAnalytics": "Measures pages viewed, searches and clicks with Google Analytics so we can improve the site"
       },
       "durations": {
         "session": "Session",
@@ -1486,6 +1487,7 @@
         "days7": "7 days",
         "days180": "180 days",
         "days365": "1 year",
+        "days730": "2 years",
         "persistent": "Until you clear it",
         "untilSignOut": "Until you sign out",
         "untilBookingCompletes": "Until the booking is completed",

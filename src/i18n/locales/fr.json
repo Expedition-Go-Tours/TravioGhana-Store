@@ -1424,7 +1424,8 @@
         "locationSharing": "Mémorise que vous avez activé le partage de localisation, pour que les itinéraires partent de votre position actuelle",
         "onetapDismissal": "Mémorise que vous avez fermé l'invite de connexion Google",
         "maps": "Affiche les cartes des points de prise en charge et des lieux de rendez-vous",
-        "analyticsEvents": "Mesure les pages vues, les recherches et les clics pour améliorer le site"
+        "analyticsEvents": "Mesure les pages vues, les recherches et les clics pour améliorer le site",
+        "googleAnalytics": "Mesure les pages vues, les recherches et les clics avec Google Analytics pour améliorer le site"
       },
       "durations": {
         "session": "Session",
@@ -1436,6 +1437,7 @@
         "days7": "7 jours",
         "days180": "180 jours",
         "days365": "1 an",
+        "days730": "2 ans",
         "persistent": "Jusqu'à suppression",
         "untilSignOut": "Jusqu'à la déconnexion",
         "untilBookingCompletes": "Jusqu'à la finalisation de la réservation",

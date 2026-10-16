@@ -1418,7 +1418,8 @@
         "locationSharing": "Recuerda que activaste el uso de tu ubicación, para que las indicaciones partan de tu posición actual",
         "onetapDismissal": "Recuerda que descartaste el aviso de inicio de sesión de Google",
         "maps": "Muestra mapas de los puntos de recogida y lugares de encuentro",
-        "analyticsEvents": "Mide las páginas vistas, búsquedas y clics para mejorar el sitio"
+        "analyticsEvents": "Mide las páginas vistas, búsquedas y clics para mejorar el sitio",
+        "googleAnalytics": "Mide las páginas vistas, búsquedas y clics con Google Analytics para mejorar el sitio"
       },
       "durations": {
         "session": "Sesión",
@@ -1430,6 +1431,7 @@
         "days7": "7 días",
         "days180": "180 días",
         "days365": "1 año",
+        "days730": "2 años",
         "persistent": "Hasta que la borres",
         "untilSignOut": "Hasta que cierres sesión",
         "untilBookingCompletes": "Hasta que se complete la reserva",
