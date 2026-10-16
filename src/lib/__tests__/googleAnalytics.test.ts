@@ -1,22 +1,36 @@
 /**
- * The GA loader is the consent gate for a third-party vendor, so these tests
- * pin the two things that matter legally and operationally: nothing loads (or
- * is stored) before analytics consent, and withdrawing consent tears GA down —
- * script, kill switch and cookies. The loader keeps module-level state, so each
- * test re-imports it after `vi.resetModules()` and detaches its listener.
+ * index.html ships the gtag.js tag for every visitor — Google's tag setup
+ * detects the tag by fetching the page, which carries no consent choice — with
+ * Consent Mode v2 defaulting everything to denied. This module owns what must
+ * follow the choice, so these tests pin the behaviour that matters legally and
+ * operationally: defaults are denied before opt-in, opting in turns analytics
+ * storage on, and withdrawing revokes it, clears the cookies and stops
+ * collection.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { clearConsent, writeConsent } from '../cookieConsent'
 
-const SCRIPT_SELECTOR = 'script[data-ga-loader]'
 const MEASUREMENT_ID = 'G-JMH0ZKFYB8'
 const DISABLE_FLAG = `ga-disable-${MEASUREMENT_ID}`
 
 type GaModule = typeof import('../googleAnalytics')
 
 let stop: (() => void) | undefined
+let calls: unknown[][]
 
-/** Fresh module instance bound to a fresh consent listener. */
+/**
+ * Stand in for gtag's queueing stub so the assertions can read the calls. The
+ * module keeps a function that is already installed, which is exactly what the
+ * real library does.
+ */
+function installRecorder(): void {
+  calls = []
+  window.dataLayer = calls
+  window.gtag = (...args: unknown[]) => {
+    calls.push(args)
+  }
+}
+
 async function loadGa(): Promise<GaModule> {
   vi.resetModules()
   const mod = (await import('../googleAnalytics')) as GaModule
@@ -33,20 +47,19 @@ function clearGaCookies(): void {
   }
 }
 
-function loaderScript(): HTMLScriptElement | null {
-  return document.querySelector<HTMLScriptElement>(SCRIPT_SELECTOR)
+/** The most recent `consent <verb>` call, or undefined. */
+function lastConsentUpdate(): Record<string, unknown> | undefined {
+  return calls
+    .filter((call) => call[0] === 'consent' && call[1] === 'update')
+    .at(-1)?.[2] as Record<string, unknown> | undefined
 }
 
-function dataLayerCalls(): unknown[][] {
-  return (window.dataLayer as unknown[][] | undefined) ?? []
-}
+const disableFlag = () => (window as unknown as Record<string, unknown>)[DISABLE_FLAG]
 
 beforeEach(() => {
   clearConsent()
   clearGaCookies()
-  document.head.querySelectorAll(SCRIPT_SELECTOR).forEach((node) => node.remove())
-  delete (window as { gtag?: unknown }).gtag
-  delete (window as { dataLayer?: unknown }).dataLayer
+  installRecorder()
   delete (window as unknown as Record<string, unknown>)[DISABLE_FLAG]
 })
 
@@ -55,32 +68,43 @@ afterEach(() => {
   stop = undefined
 })
 
-describe('without analytics consent', () => {
-  it('does not inject the tag, define gtag or report page views', async () => {
+describe('before the visitor opts in', () => {
+  it('declares consent mode defaults with every category denied', async () => {
+    await loadGa()
+
+    const consentDefault = calls.find((call) => call[0] === 'consent' && call[1] === 'default')
+    expect(consentDefault?.[2]).toMatchObject({
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'denied',
+    })
+  })
+
+  it('configures the tag with automatic page views off', async () => {
+    await loadGa()
+
+    const config = calls.find((call) => call[0] === 'config')
+    expect(config?.[1]).toBe(MEASUREMENT_ID)
+    expect((config?.[2] as Record<string, unknown>).send_page_view).toBe(false)
+  })
+
+  it('stops collection and reports no page view', async () => {
     const mod = await loadGa()
 
-    expect(loaderScript()).toBeNull()
-    expect(window.gtag).toBeUndefined()
-
+    expect(disableFlag()).toBe(true)
     mod.trackGaPageView('/tours')
-    expect(window.dataLayer).toBeUndefined()
+    expect(calls.some((call) => call[0] === 'event')).toBe(false)
   })
 })
 
-describe('with analytics consent', () => {
-  it('injects gtag.js and queues the consent and config calls', async () => {
+describe('once the visitor allows analytics', () => {
+  it('grants analytics storage and lifts the kill switch', async () => {
     writeConsent({ analytics: true }, 'accept-all')
     await loadGa()
 
-    const script = loaderScript()
-    expect(script).not.toBeNull()
-    expect(script?.src).toBe(`https://www.googletagmanager.com/gtag/js?id=${MEASUREMENT_ID}`)
-    expect(script?.async).toBe(true)
-
-    const calls = dataLayerCalls().map((call) => call[0])
-    expect(calls).toContain('consent')
-    expect(calls).toContain('config')
-    expect(window.gtag).toBeTypeOf('function')
+    expect(lastConsentUpdate()).toMatchObject({ analytics_storage: 'granted' })
+    expect(disableFlag()).toBe(false)
   })
 
   it('reports one page_view per navigation, with the path', async () => {
@@ -89,23 +113,24 @@ describe('with analytics consent', () => {
 
     mod.trackGaPageView('/tours?city=accra')
 
-    const last = dataLayerCalls().at(-1)
-    expect(last?.[0]).toBe('event')
-    expect(last?.[1]).toBe('page_view')
-    expect((last?.[2] as Record<string, unknown>).page_path).toBe('/tours?city=accra')
+    const event = calls.filter((call) => call[0] === 'event').at(-1)
+    expect(event?.[1]).toBe('page_view')
+    expect((event?.[2] as Record<string, unknown>).page_path).toBe('/tours?city=accra')
   })
 
-  it('starts GA when consent is granted after init', async () => {
+  it('switches on when consent is granted after load', async () => {
     await loadGa()
-    expect(loaderScript()).toBeNull()
+    expect(lastConsentUpdate()).toMatchObject({ analytics_storage: 'denied' })
 
     writeConsent({ analytics: true }, 'accept-all')
 
-    expect(loaderScript()).not.toBeNull()
-    expect(window.gtag).toBeTypeOf('function')
+    expect(lastConsentUpdate()).toMatchObject({ analytics_storage: 'granted' })
+    expect(disableFlag()).toBe(false)
   })
+})
 
-  it('tears GA down and clears its cookies when consent is withdrawn', async () => {
+describe('when consent is withdrawn', () => {
+  it('revokes storage, clears the cookies and stops collection', async () => {
     writeConsent({ analytics: true }, 'accept-all')
     document.cookie = '_ga=GA1.1.1234567890; Path=/'
     document.cookie = `_ga_${MEASUREMENT_ID}=GS1.1.abcdef; Path=/`
@@ -114,13 +139,12 @@ describe('with analytics consent', () => {
 
     writeConsent({ analytics: false }, 'preferences')
 
-    expect(loaderScript()).toBeNull()
-    expect((window as unknown as Record<string, unknown>)[DISABLE_FLAG]).toBe(true)
+    expect(lastConsentUpdate()).toMatchObject({ analytics_storage: 'denied' })
+    expect(disableFlag()).toBe(true)
     expect(document.cookie).not.toContain('_ga=')
 
-    // A withdrawn visitor sends nothing further.
-    const before = dataLayerCalls().length
+    const before = calls.length
     mod.trackGaPageView('/tours')
-    expect(dataLayerCalls().length).toBe(before)
+    expect(calls.length).toBe(before)
   })
 })

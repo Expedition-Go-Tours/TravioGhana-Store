@@ -224,9 +224,10 @@ export const COOKIE_INVENTORY: readonly CookieEntry[] = [
   // ── Analytics and performance ─────────────────────────────────────────
   // Our own events are batched to our API and store nothing on the device, so
   // that row's Type is a network request. Google Analytics is a third-party
-  // vendor (lib/googleAnalytics.ts): it is loaded through the consent gate so
-  // it only runs after the visitor accepts analytics, and it writes first-party
-  // `_ga` cookies. See CookiesPolicyPage §3.3.
+  // vendor (lib/googleAnalytics.ts): the tag loads with Consent Mode v2
+  // defaulting to denied, so it stores nothing until the visitor accepts
+  // analytics — at which point it sets first-party `_ga` cookies. See
+  // CookiesPolicyPage §3.3.
   {
     name: 'Analytics events',
     provider: US,

@@ -1,16 +1,22 @@
 /**
- * Google Analytics 4 (gtag.js) — consent-gated loader.
+ * Google Analytics 4 — consent mode and SPA page views.
  *
- * GA is a third-party vendor: it writes first-party cookies on our domain
- * (`_ga`, `_ga_<measurement ID>`) and calls `googletagmanager.com` and
- * `google-analytics.com`. The published Cookie Policy promises that nothing
- * optional is placed on a visitor's device before they consent, so the tag is
- * deliberately NOT in `index.html`. It is injected here only while `analytics`
- * consent is granted, and withdrawn — collection disabled and the cookies it
- * set removed — the moment the visitor changes their mind.
+ * The gtag.js library is loaded for every visitor from `index.html`, with Google
+ * Consent Mode v2 defaulting every category to "denied": no analytics cookie is
+ * set and no user-level data is collected until the visitor allows analytics
+ * cookies. It cannot sit behind a pure loader for two reasons:
+ *  - Google's tag setup detects the tag by fetching the page, and a fetch
+ *    carries no consent choice, so a tag that only injects after opt-in is
+ *    never seen;
+ *  - the CSP has no 'unsafe-inline', so the bootstrap cannot be an inline
+ *    script in `index.html` either.
  *
- * GA4 does not watch the History API, so each client-side route change has to
- * report its own `page_view` through `trackGaPageView()`.
+ * So the library and the measurement ID are static, and this module owns the
+ * behaviour. gtag's queueing stub is reproduced here so consent and config
+ * calls are never lost while the async library is still arriving, then: grant
+ * storage when the visitor opts in, revoke it and clear the `_ga` cookies when
+ * they withdraw, and report one `page_view` per SPA navigation (GA4 does not
+ * watch the History API).
  *
  * Nothing here touches the DOM at import time; `initGoogleAnalytics()` is the
  * single entry point and is safe to call during SSR/prerender.
@@ -29,70 +35,32 @@ const DISABLE_FLAG = `ga-disable-${GA_MEASUREMENT_ID}`
 
 declare global {
   interface Window {
-    dataLayer?: unknown[]
+    dataLayer?: unknown[][]
     gtag?: (...args: unknown[]) => void
   }
 }
-
-let injected = false
 
 function setDisableFlag(value: boolean): void {
   ;(window as unknown as Record<string, boolean>)[DISABLE_FLAG] = value
 }
 
-/** Load gtag.js and start collecting. No-op unless analytics consent exists. */
-function inject(): void {
-  if (injected || typeof window === 'undefined' || typeof document === 'undefined') return
-  if (!hasConsent('analytics')) return
-  injected = true
-
-  setDisableFlag(false)
-
+/**
+ * Install gtag's queueing stub. The real library replaces `gtag` when it loads
+ * and drains whatever is already queued, so nothing issued here is lost.
+ */
+function ensureStub(): void {
+  if (typeof window === 'undefined') return
   window.dataLayer = window.dataLayer || []
-  const gtag = (...args: unknown[]) => {
-    window.dataLayer!.push(args)
+  if (typeof window.gtag !== 'function') {
+    window.gtag = (...args: unknown[]) => {
+      window.dataLayer!.push(args)
+    }
   }
-  window.gtag = gtag
-
-  // Consent Mode: deny first, then grant storage now that the visitor agreed.
-  // The tag only loads after consent, so this is belt-and-braces — it also keeps
-  // Google's own storage controls explicit and correct if the tag is ever
-  // started another way.
-  gtag('consent', 'default', {
-    ad_storage: 'denied',
-    ad_user_data: 'denied',
-    ad_personalization: 'denied',
-    analytics_storage: 'denied',
-  })
-  gtag('consent', 'update', { analytics_storage: 'granted' })
-  gtag('js', new Date())
-  // Page views are reported manually (see trackGaPageView) so the SPA never
-  // double-counts the first screen or misses a route change.
-  gtag('config', GA_MEASUREMENT_ID, { send_page_view: false })
-
-  const script = document.createElement('script')
-  script.async = true
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`
-  script.dataset.gaLoader = 'true'
-  document.head.appendChild(script)
-}
-
-/** Stop collecting and remove what GA stored. Safe to call at any time. */
-function withdraw(): void {
-  if (typeof window === 'undefined' || typeof document === 'undefined') return
-  setDisableFlag(true)
-  if (typeof window.gtag === 'function') {
-    window.gtag('consent', 'update', { analytics_storage: 'denied' })
-  }
-  removeCookies()
-  // Drop the injected loader so a later re-grant starts from a clean slate.
-  document.querySelectorAll('script[data-ga-loader]').forEach((node) => node.remove())
-  injected = false
 }
 
 /**
- * Delete the `_ga` family. They are first-party, so they must be cleared on
- * our own domain; a bare `Max-Age=0` with no Domain only reaches the exact host
+ * Delete the `_ga` family. They are first-party, so they must be cleared on our
+ * own domain; a bare `Max-Age=0` with no Domain only reaches the exact host
  * that set them, so the parent domain is attempted too.
  */
 function removeCookies(): void {
@@ -115,21 +83,44 @@ function removeCookies(): void {
   }
 }
 
+/** Apply the visitor's current choice to the tag. */
+function apply(): void {
+  ensureStub()
+  const gtag = window.gtag!
+  if (hasConsent('analytics')) {
+    setDisableFlag(false)
+    gtag('consent', 'update', { analytics_storage: 'granted' })
+  } else {
+    gtag('consent', 'update', { analytics_storage: 'denied' })
+    setDisableFlag(true)
+    removeCookies()
+  }
+}
+
 /**
- * Keep GA in step with the visitor's choice. Call once, at app start.
- * Returns an unsubscribe function (used by tests to detach the listener).
+ * Queue the Consent Mode defaults and the config, then follow the visitor's
+ * choice from then on. Call once, at app start. Returns an unsubscribe
+ * function (used by tests to detach the listener).
  */
 export function initGoogleAnalytics(): () => void {
   if (typeof window === 'undefined') return () => {}
-  const sync = () => {
-    if (hasConsent('analytics')) inject()
-    else withdraw()
-  }
-  sync()
-  return subscribeConsent(sync)
+  ensureStub()
+  const gtag = window.gtag!
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'denied',
+  })
+  gtag('js', new Date())
+  // Page views are reported manually (see trackGaPageView) so the SPA never
+  // double-counts the first screen or misses a route change.
+  gtag('config', GA_MEASUREMENT_ID, { send_page_view: false })
+  apply()
+  return subscribeConsent(apply)
 }
 
-/** Report one client-side navigation. No-op without consent or before load. */
+/** Report one client-side navigation. No-op without consent. */
 export function trackGaPageView(path: string): void {
   if (typeof window === 'undefined' || typeof document === 'undefined') return
   if (!hasConsent('analytics') || typeof window.gtag !== 'function') return

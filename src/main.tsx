@@ -17,9 +17,9 @@ import App from './App.tsx'
 // must not call preventDefault() unless it actually reloads.
 installChunkReloadGuard()
 
-// Start Google Analytics only if the visitor has already allowed analytics
-// cookies; the loader also subscribes to later changes. See
-// src/lib/googleAnalytics.ts for why the tag is not in index.html.
+// Apply the visitor's Google Analytics consent and follow later changes. The
+// tag itself is static in index.html — see src/lib/googleAnalytics.ts for why
+// it cannot sit behind a loader.
 initGoogleAnalytics()
 
 // Light, app-wide map warm-up after first paint was removed: fetching the

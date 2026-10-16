@@ -47,6 +47,20 @@
     <link rel="dns-prefetch" href="https://apiv1.travioafrica.com" />
     <link rel="preload" href="/fonts/manrope-variable-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/dmsans-variable-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preconnect" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    <!-- Google Analytics (GA4, G-JMH0ZKFYB8).
+         The tag is static on purpose. Google's tag setup detects the tag by
+         fetching the page, and a fetch carries no cookie-consent choice, so a
+         tag that only injects after opt-in is never seen; the CSP also allows
+         no inline scripts, so the bootstrap cannot live here either.
+         Consent Mode v2 defaults every category to "denied", so no analytics
+         cookie is set and no user-level data is collected until the visitor
+         allows analytics cookies. src/lib/googleAnalytics.ts owns the
+         behaviour: it queues the consent and config calls (config sets
+         send_page_view off), grants storage on opt-in, revokes and clears the
+         _ga cookies on withdrawal, and reports one page_view per SPA route. -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JMH0ZKFYB8"></script>
   </head>
   <body>
     <div id="root"></div>
