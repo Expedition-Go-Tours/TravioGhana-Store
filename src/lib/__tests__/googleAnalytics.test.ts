@@ -127,6 +127,28 @@ describe('once the visitor allows analytics', () => {
     expect(lastConsentUpdate()).toMatchObject({ analytics_storage: 'granted' })
     expect(disableFlag()).toBe(false)
   })
+
+  it('reports the page the visitor is on when they opt in mid-visit', async () => {
+    await loadGa()
+    expect(calls.some((call) => call[0] === 'event')).toBe(false)
+
+    writeConsent({ analytics: true }, 'accept-all')
+
+    // Without this, a visitor who accepts on the landing page sends GA a config
+    // and a consent update but no page view until their next navigation.
+    const event = calls.filter((call) => call[0] === 'event').at(-1)
+    expect(event?.[1]).toBe('page_view')
+    expect((event?.[2] as Record<string, unknown>).page_path).toBe('/')
+  })
+
+  it('does not report again when an unrelated category changes', async () => {
+    writeConsent({ analytics: true }, 'accept-all')
+    await loadGa()
+
+    writeConsent({ analytics: true, marketing: true }, 'preferences')
+
+    expect(calls.some((call) => call[0] === 'event')).toBe(false)
+  })
 })
 
 describe('when consent is withdrawn', () => {

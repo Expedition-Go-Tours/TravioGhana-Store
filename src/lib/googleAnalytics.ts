@@ -107,6 +107,11 @@ function apply(): void {
   }
 }
 
+/** The route the visitor is actually on, query string included. */
+function currentPath(): string {
+  return window.location.pathname + window.location.search
+}
+
 /**
  * Queue the Consent Mode defaults and the config, then follow the visitor's
  * choice from then on. Call once, at app start. Returns an unsubscribe
@@ -126,8 +131,25 @@ export function initGoogleAnalytics(): () => void {
   // Page views are reported manually (see trackGaPageView) so the SPA never
   // double-counts the first screen or misses a route change.
   gtag('config', GA_MEASUREMENT_ID, { send_page_view: false })
+
+  // Track the last applied choice so a subscription callback that changes
+  // nothing (e.g. toggling marketing while analytics was already on) stays
+  // silent and cannot double-count.
+  let granted = hasConsent('analytics')
   apply()
-  return subscribeConsent(apply)
+
+  return subscribeConsent(() => {
+    const next = hasConsent('analytics')
+    if (next === granted) return
+    granted = next
+    apply()
+    // Consent can be granted mid-visit. The page they made the choice on was
+    // reported before consent (and dropped), so report it now — otherwise GA
+    // receives a config and a consent update but no page view at all until the
+    // visitor happens to navigate again. Withdrawal needs no event: apply()
+    // revokes storage and clears the cookies.
+    if (next) trackGaPageView(currentPath())
+  })
 }
 
 /** Report one client-side navigation. No-op without consent. */
