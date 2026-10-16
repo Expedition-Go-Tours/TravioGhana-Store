@@ -24,7 +24,7 @@ describe('homepage title and social metadata', () => {
     const ogTitle = metaContent('meta[property="og:title"]')
     const twitterTitle = metaContent('meta[name="twitter:title"]')
 
-    expect(pageTitle).toBe('Ghana Tours & Activities | Discover Experiences | Book & Explore')
+    expect(pageTitle).toBe('Ghana Tours & Activities | Discover & Book | Travio Ghana')
 
     // The real requirement: the three must agree. A card previewing a
     // different string from the indexed one is the bug in one assertion.

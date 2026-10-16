@@ -125,7 +125,7 @@ describe('prerender browser failure handling', () => {
  * handed a generic second title for pages whose whole point is their snippet.
  */
 describe('dedupeTitle', () => {
-  const FALLBACK = 'Ghana Tours &amp; Activities | Discover Experiences'
+  const FALLBACK = 'Ghana Tours &amp; Activities | Discover &amp; Book | Travio Ghana'
   const head = (inner: string) => `<html><head>${inner}</head><body></body></html>`
 
   it('preserves comment boundaries and leaves the real page visible', () => {
