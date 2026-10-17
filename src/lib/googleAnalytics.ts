@@ -162,3 +162,34 @@ export function trackGaPageView(path: string): void {
     page_title: document.title,
   })
 }
+
+/**
+ * Report a custom event. No-op without analytics consent, matching
+ * trackGaPageView, so every funnel step inherits the same gate. Callers must
+ * never pass PII — event names and parameter values only.
+ */
+export function trackGaEvent(name: string, params: Record<string, unknown> = {}): void {
+  if (typeof window === 'undefined') return
+  if (!hasConsent('analytics') || typeof window.gtag !== 'function') return
+  window.gtag('event', name, params)
+}
+
+/**
+ * The GA4 `client_id` for this visitor, read from the first-party `_ga` cookie.
+ * gtag writes it as `GA1.1.<client_id>` (the client_id is the remainder after
+ * that version prefix), which is exactly what the Measurement Protocol expects
+ * when the backend reports a settled booking server-side.
+ *
+ * Returns null when analytics consent was never granted (no cookie), when the
+ * cookie is malformed, or during SSR. No PII: the value is a random identifier.
+ */
+export function getGaClientId(): string | null {
+  if (typeof document === 'undefined') return null
+  if (!hasConsent('analytics')) return null
+  const match = document.cookie.match(/(?:^|;\s*)_ga=([^;]+)/)
+  if (!match) return null
+  // `_ga=GA1.1.1234567890.1700000000` → client_id `1234567890.1700000000`.
+  const parts = decodeURIComponent(match[1]).split('.')
+  if (parts.length < 4) return null
+  return parts.slice(2).join('.')
+}

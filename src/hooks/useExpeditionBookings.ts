@@ -227,6 +227,12 @@ interface ConfirmBookingInput {
     email: string
     phone: string
   }
+  /** GA4 client_id captured at checkout so the backend can report the settled booking
+   * server-side (Measurement Protocol). Omitted when analytics consent was never granted. */
+  gaClientId?: string
+  /** Whether the visitor granted analytics consent at checkout. The backend reports the
+   * booking to GA4 only when this is true. */
+  analyticsConsent?: boolean
 }
 
 interface ConfirmBookingResponse {

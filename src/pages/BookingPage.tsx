@@ -55,6 +55,8 @@ import {
 import { cancellationStatus } from '../lib/cancellationLabel'
 import { getGeolocationPermission, isLocationSharingEnabled, requestCurrentCoordinates } from '../lib/locationSharing'
 import { reverseGeocode } from '../lib/locations'
+import { getGaClientId } from '../lib/googleAnalytics'
+import { hasConsent } from '../lib/cookieConsent'
 
 /* --- Tour data from location state --- */
 
@@ -2101,6 +2103,11 @@ export default function BookingPage() {
             }
           : undefined
 
+      // GA4 attribution for the server-side purchase event. The client_id only
+      // exists once analytics consent was granted; the flag tells the backend
+      // whether it may report this booking at all.
+      const gaClientId = getGaClientId()
+
       const payload = {
         tourId: tour.id || tour.slug,
         travelDate: editableTour.selectedDate || editableTour.date,
@@ -2134,6 +2141,11 @@ export default function BookingPage() {
         // Only forward a code that was validated against the backend; the
         // confirm endpoint re-prices authoritatively with it.
         ...(appliedPromo ? { promoCode: promoCode.trim().toUpperCase() } : {}),
+        // GA4 Measurement Protocol attribution (see useCreateBooking type). Sent
+        // so the backend can report the settled booking server-side, gated on
+        // the consent flag.
+        ...(gaClientId ? { gaClientId } : {}),
+        analyticsConsent: hasConsent('analytics'),
       }
 
       const result = await createBooking.mutateAsync(payload)

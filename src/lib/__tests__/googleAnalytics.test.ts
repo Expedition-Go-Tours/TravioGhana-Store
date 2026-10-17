@@ -190,3 +190,56 @@ describe('the queueing stub', () => {
     expect((first as unknown[])[1]).toBe('default')
   })
 })
+
+describe('trackGaEvent', () => {
+  it('drops events before the visitor opts in', async () => {
+    const mod = await loadGa()
+    mod.trackGaEvent('view_item', { item_id: 'abc' })
+    expect(calls.some((call) => call[0] === 'event')).toBe(false)
+  })
+
+  it('forwards the event name and parameters once consent is granted', async () => {
+    writeConsent({ analytics: true }, 'accept-all')
+    const mod = await loadGa()
+
+    mod.trackGaEvent('begin_checkout', { currency: 'GHS', value: 120 })
+
+    const event = calls.filter((call) => call[0] === 'event').at(-1)
+    expect(event?.[1]).toBe('begin_checkout')
+    expect(event?.[2]).toMatchObject({ currency: 'GHS', value: 120 })
+  })
+
+  it('stops sending events after consent is withdrawn', async () => {
+    writeConsent({ analytics: true }, 'accept-all')
+    const mod = await loadGa()
+    writeConsent({ analytics: false }, 'preferences')
+
+    const before = calls.length
+    mod.trackGaEvent('purchase', { value: 100 })
+    expect(calls.length).toBe(before)
+  })
+})
+
+describe('getGaClientId', () => {
+  it('returns null before the visitor opts in, even if a cookie lingers', async () => {
+    document.cookie = '_ga=GA1.1.1234567890.1700000000; Path=/'
+    const mod = await loadGa()
+    expect(mod.getGaClientId()).toBeNull()
+  })
+
+  it('extracts the client_id from the `_ga` cookie once consented', async () => {
+    writeConsent({ analytics: true }, 'accept-all')
+    document.cookie = '_ga=GA1.1.1234567890.1700000000; Path=/'
+    const mod = await loadGa()
+    expect(mod.getGaClientId()).toBe('1234567890.1700000000')
+  })
+
+  it('returns null when the cookie is absent or malformed', async () => {
+    writeConsent({ analytics: true }, 'accept-all')
+    const mod = await loadGa()
+    expect(mod.getGaClientId()).toBeNull()
+
+    document.cookie = '_ga=not-a-real-cookie; Path=/'
+    expect(mod.getGaClientId()).toBeNull()
+  })
+})
