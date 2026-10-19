@@ -135,8 +135,10 @@ export default function MoodSection({ preloaded, isLoading, title }: Props) {
                       className="mood-card"
                       onClick={() => {
                         trackMoodClick(cat.keyword, i)
-                        // Carry the searched city so the listing can order
-                        // results "closest to {city} first".
+                        // Carry the searched place: the listing scopes the
+                        // mood to it (and orders closest-first), so a mood
+                        // card tapped while a location is active lands on
+                        // "{mood} near {place}" — not the whole country.
                         const near = hasActiveSearch && currentLocation
                           ? `&near=${encodeURIComponent(currentLocation)}`
                           : ''
