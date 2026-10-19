@@ -457,12 +457,59 @@
 
 .all-tours-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 24px;
+  /* Five columns, not four: the container above is sized for the homepage's
+     own content column (five 295px cards + four 16px gaps), so each cell
+     lands on exactly 295px at full width — the same card width the homepage
+     rails show, instead of ~373px at four columns. */
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  /* Match the homepage rails' 16px card spacing — 24px read as too airy
+     beside the homepage's tighter gutters. */
+  gap: 16px;
 }
 
 .all-tours-grid > * {
   min-width: 0;
+}
+
+/* The clean card pins its image to a fixed 205px height — geometry designed
+   for the homepage's 295px-wide rail cards. This grid's card width tracks the
+   viewport, so restate each height as the homepage's crop ratio instead: the
+   photo is cropped exactly like the homepage's at every width (and is the
+   rails' 205px exactly when the cell is 295px). The homepage rail itself
+   swaps to 280x180 cards at ≤768px, so this mirrors its ratio per band.
+   Above 641px only — the horizontal card layout below that sizes its image
+   by width (35%) and stretches it to the row height. The skeleton mirrors
+   the same rules (and drops its 280px min-width, which cells narrower than
+   280px can't honor) so loading cards occupy the same box as the real ones. */
+@media (min-width: 641px) {
+  .all-tours-grid .tour-card-skeleton {
+    min-width: 0;
+  }
+}
+
+@media (min-width: 769px) {
+  .all-tours-grid .tour-card-clean .tour-card-image,
+  .all-tours-grid .tour-card-skeleton-image {
+    height: auto;
+    aspect-ratio: 295 / 205;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .all-tours-grid .tour-card-clean .tour-card-image,
+  .all-tours-grid .tour-card-skeleton-image {
+    height: auto;
+    aspect-ratio: 280 / 180;
+  }
+}
+
+/* Between the container's full width and 1200px, five columns squeeze the
+   cards below homepage proportions; step down to four (cells ≈272–332px,
+   i.e. homepage-scale) before the existing three-column breakpoint. */
+@media (max-width: 1440px) {
+  .all-tours-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 1200px) {
@@ -474,7 +521,6 @@
 @media (max-width: 1024px) {
   .all-tours-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 20px;
   }
 }
 
