@@ -37,6 +37,7 @@ import { startSessionWatchdog, stopSessionWatchdog } from './auth/sessionManager
 import { trackPageView } from './lib/analytics'
 import { trackGaPageView } from './lib/googleAnalytics'
 import LenisProvider from './lib/LenisProvider'
+import { scrollToTop } from './lib/scrollToTop'
 import { useHomepage, useHomepageByCity } from './hooks/useHomepageSections'
 import { enrichToursWithCombinedStats, useExternalReviewStatsData } from './hooks/useExternalReviews'
 import { resolveStoryRedirect } from './lib/storyRedirects'
@@ -285,13 +286,15 @@ function AppContent() {
 
   // Land at the top of the page on every route change (e.g. clicking a supplier
   // link deep in a tour page shouldn't drop you mid-way down the next page).
+  // scrollToTop drives Lenis too — a bare window.scrollTo(0,0) is dropped
+  // mid-glide and the running animation drags the new page back down.
   useEffect(() => {
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual'
     }
   }, [])
   useEffect(() => {
-    window.scrollTo(0, 0)
+    scrollToTop()
     const path = location.pathname + location.search
     trackPageView(path)
     trackGaPageView(path)

@@ -7,9 +7,12 @@ import Lenis from 'lenis'
  * instant wheel/touch displacement with a requestAnimationFrame interpolation
  * loop — the page glides with configurable easing instead of jumping.
  *
- * - Native programmatic scrolls (window.scrollTo, anchor jumps) still work:
- *   Lenis only governs wheel + touch input and syncs to native scroll events.
- * - Route-change scroll-to-top in App.tsx is unaffected.
+ * - Native programmatic scrolls (window.scrollTo, anchor jumps) still work
+ *   when Lenis is idle, but a bare window.scrollTo is DROPPED mid-glide:
+ *   onNativeScroll only adopts native positions while isScrolling is
+ *   false/'native', and the rAF loop re-applies the old offset every frame.
+ *   Route-change scroll-to-top therefore goes through scrollToTop()
+ *   (src/lib/scrollToTop.ts), which drives Lenis directly with immediate:true.
  * - Inner scrollers (modals, dropdowns, chat drawer, horizontal rails) are
  *   untouched — Lenis only smooths the main document scroll. Mark sections
  *   with `data-lenis-prevent` if they ever need to opt out.
