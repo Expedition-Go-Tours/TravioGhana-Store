@@ -47,7 +47,10 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 15%;
+  /* 9:16 portrait rendered in a wide 50%-width half: the subject (rider and
+     quad) sits around 25–55% of the frame, so bias the crop there. A top-
+     biased crop would show only sky and treetops. */
+  object-position: center 35%;
 }
 
 /* --- Content side --- */

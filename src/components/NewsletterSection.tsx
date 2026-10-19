@@ -1,8 +1,15 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Mail } from 'lucide-react'
-import newsletterImg from '../assets/newsletter-square-card.webp'
+import { optimizedLocalSrcSet } from '../lib/image'
+import newsletterImg from '../assets/newsletter-quad-biking.webp'
 import './NewsletterSection.css'
+
+// The photo is a 9:16 portrait shown in the card's wide 50%-width half.
+// `src` stays the unoptimized file (always resolves; this is what dev renders).
+// A production build swaps in the Vercel image pipeline's candidate set so a
+// 1x desktop doesn't download the full 1200px original.
+const newsletterSrcSet = optimizedLocalSrcSet(newsletterImg, 1200, import.meta.env.PROD) ?? newsletterImg
 
 export default function NewsletterSection() {
   const [email, setEmail] = useState('')
@@ -25,9 +32,13 @@ export default function NewsletterSection() {
                 <picture> keeps the eager load to the breakpoint where it is
                 actually shown, instead of downloading it for phones too. */}
             <picture>
-              <source media="(min-width: 769px)" srcSet={newsletterImg} />
+              <source
+                media="(min-width: 769px)"
+                srcSet={newsletterSrcSet}
+                sizes="(min-width: 1584px) 760px, 50vw"
+              />
               <img
-                alt="Aerial view of Black Star Square and Independence Arch in Accra"
+                alt="Smiling rider on a quad bike tour through the Ghanaian countryside"
                 className="newsletter-image"
                 decoding="async"
               />

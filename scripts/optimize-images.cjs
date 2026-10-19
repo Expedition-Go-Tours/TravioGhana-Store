@@ -29,7 +29,6 @@ const TARGETS = [
   { file: 'src/assets/images/painting.webp', width: 1920, kind: 'webp', quality: 74 },
   { file: 'src/assets/images/IMG_3538.webp', width: 1920, kind: 'webp', quality: 74 },
   { file: 'src/assets/IMG_3538.webp', width: 1920, kind: 'webp', quality: 74 },
-  { file: 'src/assets/newsletter-hero.jpg', width: 1600, kind: 'jpeg', quality: 74 },
   // Auth slider / supplier gallery source images.
   { file: 'public/Image01.webp', width: 914, kind: 'webp', quality: 76 },
   { file: 'public/Image02.webp', width: 1400, kind: 'webp', quality: 72 },
