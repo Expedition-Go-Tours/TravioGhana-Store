@@ -56,11 +56,25 @@ function lastConsentUpdate(): Record<string, unknown> | undefined {
 
 const disableFlag = () => (window as unknown as Record<string, unknown>)[DISABLE_FLAG]
 
+/**
+ * jsdom's window.location can be replaced wholesale (same pattern as
+ * Navbar.test.tsx). Every non-gate test runs as the live site; the gate tests
+ * drop in a different hostname.
+ */
+function setHost(hostname: string): void {
+  Object.defineProperty(window, 'location', {
+    configurable: true,
+    writable: true,
+    value: new URL(`https://${hostname}/`),
+  })
+}
+
 beforeEach(() => {
   clearConsent()
   clearGaCookies()
   installRecorder()
   delete (window as unknown as Record<string, unknown>)[DISABLE_FLAG]
+  setHost('www.travioghana.com')
 })
 
 afterEach(() => {
@@ -241,5 +255,41 @@ describe('getGaClientId', () => {
 
     document.cookie = '_ga=not-a-real-cookie; Path=/'
     expect(mod.getGaClientId()).toBeNull()
+  })
+})
+
+/**
+ * The measurement ID ships as a static literal in index.html for every host,
+ * so this gate is the only thing keeping dev servers, `vite preview` and
+ * preview deployments out of the production property (whose hostname report had
+ * collected `localhost` and `example.com` traffic).
+ */
+describe('production host gate', () => {
+  it('accepts exactly the live hosts', async () => {
+    const mod = await loadGa()
+    expect(mod.isProductionHost('www.travioghana.com')).toBe(true)
+    expect(mod.isProductionHost('travioghana.com')).toBe(true)
+    expect(mod.isProductionHost('localhost')).toBe(false)
+    expect(mod.isProductionHost('127.0.0.1')).toBe(false)
+    expect(mod.isProductionHost('travioghana.vercel.app')).toBe(false)
+    expect(mod.isProductionHost('example.com')).toBe(false)
+    expect(mod.isProductionHost('')).toBe(false)
+  })
+
+  it('queues no consent or config calls and arms the kill switch off-site', async () => {
+    setHost('localhost')
+    await loadGa()
+    expect(calls.filter((call) => call[0] === 'consent' || call[0] === 'config' || call[0] === 'js')).toEqual([])
+    expect(disableFlag()).toBe(true)
+    expect(typeof stop).toBe('function')
+  })
+
+  it('cannot be re-armed by granting consent on a non-production host', async () => {
+    setHost('preview.example.net')
+    await loadGa()
+    writeConsent({ analytics: true }, 'accept-all')
+    expect(disableFlag()).toBe(true)
+    expect(calls.filter((call) => call[0] === 'consent' && call[1] === 'update')).toEqual([])
+    expect(calls.some((call) => call[0] === 'event')).toBe(false)
   })
 })

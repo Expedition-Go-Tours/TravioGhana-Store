@@ -33,6 +33,22 @@ export const GA_MEASUREMENT_ID = 'G-JMH0ZKFYB8'
  */
 const DISABLE_FLAG = `ga-disable-${GA_MEASUREMENT_ID}`
 
+/**
+ * Hosts whose visits may reach the production GA4 property. The measurement ID
+ * is a static literal in index.html (Google's tag setup must see it on a plain
+ * fetch), so nothing else stops a dev server, `vite preview` or a Vercel
+ * preview from filling production with junk: the property's hostname report had
+ * already picked up `localhost` and `example.com`. The hostname argument is
+ * optional so the allowlist itself is testable without fighting jsdom's
+ * window.location; `initGoogleAnalytics` always resolves it from the page.
+ */
+const PRODUCTION_HOSTS = new Set(['travioghana.com', 'www.travioghana.com'])
+
+export function isProductionHost(hostname?: string): boolean {
+  const host = hostname ?? (typeof window !== 'undefined' ? window.location.hostname : '')
+  return PRODUCTION_HOSTS.has(host)
+}
+
 declare global {
   interface Window {
     dataLayer?: unknown[][]
@@ -119,6 +135,15 @@ function currentPath(): string {
  */
 export function initGoogleAnalytics(): () => void {
   if (typeof window === 'undefined') return () => {}
+  // Non-production hosts (localhost, previews, sandboxes): arm Google's kill
+  // switch and stop before a single consent or config call is queued. The flag
+  // discards every hit the library would ever dispatch — including trackGa*
+  // calls if someone opts in off-site — and it is never lifted again here,
+  // because no consent subscription is installed.
+  if (!isProductionHost()) {
+    setDisableFlag(true)
+    return () => {}
+  }
   ensureStub()
   const gtag = window.gtag!
   gtag('consent', 'default', {
