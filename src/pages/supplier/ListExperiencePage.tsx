@@ -370,8 +370,9 @@ export default function ListExperiencePage() {
       transition={{ duration: 0.35, ease: 'easeOut' }}
     >
       <SEO
-        title="List Your Experience"
-        description="List tours and activities on TravioGhana. Reach more travellers, manage availability and keep 85% of every successful booking."
+        title="List Your Tours & Experiences | Become a Travio Ghana Supplier"
+        appendSiteName={false}
+        description="Sell your tours and experiences on Travio Ghana. Reach more travellers, manage bookings and grow your business. Sign up as a local provider."
         keywords="list your experience Ghana, become a supplier Ghana, TravioGhana supplier, Ghana tour operator, list tours Ghana"
         jsonLd={[
           buildBreadcrumbSchema([
