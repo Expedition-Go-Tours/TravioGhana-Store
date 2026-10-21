@@ -240,8 +240,9 @@ export default function BlogPage() {
     <MotionConfig reducedMotion="user">
       <div className="blog-page">
         <SEO
-          title={t('blog.pageTitle')}
-          description="Read inspiring travel stories from Ghana. Discover hidden gems, local culture, food experiences, wildlife adventures, and travel tips for your Ghana vacation."
+          title="Ghana Travel Blog, Guides & Tips | Travio Ghana"
+          appendSiteName={false}
+          description="Explore Ghana travel guides, local tips and things to do. Discover places to visit, cultural experiences and ideas for your next adventure."
           keywords="Ghana travel blog, Ghana travel stories, Ghana travel guide, things to do in Ghana, Ghana experiences, Ghana food, Ghana culture, Ghana wildlife, West Africa travel"
           jsonLd={[
             buildBreadcrumbSchema([
