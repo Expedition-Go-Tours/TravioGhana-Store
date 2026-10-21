@@ -133,8 +133,9 @@ export default function ContactUsPage() {
     <MotionConfig reducedMotion="user">
       <div className="support-page sh-hub">
         <SEO
-          title="Contact Travio Ghana - Ghana Tours Support"
-          description="Get in touch with Travio Ghana. Contact us for booking inquiries, partnerships, supplier registration, and customer support. We're here to help with your Ghana travel experience."
+          title="Contact Us & Customer Support | Travio Ghana"
+          appendSiteName={false}
+          description="Contact Travio Ghana for booking help, pickup enquiries or partnerships. Reach our Ghana-based team by email, phone, WhatsApp or live chat."
           keywords="contact Travio Ghana, Ghana tours support, booking help, customer service, partnership inquiries"
           jsonLd={buildBreadcrumbSchema([
             { name: 'Home', url: 'https://www.travioghana.com/' },
