@@ -386,8 +386,9 @@ export default function PaymentsSecurityPage() {
       transition={{ duration: 0.35, ease: 'easeOut' }}
     >
       <SEO
-        title="Payment and Security"
-        description="How your payment is protected when you book with Travio Ghana. Stripe-processed payments, every way to pay, reserve-now-pay-later options, refunds and answers to common payment questions."
+        title="Payment Methods & Security | Travio Ghana"
+        appendSiteName={false}
+        description="Learn about payment methods, secure checkout, reserve now, pay later options and refunds when booking tours and experiences on Travio Ghana."
         keywords="payment security Ghana, secure payments Ghana, Stripe payments, pay by card Ghana, digital wallet Ghana, pay later Ghana, refund policy, Travio Ghana payments"
         jsonLd={[
           buildBreadcrumbSchema([
