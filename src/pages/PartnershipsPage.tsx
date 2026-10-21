@@ -359,8 +359,9 @@ export default function PartnershipsPage() {
   return (
     <div ref={pageRef} className={`ptn-page${loaded ? ' loaded' : ''}`}>
       <SEO
-        title="Partner with Travio Ghana | Five Ways to Join"
-        description="Become a partner with Travio Ghana. Join Ghana's leading tourism platform as a tour operator, hotel, travel agent, content creator, or transport provider."
+        title="Partner with Travio Ghana | Grow Your Travel Business"
+        appendSiteName={false}
+        description="Partner with Travio Ghana as a tour provider, hotel, travel agent, content creator or transport provider. Connect with travellers and grow your business."
         keywords="Travio Ghana partnership, Ghana tourism partnership, tour operator partnership Ghana, travel partner Ghana, become a supplier Ghana"
         preloadImage={elminaCastle}
         jsonLd={[
