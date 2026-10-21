@@ -34,6 +34,7 @@ import type { Tour } from '../../components/data'
 import type { DayAvailability, DayAvailabilityInfo } from '../../lib/tourAvailability'
 
 import SEO, { buildProductSchema, buildBreadcrumbSchema } from '../../components/SEO'
+import { GHANA_TOUR_SEO } from './tourSeo'
 import Breadcrumb from './Breadcrumb'
 import TourImageGallery from './TourImageGallery'
 import TourHeader from './TourHeader'
@@ -1132,12 +1133,15 @@ export default function TourDetailPage() {
     )
   }
 
+  const tourSeo = GHANA_TOUR_SEO[tour.id]
+
   return (
     <TourDetailErrorBoundary>
     <>
       <SEO
-        title={`${tour.title} in ${tour.location?.split(',')[0] || 'Ghana'}`}
-        description={`${tour.title} - ${tour.duration} ${tour.category || 'experience'} in ${tour.location || 'Ghana'}. Book from $${tour.price}. ${tour.rating ? `Rated ${tour.rating}/5` : ''} Free cancellation, instant confirmation.`}
+        title={tourSeo?.title || `${tour.title} in ${tour.location?.split(',')[0] || 'Ghana'}`}
+        appendSiteName={!tourSeo}
+        description={tourSeo?.description || `${tour.title} - ${tour.duration} ${tour.category || 'experience'} in ${tour.location || 'Ghana'}. Book from $${tour.price}. ${tour.rating ? `Rated ${tour.rating}/5` : ''} Free cancellation, instant confirmation.`}
         keywords={`${tour.title}, ${tour.location} tours, ${tour.category || 'tours'} in ${tour.location?.split(',')[0] || 'Ghana'}, Ghana tours, book ${tour.title}`}
         image={mergedImages[0] || undefined}
         type="product"
