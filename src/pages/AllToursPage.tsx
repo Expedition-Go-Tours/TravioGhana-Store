@@ -529,7 +529,7 @@ export default function AllToursPage() {
     ? `Tours in ${fallbackRegion}`
     : placeParam
     ? `Tours in ${placeParam} | Ghana Tours & Experiences`
-    : 'Ghana Tours & Experiences | Book Authentic African Adventures'
+    : 'The BEST Ghana Tours and Things to Do in 2026'
 
   const seoDescription = placeParam
     ? `Discover ${totalCount || 'the best'} tours and experiences in ${placeParam}, Ghana. Book cultural tours, food tours, wildlife safaris, and adventure activities. Free cancellation, best prices guaranteed.`
@@ -543,6 +543,7 @@ export default function AllToursPage() {
     <div className="all-tours-page">
       <SEO
         title={seoTitle}
+        appendSiteName={Boolean(fallbackRegion || placeParam)}
         description={seoDescription}
         keywords={seoKeywords}
         // Mirrors the prerendered copy: ?place= is self-canonical (SEO.tsx
