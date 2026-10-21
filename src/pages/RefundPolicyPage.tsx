@@ -40,8 +40,9 @@ export default function RefundPolicyPage() {
   return (
     <>
       <SEO
-        title="Refund Policy"
-        description="Learn about Travio Ghana refund and cancellation policy. Find out how to cancel your Ghana tour booking and what refunds you're eligible for."
+        title="Refund & Cancellation Policy | Travio Ghana"
+        appendSiteName={false}
+        description="Understand Travio Ghana’s cancellation and refund policy, including booking conditions, how to cancel, refund eligibility and processing times."
         keywords="Travio Ghana refund, cancellation policy Ghana, tour cancellation, booking refund Ghana"
         jsonLd={buildBreadcrumbSchema([
           { name: 'Home', url: 'https://www.travioghana.com/' },

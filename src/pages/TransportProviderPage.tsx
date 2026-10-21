@@ -228,8 +228,9 @@ export default function TransportProviderPage({ onOpenAuth }: TransportProviderP
     <div ref={pageRef} className={motionPaused ? 'tp-page tp-motion-paused' : 'tp-page'}>
       <main>
         <SEO
-          title="Become a Transport Partner in Ghana — List Your Fleet"
-          description="From an airport welcome in Accra to the road north, your fleet helps people experience more of Ghana. Bring your vehicles and local knowledge and grow with the travellers already planning their trip."
+          title="Become a Transport Partner | Travio Ghana"
+        appendSiteName={false}
+          description="Partner with Travio Ghana to offer airport transfers, private rides and tour transport. Connect your fleet with travellers exploring Ghana."
           keywords="transport partner Ghana, list taxi Ghana, Ghana tour vehicle, airport transfer Ghana, transport provider Ghana, fleet partnership Ghana"
           jsonLd={[
             {

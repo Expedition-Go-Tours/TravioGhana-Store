@@ -77,8 +77,9 @@ export default function HotelsProviderPage({ onOpenAuth }: HotelsProviderPagePro
   return (
     <main>
       <SEO
-        title="List Your Hotel or Guesthouse in Ghana — Accommodation Partners"
-        description="List your hotel, guesthouse, apartment or resort with Travio Ghana. Manage rooms, rates and reservations in one dashboard while helping travellers experience more of Ghana."
+        title="List Your Hotel, Guesthouse or Apartment | Travio Ghana"
+        appendSiteName={false}
+        description="List your accommodation on Travio Ghana. Reach more travellers and manage your rooms, rates, availability and bookings in one place."
         keywords="list hotel Ghana, Ghana accommodation partner, sell rooms Ghana, guesthouse booking Ghana, hotel listing Ghana, resort partnership Ghana"
         jsonLd={[
           {

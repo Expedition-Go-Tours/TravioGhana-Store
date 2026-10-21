@@ -182,8 +182,9 @@ export default function TravelAgentsPage() {
     <div className="ta-page" ref={pageRef}>
       <main>
         <SEO
-          title="Travel Agent & Reseller Programme — Partner Rates on Ghana Tours"
-          description="Access reduced partner rates on Ghana tours and experiences. Plan trips, manage client bookings and keep your margins clear in one agent workspace."
+          title="Travel Agent Partner Programme | Travio Ghana"
+        appendSiteName={false}
+          description="Access partner rates on Ghana tours and experiences. Book for your clients and grow your travel business with Travio Ghana."
           keywords="travel agent Ghana, tour operator partner rates Ghana, Ghana resell tours, travel agent programme Ghana, wholesale Ghana tours, affiliate Ghana tours"
           jsonLd={[
             {

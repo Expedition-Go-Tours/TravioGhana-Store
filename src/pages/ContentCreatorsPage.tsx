@@ -64,8 +64,9 @@ export default function ContentCreatorsPage() {
   return (
     <main>
       <SEO
-        title="Ghana Content Creator Programme — Earn on Travel Content"
-        description="Join the Travio Ghana creator programme. Feature authentic Ghana travel experiences, earn commission on every booking your audience makes, and get transparent payouts plus dedicated creator support."
+        title="Content Creator Programme | Create & Earn with Travio Ghana"
+        appendSiteName={false}
+        description="Discover Travio Ghana’s creator programme. Share authentic Ghana experiences and earn commission on referred bookings. Applications opening soon."
         keywords="Ghana content creator programme, travel creator Ghana, Ghana travel influencer, earn from travel content Ghana, Ghana creator commission"
         jsonLd={[
           {
