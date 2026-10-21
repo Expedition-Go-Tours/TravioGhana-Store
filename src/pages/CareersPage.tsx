@@ -193,8 +193,9 @@ export default function CareersPage() {
     <MotionConfig reducedMotion="user">
       <div className="support-page">
         <SEO
-          title="Careers at Travio Ghana - Join Our Ghana Travel Team"
-          description="Join Travio Ghana and help shape the future of Ghana tourism. Explore career opportunities in operations, marketing, technology, and customer support."
+          title="Careers at Travio Ghana | Join Our Travel & Technology Team"
+          appendSiteName={false}
+          description="Discover careers at Travio Ghana in travel, technology, customer support and marketing. Learn about our team and share your CV for future opportunities."
           keywords="Travio Ghana careers, Ghana tourism jobs, travel industry careers, work in Ghana, Travio Ghana hiring"
           jsonLd={buildBreadcrumbSchema([
             { name: 'Home', url: 'https://www.travioghana.com/' },
