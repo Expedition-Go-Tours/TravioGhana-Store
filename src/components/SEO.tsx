@@ -36,6 +36,7 @@ const DEFAULT_IMAGE = `${SITE_URL}/og-default.png`
 
 interface SEOProps {
   title?: string
+  appendSiteName?: boolean
   description?: string
   keywords?: string
   image?: string
@@ -93,6 +94,7 @@ export function withOrganization(
 
 export default function SEO({
   title,
+  appendSiteName = true,
   description = DEFAULT_DESCRIPTION,
   keywords,
   image = DEFAULT_IMAGE,
@@ -113,7 +115,7 @@ export default function SEO({
   const isDefaultHomepage = location.pathname === '/' && !title
   const fullTitle = isDefaultHomepage
     ? HOMEPAGE_TITLE
-    : title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} | ${DEFAULT_TITLE}`
+    : title ? (appendSiteName ? `${title} | ${SITE_NAME}` : title) : `${SITE_NAME} | ${DEFAULT_TITLE}`
   // `place` is the only query parameter that names a real page: /tours?place=Accra
   // is its own destination and its own sitemap entry, and the prerendered copy
   // self-canonicalises to it. Every other parameter (filters, sort, tracking) is
