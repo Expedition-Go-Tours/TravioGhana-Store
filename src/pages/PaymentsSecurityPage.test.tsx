@@ -304,7 +304,7 @@ describe('PaymentsSecurityPage', () => {
   it('publishes the title, description and FAQ structured data', () => {
     renderPage()
 
-    expect(document.title).toBe('Payment and Security | Travio Ghana')
+    expect(document.title).toBe('Payment Methods & Security | Travio Ghana')
     const ld = Array.from(document.querySelectorAll('script[type="application/ld+json"]')).map((s) => s.textContent ?? '')
     expect(ld.some((s) => s.includes('"FAQPage"'))).toBe(true)
     expect(ld.some((s) => s.includes('"BreadcrumbList"'))).toBe(true)
