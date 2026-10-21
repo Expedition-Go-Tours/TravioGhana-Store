@@ -283,8 +283,9 @@ export default function FAQPage() {
     <MotionConfig reducedMotion="user">
       <div className="support-page sh-hub">
         <SEO
-          title="Ghana Tours FAQ - Booking, Cancellation & Travel Questions"
-          description="Find answers to common questions about booking Ghana tours, cancellation policies, pickup details, payment methods, and more. Get help with your Ghana travel experience."
+          title="Frequently Asked Questions | Travio Ghana"
+          appendSiteName={false}
+          description="Find answers to common questions about booking Ghana tours, payments, cancellations, refunds and pickup arrangements on Travio Ghana."
           keywords="Ghana tours FAQ, booking questions, cancellation policy, Ghana travel help, tour booking FAQ, Ghana experiences questions, Travio Ghana FAQ"
           jsonLd={[
             buildFAQSchema(allFaqs.map((faq) => ({ question: faq.q, answer: faq.a }))),
