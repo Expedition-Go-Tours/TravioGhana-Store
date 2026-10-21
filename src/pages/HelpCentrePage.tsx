@@ -101,8 +101,9 @@ export default function HelpCentrePage() {
     <MotionConfig reducedMotion="user">
       <div className="support-page sh-hub">
         <SEO
-          title="Ghana Tours Help Centre - Booking Support & FAQs"
-          description="Get help with your Ghana tour booking. Find answers about payments, cancellations, pickup, refunds, and more. Contact our support team for assistance."
+          title="Help Centre & Booking Support | Travio Ghana"
+          appendSiteName={false}
+          description="Get help with bookings, payments, cancellations and refunds on Travio Ghana. Find quick answers or contact our support team."
           keywords="Ghana tours help, booking support, customer service, tour booking help, cancellation help, payment help"
           jsonLd={buildBreadcrumbSchema([
             { name: 'Home', url: 'https://www.travioghana.com/' },
