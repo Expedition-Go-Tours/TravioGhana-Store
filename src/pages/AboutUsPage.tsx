@@ -175,8 +175,9 @@ export default function AboutUsPage() {
     <MotionConfig reducedMotion="user">
       <div className="about-page">
         <SEO
-          title={t('about.pageTitle')}
-          description="Learn about Travio Ghana — Ghana's premier tour platform. We connect travellers with authentic local experiences and partner with the world's leading travel brands. Meet our team, mission and why travellers book with us."
+          title="About Travio Ghana | Your Platform for Local Experiences"
+          appendSiteName={false}
+          description="Get to know Travio Ghana, connecting travellers with trusted local providers for authentic tours, activities and experiences across Ghana."
           keywords="Travio Ghana, about us, Ghana tour company, Ghana travel platform, local tours Ghana, authentic experiences Ghana, Ghana tourism company, trusted travel partners Ghana, why book with us"
           jsonLd={[
             buildBreadcrumbSchema([
