@@ -137,6 +137,29 @@ describe('findPickupAreaForAddress', () => {
     expect(match?.name).toBe('Kumasi')
   })
 
+  it('applies exclusion rings to radius-only (location-only) areas', () => {
+    // Mirrors the backend: a point/radius zone is a service zone like any
+    // drawn polygon, so its "no pickup" holes must reject addresses too.
+    const pointArea: PickupAreaShape = {
+      name: 'Kumasi',
+      lat: 6.6871,
+      lng: -1.6219,
+      radiusKm: 10,
+      exclusions: [[[6.685, -1.625], [6.689, -1.625], [6.689, -1.619], [6.685, -1.619]]],
+    }
+    const insideHole = findPickupAreaForAddress({ lat: 6.687, lng: -1.622, name: 'Hole' }, [pointArea])
+    expect(insideHole?.name).toBe('Kumasi')
+    expect(insideHole?._excluded).toBe(true)
+
+    expect(pickupZoneStatus({ lat: 6.687, lng: -1.622, name: 'Hole' }, [pointArea])).toBe('excluded')
+
+    // Same zone, ~1 km away from the hole — still inside the radius.
+    const outsideHole = findPickupAreaForAddress({ lat: 6.695, lng: -1.6219, name: 'Some Rd' }, [pointArea])
+    expect(outsideHole?.name).toBe('Kumasi')
+    expect(outsideHole?._excluded).toBeUndefined()
+    expect(pickupZoneStatus({ lat: 6.695, lng: -1.6219, name: 'Some Rd' }, [pointArea])).toBe('in_area')
+  })
+
   it('legacy name fallback never matches a name inside a drawn shape', () => {
     const match = findPickupAreaForAddress({ lat: 5.56, lng: -0.185, name: 'Osu' }, [AREA_OSU])
     expect(match?.name).toBe('Osu')

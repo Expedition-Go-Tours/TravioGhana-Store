@@ -533,13 +533,18 @@ export default function BookingWorkspace({ id, onClose }: { id?: string; onClose
   // For area-type pickups the address may only live in travelers.location
   // (the checkout payload), so fall back to it when pickup.address is empty.
   const travelerLocation = typeof travelers.location === 'string' ? travelers.location.trim() : ''
-  const pickupAddressText = String(pickupAddress?.name || pickupAddress?.address || travelerLocation || '').trim()
-  const hasStoredPickupLocation = !!(pickupLocation || pickupAddressText)
   // A stored out-of-zone choice is persisted as deferred (skipValidation) with
   // the address kept — show the address, not the "not yet assigned" state.
   const pickupFlagged = !!(
     pickup && (pickup.pickupLater || pickup.skipValidation || pickup.status === 'deferred')
   )
+  // ...but a deferred pickup with no stored address must not borrow the
+  // checkout-time travellers.location: that turned "arrange later" into a
+  // concrete "Pickup point: Accra, Ghana" plus a bogus out-of-zone warning.
+  const pickupAddressText = String(
+    pickupAddress?.name || pickupAddress?.address || (pickupFlagged ? '' : travelerLocation) || ''
+  ).trim()
+  const hasStoredPickupLocation = !!(pickupLocation || pickupAddressText)
   const pickupDeferred = pickupFlagged && !hasStoredPickupLocation
   const pickupOutOfZone = pickupFlagged && hasStoredPickupLocation
   const pickupTime = pickup?.time ? String(pickup.time) : null

@@ -191,11 +191,20 @@ export function findPickupAreaForAddress(
       // so pre-geoshape products keep working.
       const aLat = typeof area.lat === 'number' ? area.lat : NaN
       const aLng = typeof area.lng === 'number' ? area.lng : NaN
-      if (Number.isFinite(aLat) && Number.isFinite(aLng) && distanceMeters(address.lat, address.lng, aLat, aLng) <= locationAreaRadiusM(area)) {
-        return area
-      }
-      if (NORMALIZE_NAME(address.name) === NORMALIZE_NAME(area.name)) return area
-      continue
+      const withinRadius = Number.isFinite(aLat) && Number.isFinite(aLng) &&
+        distanceMeters(address.lat, address.lng, aLat, aLng) <= locationAreaRadiusM(area)
+      const nameMatch = NORMALIZE_NAME(address.name) === NORMALIZE_NAME(area.name)
+      if (!withinRadius && !nameMatch) continue
+
+      // A point/radius area is a service zone like any drawn polygon, so its
+      // exclusion rings apply too — mirrors the backend's geoUtils.js, which
+      // used to return early on a radius match and ignore every exclusion.
+      const excludedByRadius = (area.exclusions || []).find(
+        (exclusion) => Array.isArray(exclusion) && pointInPolygon(address.lat, address.lng, exclusion),
+      )
+      if (excludedByRadius) return { ...area, _excluded: true }
+
+      return area
     }
 
     if (!pointInPolygon(address.lat, address.lng, area.polygon as LatLng[])) continue
