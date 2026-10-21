@@ -533,7 +533,7 @@ export default function AllToursPage() {
 
   const seoDescription = placeParam
     ? `Discover ${totalCount || 'the best'} tours and experiences in ${placeParam}, Ghana. Book cultural tours, food tours, wildlife safaris, and adventure activities. Free cancellation, best prices guaranteed.`
-    : 'Explore authentic Ghana tours and experiences. Book cultural tours, wildlife safaris, food tours, and adventure activities across Accra, Cape Coast, Volta Region, and more. Free cancellation.'
+    : 'Book popular Ghana tours and experiences. Discover recommended things to do, with free cancellation and reserve now, pay later options.'
 
   const seoKeywords = placeParam
     ? `${placeParam} tours, things to do in ${placeParam}, ${placeParam} Ghana, ${placeParam} activities, ${placeParam} experiences, Ghana tours, book tours in ${placeParam}`
