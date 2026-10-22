@@ -56,6 +56,7 @@ import { cancellationStatus } from '../lib/cancellationLabel'
 import { getGeolocationPermission, isLocationSharingEnabled, requestCurrentCoordinates } from '../lib/locationSharing'
 import { reverseGeocode } from '../lib/locations'
 import { getGaClientId } from '../lib/googleAnalytics'
+import { trackBeginCheckout } from '../lib/ga4Ecommerce'
 import { hasConsent } from '../lib/cookieConsent'
 
 /* --- Tour data from location state --- */
@@ -1587,6 +1588,22 @@ export default function BookingPage() {
     // (legacy mock content) stay on the stub itself — no fetch will run.
     return plausibleTourId ? FALLBACK_TOUR : (freshTour as typeof FALLBACK_TOUR)
   })
+
+  // GA4 `begin_checkout`: the traveller has arrived at the booking page. Fires
+  // once per tour id, and NEVER for the placeholder tour — a report containing
+  // a fabricated product is worse than a missing row. The price is whatever
+  // the flow resolved; unknown prices are omitted rather than sent as 0.
+  const checkoutReportedRef = useRef<string | null>(null)
+  useEffect(() => {
+    const id = tour && tour !== FALLBACK_TOUR ? String((tour as Record<string, unknown>).id || '') : ''
+    if (!id || checkoutReportedRef.current === id) return
+    checkoutReportedRef.current = id
+    const price =
+      typeof (tour as Record<string, unknown>).price === 'number'
+        ? ((tour as Record<string, unknown>).price as number)
+        : null
+    trackBeginCheckout({ id, title: String((tour as Record<string, unknown>).title || '') }, price)
+  }, [tour])
 
   // Restore the form fields whenever a draft exists for THIS tour — whether
   // arriving fresh from the tour page (a matching draft means the traveller

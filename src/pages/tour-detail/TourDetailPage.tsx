@@ -8,6 +8,7 @@ import {
   Wifi, Users, BedDouble, Heart, Upload, Zap,
 } from 'lucide-react'
 import Footer from '../../components/Footer'
+import { trackViewItem } from '../../lib/ga4Ecommerce'
 import { useContinuePlanning, toContinuePlanningItem } from '../../context/ContinuePlanningContext'
 import { useWishlist } from '../../context/WishlistContext'
 import { toast } from 'sonner'
@@ -160,6 +161,21 @@ export default function TourDetailPage() {
   const [activeTab, setActiveTab] = useState('overview')
 
   const { data: tour, isLoading, isError, isFetching } = useExpeditionTour(tourId)
+
+  // GA4 `view_item`: the top of the ecommerce funnel. Fires once per tour id
+  // (React's dev re-mount would otherwise double-count), and carries the
+  // same item shape the backend reports for `purchase` so the per-product
+  // funnel lines up. The price is the tour's from-price; when a tour has none
+  // the event is still sent but without a price — never a fabricated 0.
+  const viewedTourRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!tour?.id || viewedTourRef.current === tour.id) return
+    viewedTourRef.current = tour.id
+    // `price` is the tour's unit price; a tour without one is reported without
+    // a price rather than as $0 (see ga4Ecommerce: unknown ≠ zero).
+    const price = typeof tour.price === 'number' && tour.price > 0 ? tour.price : null
+    trackViewItem({ id: tour.id, title: tour.title }, price)
+  }, [tour?.id, tour?.title, tour?.price])
   const { data: reviewsData } = useExpeditionTourReviews(tourId, 1, 10, tour?.id)
   // Platform reviews (TripAdvisor / GetYourGuide / Google) whose scraped tour
   // title maps to this product via matchTourForTitle — shown alongside the

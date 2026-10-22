@@ -5,6 +5,7 @@ import { bookingPath } from '../../lib/tourPath'
 import type { TourDetailData, SpecialOfferData } from '../../hooks/useExpeditionTours'
 import { bestOfferDiscountAmount, filterActiveOffers } from '../../hooks/useExpeditionTours'
 import { buildBookingTour } from '../../lib/bookingTour'
+import { trackAddToCart } from '../../lib/ga4Ecommerce'
 import { Button } from '../../components/ui/button'
 import { CalendarPicker } from '../../components/ui/apple-calendar-picker'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -427,6 +428,12 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
         `${dateISO}|${selectedTime ?? ''}|${JSON.stringify(travelersPayload)}|${promoApplied ? promoCode.trim() : ''}`
 
     // Stash the navigation payload, then play spinner → transition → booking.
+    // One price expression for both the booking state and GA4: the checkout
+    // and the funnel step must never disagree about what this booking costs.
+    const bookingTotal = isPerGroup
+      ? (matchingGroupBand?.price ?? clientSubtotal)
+      : (quoteIsCurrent ? totalPrice : clientSubtotal)
+
     pendingNavState.current = {
       tour: buildBookingTour(tour, {
         date: dateLabel,
@@ -437,7 +444,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
         adults: travelersPayload.adults || 0,
         children: travelersPayload.children || 0,
         infants: travelersPayload.infants || 0,
-        price: isPerGroup ? (matchingGroupBand?.price ?? clientSubtotal) : (quoteIsCurrent ? totalPrice : clientSubtotal),
+        price: bookingTotal,
         selectedTime,
         promoCode: promoApplied ? promoCode.trim() : null,
         appliedPromo: appliedPromo ? { name: appliedPromo.name, discountAmount: appliedPromo.discountAmount } : null,
@@ -445,6 +452,18 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
     }
 
     setIsBooking(true)
+    // GA4 `add_to_cart`: in this storefront "Book now" IS the add-to-cart step
+    // (there is no separate cart) — the item is selected, priced and sent to
+    // checkout. quantity 1 = one booking at `bookingTotal`, matching what the
+    // backend reports for `purchase`, so cart and purchase revenue are the
+    // same kind of number. No PII: counts and the activity date only.
+    trackAddToCart(
+      { id: tour.id, title: tour.title },
+      bookingTotal,
+      1,
+      'USD',
+      { travelers: totalTravelers, date: dateISO },
+    )
     // No button spinner: the transition overlay takes over immediately with the
     // pre-decoded Lottie. The warm call is a no-op when idle/hover already did
     // it, and is the fallback for a cold click.
