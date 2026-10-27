@@ -234,9 +234,12 @@ export function useTravelerSelection(tour: TravelerSelectionTour, options?: Trav
     if (category?.notAllowed) return false
     if (mixBounds.max != null && totalTravelers >= mixBounds.max) return false
     if (category?.needsAdult && !mixIssues.some((i) => i.type === 'needsAdult')) return false
-    // Simulate the addition and check the rules still pass.
+    // Simulate the addition and check the rules still pass. A remaining
+    // below-minimum issue must NOT block the "+" stepper: adding travelers is
+    // the only way out of it. Without this, a date that raises the party floor
+    // above the current selection leaves every stepper disabled (dead end).
     const next = { ...categoryCounts, [key]: (categoryCounts[key] ?? 0) + 1 }
-    return validatePassengerMix(travelerGroups, next, mixBounds).length === 0
+    return validatePassengerMix(travelerGroups, next, mixBounds).every((issue) => issue.type === 'min')
   }
 
   /** Whether the "+" stepper for a category is enabled (respects the supplier's

@@ -107,6 +107,24 @@ describe('useTravelerSelection', () => {
     expect(result.current.canDecrementCount('adult')).toBe(false)
   })
 
+  it('keeps the + stepper usable when a higher-minimum date arrives after mount', () => {
+    const { result, rerender } = renderHook(
+      ({ min }: { min: number | null }) =>
+        useTravelerSelection(perPersonTour, { minParticipantsOverride: min }),
+      { initialProps: { min: null as number | null } }
+    )
+    rerender({ min: 5 })
+    // Adding travelers is the only way out of the warning, so it must not be
+    // blocked by the outstanding minimum issue (that dead-ended the widget).
+    expect(result.current.canIncrementCount('adult')).toBe(true)
+    act(() => {
+      result.current.increment('adult')
+      result.current.increment('adult')
+    })
+    expect(result.current.totalTravelers).toBe(5)
+    expect(result.current.mixIssues).toEqual([])
+  })
+
   it('never lets a date override lower the tour minimum', () => {
     const { result } = renderHook(() =>
       useTravelerSelection(perPersonTour, { minParticipantsOverride: 1 })
