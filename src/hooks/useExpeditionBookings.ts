@@ -41,6 +41,11 @@ interface RawAvailabilityDay {
   capacityUnit?: 'groups' | 'people'
   groupsPerSlot?: number | null
   maxGroupSize?: number | null
+  /** Effective party-size floor for the date (product min raised by override). */
+  minParticipants?: number | null
+  minParticipantsSource?: 'DATE' | 'TOUR'
+  defaultMinParticipants?: number | null
+  overrideMinParticipants?: number | null
   /** Operating-hours/flexible days whose whole-day booking window has closed. */
   closedCutoff?: boolean
   closesAt?: string | null
@@ -120,6 +125,10 @@ function mapDay(raw: RawAvailabilityDay): DayAvailabilityInfo {
     groupsPerSlot: raw.groupsPerSlot ?? null,
     maxGroupSize: raw.maxGroupSize ?? null,
     isPast: raw.isPast,
+    minParticipants: raw.minParticipants ?? null,
+    minParticipantsSource: raw.minParticipantsSource === 'DATE' ? 'DATE' : 'TOUR',
+    defaultMinParticipants: raw.defaultMinParticipants ?? null,
+    overrideMinParticipants: raw.overrideMinParticipants ?? null,
     closedCutoff: raw.closedCutoff === true,
     closesAt: raw.closesAt ?? null,
     timeSlots: slots,

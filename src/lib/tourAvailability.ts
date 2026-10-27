@@ -40,6 +40,15 @@ export interface DayAvailabilityInfo {
   groupsPerSlot: number | null
   maxGroupSize: number | null
   isPast: boolean
+  /** Effective party-size floor for this date (product minimum raised by the
+      date override). Undefined when the API predates per-date minimums. */
+  minParticipants?: number | null
+  /** Where the effective minimum came from. */
+  minParticipantsSource?: 'DATE' | 'TOUR'
+  /** The tour/product-level minimum, for "inherits N" hints. */
+  defaultMinParticipants?: number | null
+  /** The raw date override (null = inherits the product minimum). */
+  overrideMinParticipants?: number | null
   /** Operating-hours/flexible days whose whole-day booking window has closed. */
   closedCutoff?: boolean
   /** ISO instant when the date stops accepting bookings (whole-day tours). */

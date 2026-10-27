@@ -117,6 +117,21 @@ describe('CalendarPicker sold-out / closed hardening', () => {
     fireEvent.click(cell)
     expect(onDateSelect).not.toHaveBeenCalled()
   })
+
+  it('treats a date with fewer spots than the party minimum as unbookable', () => {
+    stubMatchMedia(false)
+    const counts = (date: Date) =>
+      toKey(date) === dayKey(9)
+        ? { remaining: 2, capacity: 5, capacityUnit: 'people' as const, minParticipants: 3 }
+        : getDayCounts(date)
+    const { onDateSelect } = renderPicker({ getDayCounts: counts })
+    const cell = dayCell(9)
+    expect(cell.tagName).toBe('DIV')
+    expect(cell.getAttribute('data-status')).toBe('full')
+    expect(cell.getAttribute('title')).toContain('Minimum 3 travelers')
+    fireEvent.click(cell)
+    expect(onDateSelect).not.toHaveBeenCalled()
+  })
 })
 
 describe('CalendarPicker mobile tap-to-inspect', () => {

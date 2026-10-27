@@ -190,6 +190,12 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
   // Shared traveler-selection state (per-person vs per-group, age categories,
   // tiered pricing, passenger-mix rules) — the exact same picker logic the
   // change-booking modal uses, so both behave alike.
+  // The selected day can raise the tour's party minimum; read it from the
+  // 30s availability response (not the 5-minute tour cache) so a supplier
+  // change is reflected without a hard refresh. Never auto-bumps the party.
+  const selectedDayForMin = selectedDate ? getDayInfo?.(selectedDate) : undefined
+  const dateMinParticipants = selectedDayForMin?.minParticipants ?? null
+
   const {
     isPerGroup,
     groupSizeBands,
@@ -212,7 +218,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
     formatPrice,
     travelerOptions,
     adultGroup,
-  } = useTravelerSelection(tour)
+  } = useTravelerSelection(tour, { minParticipantsOverride: dateMinParticipants })
 
   const doFetchPricing = useCallback(async (date: string, time?: string | null, forceCode?: string) => {
     const tId = tour.id
@@ -672,14 +678,76 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
     return new Date(Math.min(...candidates)).toISOString()
   })()
 
-  // Warn when the chosen traveler count exceeds what's left on the selected day.
+  // Warn when the chosen traveler count exceeds what's left on the selected day,
+  // or when the day itself can't satisfy its own minimum party size (the
+  // backend would refuse the booking even though spots remain).
   const remainingWarning = (() => {
     const info = getSelectedDayInfo(selectedDate)
     if (!info || info.capacityUnit !== 'people') return null
     const remaining = info.remaining
+    const minParty = info.minParticipants ?? null
+    if (remaining != null && remaining > 0 && minParty != null && remaining < minParty) {
+      return t(
+        'booking.dateBelowMinimum',
+        'Only {{count}} spot(s) left on this date — below the {{min}}-traveler minimum. Choose another date.',
+        { count: remaining, min: minParty },
+      )
+    }
+    // The chosen slot may be tighter than the day, or may have dropped below
+    // the party minimum since the last 30s refetch — say so instead of only
+    // disabling the button.
+    if (selectedTime) {
+      const slot = selectedDaySlots.find((s) => s.time === selectedTime)
+      if (slot && slot.remaining != null) {
+        if (slot.remaining > 0 && minParty != null && slot.remaining < minParty) {
+          return t(
+            'booking.slotBelowMinimum',
+            'Only {{count}} spot(s) left at {{time}} — below the {{min}}-traveler minimum. Choose another time.',
+            { count: slot.remaining, min: minParty, time: formatSlotTime(slot.time) },
+          )
+        }
+        if (slot.remaining < totalTravelers) {
+          return t(
+            'booking.tooManyTravelersSlot',
+            'Only {{count}} spot(s) left at {{time}}',
+            { count: Math.max(0, slot.remaining), time: formatSlotTime(slot.time) },
+          )
+        }
+      }
+    }
     if (remaining == null || totalTravelers <= remaining) return null
     return t('booking.tooManyTravelers', 'Only {{count}} spot(s) left on this date', { count: Math.max(0, remaining) })
   })()
+  // A date (or the selected slot) that cannot satisfy its own minimum, the
+  // current party, or that closed since the last refetch is not sellable;
+  // keep Book now disabled rather than letting checkout reject it.
+  const selectedDayBlocksBooking = (() => {
+    const info = getSelectedDayInfo(selectedDate)
+    if (!info || info.capacityUnit !== 'people') return false
+    const minParty = info.minParticipants ?? null
+    if (info.remaining != null) {
+      if (info.remaining > 0 && minParty != null && info.remaining < minParty) return true
+      if (info.remaining < totalTravelers) return true
+    }
+    if (selectedTime) {
+      const slot = selectedDaySlots.find((s) => s.time === selectedTime)
+      if (slot) {
+        if (slot.closed === true) return true
+        if (slot.remaining != null) {
+          if (slot.remaining > 0 && minParty != null && slot.remaining < minParty) return true
+          if (slot.remaining < totalTravelers) return true
+        }
+      }
+    }
+    return false
+  })()
+
+  // The "−" stepper greys out at the party floor. Keep it focusable with
+  // aria-disabled (a plain `disabled` button is skipped by screen readers and
+  // gives no reason on touch) and link it to the visible minimum note.
+  const partyMinimum = bookableBounds.min > 1 ? bookableBounds.min : null
+  const atPartyMinimum = partyMinimum != null && totalTravelers - 1 < partyMinimum
+  const minNoteId = 'booking-party-minimum-note'
 
   // The server quote is only authoritative while it matches the CURRENT
   // selection (date / time / traveler mix / promo). The moment the selection
@@ -965,6 +1033,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                         remaining: info.remaining,
                         capacity: info.capacity,
                         capacityUnit: info.capacityUnit,
+                        minParticipants: info.minParticipants ?? null,
                       }
                     }}
                     loading={availabilityLoading}
@@ -989,12 +1058,21 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                               {selectedDaySlots.map((slot) => {
                                 const slotFull = slot.remaining != null && slot.remaining <= 0
                                 const slotClosed = slot.closed === true
+                                const slotMin = selectedDayInfo?.minParticipants ?? null
+                                // A slot with fewer seats than the date's minimum
+                                // party size can never be sold — disable it
+                                // instead of failing at checkout.
+                                const slotBelowMin =
+                                  slot.remaining != null &&
+                                  slot.remaining > 0 &&
+                                  slotMin != null &&
+                                  slot.remaining < slotMin
                                 const isSelectedSlot = selectedTime === slot.time
                                 return (
                                   <button
                                     key={slot.time}
                                     type="button"
-                                    disabled={slotFull || slotClosed}
+                                    disabled={slotFull || slotClosed || slotBelowMin}
                                     onClick={() => {
                                       setSelectedTime(slot.time)
                                       setShowCalendar(false)
@@ -1007,6 +1085,10 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                                         {slot.closesAt
                                           ? t('booking.bookingsCloseAt', 'Bookings close {{time}}', { time: formatCutoffTime(slot.closesAt) })
                                           : t('booking.bookingsClosed', 'Bookings closed')}
+                                      </span>
+                                    ) : slotBelowMin ? (
+                                      <span className="booking-slot-cap">
+                                        {t('booking.minTravelersShort', 'Min {{min}} travelers', { min: slotMin })}
                                       </span>
                                     ) : slot.remaining != null ? (
                                       <span className="booking-slot-cap">
@@ -1024,6 +1106,13 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                             {selectedDayInfo?.capacityUnit === 'groups' && selectedDayInfo.maxGroupSize != null && (
                               <p className="booking-slot-note">
                                 {t('booking.groupBookingsNote', 'Group bookings · up to {{max}} travelers per group', { max: selectedDayInfo.maxGroupSize })}
+                              </p>
+                            )}
+                            {selectedDayInfo?.capacityUnit !== 'groups' && (selectedDayInfo?.minParticipants ?? 0) > 1 && (
+                              <p className="booking-slot-note">
+                                {selectedDayInfo?.minParticipantsSource === 'DATE'
+                                  ? t('booking.dateMinTravelers', 'This date requires at least {{min}} travelers', { min: selectedDayInfo?.minParticipants })
+                                  : t('booking.minTravelersNote', 'Minimum {{min}} travelers', { min: selectedDayInfo?.minParticipants })}
                               </p>
                             )}
                           </div>
@@ -1138,9 +1227,22 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                         </div>
                         <div className="guest-type-controls">
                           <button
-                            className="guest-btn"
-                            onClick={() => { setTravelerTouched(true); decrement(opt.key) }}
-                            disabled={!canDecrement}
+                            className={`guest-btn${!canDecrement ? ' guest-btn-disabled' : ''}`}
+                            onClick={() => {
+                              setTravelerTouched(true)
+                              if (canDecrement) {
+                                decrement(opt.key)
+                              } else if (atPartyMinimum && partyMinimum != null) {
+                                toast.info(t(
+                                  'booking.belowMinimumToast',
+                                  'This tour needs at least {{min}} travelers',
+                                  { min: partyMinimum },
+                                ))
+                              }
+                            }}
+                            disabled={!canDecrement && !atPartyMinimum}
+                            aria-disabled={!canDecrement}
+                            aria-describedby={atPartyMinimum ? minNoteId : undefined}
                             aria-label={`Remove one ${opt.label}`}
                           >
                             <Minus size={16} />
@@ -1160,17 +1262,17 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                   })}
 
                   {bookableBounds.max != null && (
-                    <p className="booking-slot-note">
+                    <p className="booking-slot-note" id={partyMinimum != null ? minNoteId : undefined}>
                       {t('booking.bookableRange', 'Bookable by {{min}}–{{max}} travelers', { min: bookableBounds.min, max: bookableBounds.max })}
                     </p>
                   )}
-                  {bookableBounds.max == null && bookableBounds.min > 1 && (
-                    <p className="booking-slot-note">
+                  {bookableBounds.max == null && partyMinimum != null && (
+                    <p className="booking-slot-note" id={minNoteId}>
                       {t('booking.minTravelersNote', 'Minimum {{min}} travelers', { min: bookableBounds.min })}
                     </p>
                   )}
                   {mixIssues.length > 0 && (
-                    <p className="booking-slot-warning">{mixIssues[0].message}</p>
+                    <p className="booking-slot-warning" role="status">{mixIssues[0].message}</p>
                   )}
 
                   <button
@@ -1254,7 +1356,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
           )}
 
           {remainingWarning && (
-            <p className="booking-slot-warning">{remainingWarning}</p>
+            <p className="booking-slot-warning" role="status">{remainingWarning}</p>
           )}
 
           {availabilityLoading && selectedDate && (
@@ -1348,7 +1450,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
             onPointerEnter={warmBookingTransition}
             onFocus={warmBookingTransition}
             onTouchStart={warmBookingTransition}
-            disabled={isBooking || (!!selectedDate && selectedDaySlots.length > 0 && !selectedTime) || (!isPerGroup && mixIssues.length > 0)}
+            disabled={isBooking || (!!selectedDate && selectedDaySlots.length > 0 && !selectedTime) || (!isPerGroup && mixIssues.length > 0) || selectedDayBlocksBooking}
           >
             {t('tourDetail.bookNow')}
           </Button>

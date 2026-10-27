@@ -500,6 +500,18 @@
   cursor: not-allowed;
 }
 
+/* aria-disabled stepper (focusable so touch/screen-reader users get the
+   minimum-party explanation) — matches the native disabled look. */
+.guest-btn-disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.guest-btn-disabled:hover {
+  border-color: #e2e8f0;
+  background: #fff;
+}
+
 .guest-count {
   min-width: 28px;
   text-align: center;

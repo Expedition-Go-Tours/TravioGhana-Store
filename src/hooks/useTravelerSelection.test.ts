@@ -87,6 +87,41 @@ describe('useTravelerSelection', () => {
     expect(result.current.canDecrementCount('adult')).toBe(false)
   })
 
+  it('raises the picker floor for a higher-minimum date without auto-bumping the party', () => {
+    const { result, rerender } = renderHook(
+      ({ min }: { min: number | null }) =>
+        useTravelerSelection(perPersonTour, { minParticipantsOverride: min }),
+      { initialProps: { min: null as number | null } }
+    )
+    expect(result.current.totalTravelers).toBe(3)
+    expect(result.current.bookableBounds.min).toBe(3)
+
+    // The traveller switches to a date that requires 5 — the party is left
+    // untouched (never silently re-price) but the floor + warning update.
+    rerender({ min: 5 })
+    expect(result.current.totalTravelers).toBe(3)
+    expect(result.current.bookableBounds.min).toBe(5)
+    expect(result.current.mixIssues).toEqual([
+      expect.objectContaining({ type: 'min', message: 'At least 5 travelers required' }),
+    ])
+    expect(result.current.canDecrementCount('adult')).toBe(false)
+  })
+
+  it('never lets a date override lower the tour minimum', () => {
+    const { result } = renderHook(() =>
+      useTravelerSelection(perPersonTour, { minParticipantsOverride: 1 })
+    )
+    expect(result.current.bookableBounds.min).toBe(3)
+    expect(result.current.mixIssues).toEqual([])
+  })
+
+  it('falls back to the tour minimum when the date override is unknown', () => {
+    const { result } = renderHook(() =>
+      useTravelerSelection(perPersonTour, { minParticipantsOverride: null })
+    )
+    expect(result.current.bookableBounds.min).toBe(3)
+  })
+
   it('blocks increment beyond the supplier maximum', () => {
     const { result } = renderHook(() => useTravelerSelection(perPersonTour))
     for (let i = 0; i < 7; i += 1) {

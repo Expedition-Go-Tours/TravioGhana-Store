@@ -199,15 +199,18 @@ function ModifyForm({ booking, bookingId, redirectStatus }: { booking: BookingLi
   const bookedTotal = useMemo(() => countPositive(baselinePayload(booking.travelers)), [booking.travelers])
   const seedCounts = useMemo(() => categorySeedFromPayload(booking.travelers), [booking.travelers])
 
-  const travelerSel = useTravelerSelection(selectionTour, {
-    initialCounts: seedCounts,
-    initialHeadcount: Math.max(1, bookedTotal),
-  })
-
-  /* ---- Availability for the chosen date (time-slot picker) ---- */
+  /* ---- Availability for the chosen date (time-slot picker + party floor) ---- */
   const availability = useTourAvailability(tour.slug, travelDate, travelDate)
   const day = availability.data?.find((d) => d.date === travelDate)
   const slots = (day?.timeSlots ?? []).filter((s) => (s.remaining ?? 0) > 0)
+
+  const travelerSel = useTravelerSelection(selectionTour, {
+    initialCounts: seedCounts,
+    initialHeadcount: Math.max(1, bookedTotal),
+    // Moving the booking to a higher-minimum date must require adding
+    // travelers before the change can be applied.
+    minParticipantsOverride: day?.minParticipants ?? null,
+  })
 
   const baseTravelers = useMemo(() => baselinePayload(booking.travelers), [booking.travelers])
   const proposedTravelers = hasPricing ? travelerSel.travelersPayload : baseTravelers
@@ -558,7 +561,7 @@ function ModifyForm({ booking, bookingId, redirectStatus }: { booking: BookingLi
                     })}
                   </div>
                   {travelerSel.mixIssues.length > 0 && (
-                    <p className="bkmod-hint bkmod-warn">The traveller mix needs a valid party size — see the booking rules.</p>
+                    <p className="bkmod-hint bkmod-warn">{travelerSel.mixIssues[0]?.message || 'The traveller mix needs a valid party size — see the booking rules.'}</p>
                   )}
                   <p className="bkmod-hint">
                     Your current total stays exactly as paid until you confirm — the new total in the summary updates live with your changes.
@@ -624,7 +627,7 @@ function ModifyForm({ booking, bookingId, redirectStatus }: { booking: BookingLi
 
             <button
               className="bkmod-btn bkmod-btn-primary bkmod-submit"
-              disabled={!hasChanges || !quote || totalNext === 0 || applyModify.isPending}
+              disabled={!hasChanges || !quote || totalNext === 0 || travelerSel.mixIssues.length > 0 || applyModify.isPending}
               onClick={submit}
             >
               {applyModify.isPending

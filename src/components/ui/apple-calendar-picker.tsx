@@ -49,6 +49,9 @@ interface CalendarPickerProps {
     remaining: number | null
     capacity: number | null
     capacityUnit?: 'people' | 'groups'
+    /** Effective party-size floor for the date. When remaining < minimum the
+        date cannot be sold, so it is rendered as unselectable. */
+    minParticipants?: number | null
   } | null
   /** When true and a day has no data yet, render a subtle pulse instead of a misleading "available" fallback. */
   loading?: boolean
@@ -122,20 +125,35 @@ export const CalendarPicker = ({ isOpen, onClose, onDateSelect, selectedDate, ge
     const isToday = !isPast && date.toDateString() === TODAY.toDateString()
     const availability: DayAvailabilityStatus = isPast ? 'past' : (getAvailability ? getAvailability(date) : 'available')
     const counts = getDayCounts ? getDayCounts(date) : null
+    // A date with fewer remaining spots than its minimum party size can never
+    // be booked (the backend refuses it), so treat it as unavailable instead
+    // of offering a choice that dead-ends at checkout.
+    const belowMinimum =
+      !isPast &&
+      counts != null &&
+      counts.minParticipants != null &&
+      counts.minParticipants > 1 &&
+      counts.remaining != null &&
+      counts.remaining > 0 &&
+      counts.remaining < counts.minParticipants
     // The backend's aggregated status can lag real bookings (a partially
     // sold-out date may still read "available"). Derive the display status
     // from the actual remaining counts so dates with limited spots render
     // amber and sold-out days red, instead of green.
     const displayAvailability: DayAvailabilityStatus =
-      availability !== 'available'
+      availability === 'blocked' || availability === 'past' || availability === 'full'
         ? availability
-        : counts != null && counts.remaining != null && counts.capacity != null && counts.capacity > 0
-          ? counts.remaining <= 0
-            ? 'full'
-            : counts.remaining < counts.capacity
-              ? 'limited'
+        : belowMinimum
+          ? 'full'
+          : availability !== 'available'
+            ? availability
+            : counts != null && counts.remaining != null && counts.capacity != null && counts.capacity > 0
+              ? counts.remaining <= 0
+                ? 'full'
+                : counts.remaining < counts.capacity
+                  ? 'limited'
+                  : 'available'
               : 'available'
-          : 'available'
     const hasCounts = !isPast && counts != null && counts.remaining != null && counts.capacity != null && counts.remaining > 0 && (displayAvailability === 'available' || displayAvailability === 'limited')
     const countUnit = counts?.capacityUnit === 'groups' ? 'groups' : 'spots'
     const isFull = !isPast && displayAvailability === 'full'
@@ -143,15 +161,17 @@ export const CalendarPicker = ({ isOpen, onClose, onDateSelect, selectedDate, ge
     const isSelected = day === selectedDay && !isPast
     const isPending = loading && counts == null && !isPast
     const selectable = !isPast && !isPending && (displayAvailability === 'available' || displayAvailability === 'limited')
-    const title = displayAvailability === 'limited'
-      ? `Limited availability${hasCounts ? ` · ${counts?.remaining} of ${counts?.capacity} ${countUnit} available` : ''}`
-      : hasCounts
-        ? `${counts?.remaining} of ${counts?.capacity} ${countUnit} available`
-        : displayAvailability === 'full'
-          ? 'Sold out'
-          : displayAvailability === 'blocked'
-            ? 'Not available'
-            : 'Available'
+    const title = belowMinimum
+      ? `Minimum ${counts?.minParticipants} travelers · ${counts?.remaining} spot${counts?.remaining === 1 ? '' : 's'} left`
+      : displayAvailability === 'limited'
+        ? `Limited availability${hasCounts ? ` · ${counts?.remaining} of ${counts?.capacity} ${countUnit} available` : ''}`
+        : hasCounts
+          ? `${counts?.remaining} of ${counts?.capacity} ${countUnit} available`
+          : displayAvailability === 'full'
+            ? 'Sold out'
+            : displayAvailability === 'blocked'
+              ? 'Not available'
+              : 'Available'
     const dotClass = !isPast && !isPending
       ? displayAvailability === 'limited'
         ? 'bg-amber-400'
@@ -262,7 +282,7 @@ export const CalendarPicker = ({ isOpen, onClose, onDateSelect, selectedDate, ge
           <div
             key={`day-${day}`}
             data-status="full"
-            title="Sold out"
+            title={meta.title}
             aria-disabled="true"
             onClick={() => handleDayPress(day, meta)}
             className={`relative w-9 h-9 text-[14px] font-medium rounded-full flex items-center justify-center cursor-not-allowed ${

@@ -121,6 +121,31 @@ export default function ChangeBookingModal({ tour, isOpen, onClose, onReserve, i
     return counts
   }, [tour.travelerPricing, tour.price, travelersCount])
 
+  // Availability must be read before the traveler hook so a higher-minimum
+  // target date raises the picker floor (never auto-bumps the party).
+  const [viewMonth, setViewMonth] = useState(() => {
+    const now = new Date()
+    return { year: now.getFullYear(), month: now.getMonth() }
+  })
+  const availStart = useMemo(() => {
+    const d = new Date(viewMonth.year, viewMonth.month, 1)
+    return toDateKey(d)
+  }, [viewMonth])
+  const availEnd = useMemo(() => {
+    const d = new Date(viewMonth.year, viewMonth.month + 1, 0)
+    return toDateKey(d)
+  }, [viewMonth])
+  const { data: availabilityCalendar } = useTourAvailability(
+    tour.slug || tour.id,
+    isOpen ? availStart : undefined,
+    isOpen ? availEnd : undefined,
+    optionId || null
+  )
+  const selectedDateMin = useMemo(
+    () => availabilityCalendar?.find((d) => d.date === selectedDate)?.minParticipants ?? null,
+    [availabilityCalendar, selectedDate]
+  )
+
   const {
     isPerGroup,
     groupSizeBands,
@@ -140,6 +165,7 @@ export default function ChangeBookingModal({ tour, isOpen, onClose, onReserve, i
   } = useTravelerSelection(tour, {
     initialCounts,
     initialHeadcount: origTotal || initialTravelers || 1,
+    minParticipantsOverride: selectedDateMin,
   })
 
   useEffect(() => {
@@ -196,25 +222,6 @@ export default function ChangeBookingModal({ tour, isOpen, onClose, onReserve, i
       clearTimeout(timer)
     }
   }, [isOpen, tour.id, selectedDate, travelersPayload, calculateCheckout, optionId, queryClient])
-
-  const [viewMonth, setViewMonth] = useState(() => {
-    const now = new Date()
-    return { year: now.getFullYear(), month: now.getMonth() }
-  })
-  const availStart = useMemo(() => {
-    const d = new Date(viewMonth.year, viewMonth.month, 1)
-    return toDateKey(d)
-  }, [viewMonth])
-  const availEnd = useMemo(() => {
-    const d = new Date(viewMonth.year, viewMonth.month + 1, 0)
-    return toDateKey(d)
-  }, [viewMonth])
-  const { data: availabilityCalendar } = useTourAvailability(
-    tour.slug || tour.id,
-    isOpen ? availStart : undefined,
-    isOpen ? availEnd : undefined,
-    optionId || null
-  )
 
   const availabilityMap = useMemo(() => {
     const map = new Map<string, 'available' | 'limited' | 'full' | 'blocked' | 'past'>()
@@ -448,6 +455,7 @@ export default function ChangeBookingModal({ tour, isOpen, onClose, onReserve, i
                         remaining: day.remaining,
                         capacity: day.capacity,
                         capacityUnit: day.capacityUnit,
+                        minParticipants: day.minParticipants ?? null,
                       }
                     }}
                     onMonthChange={(year, month) => setViewMonth({ year, month })}
@@ -472,12 +480,18 @@ export default function ChangeBookingModal({ tour, isOpen, onClose, onReserve, i
                               {selectedDaySlots.map((slot) => {
                                 const slotFull = slot.remaining != null && slot.remaining <= 0
                                 const slotClosed = slot.closed === true
+                                const slotMin = selectedDayInfo?.minParticipants ?? null
+                                const slotBelowMin =
+                                  slot.remaining != null &&
+                                  slot.remaining > 0 &&
+                                  slotMin != null &&
+                                  slot.remaining < slotMin
                                 const isSelectedSlot = selectedTime === slot.time
                                 return (
                                   <button
                                     key={slot.time}
                                     type="button"
-                                    disabled={slotFull || slotClosed}
+                                    disabled={slotFull || slotClosed || slotBelowMin}
                                     onClick={() => {
                                       setSelectedTime(slot.time)
                                       setShowCalendar(false)
@@ -490,6 +504,10 @@ export default function ChangeBookingModal({ tour, isOpen, onClose, onReserve, i
                                         {slot.closesAt
                                           ? t('booking.bookingsCloseAt', 'Bookings close {{time}}', { time: formatCutoffTime(slot.closesAt) })
                                           : t('booking.bookingsClosed', 'Bookings closed')}
+                                      </span>
+                                    ) : slotBelowMin ? (
+                                      <span className="booking-slot-cap">
+                                        {t('booking.minTravelersShort', 'Min {{min}} travelers', { min: slotMin })}
                                       </span>
                                     ) : slot.remaining != null ? (
                                       <span className="booking-slot-cap">
