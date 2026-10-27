@@ -162,7 +162,7 @@ export const CalendarPicker = ({ isOpen, onClose, onDateSelect, selectedDate, ge
     const isPending = loading && counts == null && !isPast
     const selectable = !isPast && !isPending && (displayAvailability === 'available' || displayAvailability === 'limited')
     const title = belowMinimum
-      ? `Minimum ${counts?.minParticipants} travelers · ${counts?.remaining} spot${counts?.remaining === 1 ? '' : 's'} left`
+      ? `Minimum ${counts?.minParticipants} travelers per booking · ${counts?.remaining} spot${counts?.remaining === 1 ? '' : 's'} left`
       : displayAvailability === 'limited'
         ? `Limited availability${hasCounts ? ` · ${counts?.remaining} of ${counts?.capacity} ${countUnit} available` : ''}`
         : hasCounts

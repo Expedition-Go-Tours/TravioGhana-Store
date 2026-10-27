@@ -689,7 +689,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
     if (remaining != null && remaining > 0 && minParty != null && remaining < minParty) {
       return t(
         'booking.dateBelowMinimum',
-        'Only {{count}} spot(s) left on this date — below the {{min}}-traveler minimum. Choose another date.',
+        'Only {{count}} spot(s) left on this date — below the {{min}}-traveler minimum per booking. Choose another date.',
         { count: remaining, min: minParty },
       )
     }
@@ -702,7 +702,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
         if (slot.remaining > 0 && minParty != null && slot.remaining < minParty) {
           return t(
             'booking.slotBelowMinimum',
-            'Only {{count}} spot(s) left at {{time}} — below the {{min}}-traveler minimum. Choose another time.',
+            'Only {{count}} spot(s) left at {{time}} — below the {{min}}-traveler minimum per booking. Choose another time.',
             { count: slot.remaining, min: minParty, time: formatSlotTime(slot.time) },
           )
         }
@@ -1088,7 +1088,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                                       </span>
                                     ) : slotBelowMin ? (
                                       <span className="booking-slot-cap">
-                                        {t('booking.minTravelersShort', 'Min {{min}} travelers', { min: slotMin })}
+                                        {t('booking.minTravelersShort', 'Min {{min}} per booking', { min: slotMin })}
                                       </span>
                                     ) : slot.remaining != null ? (
                                       <span className="booking-slot-cap">
@@ -1111,8 +1111,8 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                             {selectedDayInfo?.capacityUnit !== 'groups' && (selectedDayInfo?.minParticipants ?? 0) > 1 && (
                               <p className="booking-slot-note">
                                 {selectedDayInfo?.minParticipantsSource === 'DATE'
-                                  ? t('booking.dateMinTravelers', 'This date requires at least {{min}} travelers', { min: selectedDayInfo?.minParticipants })
-                                  : t('booking.minTravelersNote', 'Minimum {{min}} travelers', { min: selectedDayInfo?.minParticipants })}
+                                  ? t('booking.dateMinTravelers', 'This date requires at least {{min}} travelers per booking', { min: selectedDayInfo?.minParticipants })
+                                  : t('booking.minTravelersNote', 'Minimum {{min}} travelers per booking', { min: selectedDayInfo?.minParticipants })}
                               </p>
                             )}
                           </div>
@@ -1235,7 +1235,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                               } else if (atPartyMinimum && partyMinimum != null) {
                                 toast.info(t(
                                   'booking.belowMinimumToast',
-                                  'This tour needs at least {{min}} travelers',
+                                  'This tour requires at least {{min}} travelers per booking',
                                   { min: partyMinimum },
                                 ))
                               }
@@ -1263,12 +1263,12 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
 
                   {bookableBounds.max != null && (
                     <p className="booking-slot-note" id={partyMinimum != null ? minNoteId : undefined}>
-                      {t('booking.bookableRange', 'Bookable by {{min}}–{{max}} travelers', { min: bookableBounds.min, max: bookableBounds.max })}
+                      {t('booking.bookableRange', 'Bookable for {{min}}–{{max}} travelers per booking', { min: bookableBounds.min, max: bookableBounds.max })}
                     </p>
                   )}
                   {bookableBounds.max == null && partyMinimum != null && (
                     <p className="booking-slot-note" id={minNoteId}>
-                      {t('booking.minTravelersNote', 'Minimum {{min}} travelers', { min: bookableBounds.min })}
+                      {t('booking.minTravelersNote', 'Minimum {{min}} travelers per booking', { min: bookableBounds.min })}
                     </p>
                   )}
                   {mixIssues.length > 0 && (

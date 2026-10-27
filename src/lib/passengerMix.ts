@@ -98,13 +98,13 @@ export function validatePassengerMix(
   if (bounds.min != null && total < bounds.min) {
     issues.push({
       type: 'min',
-      message: `At least ${bounds.min} traveler${bounds.min === 1 ? '' : 's'} required`,
+      message: `Minimum of ${bounds.min} traveler${bounds.min === 1 ? '' : 's'} per booking`,
     })
   }
   if (bounds.max != null && total > bounds.max) {
     issues.push({
       type: 'max',
-      message: `Maximum of ${bounds.max} travelers allowed`,
+      message: `Maximum of ${bounds.max} travelers per booking`,
     })
   }
 

@@ -102,7 +102,7 @@ describe('useTravelerSelection', () => {
     expect(result.current.totalTravelers).toBe(3)
     expect(result.current.bookableBounds.min).toBe(5)
     expect(result.current.mixIssues).toEqual([
-      expect.objectContaining({ type: 'min', message: 'At least 5 travelers required' }),
+      expect.objectContaining({ type: 'min', message: 'Minimum of 5 travelers per booking' }),
     ])
     expect(result.current.canDecrementCount('adult')).toBe(false)
   })
