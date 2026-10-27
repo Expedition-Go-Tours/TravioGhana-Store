@@ -748,6 +748,22 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
   const partyMinimum = bookableBounds.min > 1 ? bookableBounds.min : null
   const atPartyMinimum = partyMinimum != null && totalTravelers - 1 < partyMinimum
   const minNoteId = 'booking-party-minimum-note'
+  // One min warning at a time: when the party is below the floor, the live
+  // status line explains it, so the static rule note steps aside instead of
+  // repeating the same number twice.
+  const minIssue = mixIssues.find((issue) => issue.type === 'min') ?? null
+  const minIssueMessage = minIssue
+    ? (selectedDayForMin?.minParticipantsSource === 'DATE'
+      ? t(
+        'booking.dateMinTravelers',
+        'This date requires at least {{min}} travelers per booking',
+        { min: partyMinimum ?? selectedDayForMin?.minParticipants },
+      )
+      : minIssue.message)
+    : null
+  const partyWarning = mixIssues.length > 0
+    ? (mixIssues[0].type === 'min' && minIssueMessage ? minIssueMessage : mixIssues[0].message)
+    : null
 
   // The server quote is only authoritative while it matches the CURRENT
   // selection (date / time / traveler mix / promo). The moment the selection
@@ -1261,18 +1277,26 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                     )
                   })}
 
-                  {bookableBounds.max != null && (
+                  {bookableBounds.max != null && minIssue == null && (
                     <p className="booking-slot-note" id={partyMinimum != null ? minNoteId : undefined}>
                       {t('booking.bookableRange', 'Bookable for {{min}}–{{max}} travelers per booking', { min: bookableBounds.min, max: bookableBounds.max })}
                     </p>
                   )}
-                  {bookableBounds.max == null && partyMinimum != null && (
+                  {bookableBounds.max == null && partyMinimum != null && minIssue == null && (
                     <p className="booking-slot-note" id={minNoteId}>
-                      {t('booking.minTravelersNote', 'Minimum {{min}} travelers per booking', { min: bookableBounds.min })}
+                      {selectedDayForMin?.minParticipantsSource === 'DATE'
+                        ? t('booking.dateMinTravelers', 'This date requires at least {{min}} travelers per booking', { min: partyMinimum })
+                        : t('booking.minTravelersNote', 'Minimum {{min}} travelers per booking', { min: partyMinimum })}
                     </p>
                   )}
-                  {mixIssues.length > 0 && (
-                    <p className="booking-slot-warning" role="status">{mixIssues[0].message}</p>
+                  {partyWarning != null && (
+                    <p
+                      className="booking-slot-warning"
+                      role="status"
+                      id={mixIssues[0].type === 'min' && minIssueMessage ? minNoteId : undefined}
+                    >
+                      {partyWarning}
+                    </p>
                   )}
 
                   <button
