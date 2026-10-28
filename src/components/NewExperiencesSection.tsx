@@ -4,10 +4,13 @@ import SectionHeading from './SectionHeading'
 import TourCard from './TourCard'
 import TourCardSkeleton from './TourCardSkeleton'
 import { useNewExperiences, mapToTourCard, type HomepageBackfill, type HomepageTour } from '../hooks/useHomepageSections'
+import { useNewestTours, type TourCardData } from '../hooks/useExpeditionTours'
 import './NewExperiencesSection.css'
 
 const CARD_WIDTH = 295
 const GAP = 16
+/** The rail's viewport is laid out for five cards per view (see the CSS). */
+const RAIL_SIZE = 5
 
 interface Props {
   preloaded?: HomepageTour[]
@@ -30,18 +33,44 @@ export default function NewExperiencesSection({ preloaded, isLoading, title, loc
   const localItems = (preloaded ?? liveTours)?.length
     ? (preloaded ?? liveTours)!.map(t => mapToTourCard(t))
     : null
+  const baseCount = (preloaded ?? liveTours)?.length ?? 0
+
+  // The curated "new" slice can be shorter than the five cards this rail is
+  // designed to show (the API currently returns four and sends no backfill),
+  // which leaves a blank slot at the end of the row. Top it up with the
+  // next-newest catalogue tours: `useNewestTours` lists the same new tours
+  // first, so the filler is the next most recent experience rather than an
+  // arbitrary one. Scoped rows stay authoritative — never mix global tours
+  // into a city section.
+  const { data: newestTours } = useNewestTours(RAIL_SIZE + 1, !scoped && baseCount < RAIL_SIZE)
+
+  const fillTours = useMemo<TourCardData[]>(() => {
+    if (scoped || !newestTours?.length || baseCount >= RAIL_SIZE) return []
+    const seen = new Set((localItems ?? []).map((t) => t.id))
+    const fill: TourCardData[] = []
+    for (const tour of newestTours) {
+      if (fill.length >= RAIL_SIZE - baseCount) break
+      if (seen.has(tour.id)) continue
+      seen.add(tour.id)
+      fill.push(tour)
+    }
+    return fill
+  }, [scoped, newestTours, baseCount, localItems])
 
   const backfillTours = useMemo(() => {
     if (!backfill?.tours?.length) return []
-    const localIds = new Set((localItems ?? []).map((t) => t.id))
+    const localIds = new Set([
+      ...(localItems ?? []).map((t) => t.id),
+      ...fillTours.map((t) => t.id),
+    ])
     // The rail must never repeat a card the local rows already show.
     return backfill.tours.map(t => mapToTourCard(t)).filter((t) => !localIds.has(t.id))
-  }, [backfill, localItems])
+  }, [backfill, localItems, fillTours])
 
   const items = useMemo(() => {
-    if (!localItems && backfillTours.length === 0) return null
-    return [...(localItems ?? []), ...backfillTours]
-  }, [localItems, backfillTours])
+    if (!localItems && fillTours.length === 0 && backfillTours.length === 0) return null
+    return [...(localItems ?? []), ...fillTours, ...backfillTours]
+  }, [localItems, fillTours, backfillTours])
 
   const updateArrows = useCallback(() => {
     const el = scrollRef.current
@@ -81,6 +110,13 @@ export default function NewExperiencesSection({ preloaded, isLoading, title, loc
     }
   }, [updateArrows])
 
+  // Appending cards (live data, the newest-tour top-up) grows `scrollWidth`
+  // but not the scroll container's own box, so the ResizeObserver above never
+  // fires. Re-measure the arrow state whenever the card count changes.
+  useEffect(() => {
+    updateArrows()
+  }, [updateArrows, items?.length])
+
   return (
     <section className="newexp-section">
       <div className="newexp-container">
@@ -105,6 +141,11 @@ export default function NewExperiencesSection({ preloaded, isLoading, title, loc
                     <>
                       {localItems?.map((tour, i) => (
                         <div key={`${tour.id ?? tour.title}-${i}`} className="newexp-card-wrap">
+                          <TourCard {...tour} isNew hideSourceBadge hideFeatures imageClean />
+                        </div>
+                      ))}
+                      {fillTours.map((tour, i) => (
+                        <div key={`fill-${tour.id ?? tour.title}-${i}`} className="newexp-card-wrap">
                           <TourCard {...tour} isNew hideSourceBadge hideFeatures imageClean />
                         </div>
                       ))}

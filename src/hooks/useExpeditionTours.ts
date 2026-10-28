@@ -2439,9 +2439,10 @@ export function useRecommendedTours(limit: number = 12, enabled = true) {
  * (HTTP-cached max-age=60) — mirroring useExpeditionOffers — so the section's
  * cards show the discounted price just like the Special Offers cards do.
  */
-export function useNewestTours(limit: number = 10) {
+export function useNewestTours(limit: number = 10, enabled = true) {
   return useQuery({
     queryKey: ['expedition', 'tours', 'newest', limit],
+    enabled,
     queryFn: async (): Promise<TourCardData[]> => {
       const payload = await expeditionFetchRaw(`/tours?limit=${limit}&sortBy=newest&sortOrder=desc`)
       const rawTours: any[] = payload.data?.tours ?? payload.tours ?? []
