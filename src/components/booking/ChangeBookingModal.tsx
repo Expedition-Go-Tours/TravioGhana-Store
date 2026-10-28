@@ -456,6 +456,8 @@ export default function ChangeBookingModal({ tour, isOpen, onClose, onReserve, i
                         capacity: day.capacity,
                         capacityUnit: day.capacityUnit,
                         minParticipants: day.minParticipants ?? null,
+                        closedCutoff: day.closedCutoff === true,
+                        closesAt: day.closesAt ?? null,
                       }
                     }}
                     onMonthChange={(year, month) => setViewMonth({ year, month })}

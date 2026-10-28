@@ -1050,6 +1050,8 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                         capacity: info.capacity,
                         capacityUnit: info.capacityUnit,
                         minParticipants: info.minParticipants ?? null,
+                        closedCutoff: info.closedCutoff === true,
+                        closesAt: info.closesAt ?? null,
                       }
                     }}
                     loading={availabilityLoading}

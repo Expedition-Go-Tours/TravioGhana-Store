@@ -52,6 +52,10 @@ interface CalendarPickerProps {
     /** Effective party-size floor for the date. When remaining < minimum the
         date cannot be sold, so it is rendered as unselectable. */
     minParticipants?: number | null
+    /** The date is operating but its online booking window has closed. */
+    closedCutoff?: boolean
+    /** ISO instant the online booking window closed (or will close). */
+    closesAt?: string | null
   } | null
   /** When true and a day has no data yet, render a subtle pulse instead of a misleading "available" fallback. */
   loading?: boolean
@@ -158,6 +162,13 @@ export const CalendarPicker = ({ isOpen, onClose, onDateSelect, selectedDate, ge
     const countUnit = counts?.capacityUnit === 'groups' ? 'groups' : 'spots'
     const isFull = !isPast && displayAvailability === 'full'
     const isBlocked = !isPast && displayAvailability === 'blocked'
+    // A cut-off closure is not a supplier block: the tour still operates, but
+    // online sales for that date have ended. Say so instead of "Not available".
+    const cutoffClosed = isBlocked && counts?.closedCutoff === true
+    const cutoffClosedAt = cutoffClosed && counts?.closesAt ? new Date(counts.closesAt) : null
+    const cutoffTimeLabel = cutoffClosedAt && Number.isFinite(cutoffClosedAt.getTime())
+      ? cutoffClosedAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+      : ''
     const isSelected = day === selectedDay && !isPast
     const isPending = loading && counts == null && !isPast
     const selectable = !isPast && !isPending && (displayAvailability === 'available' || displayAvailability === 'limited')
@@ -170,7 +181,9 @@ export const CalendarPicker = ({ isOpen, onClose, onDateSelect, selectedDate, ge
           : displayAvailability === 'full'
             ? 'Sold out'
             : displayAvailability === 'blocked'
-              ? 'Not available'
+              ? (cutoffClosed
+                  ? `Bookings closed${cutoffTimeLabel ? ` at ${cutoffTimeLabel}` : ''}`
+                  : 'Not available')
               : 'Available'
     const dotClass = !isPast && !isPending
       ? displayAvailability === 'limited'
@@ -298,12 +311,12 @@ export const CalendarPicker = ({ isOpen, onClose, onDateSelect, selectedDate, ge
           </div>
         )
       } else if (meta.isBlocked) {
-        // Closed/blocked by the supplier — muted, NOT selectable.
+        // Closed for online booking or blocked by the supplier — muted, NOT selectable.
         days.push(
           <div
             key={`day-${day}`}
             data-status="blocked"
-            title="Not available"
+            title={meta.title}
             aria-disabled="true"
             onClick={() => handleDayPress(day, meta)}
             className="relative w-9 h-9 text-[14px] font-medium rounded-full flex items-center justify-center bg-slate-50 text-slate-300 cursor-not-allowed"

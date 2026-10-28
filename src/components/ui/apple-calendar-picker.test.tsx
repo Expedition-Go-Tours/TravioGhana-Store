@@ -106,6 +106,26 @@ describe('CalendarPicker sold-out / closed hardening', () => {
     expect(onDateSelect).not.toHaveBeenCalled()
   })
 
+  it('labels a cut-off closure as bookings closed instead of not available', () => {
+    stubMatchMedia(false)
+    const closesAt = new Date(openYear, openMonth, 15, 16, 0).toISOString()
+    renderPicker({
+      getAvailability: (date) => (toKey(date) === dayKey(9) ? 'blocked' : 'available'),
+      getDayCounts: (date) => (toKey(date) === dayKey(9)
+        ? {
+            remaining: 5,
+            capacity: 5,
+            capacityUnit: 'people' as const,
+            closedCutoff: true,
+            closesAt,
+          }
+        : null),
+    })
+    const cell = dayCell(9)
+    expect(cell.getAttribute('data-status')).toBe('blocked')
+    expect(cell.getAttribute('title')).toMatch(/^Bookings closed at /)
+  })
+
   it('shows a "Sold out" banner on touch but still never selects', () => {
     stubMatchMedia(true)
     const { onDateSelect } = renderPicker()

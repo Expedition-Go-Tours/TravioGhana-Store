@@ -103,10 +103,23 @@ function mapDay(raw: RawAvailabilityDay): DayAvailabilityInfo {
     status = 'limited'
   }
   // Operating-hours / flexible days whose whole-day booking window has closed
-  // must read as blocked so the calendar never offers an unbookable date.
-  if (raw.closedCutoff === true && !raw.isPast && slots.length === 0 && (status === 'available' || status === 'limited')) {
+  // must read as blocked so the calendar never offers an unbookable date. A
+  // fixed-slot day whose every slot is closed is equally unbookable.
+  const allSlotsClosed = slots.length > 0 && slots.every((slot) => slot.closed === true)
+  if (
+    !raw.isPast &&
+    (raw.closedCutoff === true || allSlotsClosed) &&
+    (status === 'available' || status === 'limited')
+  ) {
     status = 'blocked'
   }
+
+  const latestSlotClose = slots
+    .map((slot) => (slot.closesAt ? new Date(slot.closesAt).getTime() : NaN))
+    .filter((time) => Number.isFinite(time))
+    .sort((a, b) => b - a)[0]
+  const derivedClosesAt = raw.closesAt ??
+    (allSlotsClosed && Number.isFinite(latestSlotClose) ? new Date(latestSlotClose).toISOString() : null)
 
   return {
     date: raw.date,
@@ -129,8 +142,8 @@ function mapDay(raw: RawAvailabilityDay): DayAvailabilityInfo {
     minParticipantsSource: raw.minParticipantsSource === 'DATE' ? 'DATE' : 'TOUR',
     defaultMinParticipants: raw.defaultMinParticipants ?? null,
     overrideMinParticipants: raw.overrideMinParticipants ?? null,
-    closedCutoff: raw.closedCutoff === true,
-    closesAt: raw.closesAt ?? null,
+    closedCutoff: raw.closedCutoff === true || allSlotsClosed,
+    closesAt: derivedClosesAt,
     timeSlots: slots,
   }
 }
@@ -168,6 +181,8 @@ export function useTourAvailability(
 interface CalculateCheckoutInput {
   tourId: string
   travelDate: string
+  /** Fixed-slot tours quote against the chosen time (optional for date-only previews). */
+  selectedTime?: string | null
   travelers: Record<string, number>
   /** Multi-option tours: quote against this option (default when omitted). */
   optionId?: string
