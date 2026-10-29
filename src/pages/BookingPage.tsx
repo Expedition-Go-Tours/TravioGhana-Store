@@ -9,8 +9,8 @@ import {
   Car, ExternalLink, Layers,
 } from 'lucide-react'
 import logoSrc from '../assets/TravioGhana_Logo.svg'
-import payPalLogo from '../assets/payments/paypal-logo.svg'
-import paypalMark from '../assets/icons/paypal2.svg'
+import paypalMark from '../assets/images/papy.png'
+import payPalWordmark from '../assets/payments/paypal-wordmark.svg'
 import SEO from '../components/SEO'
 import Footer from '../components/Footer'
 import StepBadge from '../components/booking/StepBadge'
@@ -1267,12 +1267,12 @@ function PaymentDetailsStep({
                     customer is never offered a method checkout would quietly
                     swap for a card. */}
                 {paypalAvailable && (
-                  <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
+                  <label className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-4 transition-all sm:gap-4 ${
                     selection === 'paypal'
                       ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
                       : 'border-slate-200/60 bg-white hover:border-slate-300'
                   }`}>
-                    <div className={`grid size-5 shrink-0 place-items-center rounded-full border-2 transition ${
+                    <div className={`order-2 grid size-5 shrink-0 place-items-center rounded-full border-2 transition sm:order-1 ${
                       selection === 'paypal' ? 'border-emerald-500' : 'border-slate-300'
                     }`}>
                       {selection === 'paypal' && (
@@ -1283,12 +1283,22 @@ function PaymentDetailsStep({
                         />
                       )}
                     </div>
-                    <img src={paypalMark} alt="" aria-hidden="true" className="h-7 w-7 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <span className="text-sm font-semibold text-slate-900">Pay with PayPal</span>
-                      <p className="text-xs text-slate-400">Pay securely with your PayPal account</p>
+                    <img
+                      src={paypalMark}
+                      alt=""
+                      aria-hidden="true"
+                      className="order-1 size-8 shrink-0 sm:order-2 sm:size-11"
+                    />
+                    <div className="order-3 min-w-0 flex-1">
+                      <span className="block text-sm font-semibold leading-tight text-slate-900 sm:text-base">Pay with PayPal</span>
+                      <p className="mt-0.5 text-xs leading-snug text-slate-400 sm:text-sm">Pay securely with your PayPal account</p>
                     </div>
-                    <img src={payPalLogo} alt="PayPal" className="h-5 w-auto shrink-0" />
+                    <img
+                      src={payPalWordmark}
+                      alt=""
+                      aria-hidden="true"
+                      className="hidden h-5 w-auto shrink-0 sm:order-4 sm:block sm:h-6"
+                    />
                     <input
                       type="radio"
                       name="paymentMethod"
