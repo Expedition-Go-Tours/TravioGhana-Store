@@ -5,6 +5,7 @@ import TourCard from './TourCard'
 import ContinuePlanningCard from './ContinuePlanningCard'
 import { useContinuePlanning, type ContinuePlanningItem } from '../context/ContinuePlanningContext'
 import { useSellOutContext } from '../context/SellOutContext'
+import { useContinuePlanningReviewBackfill } from '../hooks/useContinuePlanningReviewBackfill'
 import './ContinuePlanningSection.css'
 import './skeleton.css'
 
@@ -122,7 +123,10 @@ function ContinuePlanningSlide({
 
 export default function ContinuePlanningSection() {
   const { t } = useTranslation()
-  const { continuePlanning } = useContinuePlanning()
+  const { continuePlanning, updateContinuePlanningItem } = useContinuePlanning()
+  // Old snapshots predate supplierName; repair them so the card can combine
+  // the scraped TripAdvisor / GetYourGuide totals instead of showing 0.
+  useContinuePlanningReviewBackfill(continuePlanning, updateContinuePlanningItem)
   const { isLikelyToSellOut } = useSellOutContext()
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)

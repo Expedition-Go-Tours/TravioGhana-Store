@@ -24,7 +24,14 @@ vi.mock('react-router-dom', () => ({
 }))
 
 vi.mock('../context/ContinuePlanningContext', () => ({
-  useContinuePlanning: () => ({ continuePlanning: mocks.items }),
+  useContinuePlanning: () => ({
+    continuePlanning: mocks.items,
+    updateContinuePlanningItem: vi.fn(),
+  }),
+}))
+
+vi.mock('../hooks/useContinuePlanningReviewBackfill', () => ({
+  useContinuePlanningReviewBackfill: vi.fn(),
 }))
 
 vi.mock('../context/WishlistContext', () => ({

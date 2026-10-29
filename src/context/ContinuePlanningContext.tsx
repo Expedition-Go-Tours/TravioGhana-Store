@@ -42,6 +42,12 @@ export interface ContinuePlanningItem {
 interface ContinuePlanningContextValue {
   continuePlanning: ContinuePlanningItem[]
   addToContinuePlanning: (item: ContinuePlanningItem) => void
+  /**
+   * Patch a stored snapshot in place. Used to backfill fields (e.g.
+   * `supplierName`) that older snapshots predate, without clearing the list or
+   * changing its order.
+   */
+  updateContinuePlanningItem: (id: string, patch: Partial<Omit<ContinuePlanningItem, 'id'>>) => void
   removeFromContinuePlanning: (id: string) => void
   clearContinuePlanning: () => void
   isInContinuePlanning: (id: string) => boolean
@@ -136,6 +142,13 @@ export function ContinuePlanningProvider({ children }: { children: ReactNode }) 
     })
   }, [])
 
+  const updateContinuePlanningItem = useCallback(
+    (id: string, patch: Partial<Omit<ContinuePlanningItem, 'id'>>) => {
+      setItems(prev => prev.map(item => (item.id === id ? { ...item, ...patch } : item)))
+    },
+    [],
+  )
+
   const removeFromContinuePlanning = useCallback((id: string) => {
     setItems(prev => prev.filter(i => i.id !== id))
   }, [])
@@ -154,6 +167,7 @@ export function ContinuePlanningProvider({ children }: { children: ReactNode }) 
       value={{
         continuePlanning: items,
         addToContinuePlanning,
+        updateContinuePlanningItem,
         removeFromContinuePlanning,
         clearContinuePlanning,
         isInContinuePlanning,

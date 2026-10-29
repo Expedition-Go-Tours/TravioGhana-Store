@@ -293,6 +293,10 @@ export default function TourDetailPage() {
         meetingMode: tour.meetingMode,
         languages: tour.languages,
         slug: tour.slug,
+        // Required by useCombinedTourStats to match this operator's scraped
+        // TripAdvisor/GetYourGuide listings. Without it the continue-planning
+        // card falls back to the raw in-app count (0 for most live tours).
+        supplierName: tour.supplierName,
         specialOffers: tour.specialOffers,
       } as Tour))
     }
