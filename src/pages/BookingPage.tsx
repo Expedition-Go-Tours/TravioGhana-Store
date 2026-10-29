@@ -1068,7 +1068,6 @@ function PaymentDetailsStep({
   const isActive = step === 3
   const isCompleted = step > 3
   const [cardHandle, setCardHandle] = useState<CardElementHandle | null>(null)
-  const handleDisabledCardReady = useCallback(() => {}, [])
   const [creating, setCreating] = useState(false)
   const [selectedCardId, setSelectedCardId] = useState('')
   const user = useAuthUser()
@@ -1213,13 +1212,12 @@ function PaymentDetailsStep({
                   />
                 </label>
 
-                {/* Card details stay visible in every state. They are only
-                    interactive for reserve-now/pay-later; pay-now and PayPal
-                    collect their details on the secure checkout page. */}
-                <div className="space-y-3">
-                  <p className="text-xs font-semibold text-slate-600">Card details</p>
-                  {timing === 'later' ? (
-                    !savedCardsReady ? (
+                {/* Card details are only collected for reserve-now/pay-later;
+                    pay-now finishes on the secure checkout page. */}
+                {timing === 'later' && (
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold text-slate-600">Card details</p>
+                    {!savedCardsReady ? (
                       <div className="h-[52px] animate-pulse rounded-xl border border-slate-200/60 bg-slate-50/40" />
                     ) : (
                       <div className="space-y-3">
@@ -1230,16 +1228,9 @@ function PaymentDetailsStep({
                         />
                         {effectiveCardId === NEW_CARD && <CardField onReady={setCardHandle} />}
                       </div>
-                    )
-                  ) : (
-                    <>
-                      <CardField disabled onReady={handleDisabledCardReady} />
-                      <p className="text-xs leading-relaxed text-slate-400">
-                        Card details are entered on the secure checkout page after you continue.
-                      </p>
-                    </>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
 
                 {/* PayPal is visible now so the payment options read as one
                     list, but it stays disabled until the backend can create a
