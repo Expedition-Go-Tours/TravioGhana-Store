@@ -3,14 +3,14 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence, useAnimate } from 'framer-motion'
 import { toast } from 'sonner'
-import {
-  Check, ArrowLeft, MapPin, Info, X,
-  Phone, ShieldCheck, Clock, Globe, Loader2,
-  Car, ExternalLink, Layers,
-} from 'lucide-react'
+import { Check, ArrowLeft, MapPin, Info, X, Phone, ShieldCheck, Clock, Globe, Loader2, Car, ExternalLink, Layers, CreditCard } from 'lucide-react'
 import logoSrc from '../assets/TravioGhana_Logo.svg'
-import paypalMark from '../assets/images/papy.png'
-import payPalWordmark from '../assets/payments/paypal-wordmark.svg'
+import paypalMark from '../assets/icons/paypal2.svg'
+import paypalWordmark from '../assets/payments/paypal-wordmark.svg'
+import visaLogo from '../assets/payments/visa-logo.svg'
+import mastercardLogo from '../assets/payments/mastercard-logo.svg'
+import amexLogo from '../assets/payments/american-express-logo.svg'
+import discoverLogo from '../assets/payments/discover-logo.svg'
 import SEO from '../components/SEO'
 import Footer from '../components/Footer'
 import StepBadge from '../components/booking/StepBadge'
@@ -1172,7 +1172,7 @@ function PaymentDetailsStep({
             className="space-y-6 p-7 sm:p-9"
           >
             <div>
-              <p className="mb-3 text-sm font-semibold text-slate-800">Choose How to Pay</p>
+              <p className="mb-3 text-sm font-semibold text-slate-800">Choose when to pay</p>
               <div className="space-y-2">
                 <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
                   selection === 'now'
@@ -1201,14 +1201,12 @@ function PaymentDetailsStep({
                   />
                 </label>
 
-                <label className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all sm:items-center ${
+                <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
                   selection === 'later'
                     ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
-                    : payLaterAvailable
-                      ? 'border-slate-200/60 bg-white hover:border-slate-300'
-                      : 'cursor-not-allowed border-slate-100 bg-slate-50 opacity-70'
+                    : 'border-slate-200/60 bg-white hover:border-slate-300'
                 }`}>
-                  <div className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border-2 transition sm:mt-0 ${
+                  <div className={`grid size-5 shrink-0 place-items-center rounded-full border-2 transition ${
                     selection === 'later' ? 'border-emerald-500' : 'border-slate-300'
                   }`}>
                     {selection === 'later' && (
@@ -1238,14 +1236,14 @@ function PaymentDetailsStep({
                     className="sr-only"
                     disabled={!payLaterAvailable}
                     checked={selection === 'later'}
-                    onChange={() => onChange('paymentTiming', 'later')}
+                    onChange={() => { onChange('paymentTiming', 'later') }}
                   />
                 </label>
 
-                {/* Card details are only collected for reserve-now/pay-later;
+                {/* Card details are collected here for reserve-now/pay-later;
                     pay-now finishes on the secure checkout page. */}
                 {timing === 'later' && (
-                  <div className="space-y-3">
+                  <div className="space-y-3 pt-1">
                     <p className="text-xs font-semibold text-slate-600">Card details</p>
                     {!savedCardsReady ? (
                       <div className="h-[52px] animate-pulse rounded-xl border border-slate-200/60 bg-slate-50/40" />
@@ -1261,55 +1259,84 @@ function PaymentDetailsStep({
                     )}
                   </div>
                 )}
-
-                {/* PayPal sits alongside the other options, rendered only when
-                    the server says it is available for this brand, so the
-                    customer is never offered a method checkout would quietly
-                    swap for a card. */}
-                {paypalAvailable && (
-                  <label className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-4 transition-all sm:gap-4 ${
-                    selection === 'paypal'
-                      ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
-                      : 'border-slate-200/60 bg-white hover:border-slate-300'
-                  }`}>
-                    <div className={`order-2 grid size-5 shrink-0 place-items-center rounded-full border-2 transition sm:order-1 ${
-                      selection === 'paypal' ? 'border-emerald-500' : 'border-slate-300'
-                    }`}>
-                      {selection === 'paypal' && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          className="size-2.5 rounded-full bg-emerald-500"
-                        />
-                      )}
-                    </div>
-                    <img
-                      src={paypalMark}
-                      alt=""
-                      aria-hidden="true"
-                      className="order-1 size-8 shrink-0 sm:order-2 sm:size-11"
-                    />
-                    <div className="order-3 min-w-0 flex-1">
-                      <span className="block text-sm font-semibold leading-tight text-slate-900 sm:text-base">Pay with PayPal</span>
-                      <p className="mt-0.5 text-xs leading-snug text-slate-400 sm:text-sm">Pay securely with your PayPal account</p>
-                    </div>
-                    <img
-                      src={payPalWordmark}
-                      alt=""
-                      aria-hidden="true"
-                      className="hidden h-5 w-auto shrink-0 sm:order-4 sm:block sm:h-6"
-                    />
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      className="sr-only"
-                      checked={selection === 'paypal'}
-                      onChange={() => { onChange('paymentTiming', 'now'); onChange('paymentMethod', 'paypal') }}
-                    />
-                  </label>
-                )}
               </div>
             </div>
+
+            {timing === 'now' && (
+              <div>
+                <p className="mb-3 text-sm font-semibold text-slate-800">Choose payment method</p>
+                <div className="space-y-2">
+                <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
+                  selection === 'now'
+                    ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
+                    : 'border-slate-200/60 bg-white hover:border-slate-300'
+                }`}>
+                  <div className={`grid size-5 shrink-0 place-items-center rounded-full border-2 transition ${
+                    selection === 'now' ? 'border-emerald-500' : 'border-slate-300'
+                  }`}>
+                    {selection === 'now' && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="size-2.5 rounded-full bg-emerald-500"
+                      />
+                    )}
+                  </div>
+                  <CreditCard className="size-7 shrink-0 text-slate-700" strokeWidth={1.75} />
+                  <div className="min-w-0 flex-1">
+                    <span className="whitespace-nowrap text-sm font-semibold text-slate-900">Credit or Debit Card</span>
+                    <p className="text-xs text-slate-400">Powered by Stripe (Visa, Mastercard, Amex, etc.)</p>
+                  </div>
+                  <span className="hidden shrink-0 items-center gap-1 md:flex">
+                    <img src={visaLogo} alt="Visa" className="h-4 w-auto max-w-[34px] object-contain" />
+                    <img src={mastercardLogo} alt="Mastercard" className="h-4 w-auto max-w-[42px] object-contain" />
+                    <img src={amexLogo} alt="American Express" className="h-4 w-auto max-w-[42px] object-contain" />
+                    <img src={discoverLogo} alt="Discover" className="h-4 w-auto max-w-[58px] object-contain" />
+                  </span>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    className="sr-only"
+                    checked={selection === 'now'}
+                    onChange={() => { onChange('paymentTiming', 'now'); onChange('paymentMethod', 'card') }}
+                  />
+                </label>
+
+                  {paypalAvailable && (
+                <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
+                  selection === 'paypal'
+                    ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
+                    : 'border-slate-200/60 bg-white hover:border-slate-300'
+                }`}>
+                  <div className={`grid size-5 shrink-0 place-items-center rounded-full border-2 transition ${
+                    selection === 'paypal' ? 'border-emerald-500' : 'border-slate-300'
+                  }`}>
+                    {selection === 'paypal' && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="size-2.5 rounded-full bg-emerald-500"
+                      />
+                    )}
+                  </div>
+                  <img src={paypalMark} alt="" aria-hidden="true" className="h-7 w-7 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <span className="text-sm font-semibold text-slate-900">PayPal</span>
+                    <p className="text-xs text-slate-400">Pay securely with your PayPal account</p>
+                  </div>
+                  <img src={paypalWordmark} alt="PayPal" className="h-6 w-auto shrink-0" />
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    className="sr-only"
+                    checked={selection === 'paypal'}
+                    onChange={() => { onChange('paymentTiming', 'now'); onChange('paymentMethod', 'paypal') }}
+                  />
+                </label>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="rounded-xl border border-slate-200/40 bg-slate-50/30 p-6 text-center">
               <p className="text-2xl font-bold text-slate-900 tracking-tight">{formatPrice(tour.price)}</p>
@@ -1486,7 +1513,7 @@ function BookingSidebar({
                 setPromoCode(e.target.value.toUpperCase())
               }}
               placeholder="Enter promo code"
-              className="min-w-0 flex-1 rounded-xl border border-slate-200/60 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+              className="flex-1 rounded-xl border border-slate-200/60 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
             />
             <button
               onClick={onApplyPromo}
@@ -2367,7 +2394,7 @@ export default function BookingPage() {
     } finally {
       setPromoLoading(false)
     }
-  }, [promoCode, editableTour, tour.id, tour.slug, tour.price])
+  }, [promoCode, editableTour, tour.id, tour.slug])
 
   // A promo code carried over from the tour detail widget is auto-validated
   // once on arrival so the sidebar shows the discount the widget quoted.
@@ -2401,6 +2428,34 @@ export default function BookingPage() {
       <div className="flex min-h-screen flex-col items-center justify-center bg-white">
         <Loader2 className="size-8 animate-spin text-emerald-600" />
         <p className="mt-3 text-sm font-medium text-slate-500">Loading tour…</p>
+      </div>
+    )
+  }
+
+  // No tour context at all — a bare /booking (which is exactly where PayPal's
+  // cancel link used to land) has no tour, no price and no draft, so the three
+  // steps rendered empty ("How to pay: Pay now — $0.00"). Point the customer at
+  // the catalogue instead of showing a checkout that cannot be completed.
+  if (!needFetch && !tour?.id) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4">
+        <div className="w-full max-w-md rounded-[1.75rem] border border-slate-200/50 bg-white p-8 text-center shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)]">
+          <h1 className="text-lg font-bold tracking-tight text-slate-900">Choose a tour to book</h1>
+          <p className="mt-2 text-sm leading-relaxed text-slate-500">
+            This page needs a tour in front of it. Pick one and we&apos;ll hold your spot while you pay.
+          </p>
+          <div className="mt-6 flex flex-col gap-2">
+            <Link
+              to="/tours"
+              className="inline-flex items-center justify-center rounded-full bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:brightness-110"
+            >
+              Browse tours
+            </Link>
+            <Link to="/" className="text-xs font-semibold text-slate-500 underline underline-offset-2 hover:text-slate-700">
+              Back to home
+            </Link>
+          </div>
+        </div>
       </div>
     )
   }
@@ -2443,7 +2498,7 @@ export default function BookingPage() {
               <HoldTimer onExpire={handleExpire} lastActivityAt={lastActivityAt} isExpired={isExpired} />
             </div>
 
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-[1fr_380px]">
+            <div className="grid gap-8 md:grid-cols-[1fr_380px]">
               <div className="min-w-0 space-y-6">
                 {/* On mobile the tour card leads, then the form follows. */}
                 <div className="md:hidden">
@@ -2491,7 +2546,7 @@ export default function BookingPage() {
                 />
               </div>
 
-              <aside className="min-w-0 md:sticky md:top-28 md:self-start">
+              <aside className="md:sticky md:top-28 md:self-start">
                 <div className="space-y-4">
                   <div className="hidden md:block">
                     <HoldTimer onExpire={handleExpire} lastActivityAt={lastActivityAt} isExpired={isExpired} />

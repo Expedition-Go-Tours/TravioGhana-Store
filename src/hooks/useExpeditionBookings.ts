@@ -422,6 +422,16 @@ export interface PaypalApprovalResult {
   orderStatus: string | null
   approvalUrl: string | null
   bookingId: string | null
+  /** Tour + amount, so the return page shows the order it is confirming. */
+  summary: {
+    tourTitle: string | null
+    tourId: string | null
+    tourSlug: string | null
+    amount: number
+    currency: string
+    travelDate: string | null
+    expiresAt: string | null
+  } | null
 }
 
 export function usePaypalApproval(orderId: string | null) {

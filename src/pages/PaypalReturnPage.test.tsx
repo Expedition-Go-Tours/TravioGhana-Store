@@ -28,6 +28,11 @@ const h = vi.hoisted(() => ({
     isLoading: false,
     refetch: vi.fn(),
   },
+  approval: {
+    data: undefined as unknown,
+    isError: false,
+    isLoading: false,
+  },
 }))
 
 vi.mock('react-router-dom', () => ({
@@ -41,6 +46,7 @@ vi.mock('../lib/auth', () => ({ setAuthReturnTo: h.setAuthReturnTo }))
 vi.mock('../hooks/useExpeditionBookings', () => ({
   useCapturePaypalPayment: () => h.capture,
   useBookingByPaypalOrder: () => h.poll,
+  usePaypalApproval: () => h.approval,
 }))
 
 import PaypalReturnPage from './PaypalReturnPage'
@@ -59,9 +65,35 @@ beforeEach(() => {
   h.poll.data = undefined
   h.poll.isError = false
   h.poll.isLoading = false
+  h.approval.data = undefined
+  h.approval.isError = false
+  h.approval.isLoading = false
 })
 
 describe('PaypalReturnPage', () => {
+  it('shows the order it is confirming instead of an empty panel', () => {
+    h.approval.data = {
+      status: 'HOLDING',
+      orderStatus: 'CREATED',
+      approvalUrl: 'https://www.paypal.com/checkoutnow?token=ORDER-1',
+      bookingId: null,
+      summary: {
+        tourTitle: 'Cape Coast Castle Day Trip',
+        tourId: 'tour_1',
+        tourSlug: 'cape-coast',
+        amount: 120,
+        currency: 'USD',
+        travelDate: '2026-11-10T00:00:00.000Z',
+        expiresAt: null,
+      },
+    };
+    render(<PaypalReturnPage />)
+
+    expect(screen.getByText('Cape Coast Castle Day Trip')).toBeTruthy()
+    expect(screen.getByText(/USD 120\.00/)).toBeTruthy()
+    expect(screen.getByText(/PayPal ref: ORDER-1/)).toBeTruthy()
+  })
+
   it('refuses to act without a payment reference', () => {
     h.search = ''
     render(<PaypalReturnPage />)

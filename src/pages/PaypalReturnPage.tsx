@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { AlertTriangle, ExternalLink, Loader2 } from 'lucide-react'
 import { useAuthUser } from '../hooks/useAuthUser'
 import { setAuthReturnTo } from '../lib/auth'
-import { useCapturePaypalPayment, useBookingByPaypalOrder } from '../hooks/useExpeditionBookings'
+import { useCapturePaypalPayment, useBookingByPaypalOrder, usePaypalApproval, type PaypalApprovalResult } from '../hooks/useExpeditionBookings'
 
 /**
  * PayPal return route — GET /booking/paypal/return?token=<orderId>
@@ -35,6 +35,9 @@ export default function PaypalReturnPage() {
   // Poll immediately, not only after the capture call: the webhook may have
   // settled the booking while the browser was still on PayPal's page.
   const poll = useBookingByPaypalOrder(orderId)
+  // Same order, read for its tour/amount summary — the page must never render
+  // as an empty panel while PayPal is being confirmed.
+  const approval = usePaypalApproval(orderId)
 
   const captureFiredRef = useRef(false)
   const navigatedRef = useRef(false)
@@ -71,7 +74,7 @@ export default function PaypalReturnPage() {
 
   if (!orderId) {
     return (
-      <ReturnShell>
+      <ReturnShell orderId={orderId} summary={approval.data?.summary ?? null}>
         <Panel
           tone="error"
           title="We couldn't find that payment"
@@ -85,7 +88,7 @@ export default function PaypalReturnPage() {
   // Rendered while the login redirect above is in flight.
   if (!user) {
     return (
-      <ReturnShell>
+      <ReturnShell orderId={orderId} summary={approval.data?.summary ?? null}>
         <Panel
           tone="busy"
           title="Signing you in…"
@@ -100,7 +103,7 @@ export default function PaypalReturnPage() {
   // customer staring at a spinner, so the server's own message is shown.
   if (capture.isError && !bookingId) {
     return (
-      <ReturnShell>
+      <ReturnShell orderId={orderId} summary={approval.data?.summary ?? null}>
         <Panel
           tone="error"
           title="Payment couldn't be completed"
@@ -118,7 +121,7 @@ export default function PaypalReturnPage() {
   // ── Terminal hold: expired or refunded before a Booking existed ──────────
   if ((polledStatus === 'EXPIRED' || polledStatus === 'REFUNDED') && !bookingId) {
     return (
-      <ReturnShell>
+      <ReturnShell orderId={orderId} summary={approval.data?.summary ?? null}>
         <Panel
           tone="error"
           title={polledStatus === 'REFUNDED' ? 'You have been refunded' : "Payment couldn't be completed"}
@@ -135,7 +138,7 @@ export default function PaypalReturnPage() {
 
   // ── In flight: capturing, or waiting on PayPal to settle the capture ─────
   return (
-    <ReturnShell>
+    <ReturnShell orderId={orderId} summary={approval.data?.summary ?? null}>
       <Panel
         tone="busy"
         title="Confirming your payment"
@@ -149,10 +152,33 @@ export default function PaypalReturnPage() {
   )
 }
 
-function ReturnShell({ children }: { children: React.ReactNode }) {
+function OrderSummary({ orderId, summary }: { orderId: string; summary: PaypalApprovalResult['summary'] }) {
+  if (!summary?.tourTitle) return null;
+  const money = `${summary.currency || 'USD'} ${Number(summary.amount || 0).toFixed(2)}`;
+  return (
+    <div className="mb-4 rounded-2xl border border-slate-200/60 bg-slate-50/50 p-4 text-left">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Your booking</p>
+      <p className="mt-1 text-sm font-semibold text-slate-900">{summary.tourTitle}</p>
+      <p className="mt-0.5 text-xs text-slate-500">
+        {money}
+        {summary.travelDate ? ` · ${new Date(summary.travelDate).toDateString()}` : ''}
+      </p>
+      <p className="mt-1 text-[10px] text-slate-400 break-all">PayPal ref: {orderId}</p>
+    </div>
+  );
+}
+
+function ReturnShell({ children, orderId, summary }: {
+  children: React.ReactNode
+  orderId: string | null
+  summary: PaypalApprovalResult['summary']
+}) {
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4 py-16">
-      <div className="w-full max-w-md">{children}</div>
+      <div className="w-full max-w-md">
+        {orderId && <OrderSummary orderId={orderId} summary={summary} />}
+        {children}
+      </div>
     </div>
   )
 }
