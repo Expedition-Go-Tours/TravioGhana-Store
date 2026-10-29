@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import logoSrc from '../assets/TravioGhana_Logo.svg'
 import payPalLogo from '../assets/payments/paypal-logo.svg'
+import paypalMark from '../assets/icons/paypal2.svg'
 import SEO from '../components/SEO'
 import Footer from '../components/Footer'
 import StepBadge from '../components/booking/StepBadge'
@@ -1119,15 +1120,15 @@ function PaymentDetailsStep({
   const capabilities = usePaymentCapabilities('USD', 'now')
   const paypalAvailable = Boolean(capabilities.data?.paypal.available)
 
-  // Which collector pay-now will use. Pay-later is always a card, and PayPal
-  // drops back to card the moment it stops being available, so the selected
-  // value can never describe a method the server would refuse.
-  const selectedMethod: 'card' | 'paypal' =
-    timing === 'later' || !paypalAvailable || data.paymentMethod !== 'paypal' ? 'card' : 'paypal'
+  // Which option the customer has selected. Pay-later is always a card, and
+  // PayPal drops back to Pay now the moment it stops being available, so the
+  // selection can never describe a method the server would refuse.
+  const selection: 'now' | 'later' | 'paypal' =
+    timing === 'later' ? 'later' : (!paypalAvailable || data.paymentMethod !== 'paypal' ? 'now' : 'paypal')
 
   const buttonLabel = timing === 'later'
     ? 'Reserve Now'
-    : selectedMethod === 'paypal'
+    : selection === 'paypal'
       ? 'Pay with PayPal'
       : 'Pay Now'
 
@@ -1135,9 +1136,9 @@ function PaymentDetailsStep({
     <div className="space-y-2 text-sm text-slate-600">
       <p>
         <span className="font-semibold text-slate-800">How to pay:</span>{' '}
-        {timing === 'later'
+        {selection === 'later'
           ? 'Reserve now, pay later'
-          : selectedMethod === 'paypal'
+          : selection === 'paypal'
             ? `PayPal — ${formatPrice(tour.price)}`
             : `Pay now — ${formatPrice(tour.price)}`}
       </p>
@@ -1174,14 +1175,14 @@ function PaymentDetailsStep({
               <p className="mb-3 text-sm font-semibold text-slate-800">Choose How to Pay</p>
               <div className="space-y-2">
                 <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
-                  timing === 'now'
+                  selection === 'now'
                     ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
                     : 'border-slate-200/60 bg-white hover:border-slate-300'
                 }`}>
                   <div className={`grid size-5 shrink-0 place-items-center rounded-full border-2 transition ${
-                    timing === 'now' ? 'border-emerald-500' : 'border-slate-300'
+                    selection === 'now' ? 'border-emerald-500' : 'border-slate-300'
                   }`}>
-                    {timing === 'now' && (
+                    {selection === 'now' && (
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
@@ -1191,20 +1192,26 @@ function PaymentDetailsStep({
                   </div>
                   <span className="min-w-0 flex-1 text-sm font-semibold text-slate-900">Pay now</span>
                   <span className="shrink-0 text-sm font-bold text-slate-900">{formatPrice(tour.price)}</span>
-                  <input type="radio" name="paymentTiming" className="sr-only" checked={timing === 'now'} onChange={() => onChange('paymentTiming', 'now')} />
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    className="sr-only"
+                    checked={selection === 'now'}
+                    onChange={() => { onChange('paymentTiming', 'now'); onChange('paymentMethod', 'card') }}
+                  />
                 </label>
 
                 <label className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all sm:items-center ${
-                  timing === 'later'
+                  selection === 'later'
                     ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
                     : payLaterAvailable
                       ? 'border-slate-200/60 bg-white hover:border-slate-300'
                       : 'cursor-not-allowed border-slate-100 bg-slate-50 opacity-70'
                 }`}>
                   <div className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border-2 transition sm:mt-0 ${
-                    timing === 'later' ? 'border-emerald-500' : 'border-slate-300'
+                    selection === 'later' ? 'border-emerald-500' : 'border-slate-300'
                   }`}>
-                    {timing === 'later' && (
+                    {selection === 'later' && (
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
@@ -1227,10 +1234,10 @@ function PaymentDetailsStep({
                   </div>
                   <input
                     type="radio"
-                    name="paymentTiming"
+                    name="paymentMethod"
                     className="sr-only"
                     disabled={!payLaterAvailable}
-                    checked={timing === 'later'}
+                    checked={selection === 'later'}
                     onChange={() => onChange('paymentTiming', 'later')}
                   />
                 </label>
@@ -1255,73 +1262,41 @@ function PaymentDetailsStep({
                   </div>
                 )}
 
-                {/* Pay-now collector choice. Rendered only when the server
-                    says PayPal is available for this brand, so the customer is
-                    never offered a method checkout would quietly swap for a
-                    card — and never hidden behind a dead "Coming soon" badge. */}
-                {timing === 'now' && paypalAvailable && (
-                  <div className="space-y-2">
-                    <p className="text-xs font-semibold text-slate-600">Pay with</p>
-
-                    <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
-                      selectedMethod === 'card'
-                        ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
-                        : 'border-slate-200/60 bg-white hover:border-slate-300'
+                {/* PayPal sits alongside the other options, rendered only when
+                    the server says it is available for this brand, so the
+                    customer is never offered a method checkout would quietly
+                    swap for a card. */}
+                {paypalAvailable && (
+                  <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
+                    selection === 'paypal'
+                      ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
+                      : 'border-slate-200/60 bg-white hover:border-slate-300'
+                  }`}>
+                    <div className={`grid size-5 shrink-0 place-items-center rounded-full border-2 transition ${
+                      selection === 'paypal' ? 'border-emerald-500' : 'border-slate-300'
                     }`}>
-                      <div className={`grid size-5 shrink-0 place-items-center rounded-full border-2 transition ${
-                        selectedMethod === 'card' ? 'border-emerald-500' : 'border-slate-300'
-                      }`}>
-                        {selectedMethod === 'card' && (
-                          <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            className="size-2.5 rounded-full bg-emerald-500"
-                          />
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <span className="text-sm font-semibold text-slate-900">Card</span>
-                        <p className="text-xs text-slate-400">Enter your card on the secure checkout page after you continue.</p>
-                      </div>
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        className="sr-only"
-                        checked={selectedMethod === 'card'}
-                        onChange={() => onChange('paymentMethod', 'card')}
-                      />
-                    </label>
-
-                    <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
-                      selectedMethod === 'paypal'
-                        ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
-                        : 'border-slate-200/60 bg-white hover:border-slate-300'
-                    }`}>
-                      <div className={`grid size-5 shrink-0 place-items-center rounded-full border-2 transition ${
-                        selectedMethod === 'paypal' ? 'border-emerald-500' : 'border-slate-300'
-                      }`}>
-                        {selectedMethod === 'paypal' && (
-                          <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            className="size-2.5 rounded-full bg-emerald-500"
-                          />
-                        )}
-                      </div>
-                      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1">
-                        <img src={payPalLogo} alt="PayPal" className="h-5 w-auto shrink-0" />
-                        <span className="text-xs text-slate-400">Pay with your PayPal balance or linked account</span>
-                      </div>
-                      <span className="shrink-0 text-sm font-bold text-slate-900">{formatPrice(tour.price)}</span>
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        className="sr-only"
-                        checked={selectedMethod === 'paypal'}
-                        onChange={() => onChange('paymentMethod', 'paypal')}
-                      />
-                    </label>
-                  </div>
+                      {selection === 'paypal' && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="size-2.5 rounded-full bg-emerald-500"
+                        />
+                      )}
+                    </div>
+                    <img src={paypalMark} alt="" aria-hidden="true" className="h-7 w-7 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <span className="text-sm font-semibold text-slate-900">Pay with PayPal</span>
+                      <p className="text-xs text-slate-400">Pay securely with your PayPal account</p>
+                    </div>
+                    <img src={payPalLogo} alt="PayPal" className="h-5 w-auto shrink-0" />
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      className="sr-only"
+                      checked={selection === 'paypal'}
+                      onChange={() => { onChange('paymentTiming', 'now'); onChange('paymentMethod', 'paypal') }}
+                    />
+                  </label>
                 )}
               </div>
             </div>
@@ -1336,6 +1311,13 @@ function PaymentDetailsStep({
                     : (cancellation?.label || 'Free cancellation')}
                 </span>
               </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 rounded-xl border border-emerald-200/50 bg-emerald-50/60 px-4 py-3">
+              <ShieldCheck className="size-4 shrink-0 text-emerald-600" />
+              <p className="text-xs font-medium leading-relaxed text-emerald-800">
+                Your payment is secure. We use Stripe and PayPal to keep your information safe.
+              </p>
             </div>
 
             <p className="text-xs leading-relaxed text-slate-400">
