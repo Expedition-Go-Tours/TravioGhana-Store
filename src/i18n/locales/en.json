@@ -210,6 +210,11 @@
     "yes": "Yes"
   },
   "footer": {
+    "mobileComingSoon": "Coming soon to mobile",
+    "getItOn": "GET IT ON",
+    "googlePlay": "Google Play",
+    "downloadOn": "Download on the",
+    "appStore": "App Store",
     "aboutUs": "About Us",
     "blog": "Blog",
     "cancellationHelp": "Cancellation Help",
