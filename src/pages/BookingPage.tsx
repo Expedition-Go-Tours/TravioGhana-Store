@@ -27,7 +27,7 @@ import { useAuthUser } from '../hooks/useAuthUser'
 import { setAuthReturnTo } from '../lib/auth'
 import type { CardElementHandle } from '../components/booking/CardField'
 import { fetchWithAuth } from '../lib/api'
-import { useCreateBooking, useCalculateCheckout } from '../hooks/useExpeditionBookings'
+import { useCreateBooking, useCalculateCheckout, usePaymentCapabilities } from '../hooks/useExpeditionBookings'
 import { buildE164Phone, isValidPhoneInput, splitE164Phone, COUNTRY_CODES, formatPhoneDisplay } from '../lib/phone'
 import { SUPPORT_PHONE, SUPPORT_PHONE_DIGITS } from '../lib/support'
 import { getAccount } from '../features/account/api'
@@ -1113,11 +1113,34 @@ function PaymentDetailsStep({
     nowMs,
   )
 
-  const buttonLabel = timing === 'later' ? 'Reserve Now' : 'Pay Now'
+  // Whether PayPal may be offered here at all — asked of the server, which
+  // derives it from the SAME predicate it applies when accepting the payment.
+  // A failed read falls back to card rather than blocking the customer.
+  const capabilities = usePaymentCapabilities('USD', 'now')
+  const paypalAvailable = Boolean(capabilities.data?.paypal.available)
+
+  // Which collector pay-now will use. Pay-later is always a card, and PayPal
+  // drops back to card the moment it stops being available, so the selected
+  // value can never describe a method the server would refuse.
+  const selectedMethod: 'card' | 'paypal' =
+    timing === 'later' || !paypalAvailable || data.paymentMethod !== 'paypal' ? 'card' : 'paypal'
+
+  const buttonLabel = timing === 'later'
+    ? 'Reserve Now'
+    : selectedMethod === 'paypal'
+      ? 'Pay with PayPal'
+      : 'Pay Now'
 
   const paymentSummary = (
     <div className="space-y-2 text-sm text-slate-600">
-      <p><span className="font-semibold text-slate-800">How to pay:</span> {timing === 'now' ? `Pay now — ${formatPrice(tour.price)}` : 'Reserve now, pay later'}</p>
+      <p>
+        <span className="font-semibold text-slate-800">How to pay:</span>{' '}
+        {timing === 'later'
+          ? 'Reserve now, pay later'
+          : selectedMethod === 'paypal'
+            ? `PayPal — ${formatPrice(tour.price)}`
+            : `Pay now — ${formatPrice(tour.price)}`}
+      </p>
     </div>
   )
 
@@ -1232,22 +1255,74 @@ function PaymentDetailsStep({
                   </div>
                 )}
 
-                {/* PayPal is visible now so the payment options read as one
-                    list, but it stays disabled until the backend can create a
-                    PayPal-only Stripe session. */}
-                <div
-                  aria-disabled="true"
-                  className="flex cursor-not-allowed items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-4 opacity-70"
-                >
-                  <div className="grid size-5 shrink-0 place-items-center rounded-full border-2 border-slate-300" />
-                  <div className="min-w-0 flex-1">
-                    <img src={payPalLogo} alt="PayPal" className="h-5 w-auto" />
-                    <p className="mt-1 text-xs text-slate-400">Pay with your PayPal balance or linked account</p>
+                {/* Pay-now collector choice. Rendered only when the server
+                    says PayPal is available for this brand, so the customer is
+                    never offered a method checkout would quietly swap for a
+                    card — and never hidden behind a dead "Coming soon" badge. */}
+                {timing === 'now' && paypalAvailable && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-slate-600">Pay with</p>
+
+                    <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
+                      selectedMethod === 'card'
+                        ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
+                        : 'border-slate-200/60 bg-white hover:border-slate-300'
+                    }`}>
+                      <div className={`grid size-5 shrink-0 place-items-center rounded-full border-2 transition ${
+                        selectedMethod === 'card' ? 'border-emerald-500' : 'border-slate-300'
+                      }`}>
+                        {selectedMethod === 'card' && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="size-2.5 rounded-full bg-emerald-500"
+                          />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-sm font-semibold text-slate-900">Card</span>
+                        <p className="text-xs text-slate-400">Enter your card on the secure checkout page after you continue.</p>
+                      </div>
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        className="sr-only"
+                        checked={selectedMethod === 'card'}
+                        onChange={() => onChange('paymentMethod', 'card')}
+                      />
+                    </label>
+
+                    <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
+                      selectedMethod === 'paypal'
+                        ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
+                        : 'border-slate-200/60 bg-white hover:border-slate-300'
+                    }`}>
+                      <div className={`grid size-5 shrink-0 place-items-center rounded-full border-2 transition ${
+                        selectedMethod === 'paypal' ? 'border-emerald-500' : 'border-slate-300'
+                      }`}>
+                        {selectedMethod === 'paypal' && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="size-2.5 rounded-full bg-emerald-500"
+                          />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <img src={payPalLogo} alt="PayPal" className="h-5 w-auto" />
+                        <p className="mt-1 text-xs text-slate-400">Pay with your PayPal balance or linked account</p>
+                      </div>
+                      <span className="shrink-0 text-sm font-bold text-slate-900">{formatPrice(tour.price)}</span>
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        className="sr-only"
+                        checked={selectedMethod === 'paypal'}
+                        onChange={() => onChange('paymentMethod', 'paypal')}
+                      />
+                    </label>
                   </div>
-                  <span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-500 ring-1 ring-slate-200">
-                    Coming soon
-                  </span>
-                </div>
+                )}
               </div>
             </div>
 
@@ -2166,6 +2241,14 @@ export default function BookingPage() {
         // Pay-now uses the branded Payment Element checkout (the server mints
         // the PaymentIntent; the amount is never trusted from the browser).
         ...(paymentTiming === 'now' ? { checkoutFlow: 'payment-element' as const } : {}),
+        // Which collector the customer chose for a pay-now booking. Never sent
+        // for pay-later (a card is mandatory there), and never trusted: the
+        // server re-runs the same availability check and, if it cannot honour
+        // PayPal, answers with a Stripe payment instead of an error — which is
+        // why the branch below reads the RESPONSE, not this value.
+        ...(paymentTiming === 'now'
+          ? { paymentProvider: payment.paymentMethod === 'paypal' ? ('paypal' as const) : ('stripe' as const) }
+          : {}),
         specialRequests: '',
         // Lead traveler details from the "Lead Traveler Details" step so the
         // supplier dashboard and confirmation emails show the traveler rather
@@ -2186,6 +2269,15 @@ export default function BookingPage() {
       }
 
       const result = await createBooking.mutateAsync(payload)
+
+      // PayPal: the server created an order and handed back its hosted page.
+      // Full-page navigation (not a client-side route) because PayPal later
+      // redirects the browser to our own /booking/paypal/return URL, so this
+      // page is finished either way.
+      if (result?.payment?.provider === 'paypal' && result.payment.approvalUrl) {
+        window.location.assign(result.payment.approvalUrl)
+        return
+      }
 
       // Pay now (branded Payment Element): the backend minted an unconfirmed
       // PaymentIntent for the reserved spot. Continue on our own checkout page —
@@ -2214,7 +2306,7 @@ export default function BookingPage() {
     } finally {
       setIsBooking(false)
     }
-  }, [createBooking, contact, editableTour, tour, showPickupLocation, zonesDrawn, hasPointAreas, pickupZoneStatusValue, isBooking, isActive, pollBooking, user, payment.paymentTiming, appliedPromo, promoCode, hasMultipleOptions, selectedOptionId])
+  }, [createBooking, contact, editableTour, tour, showPickupLocation, zonesDrawn, hasPointAreas, pickupZoneStatusValue, isBooking, isActive, pollBooking, user, payment.paymentTiming, payment.paymentMethod, appliedPromo, promoCode, hasMultipleOptions, selectedOptionId])
 
   const handleCheckoutTransitionDone = useCallback(() => {
     if (pendingCheckoutUrl.current) {

@@ -2,8 +2,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { bookingPath } from '../lib/tourPath'
 import { AnimatePresence } from 'framer-motion'
-import { ArrowLeft, ChevronDown, Loader2, Lock, ShieldCheck } from 'lucide-react'
-import { useCheckoutDraft, useReleaseCheckoutDraft, type CheckoutDraftSummary } from '../hooks/useExpeditionBookings'
+import { ArrowLeft, ChevronDown, ExternalLink, Loader2, Lock, ShieldCheck } from 'lucide-react'
+import {
+  useCheckoutDraft,
+  useReleaseCheckoutDraft,
+  usePaypalApproval,
+  useCapturePaypalPayment,
+  useBookingByPaypalOrder,
+  type CheckoutDraftSummary,
+} from '../hooks/useExpeditionBookings'
 import CheckoutElements, { type CheckoutElementsHandle } from '../components/booking/CheckoutElements'
 import BookingTransition from '../components/BookingTransition'
 import { currencySymbol } from '../lib/currencySymbol'
@@ -167,6 +174,41 @@ export default function CheckoutPage() {
     return `${window.location.origin}/booking/confirmation?session_id=${encodeURIComponent(paymentIntentId)}`
   }, [paymentIntentId])
 
+  // ── PayPal draft ─────────────────────────────────────────────────────────
+  // A PayPal hold has no PaymentIntent, so `clientSecret` is null and this page
+  // would otherwise fall into the "Checkout unavailable" state on the very
+  // refresh it exists to survive. Instead it becomes a way back to PayPal —
+  // or, if the customer already approved the order elsewhere, a capture.
+  const isPaypalDraft = draft?.payment?.provider === 'paypal'
+  const paypalOrderId = draft?.payment?.paypalOrderId || null
+  const approval = usePaypalApproval(isPaypalDraft ? paypalOrderId : null)
+  const paypalPoll = useBookingByPaypalOrder(isPaypalDraft ? paypalOrderId : null)
+  const capturePaypal = useCapturePaypalPayment()
+  const paypalNavigatedRef = useRef(false)
+  const paypalCapturedRef = useRef(false)
+
+  const paypalOrderStatus = approval.data?.orderStatus ?? null
+  // Approved on PayPal's side but not yet captured by us — capture it here
+  // rather than sending the customer back to a page they have already left.
+  const paypalShouldCapture =
+    paypalOrderStatus === 'APPROVED' || paypalOrderStatus === 'COMPLETED'
+
+  useEffect(() => {
+    if (!isPaypalDraft || !paypalShouldCapture || !paypalOrderId || paypalCapturedRef.current) return
+    paypalCapturedRef.current = true
+    capturePaypal.mutate(paypalOrderId)
+  }, [isPaypalDraft, paypalShouldCapture, paypalOrderId, capturePaypal])
+
+  // Either the capture call or the webhook may have materialized the booking —
+  // whichever lands first wins, and the ref makes a refresh after navigation a
+  // no-op.
+  useEffect(() => {
+    const bookingId = capturePaypal.data?.booking?.id || paypalPoll.data?.booking?.id
+    if (!bookingId || paypalNavigatedRef.current) return
+    paypalNavigatedRef.current = true
+    navigate(`/booking/confirmation/${bookingId}`, { replace: true })
+  }, [capturePaypal.data?.booking?.id, paypalPoll.data?.booking?.id, navigate])
+
   const onElementsReady = useCallback((handle: CheckoutElementsHandle) => {
     elementsHandleRef.current = handle
   }, [])
@@ -265,6 +307,76 @@ export default function CheckoutPage() {
   }
 
   // Unavailable / expired checkout â€” full-page state (no split layout).
+  // ── PayPal draft ─────────────────────────────────────────────────────────
+  // Nothing here can collect money — Stripe has no PaymentIntent for this hold.
+  // The page either sends the customer back to PayPal, confirms a payment they
+  // already approved, or reports honestly that the hold is gone.
+  if (isPaypalDraft) {
+    const bookingId = capturePaypal.data?.booking?.id || paypalPoll.data?.booking?.id
+    const holdGone =
+      approval.data?.status === 'EXPIRED' ||
+      approval.data?.status === 'REFUNDED' ||
+      paypalPoll.data?.status === 'EXPIRED' ||
+      paypalPoll.data?.status === 'REFUNDED'
+    const failed = approval.isError || capturePaypal.isError || holdExpired || (holdGone && !bookingId)
+    const confirming = !failed && !approval.isLoading &&
+      (Boolean(bookingId) || paypalShouldCapture || capturePaypal.isPending || capturePaypal.isSuccess)
+    const showLink = !failed && !confirming && !approval.isLoading && Boolean(approval.data?.approvalUrl)
+
+    const failureMessage =
+      (capturePaypal.error instanceof Error && capturePaypal.error.message) ||
+      (approval.error instanceof Error && approval.error.message) ||
+      (approval.data?.status === 'REFUNDED' || paypalPoll.data?.status === 'REFUNDED'
+        ? 'This booking hold ended before your payment completed. You have been refunded in full.'
+        : 'This booking hold expired before the payment could be completed. Please start again from your tour.')
+
+    const title = failed
+      ? "Payment couldn't be completed"
+      : confirming
+        ? 'Confirming your payment'
+        : approval.isLoading
+          ? 'Loading your payment…'
+          : showLink
+            ? 'Continue to PayPal'
+            : 'Payment unavailable'
+
+    const body = failed
+      ? failureMessage
+      : confirming
+        ? 'PayPal is confirming this payment. Your spot is held — this only takes a moment.'
+        : approval.isLoading
+          ? 'Fetching the status of your payment…'
+          : showLink
+            ? 'Your spot is held while you pay. You will return to this site as soon as PayPal finishes.'
+            : 'This payment can no longer be completed from here. Please start again from your tour.'
+
+    return (
+      <div className="co-page">
+        <div className="co-state co-state-card">
+          <div className={`co-state-icon${failed ? ' co-state-icon-warn' : ''}`}>
+            {failed ? <Lock size={22} /> : <Loader2 size={22} className="animate-spin" />}
+          </div>
+          <h1 className="co-state-title">{title}</h1>
+          <p className="co-state-body">{body}</p>
+          <div className="co-state-actions">
+            {showLink && (
+              <a
+                className="co-btn co-btn-solid"
+                href={approval.data?.approvalUrl as string}
+                rel="noopener noreferrer"
+              >
+                Continue to PayPal <ExternalLink size={14} />
+              </a>
+            )}
+            <button type="button" className="co-btn co-btn-ghost" onClick={() => navigate('/')}>
+              Return home
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (isError || !draft || !clientSecret || !returnUrl) {
     return (
       <div className="co-page">

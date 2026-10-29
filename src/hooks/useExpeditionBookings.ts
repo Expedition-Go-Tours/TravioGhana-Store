@@ -241,6 +241,11 @@ interface ConfirmBookingInput {
   /** Pay-now checkout mode. 'hosted' = Stripe Checkout redirect (legacy); 'payment-element'
    * = branded custom checkout (server-created PaymentIntent, settled by webhook). */
   checkoutFlow?: 'hosted' | 'payment-element'
+  /** Which processor to collect with for a pay-now booking. The SERVER decides
+   *  authoritatively: when it cannot honour 'paypal' (disabled, brand not
+   *  enrolled, non-USD, pay-later) it answers with a Stripe payment instead of
+   *  an error, so callers must branch on the response's `payment.provider`. */
+  paymentProvider?: 'stripe' | 'paypal'
   specialRequests?: string
   /** Validated promo code — the backend re-prices with it (expeditionController.confirmBooking). */
   promoCode?: string
@@ -278,11 +283,18 @@ interface ConfirmBookingResponse {
    * payment_intent.succeeded webhook (never by the frontend saying "it worked"). */
   payment?: {
     draftId: string
-    paymentIntentId: string
-    clientSecret: string
+    /** Absent on older responses — treat as Stripe. Present, the branch that
+     *  decides whether we render our checkout or redirect to PayPal. */
+    provider?: 'stripe' | 'paypal'
+    /** Stripe pay-now: null for a PayPal draft (there is no PaymentIntent). */
+    paymentIntentId: string | null
+    clientSecret: string | null
     expiresAt: string
     amount: number
     currency: string
+    /** PayPal only: the order id and the hosted page to send the browser to. */
+    orderId?: string
+    approvalUrl?: string
   }
   /** Reserve-now-pay-later: uncharged PaymentIntent (captured by the auto-charge sweep near the activity date). */
   clientSecret?: string
@@ -317,6 +329,10 @@ export interface CheckoutDraftSummary {
   paymentIntentId: string | null
   clientSecret: string | null
   customerSessionClientSecret: string | null
+  /** Which collector this draft is waiting on. A PayPal draft has no
+   *  PaymentIntent, so the checkout page must branch on this before it tries
+   *  to mount a Stripe Element. */
+  payment?: { provider: 'stripe' | 'paypal'; paypalOrderId: string | null }
 }
 
 export function useCreateBooking() {
@@ -329,6 +345,122 @@ export function useCreateBooking() {
       const payload = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(payload.message || `Request failed (${res.status})`)
       return (payload.data ?? payload) as ConfirmBookingResponse
+    },
+  })
+}
+
+/**
+ * Payment methods this storefront may actually offer, right now.
+ *
+ * Derived server-side from the SAME predicate checkout uses to accept a
+ * payment, so the UI can never advertise a method the server would then swap
+ * for Stripe. Public (no auth) — it describes configuration, not a customer.
+ */
+export interface PaymentCapabilities {
+  stripe: { available: boolean }
+  paypal: {
+    available: boolean
+    /** Machine-readable reason when unavailable: disabled | not_configured |
+     *  brand_not_enabled | unsupported_currency | unsupported_timing */
+    reason: string | null
+    currencies: string[]
+    mode: 'sandbox' | 'live'
+  }
+}
+
+export function usePaymentCapabilities(currency = 'USD', timing: 'now' | 'later' = 'now') {
+  return useQuery<PaymentCapabilities>({
+    queryKey: ['expedition', 'payment-capabilities', currency, timing],
+    queryFn: async () => {
+      const params = new URLSearchParams({ currency, timing })
+      const res = await fetchWithAuth(`/travioghana/payments/capabilities?${params.toString()}`)
+      const payload = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(payload.message || `Request failed (${res.status})`)
+      return (payload.data ?? payload) as PaymentCapabilities
+    },
+    staleTime: 60_000,
+    retry: 1,
+  })
+}
+
+/**
+ * POST /travioghana/checkout/paypal/capture
+ *
+ * The browser's half of the PayPal return: capturing is idempotent, so the
+ * return page, a refresh and the webhook may all race it. Never resolves to a
+ * booking on its own — the caller reads `status` and polls when it is 202.
+ */
+export interface PaypalCaptureResult {
+  status: 'PAID' | 'PROCESSING'
+  booking?: BookingBySessionResponse['booking']
+  message?: string
+}
+
+export function useCapturePaypalPayment() {
+  return useMutation({
+    mutationFn: async (orderId: string): Promise<PaypalCaptureResult> => {
+      const res = await fetchWithAuth('/travioghana/checkout/paypal/capture', {
+        method: 'POST',
+        body: JSON.stringify({ orderId }),
+      })
+      const payload = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(payload.message || `Request failed (${res.status})`)
+      return (payload.data ?? payload) as PaypalCaptureResult
+    },
+  })
+}
+
+/**
+ * GET /travioghana/checkout/paypal/approval/:orderId
+ *
+ * Re-issues the hosted approval link for a hold that is still open — used when
+ * the checkout page is reloaded after the customer was sent to PayPal (or
+ * before they go).
+ */
+export interface PaypalApprovalResult {
+  status: 'HOLDING' | 'PAID' | 'EXPIRED' | 'REFUNDED'
+  orderStatus: string | null
+  approvalUrl: string | null
+  bookingId: string | null
+}
+
+export function usePaypalApproval(orderId: string | null) {
+  return useQuery<PaypalApprovalResult>({
+    queryKey: ['expedition', 'paypal-approval', orderId],
+    queryFn: async () => {
+      const res = await fetchWithAuth(`/travioghana/checkout/paypal/approval/${encodeURIComponent(orderId!)}`)
+      const payload = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(payload.message || `Request failed (${res.status})`)
+      return (payload.data ?? payload) as PaypalApprovalResult
+    },
+    enabled: !!orderId,
+    retry: 1,
+    staleTime: 0,
+  })
+}
+
+/**
+ * GET /travioghana/bookings/by-paypal-order/:orderId
+ *
+ * The PayPal counterpart of useBookingBySession — same response shape and the
+ * same stop conditions, keyed by PayPal's order id instead of a Stripe
+ * session id.
+ */
+export function useBookingByPaypalOrder(orderId: string | null) {
+  return useQuery<BookingBySessionResponse>({
+    queryKey: ['expedition', 'booking-by-paypal-order', orderId],
+    queryFn: async () => {
+      const res = await fetchWithAuth(`/travioghana/bookings/by-paypal-order/${encodeURIComponent(orderId!)}`)
+      const payload = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(payload.message || `Request failed (${res.status})`)
+      return (payload.data ?? payload) as BookingBySessionResponse
+    },
+    enabled: !!orderId,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status
+      if (status === 'PAID' || status === 'EXPIRED' || status === 'REFUNDED') return false
+      if ((query.state.dataUpdateCount ?? 0) >= 60) return false
+      return 2000
     },
   })
 }

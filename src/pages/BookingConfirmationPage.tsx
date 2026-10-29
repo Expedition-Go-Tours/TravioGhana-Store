@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
 import confetti from 'canvas-confetti'
 import { Check, CalendarDays, Clock, Users, MapPin, CreditCard, ShieldCheck, Phone, Mail, Printer, Star, Ticket, Globe, AlertTriangle, Loader2 } from 'lucide-react'
-import { useExpeditionBookingDetail, useBookingBySession } from '../hooks/useExpeditionBookings'
+import { useExpeditionBookingDetail, useBookingBySession, useBookingByPaypalOrder } from '../hooks/useExpeditionBookings'
 import { extractMeetingInfo, extractAvailabilitySchedule, formatCancellationPolicy, formatDuration } from '../hooks/useExpeditionTours'
 import { buildE164Phone, isValidPhoneInput } from '../lib/phone'
 import { formatTime12h, weeklyHoursRange, openingHoursForDay, formatTimeSlotList } from '../lib/tourAvailability'
@@ -95,26 +95,34 @@ export default function BookingConfirmationPage() {
   const { bookingId } = useParams<{ bookingId: string }>()
   const [searchParams] = useSearchParams()
   const sessionId = searchParams.get('session_id')
+  // PayPal pay-now returns from PayPal's page carrying its order id.
+  const paypalOrderId = searchParams.get('paypal_order')
   const navigate = useNavigate()
   const { t } = useTranslation()
   const user = useAuthUser()
 
-  // Pay-now: poll by session id (no Booking exists yet).
+  // Pay-now: poll by session id (Stripe) or by order id (PayPal) — no Booking
+  // exists yet in either case.
   // Pay-later / legacy: poll by booking id (Booking exists immediately).
   const sessionQuery = useBookingBySession(sessionId)
+  const paypalQuery = useBookingByPaypalOrder(paypalOrderId)
   const bookingQuery = useExpeditionBookingDetail(bookingId)
   const queryClient = useQueryClient()
 
-  // Decide which data source to use.
-  const isSessionMode = !!sessionId
-  const sessionData = sessionQuery.data as { status?: string; booking?: { id: string; [k: string]: unknown } } | undefined
+  // Decide which data source to use. Both hold-polling modes share the same
+  // response shape, so everything below (redirect, stop conditions, receipt
+  // seeding) works identically for the two processors.
+  const isPaypalMode = !sessionId && !!paypalOrderId
+  const isSessionMode = !!sessionId || isPaypalMode
+  const holdQuery = isPaypalMode ? paypalQuery : sessionQuery
+  const sessionData = holdQuery.data as { status?: string; booking?: { id: string; [k: string]: unknown } } | undefined
   const sessionStatus = sessionData?.status
   const sessionBooking = sessionData?.booking
 
   const booking = isSessionMode ? sessionBooking ?? null : bookingQuery.data ?? null
-  const isLoading = isSessionMode ? sessionQuery.isLoading : bookingQuery.isLoading
-  const isError = isSessionMode ? sessionQuery.isError : bookingQuery.isError
-  const refetch = isSessionMode ? sessionQuery.refetch : bookingQuery.refetch
+  const isLoading = isSessionMode ? holdQuery.isLoading : bookingQuery.isLoading
+  const isError = isSessionMode ? holdQuery.isError : bookingQuery.isError
+  const refetch = isSessionMode ? holdQuery.refetch : bookingQuery.refetch
 
   // ── Session mode: redirect to confirmation once materialized ────────
   // Move to the canonical /booking/confirmation/:bookingId URL (replace keeps

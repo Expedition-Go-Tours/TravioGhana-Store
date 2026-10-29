@@ -56,6 +56,7 @@ const ListExperiencePage = lazy(() => import('./pages/supplier/ListExperiencePag
 const BookingPage = lazy(() => import('./pages/BookingPage'))
 const BookingConfirmationPage = lazy(() => import('./pages/BookingConfirmationPage'))
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'))
+const PaypalReturnPage = lazy(() => import('./pages/PaypalReturnPage'))
 const CancellationChoicePage = lazy(() => import('./pages/CancellationChoicePage'))
 const BookingPickupPage = lazy(() => import('./pages/BookingPickupPage'))
 
@@ -454,6 +455,10 @@ function AppContent() {
           <Route path="/:tourId/booking" element={<BookingPage />} />
           <Route path="/:tourId/:tourSlug/booking" element={<BookingPage />} />
           <Route path="/booking/checkout" element={<CheckoutPage />} />
+          {/* PayPal sends the browser back to exactly this path with
+              ?token=<orderId>; the page captures (idempotent) and polls, and
+              may be hit before or after the webhook settles the booking. */}
+          <Route path="/booking/paypal/return" element={<PaypalReturnPage />} />
           <Route path="/booking/confirmation/:bookingId" element={<BookingConfirmationPage />} />
           <Route path="/booking/confirmation" element={<BookingConfirmationPage />} />
           <Route path="/booking/:bookingId/pickup" element={<BookingPickupPage />} />
