@@ -20,13 +20,20 @@ const CARD_UNAVAILABLE = 'Card entry is unavailable right now — payment settin
 
 export default function CardField({
   onReady,
+  disabled = false,
 }: {
   onReady: (handle: CardElementHandle) => void
+  /** Keeps the "Card number" row visible but non-interactive when card entry
+   *  happens later in the flow (pay-now and PayPal). */
+  disabled?: boolean
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [error, setError] = useState<string | null>(null)
   const cardRef = useRef<StripeCardElement | null>(null)
   const stripePromiseRef = useRef(getStripePromise())
+  // Read by the mount effect without making it re-create the Element whenever
+  // the caller toggles the option; the effect below applies later changes.
+  const disabledRef = useRef(disabled)
 
   useEffect(() => {
     const container = containerRef.current
@@ -50,6 +57,7 @@ export default function CardField({
             style: CARD_STYLE,
             hidePostalCode: true,
             hideIcon: false,
+            disabled: disabledRef.current,
           })
           if (cancelled) {
             card.destroy()
@@ -81,11 +89,20 @@ export default function CardField({
     }
   }, [onReady])
 
+  useEffect(() => {
+    disabledRef.current = disabled
+    cardRef.current?.update({ disabled })
+  }, [disabled])
+
   return (
     <div>
       <div
         ref={containerRef}
-        className="rounded-xl border border-slate-200 bg-slate-50/40 p-3 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-100"
+        className={`rounded-xl border border-slate-200 bg-slate-50/40 p-3 transition-opacity ${
+          disabled
+            ? 'opacity-60'
+            : 'focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-100'
+        }`}
       />
       {error && <p className="mt-2 text-xs font-medium text-rose-600">{error}</p>}
     </div>

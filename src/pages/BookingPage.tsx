@@ -9,6 +9,7 @@ import {
   Car, ExternalLink, Layers,
 } from 'lucide-react'
 import logoSrc from '../assets/TravioGhana_Logo.svg'
+import payPalLogo from '../assets/payments/paypal-logo.svg'
 import SEO from '../components/SEO'
 import Footer from '../components/Footer'
 import StepBadge from '../components/booking/StepBadge'
@@ -1067,6 +1068,7 @@ function PaymentDetailsStep({
   const isActive = step === 3
   const isCompleted = step > 3
   const [cardHandle, setCardHandle] = useState<CardElementHandle | null>(null)
+  const handleDisabledCardReady = useCallback(() => {}, [])
   const [creating, setCreating] = useState(false)
   const [selectedCardId, setSelectedCardId] = useState('')
   const user = useAuthUser()
@@ -1116,7 +1118,7 @@ function PaymentDetailsStep({
 
   const paymentSummary = (
     <div className="space-y-2 text-sm text-slate-600">
-      <p><span className="font-semibold text-slate-800">When to pay:</span> {timing === 'now' ? `Pay now — ${formatPrice(tour.price)}` : 'Reserve now, pay later'}</p>
+      <p><span className="font-semibold text-slate-800">How to pay:</span> {timing === 'now' ? `Pay now — ${formatPrice(tour.price)}` : 'Reserve now, pay later'}</p>
     </div>
   )
 
@@ -1147,7 +1149,7 @@ function PaymentDetailsStep({
             className="space-y-6 p-7 sm:p-9"
           >
             <div>
-              <p className="mb-3 text-sm font-semibold text-slate-800">Choose when to pay</p>
+              <p className="mb-3 text-sm font-semibold text-slate-800">Choose How to Pay</p>
               <div className="space-y-2">
                 <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
                   timing === 'now'
@@ -1210,6 +1212,51 @@ function PaymentDetailsStep({
                     onChange={() => onChange('paymentTiming', 'later')}
                   />
                 </label>
+
+                {/* Card details stay visible in every state. They are only
+                    interactive for reserve-now/pay-later; pay-now and PayPal
+                    collect their details on the secure checkout page. */}
+                <div className="space-y-3">
+                  <p className="text-xs font-semibold text-slate-600">Card details</p>
+                  {timing === 'later' ? (
+                    !savedCardsReady ? (
+                      <div className="h-[52px] animate-pulse rounded-xl border border-slate-200/60 bg-slate-50/40" />
+                    ) : (
+                      <div className="space-y-3">
+                        <SavedCardPicker
+                          cards={savedCards}
+                          value={effectiveCardId}
+                          onChange={setSelectedCardId}
+                        />
+                        {effectiveCardId === NEW_CARD && <CardField onReady={setCardHandle} />}
+                      </div>
+                    )
+                  ) : (
+                    <>
+                      <CardField disabled onReady={handleDisabledCardReady} />
+                      <p className="text-xs leading-relaxed text-slate-400">
+                        Card details are entered on the secure checkout page after you continue.
+                      </p>
+                    </>
+                  )}
+                </div>
+
+                {/* PayPal is visible now so the payment options read as one
+                    list, but it stays disabled until the backend can create a
+                    PayPal-only Stripe session. */}
+                <div
+                  aria-disabled="true"
+                  className="flex cursor-not-allowed items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-4 opacity-70"
+                >
+                  <div className="grid size-5 shrink-0 place-items-center rounded-full border-2 border-slate-300" />
+                  <div className="min-w-0 flex-1">
+                    <img src={payPalLogo} alt="PayPal" className="h-5 w-auto" />
+                    <p className="mt-1 text-xs text-slate-400">Pay with your PayPal balance or linked account</p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-500 ring-1 ring-slate-200">
+                    Coming soon
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -1224,24 +1271,6 @@ function PaymentDetailsStep({
                 </span>
               </div>
             </div>
-
-            {timing === 'now' ? (
-              <div className="flex items-center justify-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50/50 px-4 py-3 text-sm text-emerald-700">
-                <ShieldCheck className="size-4 shrink-0" />
-                <span>Secure payment powered by Stripe — you'll finish on the next step.</span>
-              </div>
-            ) : !savedCardsReady ? (
-              <div className="h-[52px] animate-pulse rounded-xl border border-slate-200/60 bg-slate-50/40" />
-            ) : (
-              <div className="space-y-3">
-                <SavedCardPicker
-                  cards={savedCards}
-                  value={effectiveCardId}
-                  onChange={setSelectedCardId}
-                />
-                {effectiveCardId === NEW_CARD && <CardField onReady={setCardHandle} />}
-              </div>
-            )}
 
             <p className="text-xs leading-relaxed text-slate-400">
               By clicking &quot;{buttonLabel}&quot;, you agree to our{' '}
