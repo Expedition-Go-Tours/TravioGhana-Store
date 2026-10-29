@@ -54,7 +54,6 @@ import klarnaLogo from '@/assets/payments/klarna-logo.svg'
 import linkLogo from '@/assets/payments/link-logo.svg'
 import mastercard from '@/assets/payments/mastercard.png'
 import mastercardLogo from '@/assets/payments/mastercard-logo.svg'
-import payPalLogo from '@/assets/payments/paypal-logo.svg'
 import sepaDirectDebitLogo from '@/assets/payments/sepa-direct-debit-logo.svg'
 import stripe from '@/assets/payments/stripe.svg'
 import visa from '@/assets/payments/visa.svg'
@@ -688,7 +687,7 @@ export default function PaymentsSecurityPage() {
       </div>
       <div className="method-panel" id="panel-cards" role="tabpanel" aria-labelledby="tab-cards" tabIndex={0} hidden={activeTab !== 'cards'}>
         <h3>Pay with a supported debit or credit card.</h3>
-        <p>Major card networks supported by Stripe include Visa, Mastercard and American Express. Other networks, such as Discover, Diners Club, JCB and UnionPay, depend on account location and payment configuration.</p>
+        <p>Major card networks supported by Stripe include Visa, Mastercard and American Express. Other networks, such as Discover, Diners Club, JCB and UnionPay, depend on account location and payment configuration. PayPal is also accepted for eligible accounts.</p>
         <div className="brand-grid official-methods">
           <div className="brand-card">
             <div className="payment-logo-stage">
@@ -779,13 +778,6 @@ export default function PaymentsSecurityPage() {
             </div>
             <span>Link</span>
             <small>Stripe’s digital wallet</small>
-          </div>
-          <div className="brand-card">
-            <div className="payment-logo-stage">
-              <img src={payPalLogo} alt="PayPal logo" loading="lazy" />
-            </div>
-            <span>PayPal</span>
-            <small>Eligible accounts & markets</small>
           </div>
         </div>
         <a className="source-link" href="https://docs.stripe.com/payments/wallets" target="_blank" rel="noopener noreferrer">Stripe wallet support <svg viewBox="0 0 24 24" aria-hidden="true" className="icon">
