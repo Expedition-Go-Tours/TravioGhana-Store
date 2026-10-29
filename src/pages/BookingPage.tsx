@@ -1308,9 +1308,9 @@ function PaymentDetailsStep({
                           />
                         )}
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <img src={payPalLogo} alt="PayPal" className="h-5 w-auto" />
-                        <p className="mt-1 text-xs text-slate-400">Pay with your PayPal balance or linked account</p>
+                      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1">
+                        <img src={payPalLogo} alt="PayPal" className="h-5 w-auto shrink-0" />
+                        <span className="text-xs text-slate-400">Pay with your PayPal balance or linked account</span>
                       </div>
                       <span className="shrink-0 text-sm font-bold text-slate-900">{formatPrice(tour.price)}</span>
                       <input
