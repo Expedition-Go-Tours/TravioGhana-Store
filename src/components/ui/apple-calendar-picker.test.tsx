@@ -79,6 +79,26 @@ describe('CalendarPicker availability dots', () => {
   })
 })
 
+describe('CalendarPicker layout modes', () => {
+  it('stays anchored to its trigger by default', () => {
+    stubMatchMedia(false)
+    renderPicker()
+    const panel = document.querySelector('[data-inline="false"]')
+    expect(panel).not.toBeNull()
+    expect(panel?.className).toContain('absolute')
+    expect(panel?.className).toContain('top-full')
+  })
+
+  it('renders in normal flow when inline is requested', () => {
+    stubMatchMedia(false)
+    renderPicker({ inline: true })
+    const panel = document.querySelector('[data-inline="true"]')
+    expect(panel).not.toBeNull()
+    expect(panel?.className).toContain('relative')
+    expect(panel?.className).not.toContain('absolute')
+  })
+})
+
 describe('CalendarPicker sold-out / closed hardening', () => {
   it('renders a sold-out date as a non-selectable cell (not a button)', () => {
     stubMatchMedia(false)

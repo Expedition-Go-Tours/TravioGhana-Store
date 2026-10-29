@@ -630,9 +630,27 @@
 .change-booking-body {
   scrollbar-width: none;
   -ms-overflow-style: none;
+  /* Keep the modal's own scroll from chaining to the locked page behind it. */
+  overscroll-behavior: contain;
 }
 
 .change-booking-body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* While the Change sheet is open, remove the viewport scrollbar entirely —
+   hiding only the overflow can still leave the browser's grey track visible. */
+html.eg-modal-scroll-lock,
+html.eg-modal-scroll-lock body {
+  overflow: hidden !important;
+  scrollbar-width: none;
+}
+
+html.eg-modal-scroll-lock::-webkit-scrollbar {
+  width: 0;
+  height: 0;
   display: none;
 }
 

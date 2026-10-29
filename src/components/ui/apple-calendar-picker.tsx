@@ -42,6 +42,12 @@ interface CalendarPickerProps {
   onClose: () => void
   onDateSelect: (date: Date) => void
   selectedDate?: Date | null
+  /**
+   * Render the panel in normal document flow instead of as an absolutely
+   * positioned popover. Used inside modals whose scrollable body would
+   * otherwise clip the panel.
+   */
+  inline?: boolean
   /** Optional per-date availability lookup. When omitted, all future dates are treated as available. */
   getAvailability?: (date: Date) => DayAvailabilityStatus
   /** Optional remaining/capacity counts for a date (shown under the day number on available/limited days). */
@@ -81,7 +87,7 @@ interface CalendarPickerProps {
   getKeepOpenOnSelect?: (date: Date) => boolean
 }
 
-export const CalendarPicker = ({ isOpen, onClose, onDateSelect, selectedDate, getAvailability, getDayCounts, loading, onMonthChange, requireConfirmation = false, footer, getKeepOpenOnSelect }: CalendarPickerProps) => {
+export const CalendarPicker = ({ isOpen, onClose, onDateSelect, selectedDate, getAvailability, getDayCounts, loading, onMonthChange, requireConfirmation = false, footer, getKeepOpenOnSelect, inline = false }: CalendarPickerProps) => {
   const defaultDate = selectedDate || TODAY
   const [currentYear, setCurrentYear] = useState(defaultDate.getFullYear())
   const [currentMonth, setCurrentMonth] = useState(defaultDate.getMonth())
@@ -358,7 +364,11 @@ export const CalendarPicker = ({ isOpen, onClose, onDateSelect, selectedDate, ge
   }
 
   return (
-    <div ref={calendarRef} className="absolute top-full left-0 z-50 mt-1.5 w-full bg-white border border-black/[0.06] rounded-[20px] shadow-[0_12px_32px_-8px_rgba(0,0,0,0.18)] overflow-hidden p-5 animate-in fade-in zoom-in duration-200 origin-top">
+    <div
+      ref={calendarRef}
+      data-inline={inline ? 'true' : 'false'}
+      className={`${inline ? 'relative' : 'absolute top-full left-0'} z-50 mt-1.5 w-full bg-white border border-black/[0.06] rounded-[20px] shadow-[0_12px_32px_-8px_rgba(0,0,0,0.18)] overflow-hidden p-5 animate-in fade-in zoom-in duration-200 origin-top`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <button

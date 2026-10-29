@@ -12,6 +12,7 @@ import BookingDeadlineTimer from '../../pages/tour-detail/BookingDeadlineTimer'
 import { categoryKey, categoryPayloadKey } from '../../lib/travelerBuckets'
 import { groupBandLabel } from '../../lib/groupPricing'
 import { useQueryClient } from '@tanstack/react-query'
+import { getLenis } from '../../lib/LenisProvider'
 import '../../pages/tour-detail/BookingWidget.css'
 
 interface ChangeBookingTour {
@@ -93,6 +94,36 @@ export default function ChangeBookingModal({ tour, isOpen, onClose, onReserve, i
   const [selectedTime, setSelectedTime] = useState<string | null>(initialTime || null)
   // Wall-clock captured on mount for cut-off urgency + cancellation-window checks.
   const [nowMs] = useState(() => Date.now())
+
+  // Lock the page while the sheet is open. `html` must be locked as well as
+  // `body`: index.css applies `overflow-x: clip` to the root, so hiding body
+  // alone leaves the viewport scrollable underneath the modal.
+  useEffect(() => {
+    if (!isOpen) return
+    const root = document.documentElement
+    const body = document.body
+    const lenis = getLenis()
+    // Lenis drives the document with its own wheel/touch loop, so hiding the
+    // overflow alone leaves the page moving underneath the sheet.
+    lenis?.stop()
+    root.classList.add('eg-modal-scroll-lock')
+
+    const prevRootOverflow = root.style.overflow
+    const prevBodyOverflow = body.style.overflow
+    const prevBodyPaddingRight = body.style.paddingRight
+    const scrollbarWidth = window.innerWidth - root.clientWidth
+    root.style.overflow = 'hidden'
+    body.style.overflow = 'hidden'
+    if (scrollbarWidth > 0) body.style.paddingRight = `${scrollbarWidth}px`
+
+    return () => {
+      root.classList.remove('eg-modal-scroll-lock')
+      lenis?.start()
+      root.style.overflow = prevRootOverflow
+      body.style.overflow = prevBodyOverflow
+      body.style.paddingRight = prevBodyPaddingRight
+    }
+  }, [isOpen])
 
   // Authoritative price for the selected date + traveller mix — the same
   // checkout calculation the tour detail page uses. Debounced so rapid
@@ -333,10 +364,13 @@ export default function ChangeBookingModal({ tour, isOpen, onClose, onReserve, i
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 40 }}
         transition={{ duration: 0.2 }}
+        role="dialog"
+        aria-modal="true"
+        aria-label={tour.title}
         className="relative z-10 flex max-h-[90vh] w-full max-w-[560px] flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl"
       >
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-slate-100 px-6 py-5">
+        <div className="flex shrink-0 items-start justify-between border-b border-slate-100 px-6 py-5">
           <div>
             <h2 className="text-lg font-bold text-slate-900 leading-tight">{tour.title}</h2>
             <div className="mt-2 flex items-center gap-2">
@@ -359,7 +393,10 @@ export default function ChangeBookingModal({ tour, isOpen, onClose, onReserve, i
         </div>
 
         {/* Body */}
-        <div className="change-booking-body flex-1 overflow-y-auto px-6 py-5 space-y-5">
+        <div
+          className="change-booking-body min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-5 space-y-5"
+          data-lenis-prevent
+        >
           <div className="space-y-3 rounded-xl bg-slate-50/70 p-4">
             <div className="flex items-start gap-2.5 text-xs text-slate-600">
               <ShieldCheck className={`mt-0.5 size-4 shrink-0 ${cancellation && !cancellation.refundable ? 'text-rose-500' : 'text-[#179237]'}`} />
@@ -408,14 +445,17 @@ export default function ChangeBookingModal({ tour, isOpen, onClose, onReserve, i
               <button
                 type="button"
                 onClick={() => setShowCalendar((v) => !v)}
+                aria-label={t('booking.selectDate', 'Select date')}
+                aria-haspopup="dialog"
+                aria-expanded={showCalendar}
                 className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-[#179237] focus:ring-2 focus:ring-[#179237]/15"
               >
                 <span>{formattedDate}</span>
                 <span className="text-slate-400">{showCalendar ? '▲' : '▼'}</span>
               </button>
               {showCalendar && (
-                <div className="absolute top-full left-0 right-0 z-20 mt-2">
                   <CalendarPicker
+                    inline
                     isOpen={showCalendar}
                     onClose={() => setShowCalendar(false)}
                     onDateSelect={(date) => {
@@ -549,7 +589,6 @@ export default function ChangeBookingModal({ tour, isOpen, onClose, onReserve, i
                       )
                     }
                   />
-                </div>
               )}
             </div>
           </div>
@@ -651,7 +690,7 @@ export default function ChangeBookingModal({ tour, isOpen, onClose, onReserve, i
         </div>
 
         {/* Footer */}
-        <div className="border-t border-slate-100 px-6 py-4">
+        <div className="shrink-0 border-t border-slate-100 px-6 py-4">
           {bookingDeadlineIso && (
             <div className="mb-3">
               <BookingDeadlineTimer closesAt={bookingDeadlineIso} />
