@@ -43,6 +43,7 @@ import applePay from '@/assets/payments/apple-pay.png'
 import applePayLogo from '@/assets/payments/apple-pay-logo.svg'
 import bancontactLogo from '@/assets/payments/bancontact-logo.svg'
 import chinaUnionPayLogo from '@/assets/payments/china-unionpay-logo.svg'
+import paypalWordmark from '@/assets/payments/paypal-wordmark.svg'
 import dinersClubLogo from '@/assets/payments/diners-club-logo.svg'
 import discoverLogo from '@/assets/payments/discover-logo.svg'
 import googlePay from '@/assets/payments/google-pay.png'
@@ -737,6 +738,13 @@ export default function PaymentsSecurityPage() {
             </div>
             <span>China UnionPay</span>
             <small>UnionPay card network</small>
+          </div>
+          <div className="brand-card">
+            <div className="payment-logo-stage">
+              <img src={paypalWordmark} alt="PayPal logo" loading="lazy" />
+            </div>
+            <span>PayPal</span>
+            <small>PayPal account or wallet</small>
           </div>
         </div>
         <div className="method-tags">
