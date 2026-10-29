@@ -7,10 +7,10 @@ import { Check, ArrowLeft, MapPin, Info, X, Phone, ShieldCheck, Clock, Globe, Lo
 import logoSrc from '../assets/TravioGhana_Logo.svg'
 import paypalMark from '../assets/icons/paypal2.svg'
 import paypalWordmark from '../assets/payments/paypal-wordmark.svg'
-import visaLogo from '../assets/payments/visa-logo.svg'
-import mastercardLogo from '../assets/payments/mastercard-logo.svg'
-import amexLogo from '../assets/payments/american-express-logo.svg'
-import discoverLogo from '../assets/payments/discover-logo.svg'
+import visaLogo from '../assets/payments/visa-mark.svg'
+import mastercardLogo from '../assets/payments/mastercard-mark.svg'
+import amexLogo from '../assets/payments/amex-mark.svg'
+import discoverLogo from '../assets/payments/discover-mark.svg'
 import SEO from '../components/SEO'
 import Footer from '../components/Footer'
 import StepBadge from '../components/booking/StepBadge'
@@ -1172,26 +1172,26 @@ function PaymentDetailsStep({
             className="space-y-6 p-7 sm:p-9"
           >
             <div>
-              <p className="mb-3 text-sm font-semibold text-slate-800">Choose when to pay</p>
+              <p className="mb-3 text-base font-bold tracking-tight text-slate-900">Choose when to pay</p>
               <div className="space-y-2">
                 <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
                   selection === 'now'
                     ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
                     : 'border-slate-200/60 bg-white hover:border-slate-300'
                 }`}>
-                  <div className={`grid size-5 shrink-0 place-items-center rounded-full border-2 transition ${
+                  <div className={`grid size-6 shrink-0 place-items-center rounded-full border-2 transition ${
                     selection === 'now' ? 'border-emerald-500' : 'border-slate-300'
                   }`}>
                     {selection === 'now' && (
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="size-2.5 rounded-full bg-emerald-500"
+                        className="size-3 rounded-full bg-emerald-500"
                       />
                     )}
                   </div>
-                  <span className="min-w-0 flex-1 text-sm font-semibold text-slate-900">Pay now</span>
-                  <span className="shrink-0 text-sm font-bold text-slate-900">{formatPrice(tour.price)}</span>
+                  <span className="min-w-0 flex-1 text-base font-semibold text-slate-900">Pay now</span>
+                  <span className="shrink-0 text-base font-bold text-slate-900">{formatPrice(tour.price)}</span>
                   <input
                     type="radio"
                     name="paymentMethod"
@@ -1206,29 +1206,29 @@ function PaymentDetailsStep({
                     ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
                     : 'border-slate-200/60 bg-white hover:border-slate-300'
                 }`}>
-                  <div className={`grid size-5 shrink-0 place-items-center rounded-full border-2 transition ${
+                  <div className={`grid size-6 shrink-0 place-items-center rounded-full border-2 transition ${
                     selection === 'later' ? 'border-emerald-500' : 'border-slate-300'
                   }`}>
                     {selection === 'later' && (
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="size-2.5 rounded-full bg-emerald-500"
+                        className="size-3 rounded-full bg-emerald-500"
                       />
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className={`text-sm font-semibold ${payLaterAvailable ? 'text-slate-900' : 'text-slate-400'}`}>Reserve now, pay later</span>
-                    <p className="text-xs text-slate-400">Book your spot and pay nothing today</p>
+                    <span className={`text-base font-semibold ${payLaterAvailable ? 'text-slate-900' : 'text-slate-400'}`}>Reserve now, pay later</span>
+                    <p className="text-[13px] text-slate-400">Book your spot and pay nothing today</p>
                     {!payLaterAvailable && (
-                      <p className="mt-1.5 text-xs font-medium text-amber-600">
+                      <p className="mt-1.5 text-xs font-medium leading-relaxed text-amber-600">
                         Available for dates at least {PAY_LATER_MIN_HOURS} hours away — so we can charge your card before the activity.
                       </p>
                     )}
                   </div>
                   <div className="shrink-0 text-right">
-                    <span className="text-sm font-bold text-slate-900">$0.00</span>
-                    <p className="text-[10px] text-slate-400">now</p>
+                    <span className="text-base font-bold text-slate-900">$0.00</span>
+                    <p className="text-[11px] text-slate-400">now</p>
                   </div>
                   <input
                     type="radio"
@@ -1244,7 +1244,7 @@ function PaymentDetailsStep({
                     pay-now finishes on the secure checkout page. */}
                 {timing === 'later' && (
                   <div className="space-y-3 pt-1">
-                    <p className="text-xs font-semibold text-slate-600">Card details</p>
+                    <p className="text-[13px] font-semibold text-slate-600">Card details</p>
                     {!savedCardsReady ? (
                       <div className="h-[52px] animate-pulse rounded-xl border border-slate-200/60 bg-slate-50/40" />
                     ) : (
@@ -1264,34 +1264,34 @@ function PaymentDetailsStep({
 
             {timing === 'now' && (
               <div>
-                <p className="mb-3 text-sm font-semibold text-slate-800">Choose payment method</p>
+                <p className="mb-3 text-base font-bold tracking-tight text-slate-900">Choose payment method</p>
                 <div className="space-y-2">
                 <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
                   selection === 'now'
                     ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
                     : 'border-slate-200/60 bg-white hover:border-slate-300'
                 }`}>
-                  <div className={`grid size-5 shrink-0 place-items-center rounded-full border-2 transition ${
+                  <div className={`grid size-6 shrink-0 place-items-center rounded-full border-2 transition ${
                     selection === 'now' ? 'border-emerald-500' : 'border-slate-300'
                   }`}>
                     {selection === 'now' && (
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="size-2.5 rounded-full bg-emerald-500"
+                        className="size-3 rounded-full bg-emerald-500"
                       />
                     )}
                   </div>
                   <CreditCard className="size-7 shrink-0 text-slate-700" strokeWidth={1.75} />
                   <div className="min-w-0 flex-1">
-                    <span className="whitespace-nowrap text-sm font-semibold text-slate-900">Credit or Debit Card</span>
-                    <p className="text-xs text-slate-400">Powered by Stripe (Visa, Mastercard, Amex, etc.)</p>
+                    <span className="text-base font-semibold text-slate-900">Credit or Debit Card</span>
+                    <p className="text-[13px] text-slate-400">Powered by Stripe</p>
                   </div>
-                  <span className="hidden shrink-0 items-center gap-1 md:flex">
-                    <img src={visaLogo} alt="Visa" className="h-4 w-auto max-w-[34px] object-contain" />
-                    <img src={mastercardLogo} alt="Mastercard" className="h-4 w-auto max-w-[42px] object-contain" />
-                    <img src={amexLogo} alt="American Express" className="h-4 w-auto max-w-[42px] object-contain" />
-                    <img src={discoverLogo} alt="Discover" className="h-4 w-auto max-w-[58px] object-contain" />
+                  <span className="ml-2 hidden shrink-0 items-center gap-1 lg:flex">
+                    <img src={visaLogo} alt="Visa" className="h-[12px] w-auto" />
+                    <img src={mastercardLogo} alt="Mastercard" className="h-[12px] w-auto" />
+                    <img src={amexLogo} alt="American Express" className="h-[12px] w-auto" />
+                    <img src={discoverLogo} alt="Discover" className="h-[12px] w-auto" />
                   </span>
                   <input
                     type="radio"
@@ -1308,21 +1308,21 @@ function PaymentDetailsStep({
                     ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
                     : 'border-slate-200/60 bg-white hover:border-slate-300'
                 }`}>
-                  <div className={`grid size-5 shrink-0 place-items-center rounded-full border-2 transition ${
+                  <div className={`grid size-6 shrink-0 place-items-center rounded-full border-2 transition ${
                     selection === 'paypal' ? 'border-emerald-500' : 'border-slate-300'
                   }`}>
                     {selection === 'paypal' && (
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="size-2.5 rounded-full bg-emerald-500"
+                        className="size-3 rounded-full bg-emerald-500"
                       />
                     )}
                   </div>
-                  <img src={paypalMark} alt="" aria-hidden="true" className="h-7 w-7 shrink-0" />
+                  <img src={paypalMark} alt="" aria-hidden="true" className="size-9 shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <span className="text-sm font-semibold text-slate-900">PayPal</span>
-                    <p className="text-xs text-slate-400">Pay securely with your PayPal account</p>
+                    <span className="text-base font-semibold text-slate-900">PayPal</span>
+                    <p className="text-[13px] text-slate-400">Pay securely with your PayPal account</p>
                   </div>
                   <img src={paypalWordmark} alt="PayPal" className="h-6 w-auto shrink-0" />
                   <input
@@ -1338,10 +1338,10 @@ function PaymentDetailsStep({
               </div>
             )}
 
-            <div className="rounded-xl border border-slate-200/40 bg-slate-50/30 p-6 text-center">
-              <p className="text-2xl font-bold text-slate-900 tracking-tight">{formatPrice(tour.price)}</p>
-              <div className="mt-2 flex items-center justify-center gap-1.5 text-xs text-slate-500">
-                <ShieldCheck className={`size-3.5 ${cancellation && !cancellation.refundable ? 'text-rose-500' : 'text-emerald-600'}`} />
+            <div className="rounded-xl border border-slate-200/40 bg-slate-50/30 p-5 text-center">
+              <p className="text-[28px] font-bold leading-none tracking-tight text-slate-900">{formatPrice(tour.price)}</p>
+              <div className="mt-1.5 flex items-center justify-center gap-1.5 text-[13px] text-slate-500">
+                <ShieldCheck className={`size-[18px] ${cancellation && !cancellation.refundable ? 'text-rose-500' : 'text-emerald-600'}`} />
                 <span className={cancellation && !cancellation.refundable ? 'font-semibold text-rose-600' : ''}>
                   {cancellation?.refundable === false
                     ? `Non-refundable${cancellation.sublabel ? ` — ${cancellation.sublabel}` : ''}`
@@ -1350,14 +1350,14 @@ function PaymentDetailsStep({
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5 rounded-xl border border-emerald-200/50 bg-emerald-50/60 px-4 py-3">
-              <ShieldCheck className="size-4 shrink-0 text-emerald-600" />
-              <p className="text-xs font-medium leading-relaxed text-emerald-800">
+            <div className="flex items-center gap-2.5 rounded-xl border border-emerald-200/50 bg-emerald-50/60 px-4 py-2.5">
+              <ShieldCheck className="size-[18px] shrink-0 text-emerald-600" />
+              <p className="text-[13px] font-medium leading-relaxed text-emerald-800">
                 Your payment is secure. We use Stripe and PayPal to keep your information safe.
               </p>
             </div>
 
-            <p className="text-xs leading-relaxed text-slate-400">
+            <p className="text-sm leading-relaxed text-slate-400">
               By clicking &quot;{buttonLabel}&quot;, you agree to our{' '}
               <Link to="/terms-and-conditions" className="font-semibold underline text-slate-500 hover:text-slate-700">Terms</Link> &amp;{' '}
               <Link to="/privacy-policy" className="font-semibold underline text-slate-500 hover:text-slate-700">Privacy and Cookies Statement</Link>
@@ -1401,7 +1401,7 @@ function PaymentDetailsStep({
               }}
               disabled={disabled || creating || isBooking}
               whileTap={{ scale: 0.97 }}
-              className={`relative w-full rounded-full py-3.5 text-sm font-bold text-white shadow-sm transition ${
+              className={`relative w-full rounded-full py-4 text-base font-bold text-white shadow-sm transition ${
                 disabled || creating || isBooking
                   ? 'cursor-not-allowed bg-slate-300'
                   : 'bg-emerald-600 hover:brightness-110'
@@ -1421,7 +1421,7 @@ function PaymentDetailsStep({
               </AnimatePresence>
             </motion.button>
 
-            <p className="text-[11px] leading-relaxed text-slate-400">
+            <p className="text-[13px] leading-relaxed text-slate-400">
               Your booking is facilitated by our platform, but a third-party tour operator provides the
               tour/activity directly to you. By clicking &quot;Book Now&quot;, you consent to receive
               special offers, tips and other updates from us, from which you can unsubscribe at any time.
