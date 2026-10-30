@@ -15,9 +15,22 @@ interface ExternalReviewCardProps {
   thumbnail?: string | null
   /** Specific tour detail page resolved from the review's listing title. */
   tourHref?: string
+  /** False when the review is about a transfer / non-experience. */
+  showCta?: boolean
+  /**
+   * Rendered as a swipe-loop copy: hidden from assistive tech and removed from
+   * the tab order so the endless rail does not duplicate every card.
+   */
+  decorative?: boolean
 }
 
-export default function ExternalReviewCard({ review, thumbnail, tourHref }: ExternalReviewCardProps) {
+export default function ExternalReviewCard({
+  review,
+  thumbnail,
+  tourHref,
+  showCta = true,
+  decorative = false,
+}: ExternalReviewCardProps) {
   const [showModal, setShowModal] = useState(false)
   const textRef = useRef<HTMLParagraphElement>(null)
   const [isTruncated, setIsTruncated] = useState(false)
@@ -42,7 +55,7 @@ export default function ExternalReviewCard({ review, thumbnail, tourHref }: Exte
 
   return (
     <>
-      <article className="ext-review-card">
+      <article className="ext-review-card" aria-hidden={decorative || undefined}>
         <div className="ext-review-card__body">
           {/* Tour identity: artwork + the experience the review is about. */}
           <div className="ext-review-card__head">
@@ -89,15 +102,20 @@ export default function ExternalReviewCard({ review, thumbnail, tourHref }: Exte
             {review.text}
           </p>
           {isTruncated && (
-            <button onClick={() => setShowModal(true)} className="ext-review-card__read-more">
+            <button
+              onClick={() => setShowModal(true)}
+              className="ext-review-card__read-more"
+              tabIndex={decorative ? -1 : undefined}
+            >
               Read more
             </button>
           )}
 
-          {/* Google rows are business-level reviews with no tour to link to. */}
-          {review.source !== 'GOOGLE' && (
+          {/* Google rows are business-level reviews with no tour to link to,
+              and transfers have no experience to open. */}
+          {showCta && review.source !== 'GOOGLE' && (
             <div className="ext-review-card__footer">
-              <Link to={tourLink} className="ext-review-card__cta">
+              <Link to={tourLink} className="ext-review-card__cta" tabIndex={decorative ? -1 : undefined}>
                 View Experience
               </Link>
             </div>

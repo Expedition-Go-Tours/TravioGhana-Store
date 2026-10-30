@@ -1,16 +1,19 @@
-import { useRef, useState, useEffect, useCallback, useMemo } from 'react'
+import { useRef, useState, useEffect, useLayoutEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useReducedMotion } from 'framer-motion'
 import SectionHeading from './SectionHeading'
 import ExternalReviewCard from './ExternalReviewCard'
 import StarRating from './StarRating'
 import { useFeaturedExternalReviews, useExternalReviewStats } from '../hooks/useExternalReviews'
-import { useExpeditionTours } from '../hooks/useExpeditionTours'
-import { resolveReviewMatches, selectDistinctReviews } from '../lib/reviewRail'
+import { useReviewTourMatches } from '../hooks/useReviewTourMatches'
+import { reviewTitleKey, selectDistinctReviews } from '../lib/reviewRail'
 import useMediaQuery from '../hooks/useMediaQuery'
 import useRafCallback from '../hooks/useRafCallback'
 import './ExternalReviewsSection.css'
 
 const AUTO_SCROLL_INTERVAL = 5000
+/** Copies of the rail used for the endless swipe (previous / current / next). */
+const LOOP_COPIES = 3
 
 export default function ExternalReviewsSection() {
   const { t } = useTranslation()
@@ -25,6 +28,7 @@ export default function ExternalReviewsSection() {
   // Mobile users swipe the rail themselves; auto-advancing it burns CPU/battery
   // and fights touch scrolling.
   const isMobile = useMediaQuery('(max-width: 1023px)')
+  const reduceMotion = useReducedMotion()
   const isHovering = useRef(false)
   const autoScrollTimer = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -33,18 +37,31 @@ export default function ExternalReviewsSection() {
   const { data: reviews, isLoading } = useFeaturedExternalReviews()
   const { data: stats } = useExternalReviewStats()
 
-  // The scraped rows carry no artwork, so the card image is borrowed from the
-  // tour the review is about. This rides on the same catalogue query used by
-  // the rest of the site (react-query dedupes it), and the section only mounts
-  // when it is near the viewport.
-  const { data: tourData } = useExpeditionTours({ limit: 50 })
   // One card per tour: the featured slice is picked for review quality, so it
   // repeats the same few tours heavily. Images and cards stay varied.
   const railReviews = useMemo(() => selectDistinctReviews(reviews ?? []), [reviews])
-  const matches = useMemo(
-    () => resolveReviewMatches(railReviews, tourData?.tours ?? []),
-    [railReviews, tourData],
-  )
+  const matches = useReviewTourMatches(railReviews)
+  const looping = railReviews.length > 1
+
+  /** The rail is rendered three times so it can swipe forever. */
+  const loopedCards = useMemo(() => {
+    if (!looping) {
+      return railReviews.map((review) => ({ key: review.id, review, decorative: false }))
+    }
+    const cards: { key: string; review: (typeof railReviews)[number]; decorative: boolean }[] = []
+    for (let copy = 0; copy < LOOP_COPIES; copy += 1) {
+      for (const review of railReviews) {
+        cards.push({
+          key: `${copy}:${review.id}`,
+          review,
+          // The middle copy is the real one; the outer copies exist only to
+          // keep the swipe continuous, so they are hidden from assistive tech.
+          decorative: copy !== 1,
+        })
+      }
+    }
+    return cards
+  }, [railReviews, looping])
 
   /** One card + the rail's gap, measured from the DOM so it follows the CSS. */
   const measureStep = useCallback(() => {
@@ -59,15 +76,33 @@ export default function ExternalReviewsSection() {
   const updateArrows = useCallback(() => {
     const el = scrollRef.current
     if (!el) return
+
+    if (looping) {
+      // Keep the scroll position inside the middle copy: crossing a boundary is
+      // an instant jump by exactly one copy, which is visually identical.
+      const setWidth = measureStep() * railReviews.length
+      if (setWidth > 0) {
+        if (el.scrollLeft <= 1) el.scrollLeft += setWidth
+        else if (el.scrollLeft >= setWidth * 2) el.scrollLeft -= setWidth
+      }
+      setCanScrollLeft(true)
+      setCanScrollRight(true)
+      return
+    }
+
     const maxScroll = el.scrollWidth - el.clientWidth
     setCanScrollLeft(el.scrollLeft > 5)
     setCanScrollRight(el.scrollLeft < maxScroll - 5)
-  }, [])
+  }, [looping, measureStep, railReviews.length])
   const updateArrowsRaf = useRafCallback(updateArrows)
 
   const scrollTo = (target: number) => {
     const el = scrollRef.current
     if (!el) return
+    if (looping) {
+      el.scrollTo({ left: target, behavior: 'smooth' })
+      return
+    }
     const maxScroll = el.scrollWidth - el.clientWidth
     el.scrollTo({ left: Math.min(target, maxScroll), behavior: 'smooth' })
   }
@@ -85,9 +120,16 @@ export default function ExternalReviewsSection() {
     if (!el) return
     const delta = pageStep()
     const current = el.scrollLeft
-    const next = direction === 'left' ? Math.max(0, current - delta) : current + delta
-    scrollTo(next)
+    scrollTo(direction === 'left' ? current - delta : current + delta)
   }
+
+  // Start in the middle copy so the first swipe works in both directions.
+  useLayoutEffect(() => {
+    const el = scrollRef.current
+    if (!el || !looping) return
+    const setWidth = measureStep() * railReviews.length
+    if (setWidth > 0) el.scrollLeft = setWidth
+  }, [looping, measureStep, railReviews.length, reviews])
 
   // Auto-scroll
   const startAutoScroll = useCallback(() => {
@@ -97,14 +139,7 @@ export default function ExternalReviewsSection() {
       if (!el || isHovering.current) return
       const step = measureStep()
       if (!step) return
-      const maxScroll = el.scrollWidth - el.clientWidth
-      const atEnd = el.scrollLeft >= maxScroll - 10
-      if (atEnd) {
-        // Loop back to start
-        scrollTo(0)
-      } else {
-        scrollTo(el.scrollLeft + step)
-      }
+      scrollTo(el.scrollLeft + step)
     }, AUTO_SCROLL_INTERVAL)
   }, [measureStep])
 
@@ -122,7 +157,23 @@ export default function ExternalReviewsSection() {
     const onScroll = () => updateArrowsRaf()
     el.addEventListener('scroll', onScroll, { passive: true })
     return () => el.removeEventListener('scroll', onScroll)
-  }, [updateArrows, updateArrowsRaf, reviews])
+  }, [updateArrows, updateArrowsRaf, railReviews])
+
+  // A resize changes the card width (and therefore a copy's width): recentre
+  // so the rail never starts outside the middle copy.
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el || !looping || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(() => {
+      const setWidth = measureStep() * railReviews.length
+      if (setWidth <= 0) return
+      if (el.scrollLeft <= 1 || el.scrollLeft >= setWidth * 2) {
+        el.scrollLeft = setWidth
+      }
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [looping, measureStep, railReviews.length])
 
   // Track the rendered section's visibility so the ambient auto-scroll only
   // runs while it is on-screen. Re-attaches whenever the section (un)mounts.
@@ -145,13 +196,13 @@ export default function ExternalReviewsSection() {
 
   // Start auto-scroll when reviews load and the section is actually visible
   useEffect(() => {
-    if (isMobile || !sectionVisible || !pageVisible || !reviews || reviews.length === 0) {
+    if (isMobile || reduceMotion || !sectionVisible || !pageVisible || !reviews || reviews.length === 0) {
       stopAutoScroll()
       return
     }
     startAutoScroll()
     return () => stopAutoScroll()
-  }, [isMobile, sectionVisible, pageVisible, reviews, startAutoScroll, stopAutoScroll])
+  }, [isMobile, reduceMotion, sectionVisible, pageVisible, reviews, startAutoScroll, stopAutoScroll])
 
   const handleMouseEnter = () => { isHovering.current = true }
   const handleMouseLeave = () => { isHovering.current = false }
@@ -201,15 +252,21 @@ export default function ExternalReviewsSection() {
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
-            <div className="ext-reviews-carousel" ref={scrollRef}>
-              {railReviews.map((review) => {
-                const match = matches.get(review.id)
+            <div
+              className="ext-reviews-carousel"
+              ref={scrollRef}
+              aria-label={looping ? 'Reviews, swipe for more' : undefined}
+            >
+              {loopedCards.map(({ key, review, decorative }) => {
+                const match = matches.get(reviewTitleKey(review.tourTitle))
                 return (
-                  <div key={review.id} className="ext-reviews-card-wrap">
+                  <div key={key} className="ext-reviews-card-wrap" aria-hidden={decorative || undefined}>
                     <ExternalReviewCard
                       review={review}
-                      thumbnail={match?.image}
+                      thumbnail={match?.image ?? undefined}
                       tourHref={match?.href ?? undefined}
+                      showCta={match?.cta !== 'none'}
+                      decorative={decorative}
                     />
                   </div>
                 )

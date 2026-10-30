@@ -5,6 +5,8 @@ import { ChevronLeft, ChevronRight, X, Star, ArrowLeft } from 'lucide-react'
 import ExternalReviewCard from '../components/ExternalReviewCard'
 import StarRating from '../components/StarRating'
 import { useAllExternalReviews, useExternalReviewStats } from '../hooks/useExternalReviews'
+import { useReviewTourMatches } from '../hooks/useReviewTourMatches'
+import { reviewTitleKey } from '../lib/reviewRail'
 import SEO, { buildBreadcrumbSchema, SITE_URL } from '../components/SEO'
 import Footer from '../components/Footer'
 import './AllReviewsPage.css'
@@ -107,6 +109,8 @@ export default function AllReviewsPage() {
   const navigate = useNavigate()
   const { data: allReviews, isLoading } = useAllExternalReviews()
   const { data: stats } = useExternalReviewStats()
+  // One resolution per distinct listing title, shared by every card on the page.
+  const tourMatches = useReviewTourMatches(allReviews)
 
   const [sourceFilter, setSourceFilter] = useState<string[]>([])
   const [ratingFilter, setRatingFilter] = useState<string[]>([])
@@ -305,18 +309,26 @@ export default function AllReviewsPage() {
         {!isLoading && (
           <div className="all-reviews-grid">
             <AnimatePresence mode="popLayout">
-              {displayReviews.map((review) => (
-                <motion.div
-                  key={review.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  <ExternalReviewCard review={review} />
-                </motion.div>
-              ))}
+              {displayReviews.map((review) => {
+                const match = tourMatches.get(reviewTitleKey(review.tourTitle))
+                return (
+                  <motion.div
+                    key={review.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.25 }}
+                  >
+                    <ExternalReviewCard
+                      review={review}
+                      thumbnail={match?.image ?? undefined}
+                      tourHref={match?.href ?? undefined}
+                      showCta={match?.cta !== 'none'}
+                    />
+                  </motion.div>
+                )
+              })}
             </AnimatePresence>
           </div>
         )}

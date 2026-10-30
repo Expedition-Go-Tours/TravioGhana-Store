@@ -103,7 +103,7 @@ const ATTRACTION_ALIASES: DestinationAlias[] = DESTINATION_ALIASES.filter(
   (alias) => !alias.keywords.includes('accra') && !alias.keywords.includes('jamestown'),
 )
 
-function normalizeTitle(value: string): string {
+export function normalizeTitle(value: string): string {
   return value
     .normalize('NFKD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -190,23 +190,26 @@ function aliasSimilarity(normalizedReview: string, tour: MatchableTour): number 
  * Order of preference: exact normalized title, token overlap, then the
  * attraction-keyword fallback.
  */
+export function scoreTourTitle(reviewTitle: string, tour: MatchableTour): number {
+  const normalizedReview = normalizeTitle(reviewTitle)
+  const normalizedTour = normalizeTitle(tour.title)
+  if (!normalizedReview || !normalizedTour) return 0
+  if (normalizedTour === normalizedReview) return 1
+  return Math.max(
+    titleSimilarity(new Set(tokenize(normalizedReview)), new Set(tokenize(normalizedTour))),
+    aliasSimilarity(normalizedReview, tour),
+  )
+}
+
 export function matchTourForTitle<T extends MatchableTour>(reviewTitle: string, tours: T[]): T | null {
   if (!reviewTitle || tours.length === 0) return null
   const normalizedReview = normalizeTitle(reviewTitle)
   if (!normalizedReview) return null
 
-  const reviewTokens = new Set(tokenize(normalizedReview))
   let best: { tour: T; score: number } | null = null
 
   for (const tour of tours) {
-    const normalizedTour = normalizeTitle(tour.title)
-    if (!normalizedTour) continue
-    const score = normalizedTour === normalizedReview
-      ? 1
-      : Math.max(
-        titleSimilarity(reviewTokens, new Set(tokenize(normalizedTour))),
-        aliasSimilarity(normalizedReview, tour),
-      )
+    const score = scoreTourTitle(reviewTitle, tour)
     if (score > 0 && (!best || score > best.score)) best = { tour, score }
   }
 

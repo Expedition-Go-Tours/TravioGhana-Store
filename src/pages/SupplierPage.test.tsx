@@ -92,8 +92,9 @@ const state = vi.hoisted(() => ({
 vi.mock('@/lib/api', () => ({ apiFetch: vi.fn(), fetchWithAuth: vi.fn() }))
 vi.mock('@/hooks/useExpeditionTours', () => ({
   mapRawTourToListing: (tour: unknown) => tour,
-  // The homepage review card's "View Experience" link resolves destinations.
+  // The review CTA resolves a specific tour from the catalogue when it can.
   useTourFilterOptions: () => ({ data: undefined }),
+  useExpeditionTours: () => ({ data: { tours: [] } }),
 }))
 vi.mock('@/components/Footer', () => ({ default: () => <div>FOOTER</div> }))
 vi.mock('@/components/SEO', () => ({ default: () => null, buildBreadcrumbSchema: () => ({}) }))

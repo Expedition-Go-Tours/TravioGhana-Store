@@ -5,6 +5,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import StarRating from '@/components/StarRating'
 import ExternalReviewCard from '@/components/ExternalReviewCard'
 import { useCarouselRail } from './useCarouselRail'
+import { useReviewTourMatches } from '@/hooks/useReviewTourMatches'
+import { reviewTitleKey } from '@/lib/reviewRail'
 import type { SupplierReviewSummary } from '@/hooks/useExternalReviews'
 
 interface SupplierReviewsSectionProps {
@@ -23,6 +25,7 @@ export default function SupplierReviewsSection({ summary, reviews }: SupplierRev
   const { t } = useTranslation()
   const railRef = useRef<HTMLDivElement>(null)
   const rail = useCarouselRail(railRef, 295, 16, reviews.length)
+  const tourMatches = useReviewTourMatches(reviews)
 
   const distributionTotal = summary.distribution
     ? STAR_ORDER.reduce((sum, star) => sum + (summary.distribution?.[star] ?? 0), 0)
@@ -108,11 +111,19 @@ export default function SupplierReviewsSection({ summary, reviews }: SupplierRev
           {reviews.length > 0 && (
             <div className="supplier-review-rail-clip">
               <div className="supplier-review-rail" ref={railRef}>
-                {reviews.map((review) => (
-                  <div key={review.id} className="supplier-review-card-wrap">
-                    <ExternalReviewCard review={review} />
-                  </div>
-                ))}
+                {reviews.map((review) => {
+                  const match = tourMatches.get(reviewTitleKey(review.tourTitle))
+                  return (
+                    <div key={review.id} className="supplier-review-card-wrap">
+                      <ExternalReviewCard
+                        review={review}
+                        thumbnail={match?.image ?? undefined}
+                        tourHref={match?.href ?? undefined}
+                        showCta={match?.cta !== 'none'}
+                      />
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}

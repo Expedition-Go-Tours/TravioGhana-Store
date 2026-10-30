@@ -1,20 +1,27 @@
 import { describe, expect, it } from 'vitest'
-import { resolveReviewMatches, selectDistinctReviews, type MatchableCardTour } from './reviewRail'
+import {
+  resolveReviewTitleMatches,
+  reviewTitleKey,
+  selectDistinctReviews,
+  type MatchableCardTour,
+} from './reviewRail'
 
 const TOURS: MatchableCardTour[] = [
   {
     id: 'tour_cape',
-    slug: 'cape-coast-castle-and-kakum-national-park-day-tour',
-    title: 'Cape Coast Castle and Kakum National Park Day Tour',
+    slug: 'cape-coast-castle-elmina-castle-kakum-national-park-tour',
+    title: 'Cape Coast Castle, Elmina Castle & Kakum National Park Tour',
     location: 'Cape Coast, Ghana',
+    category: 'tour',
     supplierName: 'Expedition-Go Tours LTD',
     image: 'https://cdn.example/cape-coast.jpg',
   },
   {
     id: 'tour_accra',
     slug: 'accra-guided-city-tour-cultural-and-historical-experience',
-    title: 'Accra Guided City Tour & Cultural Experience',
+    title: 'Accra Guided City Tour: Cultural and Historical Experience',
     location: 'Accra, Ghana',
+    category: 'tour',
     supplierName: 'Expedition-Go Tours LTD',
     photos: ['https://cdn.example/accra-1.jpg', 'https://cdn.example/accra-2.jpg'],
   },
@@ -28,87 +35,95 @@ const TOURS: MatchableCardTour[] = [
     image: 'https://cdn.example/transport.jpg',
   },
   {
+    id: 'tour_airport',
+    slug: 'private-accra-international-airport-pickup-dropoff',
+    title: 'Private Accra International Airport Pickup & Dropoff',
+    location: 'Accra, Ghana',
+    category: 'transport',
+    supplierName: 'Expedition-Go Tours LTD',
+    image: 'https://cdn.example/airport.jpg',
+  },
+  {
     id: 'tour_north',
     slug: 'northern-safari',
     title: 'Northern Safari',
     location: 'Tamale, Ghana',
+    category: 'tour',
     supplierName: 'Someone Else Ltd',
     image: 'https://cdn.example/other-operator.jpg',
   },
 ]
 
-describe('resolveReviewMatches', () => {
-  it('links the CTA to the specific tour and uses its photo', () => {
-    const match = resolveReviewMatches(
-      [{ id: 'r1', tourTitle: 'Cape Coast Castle & Kakum National Park Tour' }],
-      TOURS,
-    ).get('r1')
+const get = (title: string) => resolveReviewTitleMatches([{ tourTitle: title }], TOURS).get(reviewTitleKey(title))
 
-    expect(match?.href).toBe('/tour/tour_cape/cape-coast-castle-and-kakum-national-park-day-tour')
+describe('resolveReviewTitleMatches', () => {
+  it('links the CTA to the specific tour and uses its photo', () => {
+    const match = get('Cape Coast Castle, Elmina Castle & Kakum National Park Day Tour')
+    expect(match?.href).toBe('/tour/tour_cape/cape-coast-castle-elmina-castle-kakum-national-park-tour')
     expect(match?.image).toBe('https://cdn.example/cape-coast.jpg')
+    expect(match?.cta).toBe('tour')
+  })
+
+  it('resolves the scraped Cape Coast day-tour wording through the alias', () => {
+    const match = get('From Accra: The Cape Coast Day Tour Guided Experience')
+    expect(match?.href).toContain('/tour/tour_cape/')
+    expect(match?.href).not.toContain('transport')
+    expect(match?.cta).toBe('tour')
   })
 
   it('falls back to the tour photo gallery', () => {
-    const match = resolveReviewMatches(
-      [{ id: 'r1', tourTitle: 'Accra Guided City Tour Experience' }],
-      TOURS,
-    ).get('r1')
-
+    const match = get('Accra Guided City Tour Experience')
     expect(match?.image).toBe('https://cdn.example/accra-1.jpg')
-    expect(match?.href).toBe('/tour/tour_accra/accra-guided-city-tour-cultural-and-historical-experience')
+    expect(match?.cta).toBe('tour')
   })
 
   it('prefers a thumbnail the review already carries', () => {
-    const match = resolveReviewMatches(
-      [{ id: 'r1', tourTitle: 'Cape Coast Castle Tour', tourThumbnail: 'https://cdn.example/scraped.jpg' }],
+    const map = resolveReviewTitleMatches(
+      [{ tourTitle: 'Cape Coast Castle, Elmina Castle & Kakum National Park Day Tour', tourThumbnail: 'https://cdn.example/scraped.jpg' }],
       TOURS,
-    ).get('r1')
-
-    expect(match?.image).toBe('https://cdn.example/scraped.jpg')
-    expect(match?.href).toBe('/tour/tour_cape/cape-coast-castle-and-kakum-national-park-day-tour')
+    )
+    expect(map.get(reviewTitleKey('Cape Coast Castle, Elmina Castle & Kakum National Park Day Tour'))?.image)
+      .toBe('https://cdn.example/scraped.jpg')
   })
 
   it('fails closed for another operator\'s tour', () => {
-    expect(resolveReviewMatches([{ id: 'r1', tourTitle: 'Northern Safari' }], TOURS).has('r1')).toBe(false)
+    const match = get('Northern Safari')
+    expect(match?.href).toBeNull()
+    expect(match?.cta).toBe('listing')
   })
 
-  it('leaves unmatched reviews without a match', () => {
-    const map = resolveReviewMatches(
+  it('marks a transfer review as having no experience to open', () => {
+    const match = get('From Accra: Private Airport Transfer Pickup & Drop off Services')
+    expect(match?.href ?? null).toBeNull()
+    expect(match?.cta).toBe('none')
+  })
+
+  it('never links a review to a transfer when a real tour shares its tokens', () => {
+    const match = get('Transport form Accra to Cape Coast')
+    expect(match?.href ?? null).toBeNull()
+    expect(match?.cta).toBe('none')
+  })
+
+  it('leaves unmatched titles on the destination fallback', () => {
+    expect(get('Travio Ghana LTD')?.cta).toBe('listing')
+  })
+
+  it('keys by title, so repeated rows resolve once', () => {
+    const map = resolveReviewTitleMatches(
       [
-        { id: 'r1', tourTitle: 'Travio Ghana LTD' },
-        { id: 'r2', tourTitle: 'Cape Coast Castle Day Tour' },
+        { tourTitle: 'Cape Coast Castle, Elmina Castle & Kakum National Park Day Tour' },
+        { tourTitle: 'Cape Coast Castle, Elmina Castle & Kakum National Park Day Tour' },
       ],
       TOURS,
     )
-    expect(map.has('r1')).toBe(false)
-    expect(map.get('r2')?.href).toContain('/tour/tour_cape/')
+    expect(map.size).toBe(1)
   })
 
-  it('never links a review to a transfer product', () => {
-    const match = resolveReviewMatches(
-      [{ id: 'r1', tourTitle: 'From Accra: The Cape Coast Day Tour Guided Experience' }],
-      TOURS,
-    ).get('r1')
-
-    // The transport listing shares every token, but it is not the experience:
-    // the real Cape Coast tour wins instead.
-    expect(match?.href).toContain('/tour/tour_cape/')
-    expect(match?.href).not.toContain('transport')
-    expect(match?.image).toBe('https://cdn.example/cape-coast.jpg')
-  })
-
-  it('has no specific link when the only candidate is a transfer', () => {
-    const transportOnly = TOURS.filter((t) => t.category === 'transport')
-    const match = resolveReviewMatches(
-      [{ id: 'r1', tourTitle: 'Transport form Accra to Cape Coast' }],
-      transportOnly,
-    ).get('r1')
-
-    expect(match).toBeUndefined()
-  })
-
-  it('copes with an empty catalogue', () => {
-    expect(resolveReviewMatches([{ id: 'r1', tourTitle: 'Cape Coast Castle Tour' }], []).size).toBe(0)
+  it('copes with an empty catalogue: destination fallback, no tour link', () => {
+    const match = resolveReviewTitleMatches([{ tourTitle: 'Cape Coast Castle Tour' }], [])
+      .get(reviewTitleKey('Cape Coast Castle Tour'))
+    expect(match?.href).toBeNull()
+    expect(match?.cta).toBe('listing')
   })
 })
 
