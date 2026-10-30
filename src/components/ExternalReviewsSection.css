@@ -11,8 +11,41 @@
 }
 
 .ext-reviews-viewport {
+  /* Keep the homepage grid: 5 × 295px + 4 × 16px. The rail now shows four
+     wider cards inside it, but the section still lines up with the navbar,
+     hero and footer. */
   max-width: calc(295px * 5 + 16px * 4);
   margin: 0 auto;
+}
+
+/* Heading: matches the review-rail design — dark "View all ›" and larger
+   circular arrows — without touching the shared SectionHeading used by the
+   other homepage sections. */
+.ext-reviews-section .section-view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #111827;
+  font-size: 15px;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.ext-reviews-section .section-view-all:hover {
+  opacity: 0.7;
+  color: #111827;
+}
+
+.ext-reviews-section .section-arrow {
+  width: 40px;
+  height: 40px;
+  border-color: #e5e5e5;
+  color: #6b7280;
+}
+
+.ext-reviews-section .section-arrow:hover {
+  border-color: #c9c9c9;
+  color: #111827;
 }
 
 .ext-reviews-clip {
@@ -20,8 +53,9 @@
 }
 
 .ext-reviews-carousel {
+  --ext-gap: 20px;
   display: flex;
-  gap: 16px;
+  gap: var(--ext-gap);
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
@@ -36,10 +70,11 @@
   display: none;
 }
 
+/* Four cards per view on desktop; the width is derived from the rail so the
+   cards fill it exactly (no half card, no fixed 295px). */
 .ext-reviews-card-wrap {
-  width: 295px;
-  min-width: 295px;
-  flex-shrink: 0;
+  flex: 0 0 calc((100% - 3 * var(--ext-gap)) / 4);
+  min-width: 0;
   display: flex;
   align-self: stretch;
   scroll-snap-align: start;
@@ -54,7 +89,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 4px;
+  margin-top: 2px;
   margin-bottom: 20px;
   flex-wrap: wrap;
 }
@@ -62,7 +97,7 @@
 .ext-reviews-stats__rating {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .ext-reviews-stats__number {
@@ -96,7 +131,23 @@
   font-weight: 700;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1279px) {
+  .ext-reviews-card-wrap {
+    flex-basis: calc((100% - 2 * var(--ext-gap)) / 3);
+  }
+}
+
+@media (max-width: 1023px) {
+  .ext-reviews-carousel {
+    --ext-gap: 16px;
+  }
+
+  .ext-reviews-card-wrap {
+    flex-basis: calc((100% - var(--ext-gap)) / 2);
+  }
+}
+
+@media (max-width: 767px) {
   .ext-reviews-section {
     padding: 30px 0;
   }
@@ -113,13 +164,8 @@
     max-width: 100%;
   }
 
-  .ext-reviews-carousel {
-    gap: 12px;
-  }
-
   .ext-reviews-card-wrap {
-    width: 280px;
-    min-width: 280px;
+    flex-basis: 100%;
   }
 
   .ext-reviews-stats {
@@ -128,10 +174,14 @@
   }
 
   .ext-reviews-stats__number {
-    font-size: 18px;
+    font-size: 19px;
   }
 
   .ext-reviews-stats__text {
     font-size: 13px;
+  }
+
+  .ext-reviews-section .section-view-all {
+    font-size: 14px;
   }
 }

@@ -1,16 +1,16 @@
-import { useRef, useState, useEffect, useCallback } from 'react'
+import { useRef, useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import SectionHeading from './SectionHeading'
 import ExternalReviewCard from './ExternalReviewCard'
 import StarRating from './StarRating'
 import { useFeaturedExternalReviews, useExternalReviewStats } from '../hooks/useExternalReviews'
+import { useExpeditionTours } from '../hooks/useExpeditionTours'
+import { resolveReviewThumbnails, selectDistinctReviews } from '../lib/reviewThumbnails'
 import useMediaQuery from '../hooks/useMediaQuery'
 import useRafCallback from '../hooks/useRafCallback'
 import './ExternalReviewsSection.css'
 
-const CARD_WIDTH = 295
-const GAP = 16
-const AUTO_SCROLL_INTERVAL = 3000
+const AUTO_SCROLL_INTERVAL = 5000
 
 export default function ExternalReviewsSection() {
   const { t } = useTranslation()
@@ -33,6 +33,29 @@ export default function ExternalReviewsSection() {
   const { data: reviews, isLoading } = useFeaturedExternalReviews()
   const { data: stats } = useExternalReviewStats()
 
+  // The scraped rows carry no artwork, so the card image is borrowed from the
+  // tour the review is about. This rides on the same catalogue query used by
+  // the rest of the site (react-query dedupes it), and the section only mounts
+  // when it is near the viewport.
+  const { data: tourData } = useExpeditionTours({ limit: 50 })
+  // One card per tour: the featured slice is picked for review quality, so it
+  // repeats the same few tours heavily. Images and cards stay varied.
+  const railReviews = useMemo(() => selectDistinctReviews(reviews ?? []), [reviews])
+  const thumbnails = useMemo(
+    () => resolveReviewThumbnails(railReviews, tourData?.tours ?? []),
+    [railReviews, tourData],
+  )
+
+  /** One card + the rail's gap, measured from the DOM so it follows the CSS. */
+  const measureStep = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return 0
+    const first = el.querySelector<HTMLElement>('.ext-reviews-card-wrap')
+    if (!first) return 0
+    const gap = parseFloat(getComputedStyle(el).columnGap || '0') || 0
+    return first.getBoundingClientRect().width + gap
+  }, [])
+
   const updateArrows = useCallback(() => {
     const el = scrollRef.current
     if (!el) return
@@ -49,15 +72,20 @@ export default function ExternalReviewsSection() {
     el.scrollTo({ left: Math.min(target, maxScroll), behavior: 'smooth' })
   }
 
+  /** Advance by a full view so the arrows never leave a clipped card behind. */
+  const pageStep = () => {
+    const el = scrollRef.current
+    const step = measureStep()
+    if (!el || !step) return 0
+    return step * Math.max(1, Math.round(el.clientWidth / step))
+  }
+
   const scroll = (direction: 'left' | 'right') => {
     const el = scrollRef.current
     if (!el) return
-    const cardStep = CARD_WIDTH + GAP
-    const maxScroll = el.scrollWidth - el.clientWidth
+    const delta = pageStep()
     const current = el.scrollLeft
-    const next = direction === 'left'
-      ? Math.max(0, current - cardStep * 3)
-      : Math.min(current + cardStep * 3, maxScroll)
+    const next = direction === 'left' ? Math.max(0, current - delta) : current + delta
     scrollTo(next)
   }
 
@@ -67,17 +95,18 @@ export default function ExternalReviewsSection() {
     autoScrollTimer.current = setInterval(() => {
       const el = scrollRef.current
       if (!el || isHovering.current) return
-      const cardStep = CARD_WIDTH + GAP
+      const step = measureStep()
+      if (!step) return
       const maxScroll = el.scrollWidth - el.clientWidth
       const atEnd = el.scrollLeft >= maxScroll - 10
       if (atEnd) {
         // Loop back to start
         scrollTo(0)
       } else {
-        scrollTo(el.scrollLeft + cardStep)
+        scrollTo(el.scrollLeft + step)
       }
     }, AUTO_SCROLL_INTERVAL)
-  }, [])
+  }, [measureStep])
 
   const stopAutoScroll = useCallback(() => {
     if (autoScrollTimer.current) {
@@ -138,6 +167,7 @@ export default function ExternalReviewsSection() {
           <SectionHeading
             title={t('sections.whatTravellersAreSaying')}
             viewAllLink="/reviews"
+            viewAllChevron
             onScrollLeft={() => scroll('left')}
             onScrollRight={() => scroll('right')}
             disableLeft={!canScrollLeft}
@@ -165,15 +195,16 @@ export default function ExternalReviewsSection() {
               </span>
             </div>
           )}
+
           <div
             className="ext-reviews-clip"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
             <div className="ext-reviews-carousel" ref={scrollRef}>
-              {reviews.map((review) => (
+              {railReviews.map((review) => (
                 <div key={review.id} className="ext-reviews-card-wrap">
-                  <ExternalReviewCard review={review} />
+                  <ExternalReviewCard review={review} thumbnail={thumbnails.get(review.id)} />
                 </div>
               ))}
             </div>

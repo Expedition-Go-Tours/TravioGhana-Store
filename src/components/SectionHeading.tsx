@@ -6,6 +6,8 @@ interface SectionHeadingProps {
   title: string
   subtitle?: string
   viewAllLink?: string
+  /** Render a trailing chevron next to "View all" (review rail design). */
+  viewAllChevron?: boolean
   onViewAllClick?: () => void
   onScrollLeft?: () => void
   onScrollRight?: () => void
@@ -17,6 +19,7 @@ export default function SectionHeading({
   title,
   subtitle,
   viewAllLink,
+  viewAllChevron,
   onViewAllClick,
   onScrollLeft,
   onScrollRight,
@@ -34,7 +37,25 @@ export default function SectionHeading({
       {viewAllLink || onScrollLeft || onScrollRight || onViewAllClick ? (
         <div className="section-heading-actions">
           {viewAllLink && (
-            <Link to={viewAllLink} className="section-view-all">{t('sections.viewAll')}</Link>
+            <Link to={viewAllLink} className="section-view-all">
+              {t('sections.viewAll')}
+              {viewAllChevron && (
+                <svg
+                  className="section-view-all__chevron"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              )}
+            </Link>
           )}
           {onViewAllClick && (
             <button className="section-view-all" onClick={onViewAllClick}>{t('sections.viewAll')}</button>

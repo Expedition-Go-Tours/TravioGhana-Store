@@ -73,6 +73,9 @@
 }
 
 .section-view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   font-weight: 600;
@@ -80,6 +83,11 @@
   text-decoration: none;
   white-space: nowrap;
   transition: opacity 0.2s;
+}
+
+.section-view-all__chevron {
+  flex-shrink: 0;
+  margin-top: 1px;
 }
 
 .section-view-all:hover {

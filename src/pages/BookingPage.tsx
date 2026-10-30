@@ -1266,7 +1266,7 @@ function PaymentDetailsStep({
               <div>
                 <p className="mb-3 text-base font-bold tracking-tight text-slate-900">Choose payment method</p>
                 <div className="space-y-2">
-                <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
+                <label className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-3.5 transition-all sm:gap-3 sm:p-4 ${
                   selection === 'now'
                     ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
                     : 'border-slate-200/60 bg-white hover:border-slate-300'
@@ -1285,9 +1285,9 @@ function PaymentDetailsStep({
                   <CreditCard className="size-7 shrink-0 text-slate-700" strokeWidth={1.75} />
                   <div className="min-w-0 flex-1">
                     <span className="text-base font-semibold text-slate-900">Credit or Debit Card</span>
-                    <p className="text-[13px] text-slate-400">Powered by Stripe</p>
+                    <p className="text-[13px] leading-snug text-slate-400">Powered by Stripe</p>
                   </div>
-                  <span className="ml-2 hidden shrink-0 items-center gap-1 lg:flex">
+                  <span className="ml-2 hidden shrink-0 items-center gap-1 xl:flex">
                     <img src={visaLogo} alt="Visa" className="h-[12px] w-auto" />
                     <img src={mastercardLogo} alt="Mastercard" className="h-[12px] w-auto" />
                     <img src={amexLogo} alt="American Express" className="h-[12px] w-auto" />
@@ -1303,7 +1303,7 @@ function PaymentDetailsStep({
                 </label>
 
                   {paypalAvailable && (
-                <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
+                <label className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-3.5 transition-all sm:gap-3 sm:p-4 ${
                   selection === 'paypal'
                     ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
                     : 'border-slate-200/60 bg-white hover:border-slate-300'
@@ -1322,9 +1322,9 @@ function PaymentDetailsStep({
                   <img src={paypalMark} alt="" aria-hidden="true" className="size-9 shrink-0" />
                   <div className="min-w-0 flex-1">
                     <span className="text-base font-semibold text-slate-900">PayPal</span>
-                    <p className="text-[13px] text-slate-400">Pay securely with your PayPal account</p>
+                    <p className="text-[13px] leading-snug text-slate-400">Pay securely with your PayPal account</p>
                   </div>
-                  <img src={paypalWordmark} alt="PayPal" className="h-6 w-auto shrink-0" />
+                  <img src={paypalWordmark} alt="PayPal" className="hidden h-6 w-auto shrink-0 sm:block" />
                   <input
                     type="radio"
                     name="paymentMethod"
@@ -2523,14 +2523,14 @@ export default function BookingPage() {
             initial="hidden"
             animate="visible"
           >
-            <div className="mb-6 bg-[#f9fafb] pt-4 md:hidden">
+            <div className="mb-6 bg-[#f9fafb] pt-4 lg:hidden">
               <HoldTimer onExpire={handleExpire} lastActivityAt={lastActivityAt} isExpired={isExpired} />
             </div>
 
-            <div className="grid gap-8 md:grid-cols-[1fr_380px]">
+            <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
               <div className="min-w-0 space-y-6">
                 {/* On mobile the tour card leads, then the form follows. */}
-                <div className="md:hidden">
+                <div className="lg:hidden">
                   <BookingTourCard tour={activeTour} onChangeClick={() => setIsChangeModalOpen(true)} />
                 </div>
                 {paypalCancelled && (
@@ -2597,12 +2597,12 @@ export default function BookingPage() {
                 />
               </div>
 
-              <aside className="md:sticky md:top-28 md:self-start">
+              <aside className="lg:sticky lg:top-28 lg:self-start">
                 <div className="space-y-4">
-                  <div className="hidden md:block">
+                  <div className="hidden lg:block">
                     <HoldTimer onExpire={handleExpire} lastActivityAt={lastActivityAt} isExpired={isExpired} />
                   </div>
-                  <div className="hidden md:block">
+                  <div className="hidden lg:block">
                     <BookingTourCard tour={activeTour} onChangeClick={() => setIsChangeModalOpen(true)} />
                   </div>
                   <BookingSidebar

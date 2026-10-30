@@ -7,9 +7,15 @@ import './ExternalReviewCard.css'
 
 interface ExternalReviewCardProps {
   review: ExternalReview
+  /**
+   * Artwork for the tour the review is about. Scraped rows carry no image of
+   * their own, so the homepage rail resolves one from our catalogue and falls
+   * back to a neutral tile when nothing matches.
+   */
+  thumbnail?: string | null
 }
 
-export default function ExternalReviewCard({ review }: ExternalReviewCardProps) {
+export default function ExternalReviewCard({ review, thumbnail }: ExternalReviewCardProps) {
   const [showModal, setShowModal] = useState(false)
   const textRef = useRef<HTMLParagraphElement>(null)
   const [isTruncated, setIsTruncated] = useState(false)
@@ -31,61 +37,59 @@ export default function ExternalReviewCard({ review }: ExternalReviewCardProps) 
 
   return (
     <>
-      <div className="ext-review-card">
+      <article className="ext-review-card">
         <div className="ext-review-card__body">
-          {/* Tour title — non-interactive; only the "View Experience" CTA
-              navigates away from this card. */}
-          <span className="ext-review-card__tour-title">
-            {review.tourTitle}
-          </span>
+          {/* Tour identity: artwork + the experience the review is about. */}
+          <div className="ext-review-card__head">
+            {thumbnail ? (
+              <img
+                src={thumbnail}
+                alt=""
+                aria-hidden="true"
+                className="ext-review-card__thumb"
+                loading="lazy"
+                decoding="async"
+                width={56}
+                height={56}
+              />
+            ) : (
+              <span className="ext-review-card__thumb ext-review-card__thumb--placeholder" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+              </span>
+            )}
+            <span className="ext-review-card__tour-title">{review.tourTitle}</span>
+          </div>
 
-          {/* Star rating */}
           <div className="ext-review-card__stars">
             <StarRating
               value={review.rating}
-              size={20}
+              size={18}
               gap={1}
               filledColor="#16a34a"
               emptyColor="#e5e7eb"
             />
           </div>
 
-          {/* Reviewer info */}
           <div className="ext-review-card__reviewer">
-            {review.reviewerAvatar ? (
-              <img src={review.reviewerAvatar} alt="" className="ext-review-card__avatar" loading="lazy" decoding="async" width={32} height={32} />
-            ) : (
-              <div className="ext-review-card__avatar ext-review-card__avatar--initials">
-                {review.reviewerName.charAt(0)}
-              </div>
-            )}
             <span className="ext-review-card__reviewer-name">{review.reviewerName}</span>
-            {formattedDate && (
-              <span className="ext-review-card__date">, {formattedDate}</span>
-            )}
+            {formattedDate && <span className="ext-review-card__date">, {formattedDate}</span>}
           </div>
 
-          {/* Review title */}
-          {review.title && (
-            <p className="ext-review-card__title">{review.title}</p>
-          )}
+          {review.title && <p className="ext-review-card__title">{review.title}</p>}
 
-          {/* Review text — full, with Read more modal */}
           <p ref={textRef} className="ext-review-card__text">
             {review.text}
           </p>
           {isTruncated && (
-            <button
-              onClick={() => setShowModal(true)}
-              className="ext-review-card__read-more"
-            >
+            <button onClick={() => setShowModal(true)} className="ext-review-card__read-more">
               Read more
             </button>
           )}
 
-          {/* Footer: internal link to the matched experience. Google rows are
-              business-level reviews with no tour to link to, so they get no
-              footer at all. */}
+          {/* Google rows are business-level reviews with no tour to link to. */}
           {review.source !== 'GOOGLE' && (
             <div className="ext-review-card__footer">
               <Link to={tourLink} className="ext-review-card__cta">
@@ -94,9 +98,8 @@ export default function ExternalReviewCard({ review }: ExternalReviewCardProps) 
             </div>
           )}
         </div>
-      </div>
+      </article>
 
-      {/* Full review modal */}
       {showModal && (
         <div className="ext-review-modal-overlay" onClick={() => setShowModal(false)}>
           <div className="ext-review-modal" onClick={(e) => e.stopPropagation()}>
@@ -108,9 +111,7 @@ export default function ExternalReviewCard({ review }: ExternalReviewCardProps) 
             </button>
 
             <div className="ext-review-modal__header">
-              <span className="ext-review-modal__tour-title">
-                {review.tourTitle}
-              </span>
+              <span className="ext-review-modal__tour-title">{review.tourTitle}</span>
               <div className="ext-review-modal__stars">
                 <StarRating
                   value={review.rating}
@@ -121,23 +122,12 @@ export default function ExternalReviewCard({ review }: ExternalReviewCardProps) 
                 />
               </div>
               <div className="ext-review-modal__reviewer">
-                {review.reviewerAvatar ? (
-                  <img src={review.reviewerAvatar} alt="" className="ext-review-card__avatar" loading="lazy" decoding="async" width={32} height={32} />
-                ) : (
-                  <div className="ext-review-card__avatar ext-review-card__avatar--initials">
-                    {review.reviewerName.charAt(0)}
-                  </div>
-                )}
                 <span className="ext-review-card__reviewer-name">{review.reviewerName}</span>
-                {formattedDate && (
-                  <span className="ext-review-card__date">, {formattedDate}</span>
-                )}
+                {formattedDate && <span className="ext-review-card__date">, {formattedDate}</span>}
               </div>
             </div>
 
-            {review.title && (
-              <h3 className="ext-review-modal__title">{review.title}</h3>
-            )}
+            {review.title && <h3 className="ext-review-modal__title">{review.title}</h3>}
 
             <p className="ext-review-modal__text">{review.text}</p>
 
