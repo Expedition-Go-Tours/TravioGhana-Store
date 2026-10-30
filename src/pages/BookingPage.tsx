@@ -28,7 +28,7 @@ import { useAuthUser } from '../hooks/useAuthUser'
 import { setAuthReturnTo } from '../lib/auth'
 import type { CardElementHandle } from '../components/booking/CardField'
 import { fetchWithAuth } from '../lib/api'
-import { useCreateBooking, useCalculateCheckout, usePaymentCapabilities } from '../hooks/useExpeditionBookings'
+import { useCreateBooking, useCalculateCheckout, usePaymentCapabilities, useReleaseCheckoutDraft } from '../hooks/useExpeditionBookings'
 import { buildE164Phone, isValidPhoneInput, splitE164Phone, COUNTRY_CODES, formatPhoneDisplay } from '../lib/phone'
 import { SUPPORT_PHONE, SUPPORT_PHONE_DIGITS } from '../lib/support'
 import { getAccount } from '../features/account/api'
@@ -1172,7 +1172,7 @@ function PaymentDetailsStep({
             className="space-y-6 p-7 sm:p-9"
           >
             <div>
-              <p className="mb-3 text-base font-bold tracking-tight text-slate-900">Choose when to pay</p>
+              <p className="mb-3 text-base font-bold tracking-tight text-slate-900">Choose how to pay</p>
               <div className="space-y-2">
                 <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
                   selection === 'now'
@@ -1802,6 +1802,11 @@ export default function BookingPage() {
     canRestore && draft?.payment ? { ...DEFAULT_PAYMENT, ...draft.payment } : DEFAULT_PAYMENT,
   )
   const [isBooking, setIsBooking] = useState(false)
+  // PayPal returns a cancelled checkout here (cancel_url carries
+  // ?paypal=cancelled&draft=…). Acknowledge it and free the seat hold right
+  // away — otherwise the seats stay held for 30 minutes and the customer is
+  // left wondering whether they were charged.
+  const [paypalCancelled, setPaypalCancelled] = useState(false)
   const [showCheckoutTransition, setShowCheckoutTransition] = useState(false)
   const pendingCheckoutUrl = useRef<string | null>(null)
 
@@ -2124,6 +2129,30 @@ export default function BookingPage() {
   }
 
   const createBooking = useCreateBooking()
+
+  // Runs once: strip the marker from the URL so a refresh does not re-release
+  // (or re-show the notice after the customer dismissed it).
+  const releaseDraft = useReleaseCheckoutDraft()
+  const paypalCancelHandled = useRef(false)
+  useEffect(() => {
+    if (paypalCancelHandled.current) return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('paypal') !== 'cancelled') return
+    paypalCancelHandled.current = true
+    setPaypalCancelled(true)
+    const draftId = params.get('draft')
+    params.delete('paypal')
+    params.delete('draft')
+    const qs = params.toString()
+    window.history.replaceState(
+      {},
+      '',
+      `${window.location.pathname}${qs ? `?${qs}` : ''}${window.location.hash}`,
+    )
+    // Best effort: the hold is superseded on the next attempt anyway.
+    if (draftId) releaseDraft.mutate(draftId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Poll the backend until the webhook reconciles the booking after the
   // server-side Stripe confirm. We do NOT optimistically show success: a
@@ -2504,6 +2533,28 @@ export default function BookingPage() {
                 <div className="md:hidden">
                   <BookingTourCard tour={activeTour} onChangeClick={() => setIsChangeModalOpen(true)} />
                 </div>
+                {paypalCancelled && (
+                  <div
+                    role="status"
+                    className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+                  >
+                    <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                    <div className="flex-1">
+                      <p className="font-semibold">PayPal payment cancelled</p>
+                      <p className="text-amber-800">
+                        Nothing was charged. Your details are saved — try again whenever you are ready.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setPaypalCancelled(false)}
+                      aria-label="Dismiss"
+                      className="rounded-full p-1 text-amber-700 transition hover:bg-amber-100"
+                    >
+                      <X className="size-4" aria-hidden="true" />
+                    </button>
+                  </div>
+                )}
                 <ActivityDetailsStep
                   tour={activeTour}
                   onNext={() => goToStep(2)}
