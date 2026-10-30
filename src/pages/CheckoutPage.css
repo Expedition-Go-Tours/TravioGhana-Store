@@ -274,15 +274,19 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 14px 20px;
+  min-height: 52px;
+  padding: 14px 24px;
   border: none;
   border-radius: 999px;
   background: var(--bv-accent);
   color: #fff;
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
+  line-height: 1.2;
   cursor: pointer;
+  /* Removes the 300ms tap delay and the double-tap zoom on the primary CTA. */
+  touch-action: manipulation;
   transition: background 0.15s ease, transform 0.05s ease;
 }
 .co-pay:hover:not(:disabled) {
@@ -417,7 +421,17 @@
   }
   .co-pay-col {
     max-width: 560px;
-    padding: 20px 16px 40px;
+    /* Clears the iOS home indicator so the Pay button is never half-hidden. */
+    padding: 20px 16px calc(40px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* iOS Safari zooms the whole page when a focused input is under 16px. */
+  .co-input {
+    font-size: 16px;
+  }
+
+  .co-pay {
+    min-height: 54px;
   }
 }
 /* ── States (full page) ── */

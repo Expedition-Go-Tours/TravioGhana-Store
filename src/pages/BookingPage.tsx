@@ -1218,17 +1218,22 @@ function PaymentDetailsStep({
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className={`text-base font-semibold ${payLaterAvailable ? 'text-slate-900' : 'text-slate-400'}`}>Reserve now, pay later</span>
+                    {/* Price rides with the label so the descriptor and the
+                        availability note get the row's full width on phones
+                        instead of wrapping one word per line beside it. */}
+                    <div className="flex items-start justify-between gap-3">
+                      <span className={`text-base font-semibold ${payLaterAvailable ? 'text-slate-900' : 'text-slate-400'}`}>Reserve now, pay later</span>
+                      <div className="shrink-0 text-right leading-tight">
+                        <span className="text-base font-bold text-slate-900">$0.00</span>
+                        <p className="text-[11px] text-slate-400">now</p>
+                      </div>
+                    </div>
                     <p className="text-[13px] text-slate-400">Book your spot and pay nothing today</p>
                     {!payLaterAvailable && (
                       <p className="mt-1.5 text-xs font-medium leading-relaxed text-amber-600">
                         Available for dates at least {PAY_LATER_MIN_HOURS} hours away — so we can charge your card before the activity.
                       </p>
                     )}
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <span className="text-base font-bold text-slate-900">$0.00</span>
-                    <p className="text-[11px] text-slate-400">now</p>
                   </div>
                   <input
                     type="radio"

@@ -64,7 +64,7 @@ export interface HomepageTour {
     rating: number | null
   } | null
   // Badge fields the tour card renders. The homepage endpoints don't project
-  // these â€” they're backfilled client-side from the full /tours listing by
+  // these — they're backfilled client-side from the full /tours listing by
   // enrichTourBadgeFields() so the cards show the same badges as the
   // tour-detail "similar experiences" row.
   languages?: string[]
@@ -283,7 +283,7 @@ async function enrichBackfill(
 // â”€â”€â”€ Hooks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * Likely to Sell Out â€” tours with booking momentum in last 14 days.
+ * Likely to Sell Out — tours with booking momentum in last 14 days.
  */
 export function useLikelySellOut(limit = 12, enabled = true) {
   return useQuery({
@@ -299,7 +299,7 @@ export function useLikelySellOut(limit = 12, enabled = true) {
 }
 
 /**
- * Top Rated â€” Bayesian-smoothed quality scores.
+ * Top Rated — Bayesian-smoothed quality scores.
  */
 export function useTopRated(limit = 12, enabled = true) {
   return useQuery({
@@ -315,7 +315,7 @@ export function useTopRated(limit = 12, enabled = true) {
 }
 
 /**
- * Trending Now â€” view/booking/wishlist velocity (7d vs prior 7d).
+ * Trending Now — view/booking/wishlist velocity (7d vs prior 7d).
  */
 export function useTrending(limit = 12, enabled = true) {
   return useQuery({
@@ -331,7 +331,7 @@ export function useTrending(limit = 12, enabled = true) {
 }
 
 /**
- * Recommended for You â€” personalized by behavior + location + quality.
+ * Recommended for You — personalized by behavior + location + quality.
  */
 export function useRecommended(limit = 12, enabled = true) {
   const location = getStoredLocation()
@@ -354,7 +354,7 @@ export function useRecommended(limit = 12, enabled = true) {
 }
 
 /**
- * New Experiences â€” tours created in last 30 days.
+ * New Experiences — tours created in last 30 days.
  */
 export function useNewExperiences(limit = 10, enabled = true) {
   return useQuery({
@@ -370,7 +370,7 @@ export function useNewExperiences(limit = 10, enabled = true) {
 }
 
 /**
- * Attractions â€” grouped by attraction name from tour data.
+ * Attractions — grouped by attraction name from tour data.
  * Uses location for proximity sorting when available.
  */
 export function useAttractions(limit = 12, enabled = true) {
@@ -391,7 +391,7 @@ export function useAttractions(limit = 12, enabled = true) {
 }
 
 /**
- * Tours for a specific attraction â€” filtered by attraction name.
+ * Tours for a specific attraction — filtered by attraction name.
  * Only enabled when attractionName is provided.
  */
 export function useAttractionTours(attractionName: string | null, limit = 12) {
@@ -410,7 +410,7 @@ export function useAttractionTours(attractionName: string | null, limit = 12) {
 }
 
 /**
- * Mood Keywords â€” dynamic keywords for "What do you want to do?"
+ * Mood Keywords — dynamic keywords for "What do you want to do?"
  */
 export function useMoodKeywords(limit = 8, enabled = true) {
   return useQuery({
@@ -430,7 +430,7 @@ export function useMoodKeywords(limit = 8, enabled = true) {
 }
 
 /**
- * Popular Destinations â€” cities with most tours/bookings.
+ * Popular Destinations — cities with most tours/bookings.
  */
 export function usePopularDestinations(limit = 10, enabled = true) {
   return useQuery({
@@ -472,7 +472,7 @@ export interface HomepageOfferTour extends HomepageTour {
 }
 
 /**
- * Tours with active special offers â€” single efficient query (no N+1).
+ * Tours with active special offers — single efficient query (no N+1).
  * Powers the "Special Offers" / "Last Minute Deals" homepage section.
  */
 export function useHomepageOffers(limit = 12, enabled = true) {
@@ -493,7 +493,7 @@ export function useHomepageOffers(limit = 12, enabled = true) {
 /**
  * Map an API HomepageTour to the full TourCardData shape that TourCard
  * expects. This is the only bridge between the new API shape and the
- * existing UI â€” every homepage section that renders TourCards feeds through
+ * existing UI — every homepage section that renders TourCards feeds through
  * here so cards get the same props (slug, priceValue, photos, ...) as the
  * tour-detail "similar experiences" cards.
  */

@@ -298,69 +298,69 @@ export default function PrivacyPolicyPage() {
             The lawful basis depends on the purpose and the law that applies.
           </p>
           <p>
-            <strong>Create and manage accounts</strong> â€” Identity, contact and account information.
+            <strong>Create and manage accounts</strong> — Identity, contact and account information.
             Lawful basis: Contract; legitimate interests in providing account features and security.
           </p>
           <p>
-            <strong>Search, book and deliver experiences</strong> â€” Identity, contact, booking,
+            <strong>Search, book and deliver experiences</strong> — Identity, contact, booking,
             travel and payment information. Lawful basis: Contract; steps requested before
             entering a contract.
           </p>
           <p>
-            <strong>Share booking details with the relevant supplier</strong> â€” Identity, contact,
+            <strong>Share booking details with the relevant supplier</strong> — Identity, contact,
             booking, pickup and necessary travel information. Lawful basis: Contract; legitimate
             interests in completing and supporting the booking.
           </p>
           <p>
-            <strong>Process payments, refunds and payouts</strong> â€” Identity, transaction and
+            <strong>Process payments, refunds and payouts</strong> — Identity, transaction and
             payment information. Lawful basis: Contract; legal obligation; legitimate interests in
             financial administration.
           </p>
           <p>
-            <strong>Provide support and handle complaints</strong> â€” Contact, booking and
+            <strong>Provide support and handle complaints</strong> — Contact, booking and
             communications information. Lawful basis: Contract; legal obligation; legitimate
             interests in customer service and dispute resolution.
           </p>
           <p>
-            <strong>Manage safety, emergencies and accessibility</strong> â€” Booking, contact and
+            <strong>Manage safety, emergencies and accessibility</strong> — Booking, contact and
             necessary health or accessibility information. Lawful basis: Contract; vital
             interests; explicit consent or other special-category condition where required.
           </p>
           <p>
-            <strong>Prevent fraud and protect the Platform</strong> â€” Identity, transaction,
+            <strong>Prevent fraud and protect the Platform</strong> — Identity, transaction,
             device, usage and security information. Lawful basis: Legitimate interests; legal
             obligation.
           </p>
           <p>
-            <strong>Verify and manage suppliers</strong> â€” Identity, business, tax, licensing,
+            <strong>Verify and manage suppliers</strong> — Identity, business, tax, licensing,
             payout and performance information. Lawful basis: Contract; legal obligation;
             legitimate interests in marketplace quality and safety.
           </p>
           <p>
-            <strong>Send service communications</strong> â€” Contact and booking information. Lawful
+            <strong>Send service communications</strong> — Contact and booking information. Lawful
             basis: Contract; legitimate interests in keeping you informed.
           </p>
           <p>
-            <strong>Request and publish reviews</strong> â€” Booking information and content you
+            <strong>Request and publish reviews</strong> — Booking information and content you
             submit. Lawful basis: Legitimate interests in quality, transparency and customer
             information; consent where required.
           </p>
           <p>
-            <strong>Improve services and produce aggregated analytics</strong> â€” Usage, booking,
+            <strong>Improve services and produce aggregated analytics</strong> — Usage, booking,
             support and survey information. Lawful basis: Legitimate interests; consent where
             cookies or similar technologies require it.
           </p>
           <p>
-            <strong>Send direct marketing</strong> â€” Contact details and marketing preferences.
+            <strong>Send direct marketing</strong> — Contact details and marketing preferences.
             Lawful basis: Consent where required; legitimate interests only where permitted by law.
           </p>
           <p>
-            <strong>Comply with tax, accounting, regulatory and legal duties</strong> â€” Identity,
+            <strong>Comply with tax, accounting, regulatory and legal duties</strong> — Identity,
             booking, transaction and communications information. Lawful basis: Legal obligation;
             legitimate interests in establishing and defending legal claims.
           </p>
           <p>
-            <strong>Corporate transactions and professional advice</strong> â€” Relevant business
+            <strong>Corporate transactions and professional advice</strong> — Relevant business
             and customer records. Lawful basis: Legitimate interests; legal obligation where
             applicable.
           </p>
@@ -562,40 +562,40 @@ export default function PrivacyPolicyPage() {
           </p>
           <p>Our general retention approach is:</p>
           <p>
-            <strong>Account information</strong> â€” While the account is active and for up to 24
+            <strong>Account information</strong> — While the account is active and for up to 24
             months after closure, unless longer retention is required.
           </p>
           <p>
-            <strong>Booking, payment, invoice and refund records</strong> â€” Up to 6 years after
+            <strong>Booking, payment, invoice and refund records</strong> — Up to 6 years after
             the transaction or longer where required by Ghanaian or UK law.
           </p>
           <p>
-            <strong>Customer-support and complaint records</strong> â€” Normally up to 3 years after
+            <strong>Customer-support and complaint records</strong> — Normally up to 3 years after
             resolution; longer where connected to a claim or legal duty.
           </p>
           <p>
-            <strong>Identity or travel documents collected for a specific service</strong> â€”
+            <strong>Identity or travel documents collected for a specific service</strong> —
             Deleted or securely restricted when the service and required verification period end,
             unless law requires longer retention.
           </p>
           <p>
-            <strong>Supplier verification, contract and payout records</strong> â€” During the
+            <strong>Supplier verification, contract and payout records</strong> — During the
             relationship and normally up to 6 years afterwards.
           </p>
           <p>
-            <strong>Security and technical logs</strong> â€” Normally up to 12 months, unless needed
+            <strong>Security and technical logs</strong> — Normally up to 12 months, unless needed
             to investigate an incident.
           </p>
           <p>
-            <strong>Marketing records</strong> â€” Until consent is withdrawn, you opt out, or the
+            <strong>Marketing records</strong> — Until consent is withdrawn, you opt out, or the
             data is no longer needed; suppression records may be retained to honour your choice.
           </p>
           <p>
-            <strong>Cookie and consent records</strong> â€” According to the cookie schedule and as
+            <strong>Cookie and consent records</strong> — According to the cookie schedule and as
             needed to demonstrate your preferences.
           </p>
           <p>
-            <strong>Reviews and public content</strong> â€” While published or until removal is
+            <strong>Reviews and public content</strong> — While published or until removal is
             justified, with limited archival retention where necessary.
           </p>
           <p>
