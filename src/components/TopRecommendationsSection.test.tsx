@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import TopRecommendationsSection from './TopRecommendationsSection'
@@ -36,7 +36,6 @@ const tour = (id: string, title: string): HomepageTour => ({
   supplier: null,
 })
 
-// Full description paragraphs from the tour-detail endpoint (>300 chars).
 const PARA_ONE =
   "Escape the city and discover the natural beauty, culture and hidden gems of Ghana's Eastern Region on this unforgettable full-day tour from Accra."
 const PARA_TWO =
@@ -59,8 +58,8 @@ beforeEach(() => {
   setDescriptions([])
 })
 
-describe('TopRecommendationsSection', () => {
-  it('renders ten unique rows — recommended first, topped up from trending', () => {
+describe('TopRecommendationsSection — homepage rail', () => {
+  it('renders ten unique cards — recommended first, topped up from trending', () => {
     const recommended = Array.from({ length: 9 }, (_, i) => tour(`r${i}`, `Recommended ${i}`))
     const trending = [tour('r0', 'Recommended 0'), tour('t10', 'Trending Tenth')]
 
@@ -75,86 +74,43 @@ describe('TopRecommendationsSection', () => {
     ).toBeInTheDocument()
   })
 
-  it('links "View All" to the All Tours Top Recommendations filter view', () => {
+  it('links "View all experiences" to the All Tours Top Recommendations filter view', () => {
     renderSection({ preloaded: [tour('abc', 'Cape Coast Castle')] })
 
-    expect(screen.getByRole('link', { name: 'View All' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'View all experiences' })).toHaveAttribute(
       'href',
       '/tours?section=Top Recommendations',
     )
   })
 
-  it('opens the title and the image to the tour detail page in a new tab', () => {
-    const { container } = renderSection({ preloaded: [tour('abc', 'Cape Coast Castle')] })
+  it('makes the whole card a link to the tour detail page', () => {
+    renderSection({ preloaded: [tour('abc', 'Cape Coast Castle')] })
 
-    // Both the cover image and the title link to the same canonical tour page
-    // and open it in a new tab (mirrors expeditiongotours.com), so the
-    // homepage keeps its scroll position behind the new tab. Scoped to the
-    // card: the heading's "View All" is a link too.
-    const links = within(screen.getByRole('article')).getAllByRole('link')
-    expect(links).toHaveLength(2)
-    for (const link of links) {
-      expect(link).toHaveAttribute('href', '/tour/abc/abc')
-      expect(link).toHaveAttribute('target', '_blank')
-      expect(link).toHaveAttribute('rel', 'noopener')
-    }
-    const imageLink = container.querySelector('a.top-rec-image')
-    expect(imageLink).toHaveAttribute('href', '/tour/abc/abc')
-    expect(imageLink).toHaveAttribute('target', '_blank')
-    expect(imageLink).toHaveAttribute('aria-label', 'Cape Coast Castle')
+    const card = screen.getByRole('article')
+    const links = within(card).getAllByRole('link')
+    expect(links).toHaveLength(1)
+    expect(links[0]).toHaveAttribute('href', '/tour/abc/abc')
+    // Mirrors the rest of the homepage: the tour opens in a new tab so the
+    // rail keeps its scroll position behind it.
+    expect(links[0]).toHaveAttribute('target', '_blank')
+    expect(links[0]).toHaveAttribute('rel', 'noopener')
+    expect(screen.getByText('Check availability')).toBeInTheDocument()
   })
 
-  it('renders the full-description excerpt from the detail data', () => {
-    setDescriptions([
-      ['r0', 'A scenic drive from Accra to Cape Coast.'],
-      ['r1', ''],
-    ])
+  it('renders the description excerpt from the detail data', () => {
+    setDescriptions([['r0', 'A scenic drive from Accra to Cape Coast.']])
 
-    renderSection({
-      preloaded: [tour('r0', 'Cape Coast Castle'), tour('r1', 'No Description')],
-    })
+    renderSection({ preloaded: [tour('r0', 'Cape Coast Castle'), tour('r1', 'No Description')] })
 
     expect(screen.getByText('A scenic drive from Accra to Cape Coast.')).toBeInTheDocument()
-    // The row without a description still renders, just without an excerpt.
     expect(screen.getAllByRole('article')).toHaveLength(2)
-    expect(document.querySelectorAll('.top-rec-excerpt')).toHaveLength(1)
-    // Descriptions are requested for exactly the displayed tours.
     expect(mockDescriptions).toHaveBeenCalledWith(['r0', 'r1'], true)
   })
 
-  it('expands the full description in place via See more / See less', () => {
-    setDescriptions([['r0', `${PARA_ONE}\n${PARA_TWO}`]])
+  it('shows the product type as a tag on the photo', () => {
+    renderSection({ preloaded: [tour('r0', 'Cape Coast Castle')] })
 
-    renderSection({ preloaded: [tour('r0', 'Waterfalls Day Tour')] })
-    const card = screen.getByRole('article')
-
-    // Collapsed: clamped single block, second paragraph not its own element.
-    expect(screen.getByRole('button', { name: 'See more' })).toBeInTheDocument()
-    expect(screen.queryByText(PARA_TWO, { exact: true })).not.toBeInTheDocument()
-    expect(card).not.toHaveClass('top-rec-item--expanded')
-
-    fireEvent.click(screen.getByRole('button', { name: 'See more' }))
-
-    // Expanded: the card takes its full row width (wide text column).
-    expect(card).toHaveClass('top-rec-item--expanded')
-    expect(screen.getByRole('button', { name: 'See less' })).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getByText(PARA_ONE, { exact: true })).toBeInTheDocument()
-    expect(screen.getByText(PARA_TWO, { exact: true })).toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: 'See less' }))
-
-    expect(card).not.toHaveClass('top-rec-item--expanded')
-    expect(screen.getByRole('button', { name: 'See more' })).toHaveAttribute('aria-expanded', 'false')
-    expect(screen.queryByText(PARA_TWO, { exact: true })).not.toBeInTheDocument()
-  })
-
-  it('hides the toggle when the description is short', () => {
-    setDescriptions([['r0', 'A short blurb that fits without clamping.']])
-
-    renderSection({ preloaded: [tour('r0', 'Short Tour')] })
-
-    expect(screen.getByText('A short blurb that fits without clamping.')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'See more' })).not.toBeInTheDocument()
+    expect(screen.getByText('Tour')).toBeInTheDocument()
   })
 
   it('renders nothing without rows and without loading', () => {
@@ -162,77 +118,23 @@ describe('TopRecommendationsSection', () => {
     expect(container).toBeEmptyDOMElement()
   })
 
-  it('shows the ten-row skeleton while loading', () => {
+  it('shows the rail skeleton while loading', () => {
     const { container } = renderSection({ isLoading: true })
-    expect(container.querySelectorAll('.top-rec-item--skeleton')).toHaveLength(10)
+    expect(container.querySelectorAll('.top-recs-slide--skeleton')).toHaveLength(5)
+  })
+
+  it('keeps both arrows disabled when the rail does not overflow', () => {
+    renderSection({ preloaded: [tour('r0', 'Cape Coast Castle')] })
+
+    expect(screen.getByRole('button', { name: 'Previous tours' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Next tours' })).toBeDisabled()
   })
 })
 
 /**
- * Touch layouts (≤1023px): the "See more" toggle is hidden, so the clamped
- * description itself becomes the affordance and opens the whole text in a
- * dialog. jsdom has no matchMedia — mock it to the compact branch (the same
- * approach TourCard/Wishlist tests use).
- */
-describe('TopRecommendationsSection — tap-to-read on touch layouts', () => {
-  const originalMatchMedia = window.matchMedia
-
-  beforeEach(() => {
-    window.matchMedia = ((query: string) => ({
-      matches: query.includes('1023'),
-      media: query,
-      onchange: null,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      addListener: () => {},
-      removeListener: () => {},
-      dispatchEvent: () => false,
-    })) as unknown as typeof window.matchMedia
-  })
-
-  afterEach(() => {
-    window.matchMedia = originalMatchMedia
-  })
-
-  it('opens the whole description in a dialog when the clamped text is tapped', () => {
-    setDescriptions([['r0', `${PARA_ONE}\n${PARA_TWO}`]])
-    renderSection({ preloaded: [tour('r0', 'Waterfalls Day Tour')] })
-
-    // Compact: the text itself is the affordance — no See more toggle.
-    expect(screen.queryByRole('button', { name: 'See more' })).not.toBeInTheDocument()
-    const textButton = screen.getByRole('button', { name: new RegExp(PARA_ONE.slice(0, 30)) })
-
-    fireEvent.click(textButton)
-
-    const dialog = screen.getByRole('dialog')
-    expect(dialog).toHaveAttribute('aria-modal', 'true')
-    expect(within(dialog).getByText(PARA_ONE, { exact: true })).toBeInTheDocument()
-    expect(within(dialog).getByText(PARA_TWO, { exact: true })).toBeInTheDocument()
-
-    // Escape closes it.
-    fireEvent.keyDown(document, { key: 'Escape' })
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-
-    // Re-open and close via the ✕ button.
-    fireEvent.click(textButton)
-    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Close' }))
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-  })
-
-  it('keeps short descriptions as plain, inert text', () => {
-    setDescriptions([['r0', 'A short blurb that fits without clamping.']])
-    renderSection({ preloaded: [tour('r0', 'Short Tour')] })
-
-    expect(screen.getByText('A short blurb that fits without clamping.')).toBeInTheDocument()
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(screen.queryByRole('button')).not.toBeInTheDocument()
-  })
-})
-
-/**
- * The All Tours section view renders the grid in its "cards" layout: there,
- * "See more" opens the description dialog even on desktop (mirroring
- * expeditiongotours.com) — the card never inline-expands.
+ * The All Tours section view still renders the shared grid in its "cards"
+ * layout: there, "See more" opens the description dialog even on desktop
+ * (mirroring expeditiongotours.com) — the card never inline-expands.
  */
 describe('TopRecommendationsGrid — cards layout', () => {
   it('opens the dialog from "See more" on desktop instead of expanding the card', () => {

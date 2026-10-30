@@ -17,6 +17,8 @@ export interface TopRecItem {
   title: string
   slug: string
   image: string
+  /** Product type ("Tour" / "Activity" / "Transport") for the card tag. */
+  category?: string | null
 }
 
 /** Map a ranked homepage row to the card's display fields. */
@@ -26,6 +28,7 @@ export function toTopRecItem(tour: HomepageTour): TopRecItem {
     title: tour.title,
     slug: tour.slug,
     image: tour.coverPhoto || tour.photos?.[0] || '',
+    category: tour.category,
   }
 }
 
