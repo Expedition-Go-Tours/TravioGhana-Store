@@ -5,7 +5,7 @@ import ExternalReviewCard from './ExternalReviewCard'
 import StarRating from './StarRating'
 import { useFeaturedExternalReviews, useExternalReviewStats } from '../hooks/useExternalReviews'
 import { useExpeditionTours } from '../hooks/useExpeditionTours'
-import { resolveReviewThumbnails, selectDistinctReviews } from '../lib/reviewThumbnails'
+import { resolveReviewMatches, selectDistinctReviews } from '../lib/reviewRail'
 import useMediaQuery from '../hooks/useMediaQuery'
 import useRafCallback from '../hooks/useRafCallback'
 import './ExternalReviewsSection.css'
@@ -41,8 +41,8 @@ export default function ExternalReviewsSection() {
   // One card per tour: the featured slice is picked for review quality, so it
   // repeats the same few tours heavily. Images and cards stay varied.
   const railReviews = useMemo(() => selectDistinctReviews(reviews ?? []), [reviews])
-  const thumbnails = useMemo(
-    () => resolveReviewThumbnails(railReviews, tourData?.tours ?? []),
+  const matches = useMemo(
+    () => resolveReviewMatches(railReviews, tourData?.tours ?? []),
     [railReviews, tourData],
   )
 
@@ -202,11 +202,18 @@ export default function ExternalReviewsSection() {
             onMouseLeave={handleMouseLeave}
           >
             <div className="ext-reviews-carousel" ref={scrollRef}>
-              {railReviews.map((review) => (
-                <div key={review.id} className="ext-reviews-card-wrap">
-                  <ExternalReviewCard review={review} thumbnail={thumbnails.get(review.id)} />
-                </div>
-              ))}
+              {railReviews.map((review) => {
+                const match = matches.get(review.id)
+                return (
+                  <div key={review.id} className="ext-reviews-card-wrap">
+                    <ExternalReviewCard
+                      review={review}
+                      thumbnail={match?.image}
+                      tourHref={match?.href ?? undefined}
+                    />
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>

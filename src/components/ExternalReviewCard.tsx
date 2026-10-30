@@ -13,13 +13,18 @@ interface ExternalReviewCardProps {
    * back to a neutral tile when nothing matches.
    */
   thumbnail?: string | null
+  /** Specific tour detail page resolved from the review's listing title. */
+  tourHref?: string
 }
 
-export default function ExternalReviewCard({ review, thumbnail }: ExternalReviewCardProps) {
+export default function ExternalReviewCard({ review, thumbnail, tourHref }: ExternalReviewCardProps) {
   const [showModal, setShowModal] = useState(false)
   const textRef = useRef<HTMLParagraphElement>(null)
   const [isTruncated, setIsTruncated] = useState(false)
-  const tourLink = useReviewTourLink(review.tourTitle)
+  const fallbackTourLink = useReviewTourLink(review.tourTitle)
+  // Prefer the exact tour the review is about; fall back to the destination
+  // listing when the catalogue has no confident match.
+  const tourLink = tourHref || fallbackTourLink
 
   useLayoutEffect(() => {
     const el = textRef.current
