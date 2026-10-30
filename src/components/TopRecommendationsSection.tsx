@@ -25,7 +25,7 @@ interface Props {
 }
 
 /**
- * "Our top recommendations for things to do in Ghana" — the homepage rail:
+ * "Our top recommendations in Ghana" — the homepage rail:
  * ten tours in a paged slider (five per view on wide screens). The rows come
  * from the homepage's already-fetched ranked slices — the backend
  * "recommended" ranking first (quality + bookings), then the nearby rail,

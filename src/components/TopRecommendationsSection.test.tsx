@@ -70,14 +70,14 @@ describe('TopRecommendationsSection — homepage rail', () => {
     // The duplicate recommended row is dropped, not shown twice.
     expect(screen.getAllByText('Recommended 0')).toHaveLength(1)
     expect(
-      screen.getByRole('heading', { name: 'Our top recommendations for things to do in Ghana' }),
+      screen.getByRole('heading', { name: 'Our top recommendations in Ghana' }),
     ).toBeInTheDocument()
   })
 
-  it('links "View all experiences" to the All Tours Top Recommendations filter view', () => {
+  it('links "See more" to the All Tours Top Recommendations filter view', () => {
     renderSection({ preloaded: [tour('abc', 'Cape Coast Castle')] })
 
-    expect(screen.getByRole('link', { name: 'View all experiences' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'See more' })).toHaveAttribute(
       'href',
       '/tours?section=Top Recommendations',
     )

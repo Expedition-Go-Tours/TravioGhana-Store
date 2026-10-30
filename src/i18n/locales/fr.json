@@ -163,7 +163,8 @@
     "optional": "Facultatif",
     "submitting": "Envoi en cours...",
     "viewDetails": "Voir les détails",
-    "goBack": "Revenir en arrière"
+    "goBack": "Revenir en arrière",
+    "seeMore": "Voir plus"
   },
   "connectivity": {
     "offline": "Vous êtes actuellement hors ligne",
@@ -341,7 +342,7 @@
     "multiDayTours": "Circuits de Plusieurs Jours",
     "pickupTitle": "Prise en Charge Incluse",
     "recommendedTitle": "Recommandé pour Vous",
-    "topRecommendations": "Nos meilleures recommandations d'activités à faire au Ghana",
+    "topRecommendations": "Nos meilleures recommandations au Ghana",
     "reviews": "Avis",
     "topRatedTitle": "Circuits les Mieux Notés",
     "topAttractionsNearby": "Attractions à Proximité",

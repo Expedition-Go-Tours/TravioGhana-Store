@@ -6,13 +6,17 @@ import { useSyncExternalStore } from 'react'
  * snapshot). `fallback` is returned when `window.matchMedia` is unavailable.
  */
 export default function useMediaQuery(query: string, fallback = false) {
+  const supported = () =>
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+
   return useSyncExternalStore(
     (callback) => {
+      if (!supported()) return () => {}
       const mq = window.matchMedia(query)
       mq.addEventListener('change', callback)
       return () => mq.removeEventListener('change', callback)
     },
-    () => window.matchMedia(query).matches,
+    () => (supported() ? window.matchMedia(query).matches : fallback),
     () => fallback,
   )
 }

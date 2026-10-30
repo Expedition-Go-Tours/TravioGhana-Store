@@ -165,7 +165,9 @@
   }
 
   .ext-reviews-card-wrap {
-    flex-basis: 100%;
+    /* One full review card plus a 32px peek of the next card on the right
+       (16px rail gap + 32px visible next card). */
+    flex-basis: calc(100% - 48px);
   }
 
   .ext-reviews-stats {

@@ -172,7 +172,8 @@
     "optional": "Optional",
     "submitting": "Submitting...",
     "viewDetails": "View details",
-    "goBack": "Go back"
+    "goBack": "Go back",
+    "seeMore": "See more"
   },
   "connectivity": {
     "offline": "You are currently offline",
@@ -381,7 +382,7 @@
     "multiDayTours": "Multi-Day Tours",
     "pickupTitle": "Pickup Included",
     "recommendedTitle": "Recommended For You",
-    "topRecommendations": "Our top recommendations for things to do in Ghana",
+    "topRecommendations": "Our top recommendations in Ghana",
     "reviews": "Reviews",
     "topRatedTitle": "Top Rated Tours",
     "topAttractionsNearby": "Top Attractions Nearby",
