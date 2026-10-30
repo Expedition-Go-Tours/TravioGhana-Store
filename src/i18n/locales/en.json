@@ -1421,7 +1421,7 @@
   "cookies": {
     "banner": {
       "title": "Your privacy, your choice",
-      "text": "We use strictly necessary cookies to run this site securely. With your consent we also use optional cookies to remember your preferences and understand how the site is used. You can change your choice at any time.",
+      "text": "We use cookies to run the site and, with your consent, to remember your preferences and understand how it is used.",
       "policyLink": "Cookie Policy",
       "acceptAll": "Accept all",
       "rejectNonEssential": "Reject non-essential",
