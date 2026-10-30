@@ -51,6 +51,15 @@
   width: 100%;
 }
 
+/* The Sell Out rail stretches every card to its tallest sibling, and a few
+   cards have badge sets that wrap to four rows. Match the New Experiences
+   rail's two-row metadata block so both rails render cards at the same height
+   (23.75px badge + 6px gap + 23.75px badge). */
+.sellout-carousel .tour-card-meta {
+  max-height: 53.5px;
+  overflow: hidden;
+}
+
 @media (max-width: 768px) {
   .sellout-section {
     padding: 30px 0;
