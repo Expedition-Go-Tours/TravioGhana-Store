@@ -218,3 +218,42 @@ export function getGaClientId(): string | null {
   if (parts.length < 4) return null
   return parts.slice(2).join('.')
 }
+
+/**
+ * The current GA4 session id, for stitching the server-side purchase into the
+ * session that produced it.
+ *
+ * Without it the Measurement Protocol event starts a session of its own: the
+ * revenue lands correctly, but GA4's session-scoped "Purchase journey" funnel
+ * reads `Purchase 0` because no single session ran view_item → add_to_cart →
+ * begin_checkout → purchase. The backend sends it as `session_id`.
+ *
+ * gtag answers asynchronously, so this resolves rather than returns, and it
+ * gives up after a short timeout: checkout must never wait on analytics. Null
+ * when there is no consent, no gtag, or no answer — the caller simply omits it.
+ */
+export function getGaSessionId(timeoutMs = 400): Promise<string | null> {
+  if (typeof window === 'undefined' || !hasConsent('analytics')) return Promise.resolve(null)
+  const gtag = window.gtag
+  if (typeof gtag !== 'function') return Promise.resolve(null)
+
+  return new Promise((resolve) => {
+    let settled = false
+    const finish = (value: string | null): void => {
+      if (settled) return
+      settled = true
+      window.clearTimeout(timer)
+      resolve(value)
+    }
+    const timer = window.setTimeout(() => finish(null), timeoutMs)
+    try {
+      gtag('get', GA_MEASUREMENT_ID, 'session_id', (value: unknown) => {
+        const raw = typeof value === 'number' ? String(value) : typeof value === 'string' ? value.trim() : ''
+        // GA4 session ids are positive integers; anything else is not usable.
+        finish(/^\d{1,32}$/.test(raw) && raw !== '0' ? raw : null)
+      })
+    } catch {
+      finish(null)
+    }
+  })
+}

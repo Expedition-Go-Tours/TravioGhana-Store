@@ -259,6 +259,9 @@ interface ConfirmBookingInput {
   /** GA4 client_id captured at checkout so the backend can report the settled booking
    * server-side (Measurement Protocol). Omitted when analytics consent was never granted. */
   gaClientId?: string
+  /** GA4 session id for the same visit. Without it the purchase cannot be stitched to
+   * the session that produced it, so GA4's session-scoped purchase funnel reads zero. */
+  gaSessionId?: string
   /** Whether the visitor granted analytics consent at checkout. The backend reports the
    * booking to GA4 only when this is true. */
   analyticsConsent?: boolean

@@ -57,7 +57,7 @@ import {
 import { cancellationStatus } from '../lib/cancellationLabel'
 import { getGeolocationPermission, isLocationSharingEnabled, requestCurrentCoordinates } from '../lib/locationSharing'
 import { reverseGeocode } from '../lib/locations'
-import { getGaClientId } from '../lib/googleAnalytics'
+import { getGaClientId, getGaSessionId } from '../lib/googleAnalytics'
 import { trackBeginCheckout } from '../lib/ga4Ecommerce'
 import { hasConsent } from '../lib/cookieConsent'
 
@@ -2270,8 +2270,11 @@ export default function BookingPage() {
 
       // GA4 attribution for the server-side purchase event. The client_id only
       // exists once analytics consent was granted; the flag tells the backend
-      // whether it may report this booking at all.
+      // whether it may report this booking at all. The session id lets GA4
+      // stitch the purchase into the session that produced it — without it the
+      // session-scoped purchase funnel always reads zero.
       const gaClientId = getGaClientId()
+      const gaSessionId = gaClientId ? await getGaSessionId() : null
 
       const payload = {
         tourId: tour.id || tour.slug,
@@ -2318,6 +2321,7 @@ export default function BookingPage() {
         // so the backend can report the settled booking server-side, gated on
         // the consent flag.
         ...(gaClientId ? { gaClientId } : {}),
+        ...(gaSessionId ? { gaSessionId } : {}),
         analyticsConsent: hasConsent('analytics'),
       }
 

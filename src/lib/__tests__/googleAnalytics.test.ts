@@ -259,6 +259,97 @@ describe('getGaClientId', () => {
 })
 
 /**
+ * The server-side purchase needs the session id to land in the session that
+ * produced it. Without it GA4 opens a new session for the Measurement Protocol
+ * event, so the session-scoped purchase funnel reports 0 purchases even though
+ * revenue is correct — the exact symptom seen before this was added.
+ */
+describe('getGaSessionId', () => {
+  /**
+   * These tests need no initialisation — the function only reads consent and
+   * calls `window.gtag`. Loading the module bare keeps `initGoogleAnalytics`
+   * from installing a consent subscription that would outlive the test and
+   * re-enable collection during the host-gate cases below.
+   */
+  async function loadBare(): Promise<GaModule> {
+    vi.resetModules()
+    return (await import('../googleAnalytics')) as GaModule
+  }
+
+  /** Answer the queued `gtag('get', ...)` call the way gtag.js would. */
+  function answerGet(gtag: ReturnType<typeof vi.fn>, value: unknown): void {
+    const call = gtag.mock.calls.find((entry) => entry[0] === 'get')
+    expect(call).toBeDefined()
+    ;(call![3] as (answer: unknown) => void)(value)
+  }
+
+  it('asks gtag for session_id on the configured property', async () => {
+    writeConsent({ analytics: true }, 'accept-all')
+    const gtag = vi.fn()
+    window.gtag = gtag
+    const mod = await loadBare()
+
+    const pending = mod.getGaSessionId()
+    const getCall = gtag.mock.calls.find((call) => call[0] === 'get')
+    expect(getCall).toBeDefined()
+    expect(getCall?.[1]).toBe(MEASUREMENT_ID)
+    expect(getCall?.[2]).toBe('session_id')
+    expect(typeof getCall?.[3]).toBe('function')
+
+    // gtag answers asynchronously; checkout must get the value when it does.
+    answerGet(gtag, 1759876543)
+    await expect(pending).resolves.toBe('1759876543')
+  })
+
+  it('accepts a numeric string from gtag', async () => {
+    writeConsent({ analytics: true }, 'accept-all')
+    const gtag = vi.fn()
+    window.gtag = gtag
+    const mod = await loadBare()
+
+    const pending = mod.getGaSessionId()
+    answerGet(gtag, '1759876543')
+    await expect(pending).resolves.toBe('1759876543')
+  })
+
+  it('gives up instead of blocking checkout when gtag never answers', async () => {
+    vi.useFakeTimers()
+    try {
+      writeConsent({ analytics: true }, 'accept-all')
+      window.gtag = vi.fn()
+      const mod = await loadBare()
+
+      const pending = mod.getGaSessionId(400)
+      await vi.advanceTimersByTimeAsync(400)
+      await expect(pending).resolves.toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('returns null when gtag answers with something that is not a session id', async () => {
+    writeConsent({ analytics: true }, 'accept-all')
+    for (const answer of ['', 'abc', '12.5', 0, null, undefined]) {
+      const gtag = vi.fn()
+      window.gtag = gtag
+      const mod = await loadBare()
+      const pending = mod.getGaSessionId()
+      answerGet(gtag, answer)
+      await expect(pending).resolves.toBeNull()
+    }
+  })
+
+  it('never calls gtag before consent', async () => {
+    const gtag = vi.fn()
+    window.gtag = gtag
+    const mod = await loadBare()
+
+    await expect(mod.getGaSessionId()).resolves.toBeNull()
+    expect(gtag.mock.calls.some((call) => call[0] === 'get')).toBe(false)
+  })
+})
+
+/**
  * The measurement ID ships as a static literal in index.html for every host,
  * so this gate is the only thing keeping dev servers, `vite preview` and
  * preview deployments out of the production property (whose hostname report had
