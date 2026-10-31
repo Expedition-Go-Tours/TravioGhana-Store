@@ -60,6 +60,7 @@ import { reverseGeocode } from '../lib/locations'
 import { getGaClientId, getGaSessionId } from '../lib/googleAnalytics'
 import { trackBeginCheckout } from '../lib/ga4Ecommerce'
 import { hasConsent } from '../lib/cookieConsent'
+import { resolveMethod, resolveTiming } from '../lib/paymentSelection'
 
 /* --- Tour data from location state --- */
 
@@ -1103,7 +1104,7 @@ function PaymentDetailsStep({
   // When the chosen date is inside the pay-later window the option is disabled
   // and the booking quietly falls back to Pay now (no dead-end 400 for the
   // customer who previously had "later" selected).
-  const timing: 'now' | 'later' = !payLaterAvailable ? 'now' : (data.paymentTiming === 'later' ? 'later' : 'now')
+  const timing = resolveTiming(data.paymentTiming, payLaterAvailable)
 
   // Date-aware cancellation status — a selected date inside the policy window
   // is non-refundable (Viator's rule), matching the tour widget's badge.
@@ -1120,15 +1121,15 @@ function PaymentDetailsStep({
   const capabilities = usePaymentCapabilities('USD', 'now')
   const paypalAvailable = Boolean(capabilities.data?.paypal.available)
 
-  // Which option the customer has selected. Pay-later is always a card, and
-  // PayPal drops back to Pay now the moment it stops being available, so the
-  // selection can never describe a method the server would refuse.
-  const selection: 'now' | 'later' | 'paypal' =
-    timing === 'later' ? 'later' : (!paypalAvailable || data.paymentMethod !== 'paypal' ? 'now' : 'paypal')
+  // *When* and *how* are two separate questions, so they get two separate
+  // values. One tri-state used to answer both, which meant choosing PayPal
+  // switched off the "Pay now" highlight even though PayPal *is* paying now,
+  // and tapping "Pay now" silently put the customer back on card.
+  const method = resolveMethod(data.paymentMethod, paypalAvailable)
 
   const buttonLabel = timing === 'later'
     ? 'Reserve Now'
-    : selection === 'paypal'
+    : method === 'paypal'
       ? 'Pay with PayPal'
       : 'Pay Now'
 
@@ -1136,9 +1137,9 @@ function PaymentDetailsStep({
     <div className="space-y-2 text-sm text-slate-600">
       <p>
         <span className="font-semibold text-slate-800">How to pay:</span>{' '}
-        {selection === 'later'
+        {timing === 'later'
           ? 'Reserve now, pay later'
-          : selection === 'paypal'
+          : method === 'paypal'
             ? `PayPal — ${formatPrice(tour.price)}`
             : `Pay now — ${formatPrice(tour.price)}`}
       </p>
@@ -1175,14 +1176,14 @@ function PaymentDetailsStep({
               <p className="mb-3 text-base font-bold tracking-tight text-slate-900">Choose how to pay</p>
               <div className="space-y-2">
                 <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
-                  selection === 'now'
+                  timing === 'now'
                     ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
                     : 'border-slate-200/60 bg-white hover:border-slate-300'
                 }`}>
                   <div className={`grid size-6 shrink-0 place-items-center rounded-full border-2 transition ${
-                    selection === 'now' ? 'border-emerald-500' : 'border-slate-300'
+                    timing === 'now' ? 'border-emerald-500' : 'border-slate-300'
                   }`}>
-                    {selection === 'now' && (
+                    {timing === 'now' && (
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
@@ -1194,22 +1195,24 @@ function PaymentDetailsStep({
                   <span className="shrink-0 text-base font-bold text-slate-900">{formatPrice(tour.price)}</span>
                   <input
                     type="radio"
-                    name="paymentMethod"
+                    name="paymentTiming"
                     className="sr-only"
-                    checked={selection === 'now'}
-                    onChange={() => { onChange('paymentTiming', 'now'); onChange('paymentMethod', 'card') }}
+                    checked={timing === 'now'}
+                    // Timing only. Resetting the method here used to throw away
+                    // a chosen PayPal the moment the customer tapped "Pay now".
+                    onChange={() => onChange('paymentTiming', 'now')}
                   />
                 </label>
 
                 <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${
-                  selection === 'later'
+                  timing === 'later'
                     ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
                     : 'border-slate-200/60 bg-white hover:border-slate-300'
                 }`}>
                   <div className={`grid size-6 shrink-0 place-items-center rounded-full border-2 transition ${
-                    selection === 'later' ? 'border-emerald-500' : 'border-slate-300'
+                    timing === 'later' ? 'border-emerald-500' : 'border-slate-300'
                   }`}>
-                    {selection === 'later' && (
+                    {timing === 'later' && (
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
@@ -1223,12 +1226,16 @@ function PaymentDetailsStep({
                         instead of wrapping one word per line beside it. */}
                     <div className="flex items-start justify-between gap-3">
                       <span className={`text-base font-semibold ${payLaterAvailable ? 'text-slate-900' : 'text-slate-400'}`}>Reserve now, pay later</span>
-                      <div className="shrink-0 text-right leading-tight">
-                        <span className="text-base font-bold text-slate-900">$0.00</span>
-                        <p className="text-[11px] text-slate-400">now</p>
+                      {/* The stacked price is taller than the title and the
+                          subtitle follows this row, so every extra pixel here
+                          pushes "Book your spot…" away from its heading.
+                          leading-none keeps the stack to its glyphs. */}
+                      <div className="shrink-0 text-right">
+                        <span className="block text-base font-bold leading-none text-slate-900">$0.00</span>
+                        <p className="mt-0.5 text-[11px] leading-none text-slate-400">now</p>
                       </div>
                     </div>
-                    <p className="text-[13px] text-slate-400">Book your spot and pay nothing today</p>
+                    <p className="text-[13px] leading-snug text-slate-400">Book your spot and pay nothing today</p>
                     {!payLaterAvailable && (
                       <p className="mt-1.5 text-xs font-medium leading-relaxed text-amber-600">
                         Available for dates at least {PAY_LATER_MIN_HOURS} hours away — so we can charge your card before the activity.
@@ -1237,10 +1244,12 @@ function PaymentDetailsStep({
                   </div>
                   <input
                     type="radio"
-                    name="paymentMethod"
+                    name="paymentTiming"
                     className="sr-only"
                     disabled={!payLaterAvailable}
-                    checked={selection === 'later'}
+                    checked={timing === 'later'}
+                    // Timing only, so a chosen PayPal survives the round trip
+                    // through reserve-now/pay-later.
                     onChange={() => { onChange('paymentTiming', 'later') }}
                   />
                 </label>
@@ -1272,14 +1281,14 @@ function PaymentDetailsStep({
                 <p className="mb-3 text-base font-bold tracking-tight text-slate-900">Choose payment method</p>
                 <div className="space-y-2">
                 <label className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-3.5 transition-all sm:gap-3 sm:p-4 ${
-                  selection === 'now'
+                  method === 'card'
                     ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
                     : 'border-slate-200/60 bg-white hover:border-slate-300'
                 }`}>
                   <div className={`grid size-6 shrink-0 place-items-center rounded-full border-2 transition ${
-                    selection === 'now' ? 'border-emerald-500' : 'border-slate-300'
+                    method === 'card' ? 'border-emerald-500' : 'border-slate-300'
                   }`}>
-                    {selection === 'now' && (
+                    {method === 'card' && (
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
@@ -1287,9 +1296,14 @@ function PaymentDetailsStep({
                       />
                     )}
                   </div>
-                  <CreditCard className="size-7 shrink-0 text-slate-700" strokeWidth={1.75} />
+                  <CreditCard
+                    className={`size-7 shrink-0 ${method === 'card' ? 'text-slate-700' : 'text-slate-400'}`}
+                    strokeWidth={1.75}
+                  />
                   <div className="min-w-0 flex-1">
-                    <span className="text-base font-semibold text-slate-900">Credit or Debit Card</span>
+                    {/* Unselected options are muted, so a row only reads as
+                        "active" when it actually is. */}
+                    <span className={`text-base font-semibold ${method === 'card' ? 'text-slate-900' : 'text-slate-500'}`}>Credit or Debit Card</span>
                     <p className="text-[13px] leading-snug text-slate-400">Powered by Stripe</p>
                   </div>
                   <span className="ml-2 hidden shrink-0 items-center gap-1 xl:flex">
@@ -1302,21 +1316,21 @@ function PaymentDetailsStep({
                     type="radio"
                     name="paymentMethod"
                     className="sr-only"
-                    checked={selection === 'now'}
-                    onChange={() => { onChange('paymentTiming', 'now'); onChange('paymentMethod', 'card') }}
+                    checked={method === 'card'}
+                    onChange={() => onChange('paymentMethod', 'card')}
                   />
                 </label>
 
                   {paypalAvailable && (
                 <label className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-3.5 transition-all sm:gap-3 sm:p-4 ${
-                  selection === 'paypal'
+                  method === 'paypal'
                     ? 'border-emerald-300 bg-emerald-50/30 shadow-sm'
                     : 'border-slate-200/60 bg-white hover:border-slate-300'
                 }`}>
                   <div className={`grid size-6 shrink-0 place-items-center rounded-full border-2 transition ${
-                    selection === 'paypal' ? 'border-emerald-500' : 'border-slate-300'
+                    method === 'paypal' ? 'border-emerald-500' : 'border-slate-300'
                   }`}>
-                    {selection === 'paypal' && (
+                    {method === 'paypal' && (
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
@@ -1326,7 +1340,7 @@ function PaymentDetailsStep({
                   </div>
                   <img src={paypalMark} alt="" aria-hidden="true" className="size-9 shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <span className="text-base font-semibold text-slate-900">PayPal</span>
+                    <span className={`text-base font-semibold ${method === 'paypal' ? 'text-slate-900' : 'text-slate-500'}`}>PayPal</span>
                     <p className="text-[13px] leading-snug text-slate-400">Pay securely with your PayPal account</p>
                   </div>
                   <img src={paypalWordmark} alt="PayPal" className="hidden h-6 w-auto shrink-0 sm:block" />
@@ -1334,8 +1348,10 @@ function PaymentDetailsStep({
                     type="radio"
                     name="paymentMethod"
                     className="sr-only"
-                    checked={selection === 'paypal'}
-                    onChange={() => { onChange('paymentTiming', 'now'); onChange('paymentMethod', 'paypal') }}
+                    checked={method === 'paypal'}
+                    // Method only: choosing PayPal must not deselect "Pay now",
+                    // because PayPal *is* the pay-now option.
+                    onChange={() => onChange('paymentMethod', 'paypal')}
                   />
                 </label>
                   )}
