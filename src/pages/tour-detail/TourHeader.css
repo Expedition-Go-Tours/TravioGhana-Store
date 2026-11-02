@@ -38,9 +38,12 @@
 
 .tour-header-info-row {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Phones: a balanced 2-up grid so a fourth cue (Popular) pairs with the
+     Experience Host instead of sitting alone on a second row. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
   margin-top: 14px;
-  background: #fff;
+  background: #eef1f5;
   border: 1px solid #e8edf2;
   border-radius: 14px;
   overflow: hidden;
@@ -55,10 +58,7 @@
   min-width: 0;
   padding: 14px 10px;
   text-align: center;
-}
-
-.tour-header-info-item + .tour-header-info-item {
-  border-left: 1px solid #eef1f5;
+  background: #fff;
 }
 
 .tour-header-info-icon {
@@ -145,6 +145,7 @@
 
 @media (min-width: 640px) {
   .tour-header-info-row {
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     margin-top: 16px;
   }
 
@@ -168,6 +169,11 @@
 
 @media (min-width: 1024px) {
   .tour-header-info-row {
+    /* Desktop: every cue shares one row, even when Verified + Popular add
+       two more cells than the original three-column design. */
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-template-columns: none;
     margin-top: 18px;
   }
 

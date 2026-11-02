@@ -275,6 +275,7 @@ function mapBackendTourToItem(t: any): WishlistItem {
  * authoritative.
  */
 const LOCAL_DISPLAY_FIELDS = [
+  'supplierName',
   'features',
   'photos',
   'languages',

@@ -167,6 +167,15 @@ describe('mergeWishlistItem', () => {
     expect(merged.price).toBe(99)
   })
 
+  it('keeps the local supplier identity when the server copy lacks it', () => {
+    const merged = mergeWishlistItem(server, {
+      ...server,
+      supplierName: 'Expedition-Go Tours LTD',
+    })
+
+    expect(merged.supplierName).toBe('Expedition-Go Tours LTD')
+  })
+
   it('treats empty server arrays as missing and returns the server item without a local copy', () => {
     const local: WishlistItem = { ...server, photos: ['https://example.com/a.jpg'] }
 
