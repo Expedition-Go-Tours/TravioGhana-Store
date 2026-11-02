@@ -93,6 +93,9 @@ export default function ReviewExperiencePage() {
   const [searchParams] = useSearchParams()
   const urlBookingId = searchParams.get('bookingId') || undefined
   const urlTourId = searchParams.get('tourId') || undefined
+  // The review-invite email links each star to this page with ?rating=N, so a
+  // tap in the inbox opens the form with that rating already selected.
+  const urlRating = Math.min(5, Math.max(0, Number.parseInt(searchParams.get('rating') || '', 10) || 0))
   const stateBookingId: string | undefined = location.state?.bookingId || urlBookingId
   const editingReviewId: string | undefined = location.state?.editingReviewId
 
@@ -155,7 +158,7 @@ export default function ReviewExperiencePage() {
   )
   const displayTourRating = combinedTourStats.reviewCount > 0 ? combinedTourStats.rating : tour.rating
 
-  const [overallRating, setOverallRating] = useState(0)
+  const [overallRating, setOverallRating] = useState(urlRating)
   const [subRatings, setSubRatings] = useState({ valueForMoney: 0, guide: 0, meeting: 0 })
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
@@ -176,7 +179,7 @@ export default function ReviewExperiencePage() {
   useEffect(() => {
     const draft = readDraft(getDraftKey(draftKey))
     if (draft) {
-      if (draft.overallRating) window.setTimeout(() => setOverallRating(draft.overallRating), 0)
+      if (draft.overallRating && !urlRating) window.setTimeout(() => setOverallRating(draft.overallRating), 0)
       if (draft.subRatings) window.setTimeout(() => setSubRatings(draft.subRatings), 0)
       if (draft.selectedDate) window.setTimeout(() => setSelectedDate(new Date(draft.selectedDate)), 0)
       if (draft.companions) window.setTimeout(() => setCompanions(draft.companions), 0)
@@ -184,7 +187,7 @@ export default function ReviewExperiencePage() {
       if (draft.reviewTitle) window.setTimeout(() => setReviewTitle(draft.reviewTitle), 0)
       if (draft.certified) window.setTimeout(() => setCertified(draft.certified), 0)
     }
-  }, [draftKey])
+  }, [draftKey, urlRating])
 
   // Save draft on changes
   useEffect(() => {
