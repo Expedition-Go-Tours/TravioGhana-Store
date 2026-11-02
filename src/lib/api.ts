@@ -1,4 +1,5 @@
 import { getAuthToken, getApiBaseUrl, refreshAuthToken } from './auth'
+import { guestHeaders } from './guestSession'
 
 export class ApiError extends Error {
   status: number
@@ -39,6 +40,10 @@ export async function fetchWithAuth(path: string, options: RequestInit = {}): Pr
         ...(hasBody && !isFormData ? { 'Content-Type': 'application/json' } : {}),
         Accept: 'application/json',
         ...(t ? { Authorization: `Bearer ${t}` } : {}),
+        // Guest checkout: a signed-out traveller holds an opaque token for the
+        // draft/booking they just created. Harmless on every other request —
+        // the backend only reads it where a guest is allowed to act.
+        ...guestHeaders(),
         ...(options.headers as Record<string, string>),
       },
     })

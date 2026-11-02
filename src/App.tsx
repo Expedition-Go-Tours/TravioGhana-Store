@@ -48,6 +48,7 @@ const DashboardApp = lazy(() => import('./pages/dashboard/DashboardApp'))
 const TourDetailPage = lazy(() => import('./pages/tour-detail/TourDetailPage'))
 const AllToursPage = lazy(() => import('./pages/AllToursPage'))
 const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage'))
+const SharedWishlistPage = lazy(() => import('./pages/SharedWishlistPage'))
 const AllReviewsPage = lazy(() => import('./pages/AllReviewsPage'))
 const ReviewExperiencePage = lazy(() => import('./pages/ReviewExperiencePage'))
 const SupplierPage = lazy(() => import('./pages/SupplierPage'))
@@ -403,6 +404,12 @@ function AppContent() {
           />
           <Route path="/search" element={
             <SearchResultsPage />
+          } />
+          {/* Public, read-only wishlist someone shared with you. Mounted at the
+              top level (not under /dashboard) because the recipient has no
+              account — the opaque token is the only credential. */}
+          <Route path="/wishlist/shared/:token" element={
+            <Suspense fallback={<SupportPageSkeleton />}><SharedWishlistPage /></Suspense>
           } />
           <Route path="/help-centre" element={<Suspense fallback={<SupportPageSkeleton />}><HelpCentrePage /></Suspense>} />
           <Route path="/contact-us" element={<Suspense fallback={<SupportPageSkeleton />}><ContactUsPage /></Suspense>} />

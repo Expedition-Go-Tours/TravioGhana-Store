@@ -59,6 +59,7 @@ import { getGeolocationPermission, isLocationSharingEnabled, requestCurrentCoord
 import { reverseGeocode } from '../lib/locations'
 import { getGaClientId, getGaSessionId } from '../lib/googleAnalytics'
 import { trackBeginCheckout } from '../lib/ga4Ecommerce'
+import { setGuestToken } from '../lib/guestSession'
 import { hasConsent } from '../lib/cookieConsent'
 import { resolveMethod, resolveTiming } from '../lib/paymentSelection'
 
@@ -1748,6 +1749,11 @@ export default function BookingPage() {
   const canRestore = draftMatches
 
   const user = useAuthUser()
+  // Server-published guest-checkout flag. The query is shared with
+  // PaymentDetailsStep through the query cache, so this is a read rather than a
+  // second request — and one server env var drives both the API and this gate.
+  const capabilities = usePaymentCapabilities('USD', 'now')
+  const guestCheckoutAllowed = capabilities.data?.guestCheckout === true
 
   // Meeting-point tours with a single sellable option have no meaningful first
   // step — the meeting info is static and nothing there is editable — so the
@@ -2231,7 +2237,11 @@ export default function BookingPage() {
 
   const handleBook = useCallback(async (paymentMethodId: string | undefined, timing?: 'now' | 'later') => {
     if (isBooking || isActive) return
-    if (!user) {
+    // Guest checkout: the backend publishes whether it is switched on (one
+    // server flag drives both sides), so the storefront never offers a flow
+    // the API would reject. When it is off, keep the sign-in prompt — the
+    // account is what makes "my bookings" work.
+    if (!user && !guestCheckoutAllowed) {
       setShowSignInPrompt(true)
       return
     }
@@ -2343,6 +2353,12 @@ export default function BookingPage() {
 
       const result = await createBooking.mutateAsync(payload)
 
+      // Guest checkout: the backend returned the opaque token that authorizes
+      // this draft/booking. Keep it for the checkout and confirmation pages —
+      // without an account it is the only credential the browser has.
+      const guestToken = result?.guestToken || result?.payment?.guestToken
+      if (guestToken) setGuestToken(guestToken)
+
       // PayPal: the server created an order and handed back its hosted page.
       // Full-page navigation (not a client-side route) because PayPal later
       // redirects the browser to our own /booking/paypal/return URL, so this
@@ -2379,7 +2395,7 @@ export default function BookingPage() {
     } finally {
       setIsBooking(false)
     }
-  }, [createBooking, contact, editableTour, tour, showPickupLocation, zonesDrawn, hasPointAreas, pickupZoneStatusValue, isBooking, isActive, pollBooking, user, payment.paymentTiming, payment.paymentMethod, appliedPromo, promoCode, hasMultipleOptions, selectedOptionId])
+  }, [createBooking, contact, editableTour, tour, showPickupLocation, zonesDrawn, hasPointAreas, pickupZoneStatusValue, isBooking, isActive, pollBooking, user, guestCheckoutAllowed, payment.paymentTiming, payment.paymentMethod, appliedPromo, promoCode, hasMultipleOptions, selectedOptionId])
 
   const handleCheckoutTransitionDone = useCallback(() => {
     if (pendingCheckoutUrl.current) {

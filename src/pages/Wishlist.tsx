@@ -8,6 +8,8 @@ import { useNavigate } from 'react-router-dom'
 import TourCard from '../components/TourCard'
 import ContinuePlanningCard, { type ContinuePlanningCardItem } from '../components/ContinuePlanningCard'
 import { useSellOutContext } from '../context/SellOutContext'
+import { useAuthUser } from '../hooks/useAuthUser'
+import WishlistShareButton from '../components/WishlistShareButton'
 import { useHomepageOffers } from '../hooks/useHomepageSections'
 import type { SpecialOfferData } from '../hooks/useExpeditionTours'
 import './Wishlist.css'
@@ -110,6 +112,7 @@ export default function Wishlist() {
   const navigate = useNavigate()
   const { wishlist: wishlistItems } = useWishlist()
   const { isLikelyToSellOut } = useSellOutContext()
+  const authUser = useAuthUser()
 
   // Same breakpoint the Continue Planning section uses to decide between its
   // horizontal card and the vertical TourCard.
@@ -211,6 +214,9 @@ export default function Wishlist() {
               <Info size={14} aria-hidden="true" />
               {t('wishlist.removeHint')}
             </p>
+            {/* Share is account-scoped (the token is minted for the owner), so
+                it only appears for a signed-in traveller. */}
+            {authUser && <WishlistShareButton />}
           </div>
 
           <div className="wishlist-grid">

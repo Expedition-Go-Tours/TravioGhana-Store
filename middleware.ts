@@ -41,6 +41,10 @@ const BOT_AGENTS = [
 const SKIP_PATHS = [
   '/dashboard', '/booking', '/auth', '/login', '/api/',
   '/payment-methods', '/supplier/register', '/supplier/list-experience',
+  // A shared wishlist is a per-user document (noindex) whose preview has to
+  // come from the SPA shell: the backend prerenderer has no rendering for it
+  // and answered WhatsApp/Facebook unfurls with a 404 card.
+  '/wishlist/shared',
 ]
 
 /**

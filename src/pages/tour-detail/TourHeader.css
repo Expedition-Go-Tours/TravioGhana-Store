@@ -123,6 +123,24 @@
   object-fit: contain;
 }
 
+.tour-header-info-icon-verified {
+  color: #179237;
+}
+
+.tour-header-info-icon-trending {
+  color: #f97316;
+}
+
+/* Trust cues carry a sentence rather than a number, so they wrap instead of
+   pushing the row past the container (the default is nowrap for the rating). */
+.tour-header-info-item-wrap {
+  min-width: 0;
+}
+
+.tour-header-info-item-wrap .tour-header-info-value {
+  white-space: normal;
+}
+
 /* ── Responsive ───────────────────────────────────────────────────── */
 
 @media (min-width: 640px) {
@@ -166,7 +184,9 @@
   }
 
   .tour-header-info-icon-star,
-  .tour-header-info-icon-pin {
+  .tour-header-info-icon-pin,
+  .tour-header-info-icon-verified,
+  .tour-header-info-icon-trending {
     width: 18px;
     height: 18px;
   }

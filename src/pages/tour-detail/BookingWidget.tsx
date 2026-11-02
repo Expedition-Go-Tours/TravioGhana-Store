@@ -18,6 +18,7 @@ import { cancellationStatus } from '../../lib/cancellationLabel'
 import { categoryKey } from '../../lib/travelerBuckets'
 import { groupBandLabel } from '../../lib/groupPricing'
 import { useTravelerSelection } from '../../hooks/useTravelerSelection'
+import WaitlistForm from './WaitlistForm'
 import { headlineUnitPrice, cardParityUnitPrice } from '../../lib/startingPrice'
 import BookingDeadlineTimer from './BookingDeadlineTimer'
 import { preloadMapEngine } from '../../lib/mapWarmup'
@@ -1466,6 +1467,22 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
               <Zap size={14} />
               {t('tourDetail.instantConfirmation')}
             </p>
+          )}
+
+          {/* A full date used to dead-end here. It now offers the waitlist:
+              one email if a spot reopens, with the copy stating plainly that
+              no seat is held. */}
+          {selectedDate && selectedDayInfo?.status === 'full' && (
+            <WaitlistForm
+              tourId={tour.id}
+              dateKey={toDateKey(selectedDate)}
+              dateLabel={new Date(selectedDate).toLocaleDateString(undefined, {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              })}
+            />
           )}
 
           {/* Submit — no spinner state: the Book Now transition overlay is the

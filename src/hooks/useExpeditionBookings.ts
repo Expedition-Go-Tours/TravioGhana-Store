@@ -268,6 +268,10 @@ interface ConfirmBookingInput {
 }
 
 interface ConfirmBookingResponse {
+  /** Guest checkout only: the opaque token that authorizes the draft/booking
+   *  just created, sent back once so a signed-out traveller can still reach
+   *  the confirmation page. Absent whenever the caller was signed in. */
+  guestToken?: string
   /** Pay-later: booking created immediately. Pay-now: absent (no booking until webhook). */
   booking?: {
     id: string
@@ -295,6 +299,8 @@ interface ConfirmBookingResponse {
     expiresAt: string
     amount: number
     currency: string
+    /** Guest checkout only — see the top-level `guestToken`. */
+    guestToken?: string
     /** PayPal only: the order id and the hosted page to send the browser to. */
     orderId?: string
     approvalUrl?: string
@@ -360,6 +366,10 @@ export function useCreateBooking() {
  * for Stripe. Public (no auth) — it describes configuration, not a customer.
  */
 export interface PaymentCapabilities {
+  /** Server-side feature flag: the API will accept a booking from a
+   *  signed-out traveller. Drives whether the storefront shows checkout at all
+   *  without an account — one env var on the backend flips both sides. */
+  guestCheckout?: boolean
   stripe: { available: boolean }
   paypal: {
     available: boolean

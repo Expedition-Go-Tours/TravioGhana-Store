@@ -1,0 +1,143 @@
+/*
+ * Waitlist panel — shown under the booking widget when the selected date is
+ * full. Compact on purpose: it replaces the "you cannot book" dead end with
+ * one field and one button, without competing with Book now on a date that is
+ * still sellable.
+ */
+
+.waitlist-panel {
+  display: block;
+  margin: 14px 0 0;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.waitlist-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.waitlist-heading svg {
+  color: #166534;
+  flex-shrink: 0;
+}
+
+.waitlist-sub {
+  margin: 6px 0 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.waitlist-row {
+  display: flex;
+  gap: 8px;
+}
+
+.waitlist-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.waitlist-input:focus {
+  outline: 2px solid #166534;
+  outline-offset: -1px;
+  border-color: #166534;
+}
+
+.waitlist-submit {
+  flex: 0 0 auto;
+  min-width: 104px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: #166534;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.waitlist-submit:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.waitlist-fineprint {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.waitlist-panel-done {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.waitlist-icon {
+  color: #166534;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.waitlist-copy strong {
+  display: block;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.waitlist-copy p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.waitlist-copy small {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.waitlist-spinner {
+  animation: waitlist-spin 0.8s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes waitlist-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .waitlist-spinner {
+    animation: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .waitlist-row {
+    flex-direction: column;
+  }
+
+  .waitlist-submit {
+    width: 100%;
+  }
+}
