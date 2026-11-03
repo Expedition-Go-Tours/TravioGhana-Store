@@ -117,6 +117,12 @@ export default function NewExperiencesSection({ preloaded, isLoading, title, loc
     updateArrows()
   }, [updateArrows, items?.length])
 
+  // A city can legitimately have no new tours (e.g. Ashanti Region today). A
+  // heading with an empty rail and two dead arrows reads as a broken backend,
+  // so the section removes itself — same as the other rails. The loading
+  // skeletons must still render, or the page would jump once the data lands.
+  if (!items && !isLoading) return null
+
   return (
     <section className="newexp-section">
       <div className="newexp-container">

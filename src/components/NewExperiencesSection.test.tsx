@@ -141,6 +141,37 @@ describe('NewExperiencesSection — rail top-up', () => {
     expect(newestMock).toHaveBeenCalledWith(6, false)
   })
 
+  it('removes itself when the city has no new tours', () => {
+    // Ashanti Region has zero tours created in the last 30 days. An empty rail
+    // under a heading reads as a broken backend, so the section must vanish.
+    const { container } = render(
+      <NewExperiencesSection
+        preloaded={[]}
+        isLoading={false}
+        title="New Experiences in Ashanti Region"
+        location="Ashanti Region"
+      />,
+    )
+
+    expect(container.querySelector('.newexp-section')).toBeNull()
+    expect(screen.queryByText('New Experiences in Ashanti Region')).toBeNull()
+  })
+
+  it('keeps the skeletons while the section is still loading', () => {
+    const { container } = render(
+      <NewExperiencesSection
+        preloaded={undefined}
+        isLoading
+        title="New Experiences in Ashanti Region"
+        location="Ashanti Region"
+      />,
+    )
+
+    // Hiding the rail mid-flight would make the page jump when data lands.
+    expect(screen.getByText('New Experiences in Ashanti Region')).toBeInTheDocument()
+    expect(container.querySelectorAll('.tour-card-skeleton')).toHaveLength(6)
+  })
+
   it('still de-duplicates the API backfill against the top-up cards', () => {
     const locals = [
       homepageTour('t1', 'Local one'),
