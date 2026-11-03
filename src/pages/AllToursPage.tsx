@@ -756,6 +756,7 @@ export default function AllToursPage() {
                       source={tour.source}
                       externalUrl={tour.externalUrl}
                       slug={tour.slug}
+                      supplierName={tour.supplierName}
                       difficulty={tour.difficulty}
                       cancellationPolicy={tour.cancellationPolicy}
                       pickupIncluded={tour.pickupIncluded}

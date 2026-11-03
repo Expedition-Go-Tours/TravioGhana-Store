@@ -12,7 +12,9 @@ vi.mock('framer-motion', () => ({
 }))
 
 vi.mock('../components/TourCard', () => ({
-  default: ({ title }: { title: string }) => <div className="tour-card">{title}</div>,
+  default: ({ title, supplierName }: { title: string; supplierName?: string | null }) => (
+    <div className="tour-card" data-supplier={supplierName ?? ''}>{title}</div>
+  ),
 }))
 
 vi.mock('../components/TourCardSkeleton', () => ({
@@ -73,6 +75,7 @@ const tourCard = (id: string, title: string): TourCardData => ({
   image: `https://img/${id}.jpg`,
   source: 'expedition-go',
   slug: id,
+  supplierName: 'Expedition-Go Tours LTD',
   durationMinutes: 120,
   priceValue: 100,
   ratingValue: 4.8,
@@ -134,6 +137,12 @@ describe('AllToursPage — Top Recommendations section', () => {
     expect(screen.getByText('Recommended Tour')).toBeInTheDocument()
     expect(screen.getByText('Other Tour')).toBeInTheDocument()
     expect(mockSectionIds).toHaveBeenCalledWith('')
+  })
+
+  it('passes supplierName to section cards so combined review stats can match', () => {
+    const { container } = renderPage('/tours?section=Recommended')
+
+    expect(container.querySelector('.tour-card')?.getAttribute('data-supplier')).toBe('Expedition-Go Tours LTD')
   })
 })
 

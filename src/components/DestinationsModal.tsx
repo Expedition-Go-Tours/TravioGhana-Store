@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { X, Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { usePopularDestinations } from '../hooks/useHomepageSections'
+import { getLenis } from '../lib/LenisProvider'
 import PopularLocationCard from './PopularLocationCard'
 import './DestinationsModal.css'
 
@@ -60,14 +62,32 @@ export default function DestinationsModal({ isOpen, onClose }: DestinationsModal
     regionScrollRef.current?.scrollBy({ left: dir * 200, behavior: 'smooth' })
   }
 
-  // Body scroll lock
+  // Lock the page while the drawer is open. Both html and body must be locked:
+  // index.css gives the root its own overflow, so hiding body alone leaves the
+  // document scrollable. Lenis also needs stopping — it drives the page with
+  // its own wheel/touch loop and would keep scrolling the homepage underneath.
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
+    if (!isOpen) return
+
+    const root = document.documentElement
+    const body = document.body
+    const lenis = getLenis()
+    const prevRootOverflow = root.style.overflow
+    const prevBodyOverflow = body.style.overflow
+    const prevBodyPaddingRight = body.style.paddingRight
+    const scrollbarWidth = window.innerWidth - root.clientWidth
+
+    lenis?.stop()
+    root.style.overflow = 'hidden'
+    body.style.overflow = 'hidden'
+    if (scrollbarWidth > 0) body.style.paddingRight = `${scrollbarWidth}px`
+
+    return () => {
+      lenis?.start()
+      root.style.overflow = prevRootOverflow
+      body.style.overflow = prevBodyOverflow
+      body.style.paddingRight = prevBodyPaddingRight
     }
-    return () => { document.body.style.overflow = '' }
   }, [isOpen])
 
   // Escape to close
@@ -137,7 +157,7 @@ export default function DestinationsModal({ isOpen, onClose }: DestinationsModal
     }))
   }, [activeDestinations, selectedRegion, searchQuery])
 
-  return (
+  const content = (
     <AnimatePresence>
       {isOpen && (
         <>
@@ -217,7 +237,7 @@ export default function DestinationsModal({ isOpen, onClose }: DestinationsModal
             </div>
 
             {/* Content */}
-            <div className="destinations-content">
+            <div className="destinations-content" data-lenis-prevent>
               {/* Filtered / Popular grid */}
               <div className="destinations-section">
                 <h3 className="destinations-section-title">
@@ -278,4 +298,7 @@ export default function DestinationsModal({ isOpen, onClose }: DestinationsModal
       )}
     </AnimatePresence>
   )
+
+  if (typeof document === 'undefined') return null
+  return createPortal(content, document.body)
 }
