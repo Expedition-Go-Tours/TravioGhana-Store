@@ -477,12 +477,13 @@ describe('SupplierApplicationForm', () => {
     expect(screen.getByText(/Taking you to your supplier dashboard/)).toBeInTheDocument()
     expect(onSubmitted).not.toHaveBeenCalled()
     // The celebration is the same canvas-confetti burst as the tour-submitted
-    // screen on the supplier dashboard.
-    expect(confettiMock).toHaveBeenCalled()
+    // screen on the supplier dashboard. The success screen and its effect can
+    // land in either order under load, so wait for the effect rather than
+    // asserting synchronously.
+    await waitFor(() => expect(confettiMock).toHaveBeenCalled())
 
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 4100))
-    })
-    expect(onSubmitted).toHaveBeenCalledTimes(1)
-  }, 10000)
+    // The auto-redirect timer is 4s; poll instead of sleeping a fixed 4.1s,
+    // which is too tight on a loaded CI worker.
+    await waitFor(() => expect(onSubmitted).toHaveBeenCalledTimes(1), { timeout: 6000 })
+  }, 12000)
 })
