@@ -2,6 +2,8 @@
    experience (list card + booking workspace). Kept dependency-free so both
    components and any future surface (e.g. confirmation) use one definition. */
 
+import { toCalendarDate, toCalendarKey } from './calendarDate'
+
 export interface PartyCount {
   adults: number
   children: number
@@ -14,9 +16,9 @@ export function toFiniteNumber(v: unknown): number | null {
 }
 
 export function formatFullDate(value?: string | null): string {
-  if (!value) return '—'
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return '—'
+  // Activity dates are calendar dates, not instants — see lib/calendarDate.
+  const d = toCalendarDate(value)
+  if (!d) return '—'
   return d.toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
@@ -27,9 +29,8 @@ export function formatFullDate(value?: string | null): string {
 
 /** e.g. "Mon, Aug 18, 2026" — compact date used on cards. */
 export function formatMediumDate(value?: string | null): string {
-  if (!value) return '—'
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return '—'
+  const d = toCalendarDate(value)
+  if (!d) return '—'
   return d.toLocaleDateString('en-US', {
     weekday: 'short',
     month: 'short',
@@ -40,9 +41,8 @@ export function formatMediumDate(value?: string | null): string {
 
 /** e.g. "Mon, Aug 18" without the year, used for date-group headings. */
 export function formatHeadingDate(value?: string | null): string {
-  if (!value) return ''
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return ''
+  const d = toCalendarDate(value)
+  if (!d) return ''
   return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
 }
 
@@ -145,11 +145,7 @@ export function formatDeadlineLabel(date: Date | string | null | undefined): str
 
 /** Date-key (YYYY-MM-DD) used for grouping + equality tests. */
 export function toDateKey(value?: string | null): string {
-  if (!value) return ''
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return ''
-  const p = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
+  return toCalendarKey(value)
 }
 
 export function isSameCalendarDay(a: Date, b: Date): boolean {

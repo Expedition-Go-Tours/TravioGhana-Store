@@ -4,6 +4,7 @@ import { AlertTriangle, ExternalLink, Loader2 } from 'lucide-react'
 import { useAuthUser } from '../hooks/useAuthUser'
 import { setAuthReturnTo } from '../lib/auth'
 import { useCapturePaypalPayment, useBookingByPaypalOrder, usePaypalApproval, type PaypalApprovalResult } from '../hooks/useExpeditionBookings'
+import { formatMediumDate } from '../lib/bookingUi'
 
 /**
  * PayPal return route — GET /booking/paypal/return?token=<orderId>
@@ -161,7 +162,7 @@ function OrderSummary({ orderId, summary }: { orderId: string; summary: PaypalAp
       <p className="mt-1 text-sm font-semibold text-slate-900">{summary.tourTitle}</p>
       <p className="mt-0.5 text-xs text-slate-500">
         {money}
-        {summary.travelDate ? ` · ${new Date(summary.travelDate).toDateString()}` : ''}
+        {summary.travelDate ? ` · ${formatMediumDate(summary.travelDate)}` : ''}
       </p>
       <p className="mt-1 text-[10px] text-slate-400 break-all">PayPal ref: {orderId}</p>
     </div>

@@ -13,7 +13,8 @@ import BookingCard from '../components/booking/BookingCard'
 import RequestRefundModal from '../components/booking/RequestRefundModal'
 import TravelEmptyAnimation from '../components/booking/TravelEmptyAnimation'
 const BookingWorkspace = lazy(() => import('../components/booking/BookingWorkspace'))
-import { formatHeadingDate, toDateKey, isSameCalendarDay } from '../lib/bookingUi'
+import { formatHeadingDate, toDateKey } from '../lib/bookingUi'
+import { calendarTodayKey, addDaysToKey, daysUntilKey } from '../lib/calendarDate'
 import { writeBookingsSeen } from '../lib/bookingsBadge'
 import { currencySymbol } from '../lib/currencySymbol'
 import '../components/booking/bookingTheme.css'
@@ -125,11 +126,9 @@ function dateMs(value: string): number {
 }
 
 function groupHeading(dateKey: string, labelForHeading: string): string {
-  const today = new Date()
-  const target = new Date(dateKey + 'T00:00:00')
-  if (isSameCalendarDay(target, today)) return 'Today'
-  const tomorrow = new Date(today.getTime() + 86400000)
-  if (isSameCalendarDay(target, tomorrow)) return 'Tomorrow'
+  const today = calendarTodayKey()
+  if (dateKey === today) return 'Today'
+  if (dateKey === addDaysToKey(today, 1)) return 'Tomorrow'
   return labelForHeading
 }
 
@@ -198,8 +197,10 @@ export default function BookingHistory() {
 
   const daysUntilNext = useMemo(() => {
     if (!nextTrip) return null
-    // eslint-disable-next-line react-hooks/purity -- wall-clock label intentionally uses Date.now
-    const diff = Math.ceil((new Date(nextTrip.travelDate).getTime() - Date.now()) / 86400000)
+    // Whole calendar days to the trip date, not milliseconds: an activity date
+    // is a calendar date, so "in N days" must not drift with the timezone.
+    const diff = daysUntilKey(toDateKey(nextTrip.travelDate))
+    if (diff == null) return null
     return diff <= 0 ? 'today' : diff === 1 ? 'tomorrow' : `in ${diff} days`
   }, [nextTrip])
 
@@ -297,7 +298,7 @@ export default function BookingHistory() {
       } else if (last && last.key === key) {
         last.items.push(b)
       } else {
-        groups.push({ key, label: groupHeading(key, formatHeadingDate(key)), items: [b] })
+        groups.push({ key, label: groupHeading(key, formatHeadingDate(b.travelDate)), items: [b] })
       }
     }
     return groups

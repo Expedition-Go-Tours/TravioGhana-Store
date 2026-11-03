@@ -5,6 +5,7 @@ import { ArrowLeft, Calendar, Loader2, MapPin, Ticket, Check } from 'lucide-reac
 import { toast } from 'sonner'
 import { useExpeditionBookingDetail, useUpdateBookingPickup } from '../hooks/useExpeditionBookings'
 import { extractMeetingInfo } from '../hooks/useExpeditionTours'
+import { toCalendarDate, toCalendarKey, calendarTodayKey } from '../lib/calendarDate'
 import { useResolvedTourPoints } from '../hooks/useResolvedTourPoints'
 import { useAuthUser } from '../hooks/useAuthUser'
 import PickupLocationSection from '../components/booking/PickupLocationSection'
@@ -36,8 +37,8 @@ const DEFAULT_CONTACT: ContactPickup = {
 
 const fmtDate = (value?: string): string => {
   if (!value) return ''
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return value
+  const d = toCalendarDate(value)
+  if (!d) return value
   return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
 }
 
@@ -151,11 +152,10 @@ export default function BookingPickupPage() {
   // Guards: must own a pickup-offering booking that is still editable.
   const bookingStatus = String(booking?.status || '')
   const isEditable = ['PENDING', 'CONFIRMED'].includes(bookingStatus)
-  const travelDate = booking?.travelDate ? new Date(booking.travelDate) : null
-  // Page-load snapshot; the backend re-validates the cutoff authoritatively.
-  // eslint-disable-next-line react-hooks/purity
-  const now = Date.now()
-  const isFuture = travelDate != null && !Number.isNaN(travelDate.getTime()) && travelDate.getTime() > now
+  const travelDateKeyVal = booking?.travelDate ? toCalendarKey(booking.travelDate) : ''
+  // Calendar-date future test: the trip is "future" through the end of its
+  // activity day, wherever the viewer is, not just until UTC midnight.
+  const isFuture = travelDateKeyVal !== '' && travelDateKeyVal >= calendarTodayKey()
   const isEligible = showPickupLocation && isEditable && isFuture
 
   const buildSelection = (): Record<string, unknown> | null => {

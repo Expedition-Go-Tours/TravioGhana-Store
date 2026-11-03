@@ -8,6 +8,7 @@ import { useExpeditionBookingDetail, useBookingBySession, useBookingByPaypalOrde
 import { extractMeetingInfo, extractAvailabilitySchedule, formatCancellationPolicy, formatDuration } from '../hooks/useExpeditionTours'
 import { buildE164Phone, isValidPhoneInput } from '../lib/phone'
 import { formatTime12h, weeklyHoursRange, openingHoursForDay, formatTimeSlotList } from '../lib/tourAvailability'
+import { toCalendarDate } from '../lib/calendarDate'
 import { useAuthUser } from '../hooks/useAuthUser'
 import { evaluateCancellationPolicy } from '../lib/bookingUi'
 import { currencySymbol } from '../lib/currencySymbol'
@@ -337,7 +338,8 @@ export default function BookingConfirmationPage() {
   const timeLabel = (() => {
     if (b.selectedTime) return formatTime12h(b.selectedTime)
     if (schedule.scheduleType === 'operatingHours') {
-      const day = b.travelDate ? openingHoursForDay(schedule, new Date(b.travelDate)) : ''
+      const travelDay = b.travelDate ? toCalendarDate(b.travelDate) : null
+      const day = travelDay ? openingHoursForDay(schedule, travelDay) : ''
       if (day) return day
       const range = weeklyHoursRange(schedule)
       if (range) return range

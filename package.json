@@ -10,6 +10,7 @@
     "sitemap": "node scripts/generate-sitemap.cjs",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:tz": "TZ=America/New_York vitest run",
     "test:watch": "vitest",
     "preview": "vite preview",
     "vercel:dev": "vercel dev",
