@@ -1,0 +1,35 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # CI has no local .env; use the same public catalogue as production so any
+      # test that touches the API (via VITE_API_URL) does not hit /api on Vite.
+      VITE_API_URL: https://apiv1.travioafrica.com/api
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Unit tests (runner timezone)
+        run: npm test
+
+      # Activity dates are calendar dates, not instants (see src/lib/calendarDate.ts).
+      # Running the suite under a UTC-negative timezone catches any regression that
+      # renders a travelDate with a raw `toLocaleDateString` again.
+      - name: Unit tests (UTC−5 — timezone guard)
+        run: npm run test:tz
