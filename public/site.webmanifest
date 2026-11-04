@@ -1,7 +1,15 @@
 {
+  "id": "/",
   "name": "Travio Ghana",
   "short_name": "Travio Ghana",
   "description": "Ghana tours and experiences — book cultural tours, wildlife safaris, food tours and adventures across Ghana.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#F8F8F0",
+  "background_color": "#F8F8F0",
+  "categories": ["travel", "shopping"],
+  "lang": "en",
   "icons": [
     {
       "src": "/icons/v2/android-chrome-192x192.png",
@@ -21,8 +29,5 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ],
-  "theme_color": "#F8F8F0",
-  "background_color": "#F8F8F0",
-  "display": "standalone"
+  ]
 }

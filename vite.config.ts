@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
+import { VitePWA } from 'vite-plugin-pwa'
 import babel from '@rolldown/plugin-babel'
 import path from 'path'
 import { copyFileSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
@@ -158,6 +159,15 @@ function serpApiMapsDevRoute(): Plugin {
   }
 }
 
+// Progressive Web App support: a service worker that precaches the built
+// assets and serves the SPA shell offline.
+//
+// VITE_ENABLE_PWA=0 is a kill switch, not just "don't register": the worker is
+// still built but `selfDestroying` makes it unregister itself on the devices
+// that already have it, and the app stops registering (see main.tsx). The
+// plugin stays in the chain either way so `virtual:pwa-register` resolves.
+const pwaEnabled = process.env.VITE_ENABLE_PWA !== '0'
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -167,6 +177,64 @@ export default defineConfig({
     copyMaplibreWorker(),
     serpApiMapsDevRoute(),
     noClientSerpKeyPlugin(),
+    VitePWA({
+      // The hand-written site.webmanifest is the single source of truth for
+      // name, icons and colours; the plugin only builds the worker.
+      manifest: false,
+      injectRegister: null,
+      registerType: 'autoUpdate',
+      selfDestroying: !pwaEnabled,
+      workbox: {
+        // Code, fonts and icons only: a tour site's images are megabytes and
+        // there are hundreds of them, so they are cached on first view (below)
+        // rather than downloaded before the app is even usable.
+        globPatterns: ['**/*.{js,css,html,ico,svg,woff2}'],
+        // __seo/ is the crawler-only prerender; the map workers are huge and
+        // useless offline (tiles and the API need the network).
+        globIgnores: ['**/__seo/**', '**/mapbox-gl/**', '**/maplibre-gl-*'],
+        navigateFallback: '/index.html',
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
+        runtimeCaching: [
+          {
+            // Prices, availability and auth are never cached. A stale price in
+            // an installed app is a support ticket and a chargeback.
+            urlPattern: ({ url }: { url: URL }) =>
+              url.hostname.endsWith('travioghana.com') ||
+              url.hostname.endsWith('travioafrica.com'),
+            handler: 'NetworkOnly',
+          },
+          {
+            // First-party images fill the cache as the visitor browses.
+            urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
+              sameOrigin && /\.(?:png|webp|jpe?g|gif|avif)$/i.test(url.pathname),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'site-images',
+              expiration: { maxEntries: 120, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            },
+          },
+          {
+            urlPattern: ({ url }: { url: URL }) => url.hostname.includes('cloudinary.com'),
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'cloudinary-images',
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            },
+          },
+          {
+            urlPattern: ({ url }: { url: URL }) =>
+              url.hostname.endsWith('googleapis.com') && url.pathname.startsWith('/css'),
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'google-fonts-stylesheets',
+              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+        ],
+      },
+    }),
   ],
   resolve: {
     alias: {

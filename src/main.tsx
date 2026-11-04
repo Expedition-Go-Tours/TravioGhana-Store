@@ -9,6 +9,7 @@ import { queryClient } from './lib/queryClient'
 import { installChunkReloadGuard } from './lib/chunkReloadGuard'
 import { initGoogleAnalytics } from './lib/googleAnalytics'
 import { CurrencyProvider } from './contexts/CurrencyContext'
+import { registerSW } from 'virtual:pwa-register'
 import App from './App.tsx'
 
 // A freshly deployed SPA may drop hashed chunks that an already-open tab still
@@ -21,6 +22,16 @@ installChunkReloadGuard()
 // tag itself is static in index.html — see src/lib/googleAnalytics.ts for why
 // it cannot sit behind a loader.
 initGoogleAnalytics()
+
+// Service worker: precaches the built assets so the installed app opens
+// offline. autoUpdate activates a new build's worker in the background — the
+// running page keeps the code it already loaded until the next navigation, and
+// installChunkReloadGuard (above) covers the one visible symptom of an update
+// landing mid-session. Skipped in dev and behind the VITE_ENABLE_PWA=0 kill
+// switch (the worker itself then unregisters; see vite.config.ts).
+if (import.meta.env.PROD && import.meta.env.VITE_ENABLE_PWA !== '0') {
+  registerSW({ immediate: true })
+}
 
 // Light, app-wide map warm-up after first paint was removed: fetching the
 // ~250 KB tile style JSON + worker on every homepage load competes with LCP on
