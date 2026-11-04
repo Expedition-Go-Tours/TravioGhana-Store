@@ -199,10 +199,14 @@ export default defineConfig({
         runtimeCaching: [
           {
             // Prices, availability and auth are never cached. A stale price in
-            // an installed app is a support ticket and a chargeback.
-            urlPattern: ({ url }: { url: URL }) =>
-              url.hostname.endsWith('travioghana.com') ||
-              url.hostname.endsWith('travioafrica.com'),
+            // an installed app is a support ticket and a chargeback. Cross-origin
+            // only: `www.travioghana.com` ends with these hostnames too, and
+            // matching it would push every same-origin request straight to the
+            // network and skip the caches below.
+            urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
+              !sameOrigin &&
+              (url.hostname.endsWith('travioghana.com') ||
+                url.hostname.endsWith('travioafrica.com')),
             handler: 'NetworkOnly',
           },
           {

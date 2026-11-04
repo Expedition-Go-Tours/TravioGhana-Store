@@ -63,3 +63,32 @@ describe('site.webmanifest keeps the app installable', () => {
     expect(read('index.html')).toContain('/site.webmanifest')
   })
 })
+
+/**
+ * A service worker's fetch is governed by `connect-src`, not `img-src`. The
+ * worker caches Cloudinary images, so the CSP has to let the *worker* reach
+ * them — without that every cached photo fails with net::ERR_FAILED and the
+ * page renders blank (this shipped once; these assertions are the net).
+ */
+describe('CSP lets the service worker fetch what it caches', () => {
+  const csp = (read('vercel.json').match(/"value":\s*"(default-src[^"]+)"/) ?? [])[1] ?? ''
+  const directive = (name: string) =>
+    (csp.match(new RegExp(`${name}([^;]*)`)) ?? [])[1] ?? ''
+
+  it('reads a Content-Security-Policy out of vercel.json', () => {
+    expect(csp).toContain('default-src')
+  })
+
+  it('allows the image CDN in connect-src', () => {
+    expect(directive('connect-src')).toContain('res.cloudinary.com')
+    expect(directive('connect-src')).toContain('*.cloudinary.com')
+  })
+
+  it('still shows those same images in the page (img-src)', () => {
+    expect(directive('img-src')).toContain('res.cloudinary.com')
+  })
+
+  it('allows the worker itself', () => {
+    expect(directive('worker-src')).toContain("'self'")
+  })
+})
