@@ -654,6 +654,9 @@ export default function BookingWorkspace({ id, onClose }: { id?: string; onClose
 
   const handleCancel = () => {
     if (!detail?.id) return
+    // The API refuses a cancellation inside the policy window; do not open a
+    // three-step modal that can only end in that error.
+    if (!cancellation.allowed) return
     setCancelError(null)
     setCancelModalOpen(true)
   }
@@ -1113,9 +1116,18 @@ export default function BookingWorkspace({ id, onClose }: { id?: string; onClose
                     type="button"
                     className="bk-btn bk-btn-danger ws-action-btn"
                     onClick={handleCancel}
-                    disabled={cancelBooking.isPending}
+                    disabled={cancelBooking.isPending || !cancellation.allowed}
+                    title={
+                      !cancellation.allowed
+                        ? 'Cancellation is closed for this booking'
+                        : undefined
+                    }
                   >
-                    {cancelBooking.isPending ? 'Cancelling…' : 'Cancel booking'}
+                    {!cancellation.allowed
+                      ? 'Cancellation closed'
+                      : cancelBooking.isPending
+                        ? 'Cancelling…'
+                        : 'Cancel booking'}
                   </button>
                 )}
                 {cancelError && <p className="ws-cancel-error">{cancelError}</p>}
