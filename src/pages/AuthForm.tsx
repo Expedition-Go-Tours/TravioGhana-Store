@@ -14,6 +14,7 @@ import {
   clearAuthReturnTo,
   getAuthReturnTo,
 } from "../lib/auth";
+import { getSignInErrorMessage } from "../lib/signInErrors";
 import "./AuthForm.css";
 
 interface AuthFormProps {
@@ -233,7 +234,9 @@ function SignInView({ onSwitchToSignUp, onAuthSuccess }: { onSwitchToSignUp: () 
       toast.success(t('auth.signedIn'))
       handleAuthSuccess()
     } catch (err: unknown) {
-      setNotice(err instanceof Error ? err.message : t('auth.signInFailed'))
+      // A Google-only account must be told to use Google, not that its
+      // password is wrong — the mapped copy points at the button above.
+      setNotice(getSignInErrorMessage(err, t('auth.signInFailed')))
     } finally {
       setLoading(false)
     }

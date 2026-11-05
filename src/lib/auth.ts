@@ -262,6 +262,16 @@ export async function subscribeToAuthState(callback: AuthStateListener): Promise
   }
 }
 
+/** A failed auth request, carrying the HTTP status so callers can map copy. */
+export class AuthError extends Error {
+  status: number
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = 'AuthError'
+    this.status = status
+  }
+}
+
 async function authFetch(path: string, options: RequestInit = {}) {
   const url = `${API_BASE}${path}`
   const res = await fetch(url, {
@@ -275,7 +285,7 @@ async function authFetch(path: string, options: RequestInit = {}) {
   const payload = await res.json().catch(() => ({}))
 
   if (!res.ok) {
-    throw new Error(payload.message || `Request failed with status ${res.status}`)
+    throw new AuthError(payload.message || `Request failed with status ${res.status}`, res.status)
   }
 
   return payload
