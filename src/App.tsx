@@ -56,6 +56,7 @@ const SupplierRegisterPage = lazy(() => import('./pages/supplier/SupplierRegiste
 const ListExperiencePage = lazy(() => import('./pages/supplier/ListExperiencePage'))
 const BookingPage = lazy(() => import('./pages/BookingPage'))
 const BookingConfirmationPage = lazy(() => import('./pages/BookingConfirmationPage'))
+const BookingAccessPage = lazy(() => import('./pages/BookingAccessPage'))
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'))
 const PaypalReturnPage = lazy(() => import('./pages/PaypalReturnPage'))
 const CancellationChoicePage = lazy(() => import('./pages/CancellationChoicePage'))
@@ -363,6 +364,9 @@ function AppContent() {
   // /login?mode=signup opens the auth page straight on the sign-up tab
   // (used by flows like the partner application where sign-up is the primary action).
   const loginInitialMode = new URLSearchParams(location.search).get('mode') === 'signup' ? 'signup' : 'signin'
+  // Prefill (not lock) the email when a guest arrives from the confirmation
+  // upsell, so they do not retype the address on the booking they just made.
+  const loginInitialEmail = new URLSearchParams(location.search).get('email') || ''
 
   return (
     <>
@@ -468,6 +472,9 @@ function AppContent() {
           <Route path="/booking/paypal/return" element={<PaypalReturnPage />} />
           <Route path="/booking/confirmation/:bookingId" element={<BookingConfirmationPage />} />
           <Route path="/booking/confirmation" element={<BookingConfirmationPage />} />
+          {/* Public: the "View booking" link in a guest confirmation email
+              exchanges its signed token for a GuestAccess token here. */}
+          <Route path="/booking/access" element={<BookingAccessPage />} />
           <Route path="/booking/:bookingId/pickup" element={<BookingPickupPage />} />
           <Route path="/booking/:bookingId/modify" element={<BookingModifyRedirect />} />
           {/* Supplier-cancelled booking: choose a new date or a full refund.
@@ -476,6 +483,7 @@ function AppContent() {
           <Route path="/login" element={
             <AuthForm
               initialMode={loginInitialMode}
+              initialEmail={loginInitialEmail}
               onBack={() => navigate('/')}
               onAuthSuccess={() => navigate('/')}
             />

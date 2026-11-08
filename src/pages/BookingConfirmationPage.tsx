@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
 import confetti from 'canvas-confetti'
-import { Check, CalendarDays, Clock, Users, MapPin, CreditCard, ShieldCheck, Phone, Mail, Printer, Star, Ticket, Globe, AlertTriangle, Loader2 } from 'lucide-react'
+import { Check, CalendarDays, Clock, Users, MapPin, CreditCard, ShieldCheck, Phone, Mail, Printer, Star, Ticket, Globe, AlertTriangle, Loader2, UserPlus } from 'lucide-react'
 import { useExpeditionBookingDetail, useBookingBySession, useBookingByPaypalOrder } from '../hooks/useExpeditionBookings'
 import { extractMeetingInfo, extractAvailabilitySchedule, formatCancellationPolicy, formatDuration } from '../hooks/useExpeditionTours'
 import { buildE164Phone, isValidPhoneInput } from '../lib/phone'
 import { formatTime12h, weeklyHoursRange, openingHoursForDay, formatTimeSlotList } from '../lib/tourAvailability'
 import { toCalendarDate } from '../lib/calendarDate'
 import { useAuthUser } from '../hooks/useAuthUser'
+import { setAuthReturnTo } from '../lib/auth'
 import { evaluateCancellationPolicy } from '../lib/bookingUi'
 import { currencySymbol } from '../lib/currencySymbol'
 import OptimizedImage from '@/components/shared/OptimizedImage'
@@ -48,6 +49,8 @@ interface ConfirmationBooking {
   id?: string
   bookingNumber?: string
   status?: string
+  /** Guest bookings have no account; this is the address the email went to. */
+  leadTravelerEmail?: string | null
   paymentStatus?: string
   paymentTiming?: 'now' | 'later'
   travelDate?: string
@@ -99,6 +102,7 @@ export default function BookingConfirmationPage() {
   // PayPal pay-now returns from PayPal's page carrying its order id.
   const paypalOrderId = searchParams.get('paypal_order')
   const navigate = useNavigate()
+  const routerLocation = useLocation()
   const { t } = useTranslation()
   const user = useAuthUser()
 
@@ -210,19 +214,14 @@ export default function BookingConfirmationPage() {
     frame()
   }, [booking])
 
-  if (!user) {
-    return (
-      <div className="confirmation-page">
-        <div className="confirmation-card">
-          <p className="confirmation-message">{t('confirmation.signInRequired')}</p>
-          <div className="confirmation-actions">
-            <button className="confirmation-btn-primary" onClick={() => navigate('/login')}>
-              {t('confirmation.signIn')}
-            </button>
-          </div>
-        </div>
-      </div>
-    )
+  // A guest has no account but the GuestAccess token (from checkout or from
+  // the email access link) already authorises the read. Only demand sign-in
+  // when there is no booking to show at all.
+  const goToGuestAuth = (mode: 'signin' | 'signup', email?: string | null) => {
+    setAuthReturnTo(`${routerLocation.pathname}${routerLocation.search}`)
+    const params = new URLSearchParams({ mode })
+    if (email) params.set('email', email)
+    navigate(`/login?${params.toString()}`)
   }
 
   if (isLoading) {
@@ -275,9 +274,11 @@ export default function BookingConfirmationPage() {
           <h2 className="confirmation-title">{t('confirmation.processingTitle')}</h2>
           <p className="confirmation-message">{t('confirmation.processingBody')}</p>
           <div className="confirmation-actions">
-            <button className="confirmation-btn-primary" onClick={() => navigate('/dashboard/bookings')}>
-              {t('confirmation.viewBookings')}
-            </button>
+            {user && (
+              <button className="confirmation-btn-primary" onClick={() => navigate('/dashboard/bookings')}>
+                {t('confirmation.viewBookings')}
+              </button>
+            )}
             <button className="confirmation-btn-secondary" onClick={() => navigate('/')}>
               {t('confirmation.backToHome')}
             </button>
@@ -291,11 +292,24 @@ export default function BookingConfirmationPage() {
     return (
       <div className="confirmation-page">
         <div className="confirmation-card">
-          <p className="confirmation-message">{t('confirmation.notFound')}</p>
+          <p className="confirmation-message">
+            {user ? t('confirmation.notFound') : t('confirmation.signInRequired')}
+          </p>
           <div className="confirmation-actions">
-            <button className="confirmation-btn-primary" onClick={() => navigate('/')}>
-              {t('confirmation.backToHome')}
-            </button>
+            {user ? (
+              <button className="confirmation-btn-primary" onClick={() => navigate('/')}>
+                {t('confirmation.backToHome')}
+              </button>
+            ) : (
+              <>
+                <button className="confirmation-btn-primary" onClick={() => goToGuestAuth('signin')}>
+                  {t('confirmation.signIn')}
+                </button>
+                <button className="confirmation-btn-secondary" onClick={() => navigate('/')}>
+                  {t('confirmation.backToHome')}
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -303,6 +317,9 @@ export default function BookingConfirmationPage() {
   }
 
   const b = booking as ConfirmationBooking
+  // Guests have no account row, so the address the confirmation went to is the
+  // lead traveller email on the booking.
+  const viewerEmail = user?.email || b.leadTravelerEmail || ''
   const tour = b.tour ?? {}
   const travelers = b.travelers ?? {}
   const image = tour.coverPhoto || tour.photos?.[0] || ''
@@ -396,11 +413,11 @@ export default function BookingConfirmationPage() {
             <p className="confirmation-subtitle">{t('confirmation.subtitle')}</p>
 
             <ul className="confirmation-hero-facts">
-              {user?.email && (
+              {viewerEmail && (
                 <li>
                   <Mail size={14} />
                   <span>
-                    {t('confirmation.emailSentTo')} <strong>{user.email}</strong>
+                    {t('confirmation.emailSentTo')} <strong>{viewerEmail}</strong>
                   </span>
                 </li>
               )}
@@ -433,6 +450,30 @@ export default function BookingConfirmationPage() {
             </div>
           </div>
         </div>
+
+        {!user && (
+          <div className="confirmation-card confirmation-guest-upsell confirmation-no-print">
+            <div className="confirmation-guest-upsell-copy">
+              <span className="confirmation-guest-upsell-icon" aria-hidden="true">
+                <UserPlus size={20} />
+              </span>
+              <div>
+                <div className="confirmation-section-title">{t('confirmation.guestSaveTitle')}</div>
+                <p className="confirmation-message">
+                  {t('confirmation.guestSaveBody', { email: viewerEmail || 'your email' })}
+                </p>
+              </div>
+            </div>
+            <div className="confirmation-actions">
+              <button className="confirmation-btn-primary" onClick={() => goToGuestAuth('signup', viewerEmail)}>
+                {t('confirmation.guestCreateAccount')}
+              </button>
+              <button className="confirmation-btn-secondary" onClick={() => goToGuestAuth('signin', viewerEmail)}>
+                {t('confirmation.guestSignIn')}
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="confirmation-body">
           <div className="confirmation-main">
@@ -578,12 +619,14 @@ export default function BookingConfirmationPage() {
                             <span className="confirmation-grid-sub">
                               {t('confirmation.pickupPendingHint')}
                             </span>
-                            <button
-                              onClick={() => navigate(`/booking/${b.id}/pickup`)}
-                              className="mt-2 inline-flex items-center gap-1 rounded-full bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white transition hover:brightness-110"
-                            >
-                              {t('confirmation.pickupAdd')}
-                            </button>
+                            {user && (
+                              <button
+                                onClick={() => navigate(`/booking/${b.id}/pickup`)}
+                                className="mt-2 inline-flex items-center gap-1 rounded-full bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white transition hover:brightness-110"
+                              >
+                                {t('confirmation.pickupAdd')}
+                              </button>
+                            )}
                           </>
                         )
                       }
@@ -600,12 +643,14 @@ export default function BookingConfirmationPage() {
                               This pickup location is outside the pickup zone — please confirm a location within the zone before your tour date.
                             </span>
                           )}
-                          <button
-                            onClick={() => navigate(`/booking/${b.id}/pickup`)}
-                            className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 underline underline-offset-2"
-                          >
-                            {t('confirmation.pickupUpdate')}
-                          </button>
+                          {user && (
+                            <button
+                              onClick={() => navigate(`/booking/${b.id}/pickup`)}
+                              className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 underline underline-offset-2"
+                            >
+                              {t('confirmation.pickupUpdate')}
+                            </button>
+                          )}
                         </>
                       )
                     })()}
@@ -763,10 +808,12 @@ export default function BookingConfirmationPage() {
             {t('confirmation.writeReview')}
           </button>
         )}
-        <button type="button" className="confirmation-text-link" onClick={() => navigate('/dashboard/bookings')}>
-          <CreditCard size={15} />
-          {t('confirmation.viewBookings')}
-        </button>
+        {user && (
+          <button type="button" className="confirmation-text-link" onClick={() => navigate('/dashboard/bookings')}>
+            <CreditCard size={15} />
+            {t('confirmation.viewBookings')}
+          </button>
+        )}
         <button type="button" className="confirmation-text-link" onClick={() => navigate('/')}>
           {t('confirmation.backToHome')}
         </button>

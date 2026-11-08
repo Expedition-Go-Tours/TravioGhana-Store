@@ -19,6 +19,8 @@ import "./AuthForm.css";
 
 interface AuthFormProps {
   initialMode?: "signin" | "signup";
+  /** Prefill only: the guest upsell carries the address they booked with. */
+  initialEmail?: string;
   onBack?: () => void;
   onAuthSuccess?: () => void;
 }
@@ -214,10 +216,10 @@ function GoogleButton({ onClick, loading }: { onClick?: () => void; loading?: bo
 
 /* --- Views --- */
 
-function SignInView({ onSwitchToSignUp, onAuthSuccess }: { onSwitchToSignUp: () => void; onAuthSuccess?: () => void }) {
+function SignInView({ onSwitchToSignUp, onAuthSuccess, initialEmail = '' }: { onSwitchToSignUp: () => void; onAuthSuccess?: () => void; initialEmail?: string }) {
   const { t } = useTranslation()
   const comingSoon = useComingSoon()
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(initialEmail)
   const [password, setPassword] = useState('')
   const [remember, setRemember] = useState(true)
   const [loading, setLoading] = useState(false)
@@ -323,10 +325,10 @@ function SignInView({ onSwitchToSignUp, onAuthSuccess }: { onSwitchToSignUp: () 
   )
 }
 
-function SignUpView({ onSwitchToSignIn, onAuthSuccess }: { onSwitchToSignIn: () => void; onAuthSuccess?: () => void }) {
+function SignUpView({ onSwitchToSignIn, onAuthSuccess, initialEmail = '' }: { onSwitchToSignIn: () => void; onAuthSuccess?: () => void; initialEmail?: string }) {
   const { t } = useTranslation()
   const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(initialEmail)
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [confirmError, setConfirmError] = useState('')
@@ -502,7 +504,7 @@ function TrustBar() {
 
 /* --- Page --- */
 
-export default function AuthForm({ initialMode = "signin", onBack, onAuthSuccess }: AuthFormProps) {
+export default function AuthForm({ initialMode = "signin", initialEmail = "", onBack, onAuthSuccess }: AuthFormProps) {
   const { t } = useTranslation()
   const [mode, setMode] = useState<"signin" | "signup">(initialMode)
 
@@ -541,9 +543,9 @@ export default function AuthForm({ initialMode = "signin", onBack, onAuthSuccess
               <img className="brand" src={logoSrc} alt="Travio Ghana" width={2076} height={450} />
               <div className="auth-view" key={mode}>
                 {mode === "signin" ? (
-                  <SignInView onSwitchToSignUp={() => setMode("signup")} onAuthSuccess={onAuthSuccess} />
+                  <SignInView onSwitchToSignUp={() => setMode("signup")} onAuthSuccess={onAuthSuccess} initialEmail={initialEmail} />
                 ) : (
-                  <SignUpView onSwitchToSignIn={() => setMode("signin")} onAuthSuccess={onAuthSuccess} />
+                  <SignUpView onSwitchToSignIn={() => setMode("signin")} onAuthSuccess={onAuthSuccess} initialEmail={initialEmail} />
                 )}
               </div>
             </div>
