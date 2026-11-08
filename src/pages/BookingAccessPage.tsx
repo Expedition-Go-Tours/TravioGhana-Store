@@ -24,6 +24,9 @@ export default function BookingAccessPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const token = searchParams.get('token') || ''
+  // The booking-confirmed email's "Create an account" CTA appends claim=1 so
+  // the confirmation page leads with the save-to-account card.
+  const claimIntent = searchParams.get('claim') === '1'
   const [error, setError] = useState(
     token ? '' : 'This booking link is missing its access token. Open the link from your confirmation email and try again.',
   )
@@ -71,7 +74,9 @@ export default function BookingAccessPage() {
 
         setGuestToken(data.guestToken)
         // replace() keeps the token out of history and drops it from the URL.
-        navigate(`/booking/confirmation/${encodeURIComponent(data.booking.id)}`, { replace: true })
+        // Carry the claim intent through so the upsell leads the page.
+        const confirmation = `/booking/confirmation/${encodeURIComponent(data.booking.id)}`
+        navigate(claimIntent ? `${confirmation}?claim=1` : confirmation, { replace: true })
       } catch {
         if (!cancelled) setError('We could not open this booking link. Check your connection and try again.')
       }
@@ -80,7 +85,7 @@ export default function BookingAccessPage() {
     return () => {
       cancelled = true
     }
-  }, [token, navigate])
+  }, [token, claimIntent, navigate])
 
   if (error) {
     return (

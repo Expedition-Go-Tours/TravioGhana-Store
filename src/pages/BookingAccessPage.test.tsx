@@ -57,6 +57,20 @@ describe('BookingAccessPage', () => {
     expect(navigate).toHaveBeenCalledWith('/booking/confirmation/b1', { replace: true })
   })
 
+  it('carries the email account CTA intent into the confirmation page', async () => {
+    vi.mocked(fetchWithAuth).mockResolvedValue(
+      jsonResponse(200, {
+        status: 'success',
+        data: { guestToken: 'guest-token', booking: { id: 'b1', bookingNumber: 'TRG-1' } },
+      }) as never,
+    )
+
+    renderAt('/booking/access?token=signed-token&claim=1')
+
+    await waitFor(() => expect(setGuestToken).toHaveBeenCalledWith('guest-token'))
+    expect(navigate).toHaveBeenCalledWith('/booking/confirmation/b1?claim=1', { replace: true })
+  })
+
   it('sends a guest to sign in when the booking has since been claimed', async () => {
     vi.mocked(fetchWithAuth).mockResolvedValue(
       jsonResponse(200, {

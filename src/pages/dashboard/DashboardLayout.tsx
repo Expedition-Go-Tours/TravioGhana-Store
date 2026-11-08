@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { signOutUser, setAuthReturnTo } from "@/lib/auth";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { useChat } from "@/chat/ChatContext";
+import VerifyEmailBanner from "@/components/account/VerifyEmailBanner";
 import logoSrc from "../../assets/TravioGhana_Logo.svg";
 import "../../components/booking/bookingTheme.css";
 import "./DashboardLayout.css";
@@ -435,6 +436,10 @@ export default function DashboardLayout() {
                   </button>
                 )}
               </div>
+
+              {/* Email/password accounts: prompt verification so past guest
+                  bookings can be offered and claimed. Hidden once verified. */}
+              <VerifyEmailBanner />
 
               <div className="dash-pages">
                 {ROUTES.map((r) => {

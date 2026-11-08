@@ -397,9 +397,39 @@ export default function BookingConfirmationPage() {
     : ''
   const effectiveReviewSlug = tour.slug || reviewSlug
 
+  // The guest confirmation email's account CTA lands here with `?claim=1`.
+  // Showing the save card before the hero honours what they clicked; the
+  // normal guest flow keeps it below the confirmation summary.
+  const claimIntent = searchParams.get('claim') === '1'
+
+  const guestUpsell = !user ? (
+    <div className="confirmation-card confirmation-guest-upsell confirmation-no-print">
+      <div className="confirmation-guest-upsell-copy">
+        <span className="confirmation-guest-upsell-icon" aria-hidden="true">
+          <UserPlus size={20} />
+        </span>
+        <div>
+          <div className="confirmation-section-title">{t('confirmation.guestSaveTitle')}</div>
+          <p className="confirmation-message">
+            {t('confirmation.guestSaveBody', { email: viewerEmail || 'your email' })}
+          </p>
+        </div>
+      </div>
+      <div className="confirmation-actions">
+        <button className="confirmation-btn-primary" onClick={() => goToGuestAuth('signup', viewerEmail)}>
+          {t('confirmation.guestCreateAccount')}
+        </button>
+        <button className="confirmation-btn-secondary" onClick={() => goToGuestAuth('signin', viewerEmail)}>
+          {t('confirmation.guestSignIn')}
+        </button>
+      </div>
+    </div>
+  ) : null
+
   return (
     <div className="confirmation-page">
       <div className="confirmation-print-area">
+        {claimIntent && guestUpsell}
         {/* Header — typographic confirmation (GYG-style) */}
         <div className="confirmation-card confirmation-card-hero">
           <div className="confirmation-hero">
@@ -451,29 +481,7 @@ export default function BookingConfirmationPage() {
           </div>
         </div>
 
-        {!user && (
-          <div className="confirmation-card confirmation-guest-upsell confirmation-no-print">
-            <div className="confirmation-guest-upsell-copy">
-              <span className="confirmation-guest-upsell-icon" aria-hidden="true">
-                <UserPlus size={20} />
-              </span>
-              <div>
-                <div className="confirmation-section-title">{t('confirmation.guestSaveTitle')}</div>
-                <p className="confirmation-message">
-                  {t('confirmation.guestSaveBody', { email: viewerEmail || 'your email' })}
-                </p>
-              </div>
-            </div>
-            <div className="confirmation-actions">
-              <button className="confirmation-btn-primary" onClick={() => goToGuestAuth('signup', viewerEmail)}>
-                {t('confirmation.guestCreateAccount')}
-              </button>
-              <button className="confirmation-btn-secondary" onClick={() => goToGuestAuth('signin', viewerEmail)}>
-                {t('confirmation.guestSignIn')}
-              </button>
-            </div>
-          </div>
-        )}
+        {!claimIntent && guestUpsell}
 
         <div className="confirmation-body">
           <div className="confirmation-main">

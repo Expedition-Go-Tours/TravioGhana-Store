@@ -97,7 +97,12 @@ export function useGuestClaim() {
   }, [user?.id, user?.emailVerified])
 
   const dismiss = useCallback(() => {
-    if (user?.id) rememberDismissal(user.id)
+    if (user?.id) {
+      rememberDismissal(user.id)
+      // Fire-and-forget: the 30-day suppression is local, this only records
+      // the funnel event. Never block the UI on it.
+      fetchWithAuth('/auth/guest-bookings/dismiss', { method: 'POST' }).catch(() => {})
+    }
     setPreview(null)
   }, [user])
 
