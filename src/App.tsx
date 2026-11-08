@@ -39,6 +39,7 @@ import { trackGaPageView } from './lib/googleAnalytics'
 import LenisProvider from './lib/LenisProvider'
 import { scrollToTop } from './lib/scrollToTop'
 import { useHomepage, useHomepageByCity } from './hooks/useHomepageSections'
+import GuestClaimPrompt from '@/components/account/GuestClaimPrompt'
 import { enrichToursWithCombinedStats, useExternalReviewStatsData } from './hooks/useExternalReviews'
 import { resolveStoryRedirect } from './lib/storyRedirects'
 
@@ -57,6 +58,7 @@ const ListExperiencePage = lazy(() => import('./pages/supplier/ListExperiencePag
 const BookingPage = lazy(() => import('./pages/BookingPage'))
 const BookingConfirmationPage = lazy(() => import('./pages/BookingConfirmationPage'))
 const BookingAccessPage = lazy(() => import('./pages/BookingAccessPage'))
+const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage'))
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'))
 const PaypalReturnPage = lazy(() => import('./pages/PaypalReturnPage'))
 const CancellationChoicePage = lazy(() => import('./pages/CancellationChoicePage'))
@@ -480,6 +482,8 @@ function AppContent() {
           {/* Supplier-cancelled booking: choose a new date or a full refund.
               Public, token-driven (?token=…) — no auth gate beyond the token. */}
           <Route path="/cancellation-choice" element={<CancellationChoicePage />} />
+          {/* Public: the verification email posts its signed token here. */}
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/login" element={
             <AuthForm
               initialMode={loginInitialMode}
@@ -562,6 +566,10 @@ function App() {
                   <LocationSearchProvider>
                     <SearchInputProvider>
                       <AppContent />
+                      {/* Signed-in only: offers guest bookings that match the
+                          verified account email. Outside the route tree so it
+                          fires after login, Google One Tap or the verify page. */}
+                      <GuestClaimPrompt />
                       {/* Consent UI lives outside the route tree so a choice can
                           be made (or revisited) on any page, including the dashboard. */}
                       <CookieBanner />

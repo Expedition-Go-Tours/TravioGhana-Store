@@ -50,6 +50,8 @@ export interface AuthUser {
   roles?: string[]
   /** Whether the account has an email/password credential (false for Google-only). */
   hasPassword?: boolean
+  /** Whether the address has been proved (Google, reset link or verify email). */
+  emailVerified?: boolean
 }
 
 type AuthStateListener = (user: AuthUser | null) => void

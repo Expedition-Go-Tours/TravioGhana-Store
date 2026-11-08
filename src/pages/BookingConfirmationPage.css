@@ -417,6 +417,7 @@
 .confirmation-icon.warning { background: #fef3c7; color: #d97706; }
 .confirmation-icon.error { background: #fee2e2; color: #dc2626; }
 .confirmation-icon.processing { background: #eff6ff; color: #2563eb; }
+.confirmation-icon.success { background: #dcfce7; color: #166534; }
 
 .confirmation-spinner {
   animation: confirmation-spin 0.9s linear infinite;

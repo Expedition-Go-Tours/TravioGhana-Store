@@ -354,7 +354,9 @@ function SignUpView({ onSwitchToSignIn, onAuthSuccess, initialEmail = '' }: { on
       // Registrations always remember the new account (the design has no
       // remember-me control on sign-up).
       await registerWithEmail(name, email, password)
-      toast.success(t('auth.signedUpSuccess'))
+      // The account exists but the address is not verified yet. The backend
+      // sends the proof link; tell the customer to look for it.
+      toast.success(`${t('auth.signedUpSuccess')}. ${t('auth.verifyEmailSent')}`)
       handleAuthSuccess()
     } catch (err: unknown) {
       setNotice(err instanceof Error ? err.message : t('auth.registerFailed'))
