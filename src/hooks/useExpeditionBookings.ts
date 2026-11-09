@@ -565,6 +565,8 @@ export interface ExpeditionBookingSummary {
   refundStatus?: RefundStatus | string | null
   cancellationReason?: string | null
   refundAmount?: number | null
+  /** Same-day customer cancellation request: PENDING | APPROVED | DECLINED | WITHDRAWN. */
+  customerCancellationStatus?: 'PENDING' | 'APPROVED' | 'DECLINED' | 'WITHDRAWN' | null
 }
 
 interface RawBookingListRecord {
@@ -584,6 +586,7 @@ interface RawBookingListRecord {
   refundStatus?: string | null
   cancellationReason?: string | null
   refundAmount?: number | string | null
+  customerCancellationStatus?: string | null
   travelers?: unknown
   pickup?: Record<string, unknown> | null
   refundedAt?: string | null
@@ -646,6 +649,8 @@ function mapBookingSummary(b: RawBookingListRecord): ExpeditionBookingSummary {
     refundStatus: b.refundStatus ?? null,
     cancellationReason: b.cancellationReason ?? null,
     refundAmount: b.refundAmount == null ? null : Number(b.refundAmount),
+    customerCancellationStatus: (b.customerCancellationStatus ?? null) as
+      | 'PENDING' | 'APPROVED' | 'DECLINED' | 'WITHDRAWN' | null,
   }
 }
 
@@ -795,6 +800,38 @@ export function useCancelBooking() {
         throw new Error(payload.message || `Request failed (${res.status})`)
       }
       return (payload.data?.booking ?? payload) as { id: string; status: string; refundAmount?: number | null }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expedition', 'bookings'] })
+    },
+  })
+}
+
+/**
+ * Same-day cancellation request. The activity is today, so the normal window
+ * is closed: this asks the supplier to approve. Approval is non-refundable and
+ * the booking stays active until they decide.
+ */
+export function useRequestCustomerCancellation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (input: { id: string; reason?: string; note?: string }) => {
+      const res = await fetchWithAuth(
+        `/travioghana/bookings/${encodeURIComponent(input.id)}/cancellation-request`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ reason: input.reason, note: input.note }),
+        },
+      )
+      const payload = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(payload.message || `Request failed (${res.status})`)
+      }
+      return (payload.data?.booking ?? payload) as {
+        id: string
+        customerCancellationStatus?: string | null
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expedition', 'bookings'] })

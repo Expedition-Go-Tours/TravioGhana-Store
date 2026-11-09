@@ -111,6 +111,12 @@ export default function BookingCard({
           </span>
         </div>
 
+        {booking.customerCancellationStatus === 'PENDING' && (
+          <p className="bk-meta" style={{ color: '#92400E', fontWeight: 600 }}>
+            Cancellation requested — waiting for the supplier’s decision.
+          </p>
+        )}
+
         <p className="bk-meta">{metaParts.length > 0 ? metaParts.join(' · ') : '—'}</p>
 
         {duration && (

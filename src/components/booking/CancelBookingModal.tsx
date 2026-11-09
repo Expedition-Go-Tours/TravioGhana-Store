@@ -23,6 +23,9 @@ interface CancelBookingModalProps {
   tourTitle?: string
   refundAmount?: number
   currency?: string
+  /** Same-day booking: the normal window is closed, so this becomes a
+   *  supplier-approved, non-refundable request rather than an instant cancel. */
+  requiresApproval?: boolean
 }
 
 const CANCEL_REASONS = [
@@ -46,6 +49,7 @@ export default function CancelBookingModal({
   tourTitle,
   refundAmount,
   currency,
+  requiresApproval = false,
 }: CancelBookingModalProps) {
   const [step, setStep] = useState<Step>('confirm')
   const [reason, setReason] = useState<string>('')
@@ -243,10 +247,13 @@ export default function CancelBookingModal({
             <div className="cb-icon cb-icon-rose">
               <XCircle size={24} />
             </div>
-            <h2 className="cb-title">Cancellation not eligible for refund</h2>
+            <h2 className="cb-title">
+              {requiresApproval ? "Cancellation needs the supplier's approval" : 'Cancellation not eligible for refund'}
+            </h2>
             <p className="cb-body">
-              This tour's cancellation date does not qualify for a refund. If you cancel
-              this booking, you will not receive a refund. Confirm to proceed or cancel to go back.
+              {requiresApproval
+                ? 'This activity is today, so the supplier has to approve the cancellation. If approved, the booking is cancelled and you will not receive a refund.'
+                : "This tour's cancellation date does not qualify for a refund. If you cancel this booking, you will not receive a refund. Confirm to proceed or cancel to go back."}
             </p>
             {!isPaid && (
               <p className="cb-note">
@@ -271,7 +278,9 @@ export default function CancelBookingModal({
                 disabled={isPending}
               >
                 {isPending ? <Loader2 size={16} className="cb-spin" /> : null}
-                {isPending ? 'Cancelling…' : 'Proceed to Cancel'}
+                {isPending
+                  ? (requiresApproval ? 'Sending…' : 'Cancelling…')
+                  : (requiresApproval ? 'Send cancellation request' : 'Proceed to Cancel')}
               </button>
             </div>
           </>

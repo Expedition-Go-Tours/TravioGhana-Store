@@ -20,7 +20,7 @@ import {
   Flag,
 } from 'lucide-react'
 import { useChat } from '../../chat/ChatContext'
-import { useExpeditionBookingDetail, useCancelBooking, useBookingPaymentState, useStartPayLaterPayNow } from '../../hooks/useExpeditionBookings'
+import { useExpeditionBookingDetail, useCancelBooking, useRequestCustomerCancellation, useBookingPaymentState, useStartPayLaterPayNow } from '../../hooks/useExpeditionBookings'
 import { extractMeetingInfo, formatDuration, type TourCardData } from '../../hooks/useExpeditionTours'
 import { useRecommendedTours, type RecommendedTour } from '../../hooks/useRecommendedTours'
 import { formatItineraryDuration, type ItineraryDay } from '../../lib/tourTypes'
@@ -473,6 +473,7 @@ export default function BookingWorkspace({ id, onClose }: { id?: string; onClose
   const detailQuery = useExpeditionBookingDetail(id)
   const detail = detailQuery.data as Record<string, any> | undefined
   const cancelBooking = useCancelBooking()
+  const requestCancellation = useRequestCustomerCancellation()
   const { data: paymentState } = useBookingPaymentState(id)
   const startPayLater = useStartPayLaterPayNow()
   const [payNowError, setPayNowError] = useState<string | null>(null)
@@ -625,8 +626,52 @@ export default function BookingWorkspace({ id, onClose }: { id?: string; onClose
     [tour, detail]
   )
   const showCancel = activeStatus && !!detail
+  const customerCancellationStatus =
+    typeof detail?.customerCancellationStatus === 'string' ? detail.customerCancellationStatus : null
+  // Same-day cancellation: the scroll is closed, so the request goes to the
+  // supplier. Only before the activity actually starts — after that it is a
+  // no-show, not a cancellation.
+  const activityDateToday = (() => {
+    if (typeof detail?.travelDate !== 'string') return false
+    const travel = new Date(detail.travelDate)
+    const now = new Date()
+    return Number.isFinite(travel.getTime())
+      && travel.getUTCFullYear() === now.getUTCFullYear()
+      && travel.getUTCMonth() === now.getUTCMonth()
+      && travel.getUTCDate() === now.getUTCDate()
+  })()
+  const activityStarted = (() => {
+    if (typeof detail?.travelDate !== 'string') return false
+    const travel = new Date(detail.travelDate)
+    if (!Number.isFinite(travel.getTime())) return false
+    const startMs = Date.UTC(travel.getUTCFullYear(), travel.getUTCMonth(), travel.getUTCDate())
+    const time = typeof detail?.selectedTime === 'string' ? detail.selectedTime : ''
+    const match = /^(\d{1,2}):(\d{2})/.exec(time)
+    const cutoff = match
+      ? new Date(startMs + ((Number(match[1]) || 0) * 60 + (Number(match[2]) || 0)) * 60 * 1000)
+      : new Date(startMs + 24 * 60 * 60 * 1000 - 1)
+    // eslint-disable-next-line react-hooks/purity -- wall-clock read for the same-day cutoff
+    return Date.now() >= cutoff.getTime()
+  })()
+  const requiresApproval =
+    activeStatus
+    && activityDateToday
+    && !activityStarted
+    && !cancellation.allowed
+    && customerCancellationStatus !== 'PENDING'
+    && customerCancellationStatus !== 'DECLINED'
+  const canOpenCancellation = cancellation.allowed || requiresApproval
   const policyNote = (() => {
     if (!detail) return ''
+    if (customerCancellationStatus === 'PENDING') {
+      return 'Cancellation requested — waiting for the supplier to approve.'
+    }
+    if (customerCancellationStatus === 'DECLINED') {
+      return 'The supplier declined your cancellation request. The booking remains active.'
+    }
+    if (requiresApproval) {
+      return 'The activity is today. Cancellation needs the supplier’s approval and is non-refundable.'
+    }
     if (cancellation.type === 'all_sales_final' || cancellation.refundPct === 0) {
       return 'This booking is non-refundable, so no refund will be issued.'
     }
@@ -654,15 +699,30 @@ export default function BookingWorkspace({ id, onClose }: { id?: string; onClose
 
   const handleCancel = () => {
     if (!detail?.id) return
-    // The API refuses a cancellation inside the policy window; do not open a
-    // three-step modal that can only end in that error.
-    if (!cancellation.allowed) return
+    // The API refuses a cancellation inside the policy window. Same-day
+    // bookings can still ask the supplier, so those open the same modal with
+    // the approval copy.
+    if (!canOpenCancellation) return
     setCancelError(null)
     setCancelModalOpen(true)
   }
 
   const handleCancelConfirm = (reason: string, note?: string) => {
     if (!detail?.id) return
+    if (requiresApproval) {
+      requestCancellation.mutate(
+        { id: detail.id, reason, note },
+        {
+          onSuccess: () => {
+            setCancelModalOpen(false)
+            toast.success('Cancellation request sent — waiting for the supplier to decide.')
+            detailQuery.refetch()
+          },
+          onError: (err: Error) => setCancelError(err.message),
+        }
+      )
+      return
+    }
     cancelBooking.mutate(
       { id: detail.id, reason, note },
       {
@@ -1116,18 +1176,34 @@ export default function BookingWorkspace({ id, onClose }: { id?: string; onClose
                     type="button"
                     className="bk-btn bk-btn-danger ws-action-btn"
                     onClick={handleCancel}
-                    disabled={cancelBooking.isPending || !cancellation.allowed}
+                    disabled={
+                      cancelBooking.isPending
+                      || requestCancellation.isPending
+                      || !canOpenCancellation
+                    }
                     title={
-                      !cancellation.allowed
-                        ? 'Cancellation is closed for this booking'
+                      !canOpenCancellation
+                        ? customerCancellationStatus === 'PENDING'
+                          ? 'Waiting for the supplier to decide'
+                          : customerCancellationStatus === 'DECLINED'
+                            ? 'The supplier declined this cancellation request'
+                            : 'Cancellation is closed for this booking'
                         : undefined
                     }
                   >
-                    {!cancellation.allowed
-                      ? 'Cancellation closed'
-                      : cancelBooking.isPending
-                        ? 'Cancelling…'
-                        : 'Cancel booking'}
+                    {!canOpenCancellation
+                      ? customerCancellationStatus === 'PENDING'
+                        ? 'Request pending'
+                        : customerCancellationStatus === 'DECLINED'
+                          ? 'Request declined'
+                          : 'Cancellation closed'
+                      : requestCancellation.isPending
+                        ? 'Sending request…'
+                        : cancelBooking.isPending
+                          ? 'Cancelling…'
+                          : requiresApproval
+                            ? 'Request cancellation'
+                            : 'Cancel booking'}
                   </button>
                 )}
                 {cancelError && <p className="ws-cancel-error">{cancelError}</p>}
@@ -1248,9 +1324,9 @@ export default function BookingWorkspace({ id, onClose }: { id?: string; onClose
       {/* Cancel booking confirmation modal */}
       <CancelBookingModal
         isOpen={cancelModalOpen}
-        onClose={() => { if (!cancelBooking.isPending) setCancelModalOpen(false) }}
+        onClose={() => { if (!cancelBooking.isPending && !requestCancellation.isPending) setCancelModalOpen(false) }}
         onConfirm={handleCancelConfirm}
-        isPending={cancelBooking.isPending}
+        isPending={requiresApproval ? requestCancellation.isPending : cancelBooking.isPending}
         error={cancelError}
         refundPct={cancellation.allowed ? cancellation.refundPct : 0}
         isPaid={isPaid}
@@ -1258,6 +1334,7 @@ export default function BookingWorkspace({ id, onClose }: { id?: string; onClose
         tourTitle={tour?.title}
         refundAmount={cancellation.allowed && cancellation.refundPct > 0 && isPaid ? gross * cancellation.refundPct / 100 : undefined}
         currency={currency}
+        requiresApproval={requiresApproval}
       />
     </div>
   )
