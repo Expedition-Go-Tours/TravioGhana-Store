@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertTriangle, Car, Check, ChevronDown, Clock, Compass, Link2, List, Loader2, MapPin, Pencil, RefreshCw, Search, X } from 'lucide-react'
+import { AlertTriangle, Car, Check, ChevronDown, Clock, Compass, List, Loader2, MapPin, Pencil, RefreshCw, Search, X } from 'lucide-react'
 import { reverseGeocode } from '@/lib/locations'
 import { pinMatchesSelection } from '@/lib/mapUtils'
 import DirectionsPanel from './DirectionsPanel'
@@ -11,6 +12,7 @@ import type { PickupZoneMapTour } from './PickupZoneMap'
 import LocationMap from './LocationMap'
 import MapErrorBoundary from './MapErrorBoundary'
 import PasteMapsLinkPanel, { type PastedPinLocation } from './PasteMapsLinkPanel'
+import LocationFallbackActions from './LocationFallbackActions'
 import { searchGhanaLocations, type GhanaMapPlace } from '@/lib/serpApiMapsSearch'
 import { hasRelevantLocationSuggestion, isClearlyOutsideGhana } from '@/lib/locationRelevance'
 
@@ -51,10 +53,15 @@ const pointDisplayName = (p: ResolvedTourPoint): string => p.name || p.address |
  */
 export default function PickupSelectModal(props: PickupSelectModalProps) {
   const { open, onClose } = props
-  return (
+  // Portal to <body>: the booking page has animated/contained ancestors that
+  // can become the containing block for position:fixed, which leaves a strip
+  // of the page visible above a "full-screen" mobile modal.
+  if (typeof document === 'undefined') return null
+  return createPortal(
     <AnimatePresence>
       {open && <PickupSelectModalContent {...props} onClose={onClose} />}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   )
 }
 
@@ -157,9 +164,10 @@ function PickupSelectModalContent({
   const zones = useMemo(() => selectable.filter((p) => p.kind === 'zone'), [selectable])
   const spots = useMemo(() => selectable.filter((p) => p.kind === 'point'), [selectable])
 
-  // Tours with several pickup spots: no free address search — the traveller
-  // must choose from the listed options only.
-  const multiplePickups = selectable.length > 1
+  // Several specific pickup points: no free address search — the traveller
+  // must choose from the listed options only. Zone-based tours keep the
+  // search even when the supplier drew more than one pickup zone.
+  const multiplePickups = spots.length > 1 && zones.length === 0
 
   // Origin for the Google Maps (SerpApi) fallback search: the meeting point,
   // or the first located pickup spot/zone — keeps results biased to the
@@ -190,6 +198,10 @@ function PickupSelectModalContent({
         time: z.time,
         polygon: z.polygon,
         exclusions: z.exclusions,
+        // Keep the supplier's configured radius for location-only areas.
+        // Dropping it silently falls back to the backend's 1 km default, so
+        // an address genuinely inside a 15 km zone is flagged as outside.
+        radiusKm: z.radiusKm,
       })),
     [zones],
   )
@@ -211,6 +223,10 @@ function PickupSelectModalContent({
     setSearchCommitted(false)
     setSearchQuery('')
     setSearchOpen(false)
+    // A listed point/zone supersedes any previous searched address, so its
+    // out-of-zone caution must not linger over the new selection.
+    setSearchOutOfRange(false)
+    setSearchInZone(false)
     setDragPreview(null)
     setDragAddress('')
     setDragOutOfRange(false)
@@ -648,8 +664,9 @@ function PickupSelectModalContent({
         aria-modal="true"
         aria-label="Choose your pickup"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+        {/* Header — pinned above the scrollable body so the close button is
+            always reachable, including on short mobile screens. */}
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-5 py-4">
           <div className="flex items-center gap-2.5">
             <span className="grid size-9 place-items-center rounded-full bg-emerald-50 text-[#179237]">
               <MapPin className="size-[18px]" />
@@ -657,7 +674,9 @@ function PickupSelectModalContent({
             <div className="min-w-0 flex-1">
               <h3 className="text-base font-bold text-slate-900">Choose your pickup</h3>
               <p className="text-xs text-slate-400">
-                Tap a pin or a location to select it.
+                {multiplePickups
+                  ? 'Tap a pin or a location to select it.'
+                  : 'Search your hotel or location, or choose from the list.'}
               </p>
             </div>
           </div>
@@ -684,32 +703,30 @@ function PickupSelectModalContent({
         /* Search — full-width, right under the title. The dropdown overlays
             the content below (it is NOT inside the scrollable body, so it is
             never clipped and no scrollbar gutter shows beside it). */
-        <div ref={searchRef} className="relative shrink-0 border-b border-slate-100 px-5 py-3">
+        <div ref={searchRef} className="relative shrink-0 border-b border-slate-100 sm:px-5 sm:py-3">
           <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute left-4 top-1/2 size-[18px] -translate-y-1/2 text-slate-400 sm:left-3.5 sm:size-4" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => handleSearchInput(e.target.value)}
               onKeyDown={handleSearchKeyDown}
-              onFocus={() => {
-                if (visibleResults.length > 0) setSearchOpen(true)
-              }}
-              placeholder="Search for your address…"
-              className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-9 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-[#179237] focus:ring-2 focus:ring-[#179237]/15"
+              onFocus={() => setSearchOpen(true)}
+              placeholder="Search your hotel or location"
+              className="h-12 w-full border-0 bg-white pl-11 pr-11 text-[15px] text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-0 sm:h-auto sm:rounded-xl sm:border sm:border-slate-200 sm:py-2.5 sm:pl-10 sm:pr-9 sm:text-sm sm:shadow-sm sm:focus:border-[#179237] sm:focus:ring-2 sm:focus:ring-[#179237]/15"
               aria-expanded={searchOpen}
               aria-autocomplete="list"
               aria-controls={searchOpen ? 'pickup-search-listbox' : undefined}
               aria-activedescendant={searchHighlight >= 0 ? `pickup-search-option-${searchHighlight}` : undefined}
             />
             {searching ? (
-              <Loader2 className="absolute right-3 top-1/2 size-4 -mt-2 animate-spin text-[#179237]" />
+              <Loader2 className="absolute right-4 top-1/2 size-4 -translate-y-1/2 animate-spin text-[#179237] sm:right-3" />
             ) : searchQuery ? (
               <button
                 type="button"
                 onClick={handleClearSearch}
                 aria-label="Clear search"
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 sm:right-2.5"
               >
                 <X size={14} />
               </button>
@@ -719,15 +736,21 @@ function PickupSelectModalContent({
           {searchOpen && (
             pasteOpen ? (
               <PasteMapsLinkPanel
-                className="absolute inset-x-5 top-full z-50 mt-1"
+                className="absolute inset-x-0 top-full z-50 sm:inset-x-5 sm:mt-1"
                 onApply={applyPastedLocation}
               />
             ) : (
-            <ul
-              id="pickup-search-listbox"
-              role="listbox"
-              className="scrollbar-hide absolute inset-x-5 top-full z-50 mt-1 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg shadow-slate-200/60"
-            >
+            <div className="absolute inset-x-0 top-full z-50 max-h-[70dvh] overflow-hidden border-y border-slate-200 bg-white shadow-lg shadow-slate-200/60 sm:inset-x-5 sm:mt-1 sm:max-h-none sm:rounded-xl sm:border">
+              <ul
+                id="pickup-search-listbox"
+                role="listbox"
+                className="scrollbar-hide max-h-60 overflow-y-auto py-1"
+              >
+              {!searching && !searchError && searchQuery.trim().length === 0 && (
+                <li className="px-4 py-3 text-xs text-slate-400">
+                  Type a hotel, address, or landmark to search.
+                </li>
+              )}
               {searching && (
                 <li className="flex items-center gap-2 px-4 py-3 text-sm text-slate-500">
                   <Loader2 size={14} className="animate-spin text-[#179237]" />
@@ -789,23 +812,6 @@ function PickupSelectModalContent({
                   Searching Google Maps…
                 </li>
               )}
-              {googleState === 'idle' && !searching && !hasRelevantLocationSuggestion(searchQuery, visibleResults) && searchQuery.trim().length >= 3 && (
-                <li
-                  role="option"
-                  aria-selected={false}
-                  onClick={() => void runGoogleSearch()}
-                  onMouseDown={(e) => e.preventDefault()}
-                  className="cursor-pointer border-t border-slate-100 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50"
-                >
-                  <div className="flex items-start gap-2.5">
-                    <Search size={14} className="mt-0.5 shrink-0 text-slate-400" />
-                    <div className="min-w-0">
-                      <div className="truncate font-medium">Can’t find your location? Search Google Maps</div>
-                      <div className="mt-0.5 text-xs text-slate-400">We’ll look it up on Google Maps in Ghana.</div>
-                    </div>
-                  </div>
-                </li>
-              )}
               {googleState === 'done' && googleResults.length > 0 && (
                 <>
                   <li className="border-t border-slate-100 px-4 pb-1 pt-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -851,25 +857,6 @@ function PickupSelectModalContent({
                   </button>
                 </li>
               )}
-              {/* Paste a Google Maps link — pin the exact spot from the link. */}
-              <li
-                role="option"
-                aria-selected={false}
-                onClick={() => {
-                  setPasteOpen(true)
-                  setSearchHighlight(-1)
-                }}
-                onMouseDown={(e) => e.preventDefault()}
-                className="cursor-pointer border-t border-slate-100 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50"
-              >
-                <div className="flex items-start gap-2.5">
-                  <Link2 size={14} className="mt-0.5 shrink-0 text-slate-400" />
-                  <div className="min-w-0">
-                    <div className="truncate font-medium">Can’t find your location? Paste a Google Maps link</div>
-                    <div className="mt-0.5 text-xs text-slate-400">We’ll place the pin at the exact spot from the link.</div>
-                  </div>
-                </div>
-              </li>
               {!searching && searchQuery.trim().length >= 3 && (
                 <li
                   role="option"
@@ -890,7 +877,22 @@ function PickupSelectModalContent({
                   </div>
                 </li>
               )}
-            </ul>
+              </ul>
+              <LocationFallbackActions
+                query={searchQuery}
+                showSearch={
+                  googleState === 'idle' &&
+                  !searching &&
+                  !hasRelevantLocationSuggestion(searchQuery, visibleResults) &&
+                  searchQuery.trim().length >= 3
+                }
+                onSearch={() => void runGoogleSearch()}
+                onPaste={() => {
+                  setPasteOpen(true)
+                  setSearchHighlight(-1)
+                }}
+              />
+            </div>
             )
           )}
 
@@ -900,7 +902,7 @@ function PickupSelectModalContent({
             <div className="mt-2 rounded-xl border border-amber-200/70 bg-amber-50/60 px-3.5 py-2.5">
               <p className="flex items-start gap-1.5 text-sm font-medium leading-relaxed text-amber-800">
                 <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-500" />
-                This location is outside the pickup zone. You can still use it, but please remember to choose a pickup location within the pickup zone before your tour date.
+                Your selected location is outside the pickup zone. You can still continue, but please choose an in-zone pickup location before your tour date.
               </p>
               <label className="mt-2 flex cursor-pointer items-start gap-2">
                 <input
@@ -969,10 +971,15 @@ function PickupSelectModalContent({
                 themselves.
               </p>
             )}
-            {/* Searched/pinned location — mirrors the blue pin on the map. */}
+            {/* Searched/pinned location — mirrors the map pin, amber when the
+                address falls outside the supplier's pickup zone. */}
             {searchCommitted && (
               <div className="space-y-1.5">
-                <p className="flex items-center gap-1.5 px-1 text-[10px] font-bold uppercase tracking-wider text-blue-600">
+                <p
+                  className={`flex items-center gap-1.5 px-1 text-[10px] font-bold uppercase tracking-wider ${
+                    searchOutOfRange ? 'text-amber-600' : 'text-blue-600'
+                  }`}
+                >
                   <MapPin className="size-3" /> Your location
                 </p>
                 <ul className="space-y-1">
@@ -981,6 +988,7 @@ function PickupSelectModalContent({
                       role="button"
                       tabIndex={0}
                       aria-pressed={true}
+                      data-tone={searchOutOfRange ? 'warning' : 'selected'}
                       onClick={() => selectSearchResult({ formatted: addressPreview || searchQuery, latitude: searchMarker?.lat ?? null, longitude: searchMarker?.lng ?? null, city: '', country: '', region: '' })}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
@@ -988,18 +996,39 @@ function PickupSelectModalContent({
                           selectSearchResult({ formatted: addressPreview || searchQuery, latitude: searchMarker?.lat ?? null, longitude: searchMarker?.lng ?? null, city: '', country: '', region: '' })
                         }
                       }}
-                      className="flex w-full items-start gap-2.5 rounded-lg border border-blue-300 bg-blue-50 px-3 py-2.5 text-left ring-1 ring-blue-400/40"
+                      className={`flex w-full items-start gap-2.5 rounded-lg border px-3 py-2.5 text-left ring-1 ${
+                        searchOutOfRange
+                          ? 'border-amber-300 bg-amber-50 ring-amber-400/40'
+                          : 'border-blue-300 bg-blue-50 ring-blue-400/40'
+                      }`}
                     >
-                      <span className="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full border border-blue-500 bg-blue-500 text-white">
-                        <Check className="size-2.5" />
+                      <span
+                        className={`mt-0.5 grid size-4 shrink-0 place-items-center rounded-full border text-white ${
+                          searchOutOfRange ? 'border-amber-500 bg-amber-500' : 'border-blue-500 bg-blue-500'
+                        }`}
+                      >
+                        {searchOutOfRange ? <AlertTriangle className="size-2.5" /> : <Check className="size-2.5" />}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-semibold text-blue-800">
+                        <span
+                          className={`block truncate text-sm font-semibold ${
+                            searchOutOfRange ? 'text-amber-900' : 'text-blue-800'
+                          }`}
+                        >
                           {searchQuery || addressPreview}
                         </span>
                         {searchMarker && (
-                          <span className="block truncate font-mono text-[10px] text-blue-500/80">
+                          <span
+                            className={`block truncate font-mono text-[10px] ${
+                              searchOutOfRange ? 'text-amber-600/80' : 'text-blue-500/80'
+                            }`}
+                          >
                             {searchMarker.lat.toFixed(5)}, {searchMarker.lng.toFixed(5)}
+                          </span>
+                        )}
+                        {searchOutOfRange && (
+                          <span className="mt-0.5 block text-[11px] font-semibold text-amber-700">
+                            Outside pickup zone
                           </span>
                         )}
                       </span>
@@ -1010,7 +1039,11 @@ function PickupSelectModalContent({
                           handleClearSearch()
                         }}
                         aria-label="Remove your location"
-                        className="shrink-0 rounded p-1 text-blue-400 transition-colors hover:bg-blue-100 hover:text-blue-600"
+                        className={`shrink-0 rounded p-1 transition-colors ${
+                          searchOutOfRange
+                            ? 'text-amber-500 hover:bg-amber-100 hover:text-amber-700'
+                            : 'text-blue-400 hover:bg-blue-100 hover:text-blue-600'
+                        }`}
                       >
                         <X size={13} />
                       </button>
@@ -1104,7 +1137,7 @@ function PickupSelectModalContent({
                       <div>
                         <p className="mt-1.5 flex items-start gap-1.5 text-sm font-medium leading-relaxed text-amber-800">
                           <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-500" />
-                          This location is outside the pickup zone. You can still use it, but please remember to choose a pickup location within the pickup zone before your tour date.
+                          Your selected location is outside the pickup zone. You can still continue, but please choose an in-zone pickup location before your tour date.
                         </p>
                         <label className="mt-2 flex cursor-pointer items-start gap-2">
                           <input

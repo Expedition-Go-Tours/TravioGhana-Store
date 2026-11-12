@@ -86,6 +86,19 @@ const zonePoint = {
   query: '',
 }
 
+// A location-only pickup area (no drawn polygon) with a 15 km configured
+// radius — the map draws a 15 km circle, so validation must use it too.
+const radiusZonePoint = {
+  id: 'zone-radius',
+  kind: 'zone' as const,
+  name: 'Oasis Park',
+  address: 'Accra, Ghana',
+  lat: 5.56,
+  lng: -0.185,
+  radiusKm: 15,
+  query: '',
+}
+
 const outsideSearchResult: LocationResult = {
   ...searchResult,
   formatted: 'Somewhere Far, Ghana',
@@ -108,9 +121,22 @@ beforeEach(() => {
 })
 
 describe('PickupSelectModal search', () => {
+  it('closes the modal from the header close button', () => {
+    const onClose = vi.fn()
+    render(<PickupSelectModal {...baseProps} onClose={onClose} />)
+    fireEvent.click(screen.getByRole('button', { name: /close pickup selector/i }))
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('reveals the paste-link action when the search field is focused', () => {
+    render(<PickupSelectModal {...baseProps} />)
+    fireEvent.focus(screen.getByPlaceholderText('Search your hotel or location'))
+    expect(screen.getByText(/Paste a Google Maps link/i)).toBeInTheDocument()
+  })
+
   it('runs the Geoapify search on typing and shows suggestions', () => {
     render(<PickupSelectModal {...baseProps} />)
-    const input = screen.getByPlaceholderText('Search for your address…')
+    const input = screen.getByPlaceholderText('Search your hotel or location')
 
     fireEvent.change(input, { target: { value: 'Accra Mall' } })
 
@@ -122,7 +148,7 @@ describe('PickupSelectModal search', () => {
     const onContactChange = vi.fn()
     const onClose = vi.fn()
     render(<PickupSelectModal {...baseProps} onContactChange={onContactChange} onClose={onClose} />)
-    const input = screen.getByPlaceholderText('Search for your address…')
+    const input = screen.getByPlaceholderText('Search your hotel or location')
 
     fireEvent.change(input, { target: { value: 'Accra Mall' } })
     fireEvent.click(screen.getByText('Accra Mall, Spintex Road, Accra, Ghana'))
@@ -146,7 +172,7 @@ describe('PickupSelectModal search', () => {
     render(<PickupSelectModal {...baseProps} />)
     const onUserPointChange = mapProps.current.onUserPointChange as (lat: number, lng: number) => void
 
-    fireEvent.change(screen.getByPlaceholderText('Search for your address…'), { target: { value: 'x' } })
+    fireEvent.change(screen.getByPlaceholderText('Search your hotel or location'), { target: { value: 'x' } })
     expect(screen.queryByText('Use this as your pickup location?')).not.toBeInTheDocument()
 
     act(() => {
@@ -170,7 +196,7 @@ describe('PickupSelectModal search', () => {
 
   it('shows the pinned location in the left panel alongside the map pin', () => {
     render(<PickupSelectModal {...baseProps} />)
-    const input = screen.getByPlaceholderText('Search for your address…')
+    const input = screen.getByPlaceholderText('Search your hotel or location')
 
     fireEvent.change(input, { target: { value: 'Accra Mall' } })
     fireEvent.click(screen.getByText('Accra Mall, Spintex Road, Accra, Ghana'))
@@ -195,7 +221,7 @@ describe('PickupSelectModal search', () => {
     })
     const onContactChange = vi.fn()
     render(<PickupSelectModal {...baseProps} onContactChange={onContactChange} />)
-    const input = screen.getByPlaceholderText('Search for your address…')
+    const input = screen.getByPlaceholderText('Search your hotel or location')
 
     fireEvent.change(input, { target: { value: 'Kaneshie Market, Accra' } })
     fireEvent.click(screen.getByText(/Use .* as your pickup location/))
@@ -211,7 +237,7 @@ describe('PickupSelectModal search', () => {
     expect(onContactChange).toHaveBeenCalledWith('pickupLng', null)
   })
 
-  it('shows the pin tooltip name as the final location on multi-pickup tours', () => {
+  it('shows the pin tooltip name as the final location on multi-point tours', () => {
     const onContactChange = vi.fn()
     const onClose = vi.fn()
     render(
@@ -220,8 +246,8 @@ describe('PickupSelectModal search', () => {
         onContactChange={onContactChange}
         onClose={onClose}
         points={[
-          { id: 'zone-0', kind: 'zone', name: 'Osu', address: 'Osu, Accra, Ghana', lat: 5.56, lng: -0.18, query: '' },
-          { id: 'zone-1', kind: 'zone', name: 'Labone', address: 'Labone, Accra, Ghana', lat: 5.57, lng: -0.17, query: '' },
+          { id: 'point-0', kind: 'point', name: 'Osu', address: 'Osu, Accra, Ghana', lat: 5.56, lng: -0.18, query: '' },
+          { id: 'point-1', kind: 'point', name: 'Labone', address: 'Labone, Accra, Ghana', lat: 5.57, lng: -0.17, query: '' },
         ]}
       />,
     )
@@ -236,8 +262,8 @@ describe('PickupSelectModal search', () => {
 
     // Confirming commits the tooltip name as the traveler's pickup location.
     fireEvent.click(screen.getByRole('button', { name: /Yes, this is it/ }))
-    expect(onContactChange).toHaveBeenCalledWith('pickupArea', 'Osu')
-    expect(onContactChange).toHaveBeenCalledWith('location', '')
+    expect(onContactChange).toHaveBeenCalledWith('pickupArea', '')
+    expect(onContactChange).toHaveBeenCalledWith('location', 'Osu')
     expect(onClose).toHaveBeenCalled()
   })
 
@@ -262,13 +288,28 @@ describe('PickupSelectModal search', () => {
       <PickupSelectModal
         {...baseProps}
         points={[
-          { id: 'zone-0', kind: 'zone', name: 'Osu', address: 'Osu, Accra, Ghana', lat: 5.56, lng: -0.18, query: '' },
-          { id: 'zone-1', kind: 'zone', name: 'Labone', address: 'Labone, Accra, Ghana', lat: 5.57, lng: -0.17, query: '' },
+          { id: 'point-0', kind: 'point', name: 'Kotoka Airport', address: 'Kotoka Airport, Accra, Ghana', lat: 5.605, lng: -0.166, query: '' },
+          { id: 'point-1', kind: 'point', name: 'Accra Mall', address: 'Accra Mall, Accra, Ghana', lat: 5.62, lng: -0.173, query: '' },
         ]}
       />,
     )
-    expect(screen.queryByPlaceholderText('Search for your address…')).not.toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('Search your hotel or location')).not.toBeInTheDocument()
     expect(screen.getByText(/These are the available pickup locations — please choose from those options only/i)).toBeInTheDocument()
+  })
+
+  it('keeps the search bar available on multi-zone tours', () => {
+    render(
+      <PickupSelectModal
+        {...baseProps}
+        points={[
+          zonePoint,
+          { ...zonePoint, id: 'zone-1', name: 'Labone', address: 'Labone, Accra, Ghana', lat: 5.57, lng: -0.17 },
+        ]}
+      />,
+    )
+    expect(screen.getByPlaceholderText('Search your hotel or location')).toBeInTheDocument()
+    expect(screen.queryByText(/These are the available pickup locations/i)).not.toBeInTheDocument()
+    expect(screen.getByText('Pickup zones')).toBeInTheDocument()
   })
 
   it('allows a blue-pin drop outside the pickup zone with a caution', () => {
@@ -306,13 +347,14 @@ describe('PickupSelectModal search', () => {
     })
     const onContactChange = vi.fn()
     render(<PickupSelectModal {...baseProps} points={[zonePoint]} onContactChange={onContactChange} />)
-    const input = screen.getByPlaceholderText('Search for your address…')
+    const input = screen.getByPlaceholderText('Search your hotel or location')
 
     fireEvent.change(input, { target: { value: 'Somewhere Far' } })
     fireEvent.click(screen.getByText('Somewhere Far, Ghana'))
 
     // A caution is shown, but the location is committed (left-panel row + Select).
-    expect(screen.getByText(/outside the pickup zone/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/outside the pickup zone/i).length).toBeGreaterThan(0)
+    expect(screen.getByText('Outside pickup zone')).toBeInTheDocument()
     expect(screen.getByText('Your location')).toBeInTheDocument()
     const select = screen.getByRole('button', { name: /Select/ })
     expect(select).not.toBeDisabled()
@@ -321,6 +363,77 @@ describe('PickupSelectModal search', () => {
     expect(onContactChange).toHaveBeenCalledWith('location', 'Somewhere Far, Ghana')
     expect(onContactChange).toHaveBeenCalledWith('pickupLat', 5.9)
     expect(onContactChange).toHaveBeenCalledWith('pickupLng', -0.5)
+  })
+
+  it('uses the pickup area radius when judging a searched location', () => {
+    // Accra Mall is ~6.8 km from the zone centre — inside a 15 km area, but
+    // outside the 1 km fallback the modal used to apply.
+    render(<PickupSelectModal {...baseProps} points={[radiusZonePoint]} />)
+    const input = screen.getByPlaceholderText('Search your hotel or location')
+
+    fireEvent.change(input, { target: { value: 'Accra Mall' } })
+    fireEvent.click(screen.getByText(searchResult.formatted))
+
+    expect(screen.queryByText(/outside the pickup zone/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/within the pickup zone/i)).toBeInTheDocument()
+  })
+
+  it('falls back to the 1 km radius when the area has none', () => {
+    render(
+      <PickupSelectModal
+        {...baseProps}
+        points={[{ ...radiusZonePoint, radiusKm: null }]}
+      />,
+    )
+    const input = screen.getByPlaceholderText('Search your hotel or location')
+
+    fireEvent.change(input, { target: { value: 'Accra Mall' } })
+    fireEvent.click(screen.getByText(searchResult.formatted))
+
+    expect(screen.getAllByText(/outside the pickup zone/i).length).toBeGreaterThan(0)
+    expect(screen.queryByText(/within the pickup zone/i)).not.toBeInTheDocument()
+  })
+
+  it('uses the pickup area radius when judging a dragged pin', () => {
+    render(<PickupSelectModal {...baseProps} points={[radiusZonePoint]} />)
+    const onUserPointChange = mapProps.current.onUserPointChange as (lat: number, lng: number) => void
+
+    // ~4.5 km from the centre — inside the 15 km radius.
+    act(() => {
+      onUserPointChange(5.6, -0.185)
+    })
+    expect(screen.queryByText(/outside the pickup zone/i)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Confirm dragged location' })).not.toBeDisabled()
+
+    // ~21 km away — genuinely outside the 15 km radius.
+    act(() => {
+      onUserPointChange(5.75, -0.185)
+    })
+    expect(screen.getByText(/outside the pickup zone/i)).toBeInTheDocument()
+  })
+
+  it('clears the out-of-zone caution after selecting an in-zone pickup zone', () => {
+    mockAutocomplete.mockReturnValue({
+      search: vi.fn(),
+      retry: vi.fn(),
+      clear: vi.fn(),
+      results: [outsideSearchResult],
+      loading: false,
+      error: null,
+    })
+    render(<PickupSelectModal {...baseProps} points={[zonePoint]} />)
+    const input = screen.getByPlaceholderText('Search your hotel or location')
+
+    fireEvent.change(input, { target: { value: 'Somewhere Far' } })
+    fireEvent.click(screen.getByText('Somewhere Far, Ghana'))
+    expect(screen.getAllByText(/outside the pickup zone/i).length).toBeGreaterThan(0)
+    expect(screen.getByText('Outside pickup zone')).toBeInTheDocument()
+
+    // Picking the listed zone replaces the searched address — its caution must
+    // disappear so the modal does not show "outside zone" over a valid choice.
+    fireEvent.click(screen.getByText('Osu'))
+    expect(screen.queryByText(/outside the pickup zone/i)).not.toBeInTheDocument()
+    expect(screen.queryByText('Outside pickup zone')).not.toBeInTheDocument()
   })
 
   it('marks a tapped pickup point with the green check pin instead of the blue pin', () => {
@@ -452,7 +565,7 @@ describe('PickupSelectModal search', () => {
     mockReverseGeocode.mockResolvedValueOnce(null)
     const onContactChange = vi.fn()
     render(<PickupSelectModal {...baseProps} onContactChange={onContactChange} />)
-    const input = screen.getByPlaceholderText('Search for your address…')
+    const input = screen.getByPlaceholderText('Search your hotel or location')
 
     fireEvent.change(input, { target: { value: 'Kaneshie Market' } })
     fireEvent.click(screen.getByText(/Paste a Google Maps link/))
@@ -485,7 +598,7 @@ describe('PickupSelectModal search', () => {
     })
     const onContactChange = vi.fn()
     render(<PickupSelectModal {...baseProps} onContactChange={onContactChange} />)
-    const input = screen.getByPlaceholderText('Search for your address…')
+    const input = screen.getByPlaceholderText('Search your hotel or location')
 
     fireEvent.change(input, { target: { value: 'Kaneshie Market' } })
     fireEvent.click(screen.getByText(/Paste a Google Maps link/))
@@ -528,7 +641,7 @@ describe('PickupSelectModal search', () => {
         onContactChange={onContactChange}
       />,
     )
-    const input = screen.getByPlaceholderText('Search for your address…')
+    const input = screen.getByPlaceholderText('Search your hotel or location')
 
     fireEvent.change(input, { target: { value: 'Kaneshie Market' } })
     fireEvent.click(screen.getByText(/Search Google Maps/))
@@ -547,7 +660,7 @@ describe('PickupSelectModal search', () => {
 
   it('does not offer the Google Maps search when a suggestion matches what was typed', () => {
     render(<PickupSelectModal {...baseProps} />)
-    fireEvent.change(screen.getByPlaceholderText('Search for your address…'), { target: { value: 'Accra Mall' } })
+    fireEvent.change(screen.getByPlaceholderText('Search your hotel or location'), { target: { value: 'Accra Mall' } })
 
     expect(screen.getByText('Accra Mall, Spintex Road, Accra, Ghana')).toBeInTheDocument()
     expect(screen.queryByText(/Search Google Maps/)).not.toBeInTheDocument()
@@ -568,7 +681,7 @@ describe('PickupSelectModal search', () => {
     })
     const onContactChange = vi.fn()
     render(<PickupSelectModal {...baseProps} onContactChange={onContactChange} />)
-    const input = screen.getByPlaceholderText('Search for your address…')
+    const input = screen.getByPlaceholderText('Search your hotel or location')
 
     fireEvent.change(input, { target: { value: 'Kaneshie Market' } })
 
@@ -620,7 +733,7 @@ describe('PickupSelectModal search', () => {
     })
     const onContactChange = vi.fn()
     render(<PickupSelectModal {...baseProps} onContactChange={onContactChange} />)
-    const input = screen.getByPlaceholderText('Search for your address…')
+    const input = screen.getByPlaceholderText('Search your hotel or location')
 
     fireEvent.change(input, { target: { value: 'Four Points by Sheraton' } })
 

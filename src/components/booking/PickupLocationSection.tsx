@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Check, MapPin, X, Loader2, AlertCircle, Info, ExternalLink } from 'lucide-react'
+import { Check, MapPin, X, Loader2, AlertCircle, AlertTriangle, Info, ExternalLink, Search, ChevronRight } from 'lucide-react'
+import useMediaQuery from '@/hooks/useMediaQuery'
 import type { PickupAreaShape } from '@/lib/pickupZone'
 import { findPickupAreaForAddress, distanceMeters, hasLocationOnlyAreas, pickupZoneStatus, type PickupZoneStatus } from '@/lib/pickupZone'
 import type { ResolveTourSource, ResolvedTourPoint } from '@/lib/resolvePoints'
@@ -83,6 +84,11 @@ export default function PickupLocationSection({
   resolvingPoints,
   onOpenMap,
 }: PickupLocationSectionProps) {
+  // On phones the address search opens the full-screen pickup modal (search
+  // results, Google fallback, paste-link, zones list and map) instead of the
+  // inline dropdown. Desktop keeps the inline picker.
+  const isMobile = useMediaQuery('(max-width: 768px)')
+
   // ── Mode detection ──
   // Stabilised with useMemo so the fallback `[]` never creates a new array
   // identity on every render (which would churn the memos/effect below).
@@ -178,6 +184,11 @@ export default function PickupLocationSection({
         : null,
     [zoneStatus, contact.pickupLat, contact.pickupLng, contact.location, pickupAreas],
   )
+
+  // Out-of-zone locations are allowed (the booking can continue), but the
+  // trigger must not show a green "selected" check next to the amber caution.
+  const pickupOutOfZone = zoneStatus === 'outside'
+  const hasPickupSelection = !!(contact.location || contact.pickupArea)
 
   // ── Meeting point coordinates (for TravelTimeChip) ──
   const meetingPointCoords = useMemo(() => {
@@ -634,25 +645,103 @@ export default function PickupLocationSection({
             {/* Search + map appears right under "Yes" when selected */}
             {pickupChoice === 'now' && (
               <div className="mt-4 space-y-4">
-                {/* Search bar */}
-                <LocationPicker
-                  value={contact.location}
-                  onChange={(v) => onContactChange('location', v)}
-                  onCoordsChange={(lat, lng) => {
-                    onContactChange('pickupLat', lat)
-                    onContactChange('pickupLng', lng)
-                    if (lat != null && lng != null) {
-                      onContactChange('pickupArea', '')
-                      onSetTouched((t) => ({ ...t, location: true }))
-                    }
-                  }}
-                  onBlur={() => onSetTouched((t) => ({ ...t, location: true }))}
-                  placeholder="Search for hotel, address, etc."
-                  valid={locationValid}
-                  error={locationInvalidMessage}
-                  searchOrigin={googleSearchOrigin}
-                  minimal
-                />
+                {/* Search bar — phones open the full-screen search modal;
+                    desktop keeps the inline autocomplete. */}
+                {isMobile ? (
+                  <div>
+                    <button
+                      type="button"
+                      onClick={onOpenMap}
+                      aria-haspopup="dialog"
+                      aria-label="Search for pickup location"
+                      aria-invalid={!!locationInvalidMessage}
+                      data-tone={pickupOutOfZone ? 'warning' : hasPickupSelection && locationValid ? 'success' : 'neutral'}
+                      className={`group flex w-full items-center gap-3 rounded-xl border bg-white px-3.5 py-3 text-left shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 ${
+                        pickupOutOfZone
+                          ? 'border-amber-300 bg-amber-50/40 hover:border-amber-400 focus-visible:ring-amber-500/25'
+                          : 'border-slate-200 hover:border-emerald-300 focus-visible:ring-emerald-500/30'
+                      }`}
+                    >
+                      <Search
+                        className={`size-[18px] shrink-0 ${
+                          hasPickupSelection
+                            ? pickupOutOfZone
+                              ? 'text-amber-500'
+                              : 'text-[#179237]'
+                            : 'text-slate-400'
+                        }`}
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span
+                          className={`text-sm font-medium leading-snug ${
+                            hasPickupSelection ? 'text-slate-900 line-clamp-2' : 'block text-slate-500'
+                          }`}
+                        >
+                          {hasPickupSelection
+                            ? contact.location || contact.pickupArea
+                            : 'Search your hotel or location'}
+                        </span>
+                        {hasPickupSelection && (
+                          <span
+                            className={`mt-0.5 block text-xs ${
+                              pickupOutOfZone
+                                ? 'text-amber-700'
+                                : locationValid
+                                  ? 'text-emerald-700'
+                                  : 'text-slate-400'
+                            }`}
+                          >
+                            {pickupOutOfZone
+                              ? 'Outside pickup zone'
+                              : locationValid
+                                ? 'Pickup location selected'
+                                : 'Tap to choose a verified location'}
+                          </span>
+                        )}
+                      </span>
+                      {hasPickupSelection ? (
+                        pickupOutOfZone ? (
+                          <AlertTriangle className="size-4 shrink-0 text-amber-500" />
+                        ) : (
+                          <Check className="size-4 shrink-0 text-emerald-500" />
+                        )
+                      ) : (
+                        <ChevronRight className="size-4 shrink-0 text-slate-400 transition-transform group-hover:translate-x-0.5" />
+                      )}
+                    </button>
+                    {locationInvalidMessage && (
+                      <p
+                        className={`mt-1 text-sm font-medium ${
+                          locationInvalidMessage.includes('out of range from the pickup zone')
+                            ? 'text-rose-600'
+                            : 'text-slate-600'
+                        }`}
+                      >
+                        {locationInvalidMessage}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <LocationPicker
+                    value={contact.location}
+                    onChange={(v) => onContactChange('location', v)}
+                    onCoordsChange={(lat, lng) => {
+                      onContactChange('pickupLat', lat)
+                      onContactChange('pickupLng', lng)
+                      if (lat != null && lng != null) {
+                        onContactChange('pickupArea', '')
+                        onSetTouched((t) => ({ ...t, location: true }))
+                      }
+                    }}
+                    onBlur={() => onSetTouched((t) => ({ ...t, location: true }))}
+                    placeholder="Search for hotel, address, etc."
+                    valid={locationValid && !pickupOutOfZone}
+                    outOfZone={pickupOutOfZone}
+                    error={locationInvalidMessage}
+                    searchOrigin={googleSearchOrigin}
+                    minimal
+                  />
+                )}
 
                 {/* Live zone verdict */}
                 {!contact.pickupArea && zoneStatus === 'in_area' && matchedArea && (
@@ -677,7 +766,7 @@ export default function PickupLocationSection({
                     from={{ lat: contact.pickupLat, lng: contact.pickupLng }}
                     points={designatedPoints}
                     tone="warning"
-                    message="This location is outside the pickup zone. You can still use it, but please remember to choose a pickup location within the pickup zone before your tour date. Nearby pickup zones:"
+                    message="Your selected location is outside the pickup zone. Choose an in-zone pickup location before your tour date. Nearby pickup zones:"
                   />
                 )}
                 {!contact.pickupArea && zoneStatus === 'excluded' && matchedArea && (

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import PickupLocationSection, { type PickupLocationSectionTour } from './PickupLocationSection'
 import type { ResolvedTourPoint } from '@/lib/resolvePoints'
@@ -36,6 +36,46 @@ const baseProps = {
 function point(id: string, name: string, lat: number, lng: number): ResolvedTourPoint {
   return { id, kind: 'point', name, address: `${name}, Accra, Ghana`, lat, lng, query: '' }
 }
+
+/** jsdom has no matchMedia; the section uses it to switch to the mobile
+ *  full-screen search trigger. */
+function setViewport(matches: boolean) {
+  Object.defineProperty(window, 'matchMedia', {
+    configurable: true,
+    writable: true,
+    value: (query: string) => ({
+      matches,
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    }),
+  })
+}
+
+const zoneTour: PickupLocationSectionTour = {
+  meetingMode: 'pickup',
+  pickupType: 'area',
+  pickupAreas: [{ name: 'Osu', polygon: DRAWN_ZONE }],
+}
+
+const zonePoint: ResolvedTourPoint = {
+  id: 'z0',
+  kind: 'zone',
+  name: 'Osu',
+  address: 'Osu, Accra',
+  lat: 5.56,
+  lng: -0.185,
+  polygon: DRAWN_ZONE,
+  query: '',
+}
+
+afterEach(() => {
+  Reflect.deleteProperty(window, 'matchMedia')
+})
 
 describe('PickupLocationSection', () => {
   it('renders a single pickup point read-only — no search, no radio — and auto-fills it', () => {
@@ -127,6 +167,88 @@ describe('PickupLocationSection', () => {
     fireEvent.click(screen.getByText(/Yes, I can add it now/i))
     const card = screen.getByTestId('out-of-range')
     expect(card).toHaveAttribute('data-tone', 'warning')
-    expect(card).toHaveTextContent(/remember to choose a pickup location within the pickup zone/i)
+    expect(card).toHaveTextContent(/choose an in-zone pickup location before your tour date/i)
+  })
+
+  it('shows an amber trigger state when the selected location is outside the zone', () => {
+    setViewport(true)
+    render(
+      <PickupLocationSection
+        {...baseProps}
+        tour={zoneTour}
+        locationValid
+        contact={{ ...baseContact, location: 'Ejisu', pickupLat: 6.7, pickupLng: -1.6 }}
+        resolvedPoints={[zonePoint]}
+        mapTour={zoneTour}
+      />,
+    )
+
+    fireEvent.click(screen.getByText(/Yes, I can add it now/i))
+
+    const trigger = screen.getByRole('button', { name: /search for pickup location/i })
+    expect(trigger).toHaveAttribute('data-tone', 'warning')
+    expect(trigger).toHaveTextContent('Outside pickup zone')
+    expect(trigger).not.toHaveTextContent('Pickup location selected')
+  })
+
+  it('shows a green trigger state when the selected location is inside the zone', () => {
+    setViewport(true)
+    render(
+      <PickupLocationSection
+        {...baseProps}
+        tour={zoneTour}
+        locationValid
+        contact={{ ...baseContact, location: 'Osu', pickupLat: 5.56, pickupLng: -0.185 }}
+        resolvedPoints={[zonePoint]}
+        mapTour={zoneTour}
+      />,
+    )
+
+    fireEvent.click(screen.getByText(/Yes, I can add it now/i))
+
+    const trigger = screen.getByRole('button', { name: /search for pickup location/i })
+    expect(trigger).toHaveAttribute('data-tone', 'success')
+    expect(trigger).toHaveTextContent('Pickup location selected')
+  })
+
+  it('opens the full-screen search modal from the mobile search trigger', () => {
+    setViewport(true)
+    const onOpenMap = vi.fn()
+    render(
+      <PickupLocationSection
+        {...baseProps}
+        tour={zoneTour}
+        onOpenMap={onOpenMap}
+        resolvedPoints={[zonePoint]}
+        mapTour={zoneTour}
+      />,
+    )
+
+    fireEvent.click(screen.getByText(/Yes, I can add it now/i))
+
+    // The inline picker is replaced by a modal-opening search field.
+    expect(screen.queryByPlaceholderText('Search for hotel, address, etc.')).not.toBeInTheDocument()
+    const trigger = screen.getByRole('button', { name: /search for pickup location/i })
+    expect(trigger).toHaveTextContent('Search your hotel or location')
+
+    fireEvent.click(trigger)
+    expect(onOpenMap).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps the inline location picker on desktop', () => {
+    setViewport(false)
+    render(
+      <PickupLocationSection
+        {...baseProps}
+        tour={zoneTour}
+        resolvedPoints={[zonePoint]}
+        mapTour={zoneTour}
+      />,
+    )
+
+    fireEvent.click(screen.getByText(/Yes, I can add it now/i))
+
+    expect(screen.getByPlaceholderText('Search for hotel, address, etc.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /search for pickup location/i })).not.toBeInTheDocument()
   })
 })

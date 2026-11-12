@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Search, MapPin, Loader2, AlertTriangle, RefreshCw, Check, X, Pencil, Link2, LocateFixed } from 'lucide-react'
+import { Search, MapPin, Loader2, AlertTriangle, RefreshCw, Check, X, Pencil, LocateFixed } from 'lucide-react'
 import { toast } from 'sonner'
 import { useLocationAutocomplete, type LocationSuggestion } from '../../hooks/useLocationAutocomplete'
 import { useLocationSharing } from '../../hooks/useLocationSharing'
@@ -7,6 +7,7 @@ import { reverseGeocode } from '../../lib/locations'
 import { searchGhanaLocations, type GhanaMapPlace } from '../../lib/serpApiMapsSearch'
 import { hasRelevantLocationSuggestion, isClearlyOutsideGhana } from '../../lib/locationRelevance'
 import PasteMapsLinkPanel, { type PastedPinLocation } from './PasteMapsLinkPanel'
+import LocationFallbackActions from './LocationFallbackActions'
 
 interface LocationPickerProps {
   value: string
@@ -15,6 +16,9 @@ interface LocationPickerProps {
   onCoordsChange?: (lat: number | null, lng: number | null) => void
   onBlur?: () => void
   valid?: boolean
+  /** True when the chosen address is outside the pickup zone — allowed, but
+      styled as an amber caution instead of a green "valid" field. */
+  outOfZone?: boolean
   error?: string
   placeholder?: string
   disabled?: boolean
@@ -45,6 +49,7 @@ export default function LocationPicker({
   onCoordsChange,
   onBlur,
   valid,
+  outOfZone,
   error,
   placeholder = 'e.g. Accra, Ghana',
   disabled,
@@ -337,9 +342,11 @@ export default function LocationPicker({
   const inputClass = `w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:ring-2 ${
     error
       ? 'border-rose-300 focus:border-rose-400 focus:ring-rose-100'
-      : valid
-        ? 'border-emerald-300 focus:border-emerald-400 focus:ring-emerald-100'
-        : 'border-slate-200 focus:border-[#179237] focus:ring-[#179237]/15'
+      : outOfZone
+        ? 'border-amber-300 focus:border-amber-400 focus:ring-amber-100'
+        : valid
+          ? 'border-emerald-300 focus:border-emerald-400 focus:ring-emerald-100'
+          : 'border-slate-200 focus:border-[#179237] focus:ring-[#179237]/15'
   } ${disabled ? 'cursor-not-allowed bg-slate-50 text-slate-400' : ''}`
 
   const sub = (s: LocationSuggestion) => [s.city, s.region, s.country].filter(Boolean).join(', ')
@@ -410,13 +417,13 @@ export default function LocationPicker({
               onApply={applyPastedLocation}
             />
           ) : (
-          <ul
-            id="location-listbox"
-            ref={listRef}
-            role="listbox"
-            className="absolute z-30 mt-1 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg shadow-slate-200/60"
-            style={{ maxHeight: 240 }}
-          >
+          <div className="absolute z-30 mt-1 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-200/60">
+            <ul
+              id="location-listbox"
+              ref={listRef}
+              role="listbox"
+              className="max-h-[240px] overflow-y-auto py-1"
+            >
             {loading && (
               <li className="flex items-center gap-2 px-4 py-3 text-sm text-slate-500">
                 <Loader2 size={14} className="animate-spin text-[#179237]" />
@@ -478,23 +485,6 @@ export default function LocationPicker({
                 Searching Google Maps…
               </li>
             )}
-            {googleState === 'idle' && !loading && !hasRelevantLocationSuggestion(query, visibleResults) && query.trim().length >= 3 && (
-              <li
-                role="option"
-                aria-selected={false}
-                onClick={() => void runGoogleSearch()}
-                onMouseDown={(e) => e.preventDefault()}
-                className="cursor-pointer border-t border-slate-100 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50"
-              >
-                <div className="flex items-start gap-2.5">
-                  <Search size={14} className="mt-0.5 shrink-0 text-slate-400" />
-                  <div className="min-w-0">
-                    <div className="truncate font-medium">Can’t find your location? Search Google Maps</div>
-                    <div className="mt-0.5 text-xs text-slate-400">We’ll look it up on Google Maps in Ghana.</div>
-                  </div>
-                </div>
-              </li>
-            )}
             {googleState === 'done' && googleResults.length > 0 && (
               <>
                 <li className="border-t border-slate-100 px-4 pb-1 pt-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -540,25 +530,6 @@ export default function LocationPicker({
                 </button>
               </li>
             )}
-            {/* Paste a Google Maps link — pin the exact spot from the link. */}
-            <li
-              role="option"
-              aria-selected={false}
-              onClick={() => {
-                setPasteOpen(true)
-                setHighlightedIndex(-1)
-              }}
-              onMouseDown={(e) => e.preventDefault()}
-              className="cursor-pointer border-t border-slate-100 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50"
-            >
-              <div className="flex items-start gap-2.5">
-                <Link2 size={14} className="mt-0.5 shrink-0 text-slate-400" />
-                <div className="min-w-0">
-                  <div className="truncate font-medium">Can’t find your location? Paste a Google Maps link</div>
-                  <div className="mt-0.5 text-xs text-slate-400">We’ll place the pin at the exact spot from the link.</div>
-                </div>
-              </div>
-            </li>
             {/* Manual fallback: whenever the user has typed a location, let them
                 commit exactly what they typed — even when autocomplete returned
                 nothing or the lookup failed. */}
@@ -582,7 +553,22 @@ export default function LocationPicker({
                 </div>
               </li>
             )}
-          </ul>
+            </ul>
+            <LocationFallbackActions
+              query={query}
+              showSearch={
+                googleState === 'idle' &&
+                !loading &&
+                !hasRelevantLocationSuggestion(query, visibleResults) &&
+                query.trim().length >= 3
+              }
+              onSearch={() => void runGoogleSearch()}
+              onPaste={() => {
+                setPasteOpen(true)
+                setHighlightedIndex(-1)
+              }}
+            />
+          </div>
           )}
         </div>
       )}
