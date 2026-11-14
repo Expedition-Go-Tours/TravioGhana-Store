@@ -108,6 +108,47 @@
   white-space: nowrap;
 }
 
+/*
+ * The host's marketplace totals, shown under the host name when this tour has
+ * no reviews of its own. Deliberately smaller and greyer than the tour's own
+ * rating: it is evidence about the operator, not about this tour.
+ */
+.tour-header-operator-proof {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #64748b;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tour-header-operator-proof:hover {
+  color: #0f172a;
+  text-decoration: underline;
+}
+
+span.tour-header-operator-proof {
+  cursor: default;
+}
+
+span.tour-header-operator-proof:hover {
+  color: #64748b;
+  text-decoration: none;
+}
+
+.tour-header-operator-star {
+  flex: none;
+  color: #f97316;
+  fill: #f97316;
+}
+
 .tour-header-info-icon-star {
   color: #f97316;
   fill: #f97316;

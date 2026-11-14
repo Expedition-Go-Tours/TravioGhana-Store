@@ -18,6 +18,15 @@ interface TourHeaderProps {
    */
   verifiedReviewCount?: number | null
   bookingsLast7Days?: number | null
+  /**
+   * The operator's marketplace totals (TripAdvisor / GetYourGuide / Google),
+   * shown only when this tour has no reviews of its own. 27 of the 34 tours
+   * have no matched listing, and printing "0 reviews" for them threw away the
+   * 4.9 from 1,204 reviews the same operator already holds. Labelled as the
+   * host's rating, never as this tour's.
+   */
+  operatorProof?: { rating: number | null; reviewCount: number } | null
+  onOperatorReviewsClick?: () => void
 }
 
 export default function TourHeader({
@@ -29,6 +38,8 @@ export default function TourHeader({
   onReviewsClick,
   verifiedReviewCount = null,
   bookingsLast7Days = null,
+  operatorProof = null,
+  onOperatorReviewsClick,
 }: TourHeaderProps) {
   const { t } = useTranslation()
   // Headline value follows the "4.3 (900)" review-product convention; without
@@ -38,6 +49,11 @@ export default function TourHeader({
   // sends null (not 0) when the sample is too small to claim anything.
   const verifiedCount = verifiedReviewCount ?? 0
   const recentBookings = bookingsLast7Days ?? 0
+  const operatorCount = operatorProof?.reviewCount ?? 0
+  const operatorRating = Number(operatorProof?.rating) || 0
+  // Only when this tour cannot speak for itself. A tour that carries its own
+  // reviews must never borrow the operator's number.
+  const showOperatorProof = !hasRating && reviewCount === 0 && operatorCount > 0
 
   return (
     <header className="tour-header-new">
@@ -57,8 +73,13 @@ export default function TourHeader({
                 {rating.toFixed(1)}
                 <span className="tour-header-info-count"> ({reviewCount.toLocaleString()})</span>
               </span>
-            ) : (
+            ) : reviewCount > 0 ? (
               <span>{reviewCount.toLocaleString()} {t('sections.reviews').toLowerCase()}</span>
+            ) : (
+              // "0 reviews" reads as a verdict on a tour nobody has rated yet.
+              // A new listing is the honest description, and the host's real
+              // totals sit in the cell next door.
+              <span>{t('tourDetail.newListing', 'New')}</span>
             )}
           </button>
         </div>
@@ -75,7 +96,32 @@ export default function TourHeader({
           <div className="tour-header-info-item">
             <img src={experienceHostBadge} alt="" className="tour-header-info-icon tour-header-info-icon-rosette" />
             <span className="tour-header-info-label">{t('tourDetail.destinationHost')}</span>
-            <span className="tour-header-info-value">{supplierName}</span>
+            <span className="tour-header-info-value">
+              {supplierName}
+              {showOperatorProof && (
+                onOperatorReviewsClick ? (
+                  <button
+                    type="button"
+                    onClick={onOperatorReviewsClick}
+                    className="tour-header-operator-proof"
+                  >
+                    <Star size={12} className="tour-header-operator-star" aria-hidden="true" />
+                    {operatorRating > 0 && <>{operatorRating.toFixed(1)} &middot; </>}
+                    {t('tourDetail.operatorReviews', '{{count}} reviews on TripAdvisor, GetYourGuide & Google', {
+                      count: operatorCount,
+                    })}
+                  </button>
+                ) : (
+                  <span className="tour-header-operator-proof">
+                    <Star size={12} className="tour-header-operator-star" aria-hidden="true" />
+                    {operatorRating > 0 && <>{operatorRating.toFixed(1)} &middot; </>}
+                    {t('tourDetail.operatorReviews', '{{count}} reviews on TripAdvisor, GetYourGuide & Google', {
+                      count: operatorCount,
+                    })}
+                  </span>
+                )
+              )}
+            </span>
           </div>
         )}
 

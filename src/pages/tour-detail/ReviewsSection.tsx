@@ -45,6 +45,13 @@ interface ReviewsSectionProps {
   photosOnly?: boolean
   photoCount?: number
   onPhotosOnlyChange?: (value: boolean) => void
+  /**
+   * The host's marketplace totals (TripAdvisor / GetYourGuide / Google). With
+   * zero reviews of its own, a tour used to advertise "0.0 — based on 0
+   * reviews"; this lets the empty state say something true instead.
+   */
+  operatorProof?: { rating: number | null; reviewCount: number } | null
+  onOperatorReviewsClick?: () => void
 }
 
 const VISIBLE_THUMBS = 5
@@ -81,6 +88,8 @@ export default function ReviewsSection({
   photosOnly = false,
   photoCount = 0,
   onPhotosOnlyChange,
+  operatorProof = null,
+  onOperatorReviewsClick,
 }: ReviewsSectionProps) {
   const { t } = useTranslation()
   const [expandedReviews, setExpandedReviews] = useState<Set<string>>(new Set())
@@ -139,6 +148,46 @@ export default function ReviewsSection({
           </button>
         </div>
 
+        {reviewCount === 0 ? (
+          /*
+           * No reviews of its own. "0.0 — based on 0 reviews" read as a
+           * verdict, so the empty state leads with the host's real record
+           * instead, clearly attributed, and the write-review button stays in
+           * the header above.
+           */
+          <div className="reviews-empty">
+            <div className="reviews-empty-stars" aria-hidden="true">
+              <StarRating value={0} size={22} gap={4} filledColor="#16a34a" emptyColor="#e5e7eb" />
+            </div>
+            <h3 className="reviews-empty-title">
+              {t('reviews.noReviewsTitle', 'No reviews yet')}
+            </h3>
+            <p className="reviews-empty-text">
+              {t(
+                'reviews.noReviewsText',
+                'This experience is new on TravioGhana. Reviews appear here as soon as travellers write them.',
+              )}
+            </p>
+            {operatorProof && operatorProof.reviewCount > 0 && (
+              <p className="reviews-empty-proof">
+                {supplierName || t('tourDetail.destinationHost')}
+                {operatorProof.rating ? ` · ${operatorProof.rating.toFixed(1)}` : ''} &middot;{' '}
+                {t('tourDetail.operatorReviews', '{{count}} reviews on TripAdvisor, GetYourGuide & Google', {
+                  count: operatorProof.reviewCount,
+                })}
+                {onOperatorReviewsClick && (
+                  <button
+                    type="button"
+                    onClick={onOperatorReviewsClick}
+                    className="reviews-empty-proof-link"
+                  >
+                    {t('reviews.readThem', 'Read them')}
+                  </button>
+                )}
+              </p>
+            )}
+          </div>
+        ) : (
         <div className="reviews-layout">
           <div className="reviews-main">
             <div className="reviews-rating-summary">
@@ -351,6 +400,7 @@ export default function ReviewsSection({
             )}
           </div>
         </div>
+        )}
       </section>
 
       {/* Fullscreen photo lightbox */}

@@ -3,13 +3,26 @@ import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) =>
-      ({
-        'sections.reviews': 'Reviews',
-        'tourDetail.destination': 'Destination',
-        'tourDetail.destinationHost': 'Experience Host',
-        'tourDetail.defaultLocation': 'Ghana',
-      })[key] ?? key,
+    // i18next signature: t(key, defaultValue?, options?). The header passes
+    // the interpolation values as the third argument.
+    t: (key: string, second?: unknown, third?: Record<string, unknown>) => {
+      const fallback = typeof second === 'string' ? second : undefined
+      const options =
+        second && typeof second === 'object'
+          ? (second as Record<string, unknown>)
+          : third
+      const value =
+        ({
+          'sections.reviews': 'Reviews',
+          'tourDetail.destination': 'Destination',
+          'tourDetail.destinationHost': 'Experience Host',
+          'tourDetail.defaultLocation': 'Ghana',
+          'tourDetail.newListing': 'New',
+          'tourDetail.operatorReviews': '{{count}} reviews on TripAdvisor, GetYourGuide & Google',
+        } as Record<string, string>)[key] ?? fallback ?? key
+      if (!options) return value
+      return value.replace(/\{\{(\w+)\}\}/g, (_, name: string) => String(options[name] ?? ''))
+    },
   }),
 }))
 
@@ -69,5 +82,63 @@ describe('TourHeader info card', () => {
 
     fireEvent.click(screen.getByRole('button'))
     expect(onReviewsClick).toHaveBeenCalledTimes(1)
+  })
+
+  describe('zero-review tours', () => {
+    const supplier = 'Expedition-Go Tours LTD'
+    const operatorProof = { rating: 4.9, reviewCount: 1204 }
+
+    it('says "New" instead of "0 reviews"', () => {
+      renderHeader({ rating: 0, reviewCount: 0, supplierName: supplier, operatorProof })
+
+      expect(screen.getByRole('button', { name: 'New' })).toHaveTextContent('New')
+      expect(screen.queryByText(/0 reviews/)).toBeNull()
+    })
+
+    it("shows the host's marketplace totals, labelled as theirs", () => {
+      renderHeader({ rating: 0, reviewCount: 0, supplierName: supplier, operatorProof })
+
+      expect(
+        screen.getByText('4.9 · 1204 reviews on TripAdvisor, GetYourGuide & Google'),
+      ).toBeInTheDocument()
+      expect(screen.getByText(supplier)).toBeInTheDocument()
+    })
+
+    it('never borrows the host total for a tour with its own rating', () => {
+      renderHeader({ rating: 4.3, reviewCount: 900, supplierName: supplier, operatorProof })
+
+      expect(screen.queryByText(/reviews on TripAdvisor/)).toBeNull()
+    })
+
+    it('never borrows the host total for a tour with its own count', () => {
+      renderHeader({ rating: 0, reviewCount: 12, supplierName: supplier, operatorProof })
+
+      expect(screen.queryByText(/reviews on TripAdvisor/)).toBeNull()
+    })
+
+    it('fires onOperatorReviewsClick from the host proof', () => {
+      const onOperatorReviewsClick = vi.fn()
+      renderHeader({
+        rating: 0,
+        reviewCount: 0,
+        supplierName: supplier,
+        operatorProof,
+        onOperatorReviewsClick,
+      })
+
+      fireEvent.click(screen.getByRole('button', { name: /reviews on TripAdvisor/ }))
+      expect(onOperatorReviewsClick).toHaveBeenCalledTimes(1)
+    })
+
+    it('renders the proof as plain text when nothing handles the click', () => {
+      renderHeader({ rating: 0, reviewCount: 0, supplierName: supplier, operatorProof })
+
+      expect(
+        screen.queryByRole('button', { name: /reviews on TripAdvisor/ }),
+      ).toBeNull()
+      expect(
+        screen.getByText('4.9 · 1204 reviews on TripAdvisor, GetYourGuide & Google'),
+      ).toBeInTheDocument()
+    })
   })
 })

@@ -26,6 +26,7 @@ import {
   aggregateResolvedDistribution,
   scaleDistribution,
   COUNTED_SOURCES,
+  useExternalReviewStats,
   type ExternalReview,
 } from '../../hooks/useExternalReviews'
 import { useTourAvailability, useReviewableBookingForTour } from '../../hooks/useExpeditionBookings'
@@ -459,6 +460,18 @@ export default function TourDetailPage() {
   const localTourReviews = tour?.reviewCount || 0
   const selectedTourRating = combinedTourStats.rating
   const selectedTourReviews = combinedTourStats.reviewCount
+  // 27 of the 34 tours have no TripAdvisor / GetYourGuide listing of their own,
+  // so the header used to print "0 reviews" for them while the same operator
+  // held 1,204 reviews at 4.9. The header shows those totals against the host
+  // when — and only when — this tour has nothing of its own to show.
+  const { data: operatorStats } = useExternalReviewStats()
+  const operatorProof = useMemo(
+    () =>
+      selectedTourReviews === 0 && operatorStats && Number(operatorStats.totalReviews) > 0
+        ? { rating: operatorStats.averageRating ?? null, reviewCount: Number(operatorStats.totalReviews) }
+        : null,
+    [selectedTourReviews, operatorStats],
+  )
   // The URL param may be an id, a slug, or /{id}/{slug} — the id is the
   // identity and the slug decorative, so a stale-slug link still resolves.
   // Links that want the readable form use the fetched tour's own slug.
@@ -1227,6 +1240,8 @@ export default function TourDetailPage() {
                 bookingsLast7Days={tourTrust?.bookingsLast7Days ?? null}
                 location={tour.location}
                 supplierName={tour.supplierName}
+                operatorProof={operatorProof}
+                onOperatorReviewsClick={() => navigate('/reviews')}
                 onReviewsClick={handleReviewsTab}
               />
               <div className="tour-detail-header-actions">
@@ -1380,6 +1395,8 @@ export default function TourDetailPage() {
                         starFilter={reviewStarFilter}
                         onStarFilterChange={setReviewStarFilter}
                         supplierName={supplierData?.name || ''}
+                        operatorProof={operatorProof}
+                        onOperatorReviewsClick={() => navigate('/reviews')}
                         photosOnly={reviewPhotosOnly}
                         photoCount={photoReviewCount}
                         onPhotosOnlyChange={setReviewPhotosOnly}

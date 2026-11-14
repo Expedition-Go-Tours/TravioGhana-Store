@@ -607,3 +607,57 @@
   color: #e2e8f0;
   font-family: var(--font-body);
 }
+
+/*
+ * Zero-review state. Replaces the "0.0 — based on 0 reviews" summary, which
+ * read as a bad score rather than an unrated listing.
+ */
+.reviews-empty {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 32px 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #fff;
+  text-align: center;
+}
+
+.reviews-empty-stars {
+  display: flex;
+  justify-content: center;
+}
+
+.reviews-empty-title {
+  margin: 4px 0 0;
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 800;
+  color: #020617;
+}
+
+.reviews-empty-text {
+  max-width: 46ch;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #475569;
+}
+
+.reviews-empty-proof {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+.reviews-empty-proof-link {
+  margin-left: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: #0f766e;
+  text-decoration: underline;
+  cursor: pointer;
+}
