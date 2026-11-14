@@ -27,6 +27,7 @@ import {
   scaleDistribution,
   COUNTED_SOURCES,
   useExternalReviewStats,
+  operatorProofForTour,
   type ExternalReview,
 } from '../../hooks/useExternalReviews'
 import { useTourAvailability, useReviewableBookingForTour } from '../../hooks/useExpeditionBookings'
@@ -462,15 +463,12 @@ export default function TourDetailPage() {
   const selectedTourReviews = combinedTourStats.reviewCount
   // 27 of the 34 tours have no TripAdvisor / GetYourGuide listing of their own,
   // so the header used to print "0 reviews" for them while the same operator
-  // held 1,204 reviews at 4.9. The header shows those totals against the host
-  // when — and only when — this tour has nothing of its own to show.
+  // held 1,204 reviews at 4.9. `operatorProofForTour` returns those totals only
+  // for this tour's own host, and only when the tour has nothing to show.
   const { data: operatorStats } = useExternalReviewStats()
   const operatorProof = useMemo(
-    () =>
-      selectedTourReviews === 0 && operatorStats && Number(operatorStats.totalReviews) > 0
-        ? { rating: operatorStats.averageRating ?? null, reviewCount: Number(operatorStats.totalReviews) }
-        : null,
-    [selectedTourReviews, operatorStats],
+    () => operatorProofForTour(tour, selectedTourReviews, operatorStats),
+    [tour, selectedTourReviews, operatorStats],
   )
   // The URL param may be an id, a slug, or /{id}/{slug} — the id is the
   // identity and the slug decorative, so a stale-slug link still resolves.

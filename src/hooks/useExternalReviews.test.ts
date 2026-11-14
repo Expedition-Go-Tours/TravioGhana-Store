@@ -5,6 +5,7 @@ import {
   combinedExternalDistribution,
   computeExternalReviewStats,
   isVisibleExternalReview,
+  operatorProofForTour,
   scaleDistribution,
   selectFeaturedTourReviews,
   selectMatchedProducts,
@@ -428,6 +429,45 @@ describe('scraped review supplier scope', () => {
   it('still matches the same product list when the supplier fields match loosely', () => {
     const looselyNamed = { ...entityTour, supplierName: 'Expedition Go Tours Ltd' }
     expect(selectMatchedProducts(scrapedProducts, looselyNamed).length).toBeGreaterThan(0)
+  })
+})
+
+/**
+ * The host-level proof line. The 1,204 totals are one operator's record, so
+ * they may only appear under that operator's own tours, and only while the
+ * tour has nothing of its own to show.
+ */
+describe('operatorProofForTour', () => {
+  const stats = { totalReviews: 1204, averageRating: 4.9 }
+  const tour = {
+    title: 'Shai Hills Quad Bike Tour',
+    location: 'Accra, Ghana',
+    supplierName: 'Expedition-Go Tours LTD',
+  }
+
+  it('returns the operator totals for an unrated tour from that operator', () => {
+    expect(operatorProofForTour(tour, 0, stats)).toEqual({ rating: 4.9, reviewCount: 1204 })
+  })
+
+  it("never shows them on another operator's tour", () => {
+    expect(operatorProofForTour({ ...tour, supplierName: 'Kadelo Travels' }, 0, stats)).toBeNull()
+  })
+
+  it('never shows them on a tour that already has reviews', () => {
+    expect(operatorProofForTour(tour, 9, stats)).toBeNull()
+  })
+
+  it('stays quiet without a positive count', () => {
+    expect(operatorProofForTour(tour, 0, undefined)).toBeNull()
+    expect(operatorProofForTour(tour, 0, { totalReviews: 0, averageRating: null })).toBeNull()
+    expect(operatorProofForTour(tour, 0, { totalReviews: Number.NaN, averageRating: null })).toBeNull()
+  })
+
+  it('keeps a missing average as null rather than inventing a rating', () => {
+    expect(operatorProofForTour(tour, 0, { totalReviews: 44, averageRating: null })).toEqual({
+      rating: null,
+      reviewCount: 44,
+    })
   })
 })
 
