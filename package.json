@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/generate-sitemap.cjs && node scripts/build-review-stats.cjs && node scripts/check-icons.cjs",
+    "prebuild": "node scripts/generate-sitemap.cjs && node scripts/generate-llms-txt.cjs && node scripts/build-review-stats.cjs && node scripts/check-icons.cjs",
     "build": "tsc -b && vite build && npm run prerender",
     "sitemap": "node scripts/generate-sitemap.cjs",
+    "llms": "node scripts/generate-llms-txt.cjs",
     "lint": "eslint .",
     "test": "vitest run",
     "test:tz": "TZ=America/New_York vitest run",
