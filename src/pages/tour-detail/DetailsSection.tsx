@@ -99,9 +99,18 @@ export function buildAboutContent(text: string): React.ReactNode {
 
   const { preamble, items } = parseNumberedContent(text)
 
+  // Descriptions are written in paragraphs separated by blank lines. A single
+  // <p> would collapse those newlines and turn a 250-word description into one
+  // block of text, so split the preamble into one paragraph per blank-line run.
+  const paragraphs = preamble
+    ? preamble.split(/\n{2,}/).map((part) => part.replace(/\n+/g, ' ').trim()).filter(Boolean)
+    : []
+
   return (
     <div className="details-about">
-      {preamble && <p className="details-text">{preamble}</p>}
+      {paragraphs.map((paragraph, index) => (
+        <p key={index} className="details-text">{paragraph}</p>
+      ))}
       {items.length > 0 && (
         <ul className="details-about-list">
           {items.map((item) => (
