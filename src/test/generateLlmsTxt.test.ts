@@ -176,6 +176,14 @@ describe('buildLlmsTxt', () => {
     expect(txt).not.toMatch(/<[a-z]/i)
   })
 
+  it('does not claim every price is per person — some tours are priced per group', () => {
+    // startingPrice is a "from" price; the API does not expose the pricing
+    // model on the public detail payload, so llms.txt must not guess.
+    expect(txt).not.toContain('per person.')
+    expect(txt).toContain('From $180.')
+    expect(txt).toContain('per person or per group')
+  })
+
   it('orders sections so the catalogue comes before the marketing links', () => {
     const order = ['## Tours', '## Destinations', '## Guides', '## Book', '## Company', '## Optional']
     const positions = order.map((h) => txt.indexOf(h))

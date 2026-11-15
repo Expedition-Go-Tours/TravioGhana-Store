@@ -245,23 +245,23 @@ function buildLlmsTxt({ tours = [], articles = [], siteUrl = SITE_URL }) {
 
   const priceLine = range
     ? range.currency
-      ? `${formatMoney(range.min, range.currency)}–${formatMoney(range.max, range.currency)} per person`
-      : `${range.min}–${range.max} per person`
+      ? `${formatMoney(range.min, range.currency)}–${formatMoney(range.max, range.currency)}`
+      : `${range.min}–${range.max}`
     : null;
 
   const summaryParts = [
     `Travio Ghana sells ${catalogue.length} curated Ghana tours and experiences`,
-    priceLine ? `from ${formatMoney(range.min, range.currency || 'USD')} to ${formatMoney(range.max, range.currency || 'USD')} per person` : null,
+    priceLine ? `with prices from ${formatMoney(range.min, range.currency || 'USD')} to ${formatMoney(range.max, range.currency || 'USD')}` : null,
   ].filter(Boolean);
 
   const lines = [];
   lines.push('# Travio Ghana', '');
   lines.push(
-    `> ${summaryParts.join(', ')}. The catalogue covers Accra city tours and food experiences, Cape Coast and Elmina castles, Kakum and Mole safaris, Ashanti heritage in Kumasi, the Nzulezo stilt village and Volta waterfalls.`
+    `> ${summaryParts.join(' ')}. The catalogue covers Accra city tours and food experiences, Cape Coast and Elmina castles, Kakum and Mole safaris, Ashanti heritage in Kumasi, the Nzulezo stilt village and Volta waterfalls.`
   );
   lines.push('');
   lines.push(
-    'Travio Ghana is operated by Expedition-Go Tours Ltd in Accra, Ghana. Every tour page linked below carries the full itinerary, what is included and excluded, the pickup or meeting point, cancellation terms and the live price. Prices are per person in USD unless a page says otherwise.'
+    'Travio Ghana is operated by Expedition-Go Tours Ltd in Accra, Ghana. Every tour page linked below carries the full itinerary, what is included and excluded, the pickup or meeting point, cancellation terms and the live price. Prices are quoted in USD; each page states whether the rate is per person or per group.'
   );
   lines.push('');
 
@@ -269,7 +269,7 @@ function buildLlmsTxt({ tours = [], articles = [], siteUrl = SITE_URL }) {
   lines.push('Key facts:', '');
   lines.push(`- Website: ${siteUrl}`);
   lines.push(`- Tours: ${catalogue.length}`);
-  if (priceLine) lines.push(`- Price range: ${priceLine}`);
+  if (priceLine) lines.push(`- Price range: ${priceLine} (USD)`);
   lines.push(`- Currency: ${range && range.currency ? range.currency : 'USD'}`);
   lines.push('- Operator: Expedition-Go Tours Ltd, Accra, Ghana');
   lines.push('- Support: support@travioghana.com');
@@ -284,7 +284,7 @@ function buildLlmsTxt({ tours = [], articles = [], siteUrl = SITE_URL }) {
   for (const tour of catalogue) {
     const note = summarise(tour.description).replace(/[.!?]+$/, '');
     const price = formatMoney(tour.startingPrice, tour.currency || 'USD');
-    const suffix = price ? ` From ${price} per person.` : '';
+    const suffix = price ? ` From ${price}.` : '';
     lines.push(`- [${linkLabel(tour.title)}](${tourUrl(tour)})${note ? `: ${note}.` : '.'}${suffix}`);
   }
   lines.push('');
