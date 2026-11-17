@@ -29,17 +29,17 @@
   background: #179237;
 }
 
-/* ── 3-column info card ──────────────────────────────────────────────
-   One white card (Reviews / Destination / Experience Host) instead of the
-   old full-bleed strip: rounded corners, a hairline border, equal columns
-   and clean vertical dividers. Stays 3-up on phones — type and padding step
-   down rather than reflowing — so the row keeps the mockup's rhythm at
-   every width. */
+/* ── Info card ───────────────────────────────────────────────────────
+   One white card (Reviews / Destination / Experience Host, plus the
+   conditional trust cues): rounded corners, a hairline border, equal
+   columns and clean vertical dividers. The phone layout is driven by the
+   number of rendered cells so a row never ends in an empty slot: three
+   facts sit 3-up, four sit 2×2 and five sit 3 + 2. */
 
 .tour-header-info-row {
   display: grid;
-  /* Phones: a balanced 2-up grid so a fourth cue (Popular) pairs with the
-     Experience Host instead of sitting alone on a second row. */
+  /* Phones: 2-up by default. The count modifiers below collapse the
+     3-cell and 5-cell cases into layouts with no empty cell. */
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
   margin-top: 14px;
@@ -48,6 +48,29 @@
   border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 30px -24px rgba(15, 23, 42, 0.25);
+}
+
+/* Exactly the three core facts (Reviews / Destination / Experience Host):
+   one clean 3-up row, never 2 + an empty slot. */
+.tour-header-info-row-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Five cues (the three core facts + Verified + Popular): make a 3-up row
+   then a balanced 2-up row on a 6-track grid, again without a hole.
+   Phone only — tablets and desktop lay every cue out in one row. */
+@media (max-width: 639.98px) {
+  .tour-header-info-row-5 {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .tour-header-info-row-5 > .tour-header-info-item {
+    grid-column: span 2;
+  }
+
+  .tour-header-info-row-5 > .tour-header-info-item:nth-child(n + 4) {
+    grid-column: span 3;
+  }
 }
 
 .tour-header-info-item {
@@ -188,6 +211,20 @@ span.tour-header-operator-proof:hover {
   .tour-header-info-row {
     grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     margin-top: 16px;
+  }
+
+  /* Pin the tracks to the rendered cell count: auto-fit alone can leave a
+     4 + 1 row when a fifth cue no longer fits at this width. */
+  .tour-header-info-row-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .tour-header-info-row-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .tour-header-info-row-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .tour-header-info-item {

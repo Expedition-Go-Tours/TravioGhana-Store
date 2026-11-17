@@ -76,6 +76,37 @@ describe('TourHeader info card', () => {
     expect(screen.queryByText('Experience Host')).toBeNull()
   })
 
+  it('lays the three core facts out 3-up when no trust cues exist', () => {
+    const { container } = renderHeader({ supplierName: 'Expedition-Go Tours LTD' })
+
+    const row = container.querySelector('.tour-header-info-row')
+    expect(row).toHaveClass('tour-header-info-row-3')
+    expect(row?.querySelectorAll('.tour-header-info-item')).toHaveLength(3)
+  })
+
+  it('pairs a single trust cue with the core facts as a four-cell row', () => {
+    const { container } = renderHeader({
+      supplierName: 'Expedition-Go Tours LTD',
+      bookingsLast7Days: 12,
+    })
+
+    const row = container.querySelector('.tour-header-info-row')
+    expect(row).toHaveClass('tour-header-info-row-4')
+    expect(row?.querySelectorAll('.tour-header-info-item')).toHaveLength(4)
+  })
+
+  it('renders both trust cues as a five-cell row', () => {
+    const { container } = renderHeader({
+      supplierName: 'Expedition-Go Tours LTD',
+      verifiedReviewCount: 8,
+      bookingsLast7Days: 12,
+    })
+
+    const row = container.querySelector('.tour-header-info-row')
+    expect(row).toHaveClass('tour-header-info-row-5')
+    expect(row?.querySelectorAll('.tour-header-info-item')).toHaveLength(5)
+  })
+
   it('fires onReviewsClick from the reviews value', () => {
     const onReviewsClick = vi.fn()
     renderHeader({ onReviewsClick })
