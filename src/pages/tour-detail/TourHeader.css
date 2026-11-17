@@ -134,26 +134,34 @@
 /*
  * The host's marketplace totals, shown under the host name when this tour has
  * no reviews of its own. Deliberately smaller and greyer than the tour's own
- * rating: it is evidence about the operator, not about this tour.
+ * rating: it is evidence about the operator, not about this tour. The block is
+ * centred so it reads as part of the host cell, and the rating is a row of its
+ * own so the star can never drift onto a wrapped platform name.
  */
 .tour-header-operator-proof {
+  --operator-proof-strong: #475569;
+  --operator-proof-muted: #64748b;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 4px;
-  margin-top: 2px;
+  gap: 2px;
+  width: 100%;
+  margin-top: 4px;
   padding: 0;
   border: 0;
   background: none;
   font: inherit;
   font-size: 11.5px;
   font-weight: 500;
-  color: #64748b;
-  text-align: left;
+  line-height: 1.35;
+  color: var(--operator-proof-muted);
+  text-align: center;
   cursor: pointer;
 }
 
 .tour-header-operator-proof:hover {
-  color: #0f172a;
+  --operator-proof-strong: #0f172a;
+  --operator-proof-muted: #0f172a;
   text-decoration: underline;
 }
 
@@ -162,14 +170,51 @@ span.tour-header-operator-proof {
 }
 
 span.tour-header-operator-proof:hover {
-  color: #64748b;
+  --operator-proof-strong: #475569;
+  --operator-proof-muted: #64748b;
   text-decoration: none;
+}
+
+.tour-header-operator-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  column-gap: 4px;
+  min-width: 0;
+  font-weight: 600;
+  color: var(--operator-proof-strong);
+}
+
+.tour-header-operator-count {
+  white-space: nowrap;
+}
+
+.tour-header-operator-sep {
+  color: #94a3b8;
+}
+
+.tour-header-operator-sources {
+  max-width: 100%;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--operator-proof-muted);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
 }
 
 .tour-header-operator-star {
   flex: none;
   color: #f97316;
   fill: #f97316;
+}
+
+/* Phones: the summary wraps between the rating and the count. A trailing dot
+   on the rating line adds noise, so drop it there. */
+@media (max-width: 639.98px) {
+  .tour-header-operator-sep {
+    display: none;
+  }
 }
 
 .tour-header-info-icon-star {

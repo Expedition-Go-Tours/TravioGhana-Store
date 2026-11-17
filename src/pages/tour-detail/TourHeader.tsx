@@ -61,6 +61,30 @@ export default function TourHeader({
     (supplierName ? 1 : 0) +
     (verifiedCount > 0 ? 1 : 0) +
     (recentBookings > 0 ? 1 : 0)
+  // The host's marketplace proof sits under the host name. It is a two-line
+  // block on purpose: the star belongs to the rating, and the platform list
+  // reads as a separate, quieter line instead of one long wrapped sentence.
+  const operatorProofContent = (
+    <>
+      <span className="tour-header-operator-summary">
+        {operatorRating > 0 && (
+          <>
+            <Star size={12} className="tour-header-operator-star" aria-hidden="true" />
+            <span className="tour-header-operator-rating">{operatorRating.toFixed(1)}</span>
+            <span className="tour-header-operator-sep" aria-hidden="true">&middot;</span>
+          </>
+        )}
+        <span className="tour-header-operator-count">
+          {t('tourDetail.operatorReviewCount', '{{count, number}} reviews', {
+            count: operatorCount,
+          })}
+        </span>
+      </span>
+      <span className="tour-header-operator-sources">
+        {t('tourDetail.operatorReviewSources', 'on TripAdvisor, GetYourGuide & Google')}
+      </span>
+    </>
+  )
 
   return (
     <header className="tour-header-new">
@@ -112,19 +136,11 @@ export default function TourHeader({
                     onClick={onOperatorReviewsClick}
                     className="tour-header-operator-proof"
                   >
-                    <Star size={12} className="tour-header-operator-star" aria-hidden="true" />
-                    {operatorRating > 0 && <>{operatorRating.toFixed(1)} &middot; </>}
-                    {t('tourDetail.operatorReviews', '{{count}} reviews on TripAdvisor, GetYourGuide & Google', {
-                      count: operatorCount,
-                    })}
+                    {operatorProofContent}
                   </button>
                 ) : (
                   <span className="tour-header-operator-proof">
-                    <Star size={12} className="tour-header-operator-star" aria-hidden="true" />
-                    {operatorRating > 0 && <>{operatorRating.toFixed(1)} &middot; </>}
-                    {t('tourDetail.operatorReviews', '{{count}} reviews on TripAdvisor, GetYourGuide & Google', {
-                      count: operatorCount,
-                    })}
+                    {operatorProofContent}
                   </span>
                 )
               )}

@@ -19,9 +19,16 @@ vi.mock('react-i18next', () => ({
           'tourDetail.defaultLocation': 'Ghana',
           'tourDetail.newListing': 'New',
           'tourDetail.operatorReviews': '{{count}} reviews on TripAdvisor, GetYourGuide & Google',
+          'tourDetail.operatorReviewCount': '{{count, number}} reviews',
+          'tourDetail.operatorReviewSources': 'on TripAdvisor, GetYourGuide & Google',
         } as Record<string, string>)[key] ?? fallback ?? key
       if (!options) return value
-      return value.replace(/\{\{(\w+)\}\}/g, (_, name: string) => String(options[name] ?? ''))
+      return value.replace(/\{\{(\w+)(?:,\s*(\w+))?\}\}/g, (_, name: string, format?: string) => {
+        const raw = options[name]
+        return format === 'number' && typeof raw === 'number'
+          ? raw.toLocaleString()
+          : String(raw ?? '')
+      })
     },
   }),
 }))
@@ -127,24 +134,49 @@ describe('TourHeader info card', () => {
     })
 
     it("shows the host's marketplace totals, labelled as theirs", () => {
-      renderHeader({ rating: 0, reviewCount: 0, supplierName: supplier, operatorProof })
+      const { container } = renderHeader({ rating: 0, reviewCount: 0, supplierName: supplier, operatorProof })
 
-      expect(
-        screen.getByText('4.9 · 1204 reviews on TripAdvisor, GetYourGuide & Google'),
-      ).toBeInTheDocument()
+      const proof = container.querySelector('.tour-header-operator-proof')
+      expect(proof).not.toBeNull()
+      expect(proof).toHaveTextContent('1,204 reviews')
+      expect(proof).toHaveTextContent('on TripAdvisor, GetYourGuide & Google')
       expect(screen.getByText(supplier)).toBeInTheDocument()
+    })
+
+    it('keeps the star inside the rating line', () => {
+      const { container } = renderHeader({ rating: 0, reviewCount: 0, supplierName: supplier, operatorProof })
+
+      const summary = container.querySelector('.tour-header-operator-summary')
+      expect(summary).not.toBeNull()
+      expect(summary?.querySelector('.tour-header-operator-star')).not.toBeNull()
+      expect(summary).toHaveTextContent('4.9')
+      expect(container.querySelector('.tour-header-operator-sources')).toHaveTextContent(
+        'on TripAdvisor, GetYourGuide & Google',
+      )
+    })
+
+    it('shows the count without a star when the operator has no average rating', () => {
+      const { container } = renderHeader({
+        rating: 0,
+        reviewCount: 0,
+        supplierName: supplier,
+        operatorProof: { rating: null, reviewCount: 44 },
+      })
+
+      expect(container.querySelector('.tour-header-operator-star')).toBeNull()
+      expect(container.querySelector('.tour-header-operator-proof')).toHaveTextContent('44 reviews')
     })
 
     it('never borrows the host total for a tour with its own rating', () => {
       renderHeader({ rating: 4.3, reviewCount: 900, supplierName: supplier, operatorProof })
 
-      expect(screen.queryByText(/reviews on TripAdvisor/)).toBeNull()
+      expect(screen.queryByText(/TripAdvisor/)).toBeNull()
     })
 
     it('never borrows the host total for a tour with its own count', () => {
       renderHeader({ rating: 0, reviewCount: 12, supplierName: supplier, operatorProof })
 
-      expect(screen.queryByText(/reviews on TripAdvisor/)).toBeNull()
+      expect(screen.queryByText(/TripAdvisor/)).toBeNull()
     })
 
     it('fires onOperatorReviewsClick from the host proof', () => {
@@ -157,19 +189,15 @@ describe('TourHeader info card', () => {
         onOperatorReviewsClick,
       })
 
-      fireEvent.click(screen.getByRole('button', { name: /reviews on TripAdvisor/ }))
+      fireEvent.click(screen.getByRole('button', { name: /TripAdvisor/ }))
       expect(onOperatorReviewsClick).toHaveBeenCalledTimes(1)
     })
 
     it('renders the proof as plain text when nothing handles the click', () => {
-      renderHeader({ rating: 0, reviewCount: 0, supplierName: supplier, operatorProof })
+      const { container } = renderHeader({ rating: 0, reviewCount: 0, supplierName: supplier, operatorProof })
 
-      expect(
-        screen.queryByRole('button', { name: /reviews on TripAdvisor/ }),
-      ).toBeNull()
-      expect(
-        screen.getByText('4.9 · 1204 reviews on TripAdvisor, GetYourGuide & Google'),
-      ).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /TripAdvisor/ })).toBeNull()
+      expect(container.querySelector('.tour-header-operator-proof')).toHaveTextContent('1,204 reviews')
     })
   })
 })

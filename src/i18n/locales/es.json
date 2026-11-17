@@ -571,6 +571,8 @@
     "defaultLocation": "Acra, Ghana",
     "destination": "Destino",
     "destinationHost": "Anfitrión de la experiencia",
+    "operatorReviewCount": "{{count, number}} reseñas",
+    "operatorReviewSources": "en TripAdvisor, GetYourGuide y Google",
     "details": "Detalles",
     "admissionTicketIncluded": "Entrada incluida",
     "admissionPaySeparately": "Pagar por separado",

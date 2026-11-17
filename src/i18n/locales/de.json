@@ -571,6 +571,8 @@
     "defaultLocation": "Accra, Ghana",
     "destination": "Ziel",
     "destinationHost": "Erlebnis-Gastgeber",
+    "operatorReviewCount": "{{count, number}} Bewertungen",
+    "operatorReviewSources": "auf TripAdvisor, GetYourGuide & Google",
     "details": "Details",
     "admissionTicketIncluded": "Eintrittskarte inklusive",
     "admissionPaySeparately": "Separat bezahlen",
