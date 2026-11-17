@@ -239,22 +239,27 @@ export function useExternalReviewStats() {
  * The operator-wide marketplace totals to show under the Experience Host name,
  * or null when they would not be truthful there.
  *
- * Three conditions, each of which has burned us:
+ * Four conditions, each of which has burned us:
  *  - the tour has no reviews of its own (a rated tour must never borrow the
  *    operator's number),
  *  - the host is the operator whose listings were scraped — the 1,204 totals
  *    belong to Expedition-Go, so printing them under another supplier's name
- *    would attribute a stranger's record to them, and
- *  - the stats file actually carries a positive count.
+ *    would attribute a stranger's record to them,
+ *  - the tour is one of the operator's declared marketplace listings. The
+ *    totals are the aggregate of those listings, not of every tour the supplier
+ *    account carries, so a partner or one-off experience must not inherit them,
+ *  - and the stats file actually carries a positive count.
  */
 export function operatorProofForTour(
   tour: MatchableTour | null | undefined,
   tourReviewCount: number,
   stats: { totalReviews: number; averageRating: number | null } | null | undefined,
+  hasMatchedListing: boolean,
 ): { rating: number | null; reviewCount: number } | null {
   if (!tour?.title) return null
   if (tourReviewCount > 0) return null
   if (!isScrapedReviewSupplier(tour.supplierName)) return null
+  if (!hasMatchedListing) return null
   const reviewCount = Number(stats?.totalReviews)
   if (!stats || !Number.isFinite(reviewCount) || reviewCount <= 0) return null
   return { rating: stats.averageRating ?? null, reviewCount }

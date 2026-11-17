@@ -20,10 +20,10 @@ interface TourHeaderProps {
   bookingsLast7Days?: number | null
   /**
    * The operator's marketplace totals (TripAdvisor / GetYourGuide / Google),
-   * shown only when this tour has no reviews of its own. 27 of the 34 tours
-   * have no matched listing, and printing "0 reviews" for them threw away the
-   * 4.9 from 1,204 reviews the same operator already holds. Labelled as the
-   * host's rating, never as this tour's.
+   * shown only when this tour is one of the operator's declared marketplace
+   * listings and has no reviews of its own. The 4.9 from 1,204 reviews belongs
+   * to the listings in reviewListingTours.json, so a partner or one-off tour
+   * must not borrow it. Labelled as the host's rating, never as this tour's.
    */
   operatorProof?: { rating: number | null; reviewCount: number } | null
   onOperatorReviewsClick?: () => void

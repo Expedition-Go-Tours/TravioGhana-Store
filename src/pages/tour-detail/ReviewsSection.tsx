@@ -48,7 +48,8 @@ interface ReviewsSectionProps {
   /**
    * The host's marketplace totals (TripAdvisor / GetYourGuide / Google). With
    * zero reviews of its own, a tour used to advertise "0.0 — based on 0
-   * reviews"; this lets the empty state say something true instead.
+   * reviews"; this lets the empty state say something true instead. The
+   * upstream proof is already scoped to the operator's declared listings.
    */
   operatorProof?: { rating: number | null; reviewCount: number } | null
   onOperatorReviewsClick?: () => void

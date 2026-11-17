@@ -461,14 +461,14 @@ export default function TourDetailPage() {
   const localTourReviews = tour?.reviewCount || 0
   const selectedTourRating = combinedTourStats.rating
   const selectedTourReviews = combinedTourStats.reviewCount
-  // 27 of the 34 tours have no TripAdvisor / GetYourGuide listing of their own,
-  // so the header used to print "0 reviews" for them while the same operator
-  // held 1,204 reviews at 4.9. `operatorProofForTour` returns those totals only
-  // for this tour's own host, and only when the tour has nothing to show.
+  // The operator's 1,204 marketplace reviews belong to the listings declared
+  // in reviewListingTours.json. `operatorProofForTour` returns those totals
+  // only when this tour is one of those listings, its host is the scraped
+  // operator, and the tour has no reviews of its own to show.
   const { data: operatorStats } = useExternalReviewStats()
   const operatorProof = useMemo(
-    () => operatorProofForTour(tour, selectedTourReviews, operatorStats),
-    [tour, selectedTourReviews, operatorStats],
+    () => operatorProofForTour(tour, selectedTourReviews, operatorStats, externalMatchedProducts.length > 0),
+    [tour, selectedTourReviews, operatorStats, externalMatchedProducts.length],
   )
   // The URL param may be an id, a slug, or /{id}/{slug} — the id is the
   // identity and the slug decorative, so a stale-slug link still resolves.
