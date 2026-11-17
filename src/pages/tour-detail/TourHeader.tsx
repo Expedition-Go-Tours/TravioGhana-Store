@@ -49,13 +49,11 @@ export default function TourHeader({
   // sends null (not 0) when the sample is too small to claim anything.
   const verifiedCount = verifiedReviewCount ?? 0
   const recentBookings = bookingsLast7Days ?? 0
-<<<<<<< HEAD
   const operatorCount = operatorProof?.reviewCount ?? 0
   const operatorRating = Number(operatorProof?.rating) || 0
   // Only when this tour cannot speak for itself. A tour that carries its own
   // reviews must never borrow the operator's number.
   const showOperatorProof = !hasRating && reviewCount === 0 && operatorCount > 0
-=======
   // The phone grid is count-driven (see TourHeader.css): three facts sit
   // 3-up, four 2×2 and five 3 + 2, so a row never ends in an empty slot.
   const cellCount =
@@ -63,7 +61,6 @@ export default function TourHeader({
     (supplierName ? 1 : 0) +
     (verifiedCount > 0 ? 1 : 0) +
     (recentBookings > 0 ? 1 : 0)
->>>>>>> 7748463 (feat(TourHeader): enhance info card layout for dynamic trust cues and responsive design)
 
   return (
     <header className="tour-header-new">
