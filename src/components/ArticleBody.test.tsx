@@ -43,6 +43,31 @@ describe('ArticleBody', () => {
     expect(container.querySelector('hr')).not.toBeNull()
   })
 
+  it('honours text alignment saved by the admin editor', () => {
+    const { container } = render(
+      <ArticleBody
+        value={{
+          type: 'doc',
+          content: [
+            {
+              type: 'heading',
+              attrs: { level: 1, textAlign: 'center' },
+              content: [{ type: 'text', text: 'Centred headline' }],
+            },
+            {
+              type: 'paragraph',
+              attrs: { textAlign: 'right' },
+              content: [{ type: 'text', text: 'Signed off' }],
+            },
+          ],
+        }}
+      />,
+    )
+
+    expect(container.querySelector('h1')).toHaveStyle({ textAlign: 'center' })
+    expect(container.querySelector('p')).toHaveStyle({ textAlign: 'right' })
+  })
+
   it('renders Portable Text (the seed/Sanity shape) with list grouping', () => {
     const { container } = render(
       <ArticleBody

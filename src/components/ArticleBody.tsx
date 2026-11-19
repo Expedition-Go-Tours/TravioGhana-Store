@@ -1,4 +1,4 @@
-import { Fragment, type ReactNode } from 'react'
+import { Fragment, type CSSProperties, type ReactNode } from 'react'
 
 /**
  * Renders an article `body` in whichever shape the backend hands it over.
@@ -19,6 +19,14 @@ interface TipTapAttrs {
   alt?: string
   title?: string
   href?: string
+  textAlign?: string
+}
+
+/** TipTap stores alignment on the node's attrs; anything else is ignored. */
+function alignStyle(value?: string): CSSProperties | undefined {
+  return value === 'left' || value === 'center' || value === 'right' || value === 'justify'
+    ? { textAlign: value }
+    : undefined
 }
 
 interface TipTapMark {
@@ -96,11 +104,11 @@ function renderTipTap(node: TipTapNode, key: string): ReactNode {
 
   switch (node.type) {
     case 'paragraph':
-      return <p key={key}>{children}</p>
+      return <p key={key} style={alignStyle(node.attrs?.textAlign)}>{children}</p>
     case 'heading': {
       const level = node.attrs?.level ?? 2
       const Tag = HEADING_TAGS[Math.min(Math.max(level, 1), HEADING_TAGS.length) - 1]
-      return <Tag key={key}>{children}</Tag>
+      return <Tag key={key} style={alignStyle(node.attrs?.textAlign)}>{children}</Tag>
     }
     case 'bulletList':
       return <ul key={key}>{children}</ul>
