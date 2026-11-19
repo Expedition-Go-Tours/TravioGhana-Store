@@ -1174,7 +1174,7 @@ export default function BookingWidget({ tour, getAvailability: propGetAvailabili
                 <span className="booking-inline-value">
                   <span className="booking-inline-count">
                     <Users size={16} className="booking-inline-icon" />
-                    <span>{totalTravelers} {t('booking.traveler', { count: totalTravelers })}</span>
+                    <span>{t('booking.travelersCount', { count: totalTravelers })}</span>
                   </span>
                   {isPerGroup && totalTravelers > 1 && activeGroupBandLabel && (
                     <span className="booking-active-band">

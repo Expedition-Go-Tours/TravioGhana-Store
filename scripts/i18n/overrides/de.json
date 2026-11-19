@@ -1,0 +1,21 @@
+{
+  "empty.experiencesCount_one": "{{count}} Erlebnis",
+  "empty.experiencesCount_other": "{{count}} Erlebnisse",
+  "empty.body": "Wir haben noch keine Erlebnisse für {{location}} – aber es gibt viel zu entdecken. Schau dir diese nahegelegenen Reiseziele und handverlesenen Touren an, von denen wir glauben, dass sie dir gefallen werden.",
+  "empty.bodyAttraction": "Wir haben noch keine Erlebnisse für {{attraction}} – aber es gibt viel zu entdecken.",
+  "empty.browseAll": "Alle Erlebnisse ansehen",
+  "nav.listAnExperience": "Erlebnis anbieten",
+  "footer.asSupplier": "Erlebnis anbieten",
+  "search.resultsIn": "Erlebnisse in {{location}}",
+  "blog.ctaButton": "Erlebnisse entdecken",
+  "tourDetail.similarExperiences": "Ähnliche Erlebnisse",
+  "tourDetail.groupExperience": "Gruppenerlebnis",
+  "tourDetail.privateExperience": "Privates Erlebnis",
+  "tourDetail.experienceComingSoon": "Details zum Erlebnis folgen in Kürze.",
+  "supplier.trustToursDesc": "Erlebnisse auf Travio Ghana",
+  "reviews.tagExperience": "Erlebnis",
+  "reviews.noReviewsText": "Dieses Erlebnis ist neu auf TravioGhana. Bewertungen erscheinen hier, sobald Reisende sie schreiben.",
+  "reviews.rateExperience": "Wie würdest du dein Erlebnis bewerten?",
+  "reviews.totalCount_one": "{{count}} Bewertung",
+  "reviews.totalCount_other": "{{count}} Bewertungen"
+}

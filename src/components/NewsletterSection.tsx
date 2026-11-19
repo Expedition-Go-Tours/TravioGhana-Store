@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Mail } from 'lucide-react'
+import { useAuthUser } from '../hooks/useAuthUser'
 import { optimizedLocalSrcSet } from '../lib/image'
 import newsletterImg from '../assets/newsletter-quad-biking.webp'
 import './NewsletterSection.css'
@@ -11,8 +12,14 @@ import './NewsletterSection.css'
 // 1x desktop doesn't download the full 1200px original.
 const newsletterSrcSet = optimizedLocalSrcSet(newsletterImg, 1200, import.meta.env.PROD) ?? newsletterImg
 
-export default function NewsletterSection() {
-  const [email, setEmail] = useState('')
+/**
+ * The form owns the editable email state. The parent gives it a key derived
+ * from the signed-in email, so signing in/out (or switching account) remounts
+ * the form with the right initial value. A visitor's own edits survive
+ * re-renders because the key only changes when the account email changes.
+ */
+function NewsletterForm({ initialEmail }: { initialEmail: string }) {
+  const [email, setEmail] = useState(initialEmail)
 
   // The mailing-list API isn't wired up yet, so submitting is deliberately a
   // no-op. The button is NOT marked `.is-coming-soon`: that dims it to 55%
@@ -22,6 +29,38 @@ export default function NewsletterSection() {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
   }
+
+  return (
+    <form className="newsletter-form" onSubmit={handleSubmit}>
+      <div className="newsletter-input-wrap">
+        <input
+          type="email"
+          className="newsletter-input"
+          placeholder="EMAIL"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          aria-label="Email address"
+          autoComplete="email"
+        />
+        <Mail
+          className="newsletter-input-icon"
+          size={20}
+          aria-hidden="true"
+        />
+      </div>
+      <button
+        type="submit"
+        className="newsletter-btn"
+        aria-label="Sign up"
+      >
+        Sign up
+      </button>
+    </form>
+  )
+}
+
+export default function NewsletterSection() {
+  const user = useAuthUser()
 
   return (
     <section className="newsletter-section">
@@ -54,30 +93,10 @@ export default function NewsletterSection() {
               inspiration straight to your inbox.
             </p>
 
-            <form className="newsletter-form" onSubmit={handleSubmit}>
-              <div className="newsletter-input-wrap">
-                <input
-                  type="email"
-                  className="newsletter-input"
-                  placeholder="EMAIL"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  aria-label="Email address"
-                />
-                <Mail
-                  className="newsletter-input-icon"
-                  size={20}
-                  aria-hidden="true"
-                />
-              </div>
-              <button
-                type="submit"
-                className="newsletter-btn"
-                aria-label="Sign up"
-              >
-                Sign up
-              </button>
-            </form>
+            <NewsletterForm
+              key={user?.email ?? 'guest'}
+              initialEmail={user?.email ?? ''}
+            />
 
             <p className="newsletter-legal">
               By signing up, you agree to receive promotional emails on

@@ -1,0 +1,3 @@
+{
+  "booking.slotBelowMinimum": "{{time}}에 남은 자리는 {{count}}개뿐입니다 — 예약당 최소 {{min}}명의 여행자보다 적습니다. 다른 시간을 선택해 주세요."
+}

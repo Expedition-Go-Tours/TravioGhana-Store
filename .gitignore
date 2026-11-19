@@ -79,3 +79,6 @@ coverage/
 # Optional: lock files (only ignore if team agrees)
 # package-lock.json
 # yarn.lock.
+# Generated translation review packs (large; regenerate with npm run translate:validate)
+scripts/i18n/reports/
+scripts/i18n/.cache/

@@ -1,0 +1,8 @@
+{
+  "empty.experiencesCount_one": "{{count}} expérience",
+  "empty.experiencesCount_many": "{{count}} expériences",
+  "empty.experiencesCount_other": "{{count}} expériences",
+  "reviews.totalCount_one": "{{count}} avis",
+  "reviews.totalCount_many": "{{count}} avis",
+  "reviews.totalCount_other": "{{count}} avis"
+}

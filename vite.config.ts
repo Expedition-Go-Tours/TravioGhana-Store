@@ -9,6 +9,14 @@ import { resolve } from 'node:path'
 import { searchGhanaPlaces } from './middleware.ts'
 import { noClientSerpKeyPlugin } from './server/noClientSerpKey.ts'
 
+// Read the catalogue as data rather than importing the TS module: the Node
+// tsconfig does not enable JSON module resolution for config-time imports.
+const localeCodes: string[] = (
+  JSON.parse(readFileSync(new URL('./src/i18n/languages.json', import.meta.url), 'utf8')) as Array<{
+    code: string
+  }>
+).map((entry) => entry.code)
+
 // mapbox-gl's ESM worker (`dist/esm/worker.js`) must be served VERBATIM with
 // its whole module closure: Vite's production build rewrites its `?url` asset
 // into a module that statically imports `./shared.js` (and dynamically
@@ -191,7 +199,17 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,svg,woff2}'],
         // __seo/ is the crawler-only prerender; the map workers are huge and
         // useless offline (tiles and the API need the network).
-        globIgnores: ['**/__seo/**', '**/mapbox-gl/**', '**/maplibre-gl-*'],
+        // Locale chunks are fetched on demand. Precaching all 40 would add
+        // several megabytes to the install payload for languages a visitor
+        // may never open; the browser's HTTP cache keeps whichever one they
+        // actually use. If an offline switch cannot fetch a locale chunk,
+        // i18n falls back to English instead of breaking.
+        globIgnores: [
+          '**/__seo/**',
+          '**/mapbox-gl/**',
+          '**/maplibre-gl-*',
+          ...localeCodes.filter((code) => code !== 'en').map((code) => `**/${code}-*.js`),
+        ],
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
         clientsClaim: true,

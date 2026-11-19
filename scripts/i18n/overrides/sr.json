@@ -1,0 +1,7 @@
+{
+  "booking.hoursLeftToBook": "Још {{hours}} сати за резервацију",
+  "supplier.noDescription": "{{name}} нуди вођене доживљаје.",
+  "reviews.reviewBy": "Рецензија од {{name}}",
+  "tourDetail.supplierDescription": "{{name}} нуди аутентичне вођене доживљаје.",
+  "allTours.nearLocation": "{{title}} близу {{location}}"
+}

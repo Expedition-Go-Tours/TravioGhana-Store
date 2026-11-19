@@ -298,7 +298,7 @@ describe('Navbar language and currency picker', () => {
     expect(dialog).toHaveAttribute('aria-label', 'nav.language')
     // the duplicated language/currency drawer must not be reachable any more
     expect(container.querySelector('.nav-subdrawer')).toBeNull()
-    expect(screen.getByText('languages.en')).toBeInTheDocument()
+    expect(screen.getByText('English (United States)')).toBeInTheDocument()
   })
 
   it('opens the picker on the currency tab from the mobile menu', () => {

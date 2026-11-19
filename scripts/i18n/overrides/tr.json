@@ -1,0 +1,3 @@
+{
+  "booking.slotBelowMinimum": "{{time}} saatinde yalnızca {{count}} yer kaldı — rezervasyon başına minimum {{min}} gezgin sınırının altında. Lütfen başka bir saat seçin."
+}

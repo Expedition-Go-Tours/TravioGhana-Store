@@ -1,0 +1,23 @@
+{
+  "empty.experiencesCount_one": "{{count}} חוויה",
+  "empty.body": "אין לנו עדיין חוויות ב{{location}} — אבל יש הרבה מה לגלות. עיינו ביעדים הקרובים ובסיורים שנבחרו בקפידה.",
+  "empty.bodyAttraction": "אין לנו עדיין חוויות ב{{attraction}} — אבל יש הרבה מה לגלות.",
+  "empty.browseAll": "עיין בכל החוויות",
+  "nav.listAnExperience": "הוסף חוויה",
+  "footer.asSupplier": "פרסם חוויה",
+  "search.resultsIn": "חוויות ב{{location}}",
+  "blog.ctaButton": "עיין בחוויות",
+  "tourDetail.similarExperiences": "חוויות דומות",
+  "tourDetail.groupExperience": "חוויה קבוצתית",
+  "tourDetail.privateExperience": "חוויה פרטית",
+  "tourDetail.experienceComingSoon": "פרטי החוויה יגיעו בקרוב.",
+  "supplier.trustToursDesc": "חוויות ב-Travio Ghana",
+  "reviews.tagExperience": "חוויה",
+  "reviews.noReviewsText": "החוויה הזו חדשה ב-TravioGhana. ביקורות יופיעו כאן ברגע שמטיילים יכתבו אותן.",
+  "reviews.rateExperience": "איך תדרגו את החוויה שלכם?",
+  "reviews.gistPlaceholder": "ספרו לנו על החוויה שלכם",
+  "reviews.shareExperience": "שתפו את החוויה שלכם...",
+  "reviews.totalCount_one": "{{count}} ביקורת",
+  "reviews.totalCount_two": "{{count}} ביקורות",
+  "reviews.totalCount_other": "{{count}} ביקורות"
+}

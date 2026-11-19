@@ -18,6 +18,8 @@
     "perf:mobile": "node scripts/perf/audit-mobile.mjs",
     "generate-favicons": "node generate-favicons.js",
     "extract": "i18next-parser",
+    "translate:locales": "node scripts/i18n/translate-locales.mjs",
+    "translate:validate": "node scripts/i18n/translate-locales.mjs --validate-only",
     "prerender": "node scripts/prerender-static.mjs",
     "verify:links": "node scripts/verify-build-links.mjs"
   },

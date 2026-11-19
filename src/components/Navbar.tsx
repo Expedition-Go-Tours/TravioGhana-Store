@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { Globe, Megaphone, LayoutDashboard, ChevronRight, LogIn, LogOut, DollarSign, Bell, Settings } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n/config'
+import { resolveLanguage } from '../i18n/languages'
 import { useCurrency } from '../contexts/CurrencyContext'
 import OptimizedImage from './shared/OptimizedImage'
 import logoSrc from '../assets/TravioGhana_Logo.svg'
@@ -691,7 +692,9 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
 
         <div className="nav-icon-item nav-globe-trigger" onClick={() => { setPickerTab('language'); setLangCurrencyOpen(true) }}>
           <Globe size={20} />
-          <span className="nav-icon-label">{i18n.language.substring(0, 2).toUpperCase()} | {currency.code}</span>
+          <span className="nav-icon-label">
+            {(resolveLanguage(i18n.language)?.code ?? 'en').split('-')[0].toUpperCase()} | {currency.code}
+          </span>
         </div>
 
         <div className="nav-icons">

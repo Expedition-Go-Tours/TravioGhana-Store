@@ -1,0 +1,3 @@
+{
+  "booking.dateBelowMinimum": "此日期僅剩 {{count}} 個名額 — 低於每筆預訂至少 {{min}} 位旅客的最低要求。請選擇其他日期。"
+}

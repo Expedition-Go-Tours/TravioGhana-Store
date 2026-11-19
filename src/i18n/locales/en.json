@@ -99,10 +99,8 @@
     "specialOfferApplied": "Special offer applied",
     "promoDiscount": "Promo discount",
     "youSave": "You save",
-    "traveler": "traveler",
-    "traveler_plural": "travelers",
-    "traveler_one": "traveler",
-    "traveler_other": "travelers",
+    "travelersCount_one": "{{count}} traveler",
+    "travelersCount_other": "{{count}} travelers",
     "total": "Total ({{count}} traveler)",
     "total_plural": "Total ({{count}} travelers)",
     "total_one": "Total ({{count}} traveler)",
@@ -316,7 +314,9 @@
     "signOut": "Sign Out",
     "wishlist": "Wishlist",
     "resetToDefault": "Reset to default",
-    "accountSettings": "Account Settings"
+    "accountSettings": "Account Settings",
+    "searchLanguages": "Search languages",
+    "noLanguagesFound": "No languages found"
   },
   "newsletter": {
     "description": "Subscribe to receive exclusive deals and travel inspiration",
@@ -532,6 +532,8 @@
     "terrible": "Terrible",
     "totalCount": "{{count}} review",
     "totalCount_plural": "{{count}} reviews",
+    "totalCount_one": "{{count}} review",
+    "totalCount_other": "{{count}} reviews",
     "writeAReview": "Write a review",
     "leaveAReview": "Leave a review",
     "emailNotPublished": "Your email address will not be published. Required fields are marked *",
