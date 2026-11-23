@@ -187,7 +187,8 @@
   background: #1e2b47;
 }
 
-/* Save + share, top-right, mirroring the back button on the other side. */
+/* Save + share, top-right, mirroring the back button on the other side.
+   Phones only: desktop keeps its own wishlist/share affordances. */
 .tour-gallery-mobile-actions {
   position: absolute;
   top: 16px;
@@ -195,6 +196,12 @@
   z-index: 6;
   display: flex;
   gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .tour-gallery-mobile-actions {
+    display: none;
+  }
 }
 
 .tour-gallery-round {
