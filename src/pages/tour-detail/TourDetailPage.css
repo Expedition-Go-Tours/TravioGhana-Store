@@ -130,10 +130,10 @@
   }
 }
 
-/* Mobile: one near-square gallery card, exactly like the loaded page. */
+/* Mobile: one tall gallery card, exactly like the loaded page. */
 .skeleton-gallery-mobile {
   width: 100%;
-  aspect-ratio: 100 / 97;
+  aspect-ratio: 100 / 106;
   border-radius: 12px;
 }
 

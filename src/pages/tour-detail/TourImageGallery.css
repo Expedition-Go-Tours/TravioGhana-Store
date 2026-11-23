@@ -21,8 +21,9 @@
 .tour-gallery-mobile {
   position: relative;
   width: 100%;
-  /* Reference frame: 0.97 × the viewport width (nearly square). */
-  aspect-ratio: 100 / 97;
+  /* Taller than the slide is wide, matching the reference frame (h/w ≈ 1.06)
+     rather than the old near-square 0.97. */
+  aspect-ratio: 100 / 106;
   overflow: hidden;
   background: #fff;
 }
@@ -31,11 +32,13 @@
   display: flex;
   gap: 8px;
   height: 100%;
-  padding-inline: 16px;
+  /* An 8px gutter, not 16: the tiles run wider and the round controls get
+     room to sit inside the photo instead of straddling its edge. */
+  padding-inline: 8px;
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
-  scroll-padding-inline: 16px;
+  scroll-padding-inline: 8px;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -46,7 +49,9 @@
 }
 
 .tour-gallery-page {
-  flex: 0 0 100%;
+  /* 8px narrower than the content box so the next page still peeks by exactly
+     the gutter width, now that the gutter is 8px. */
+  flex: 0 0 calc(100% - 8px);
   height: 100%;
   min-width: 0;
   scroll-snap-align: start;
@@ -192,7 +197,7 @@
 .tour-gallery-mobile-actions {
   position: absolute;
   top: 16px;
-  right: 16px;
+  right: 28px;
   z-index: 6;
   display: flex;
   gap: 8px;
@@ -394,11 +399,12 @@
 }
 
 /* Phones: the back button joins the save/share pair at 44px so all three
-   controls share one hit-size and one top offset. */
+   controls share one hit-size and one top offset, and all three sit 12px
+   inside the tile rather than on its edge. */
 @media (max-width: 767px) {
   .tour-gallery-back {
     top: 16px;
-    left: 16px;
+    left: 20px;
     width: 44px;
     height: 44px;
   }
