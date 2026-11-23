@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react'
-import TourImageGallery from './TourImageGallery'
+import TourImageGallery, { buildMobilePages } from './TourImageGallery'
 
 const IMAGES = Array.from(
   { length: 5 },
@@ -149,10 +149,12 @@ describe('TourImageGallery — desktop mosaic', () => {
     expect(columns[0].style.flexBasis).toBe('100%')
   })
 
-  it('renders one pagination bullet per photo for the mobile carousel', () => {
+  it('renders one pagination bullet per mobile page, not per photo', () => {
+    // 5 photos → hero, single, single, view all = 4 pages.
     const { container } = render(<TourImageGallery images={IMAGES} title="Accra City Tour" />)
 
-    expect(container.querySelectorAll('.tour-gallery-dot')).toHaveLength(IMAGES.length)
+    expect(container.querySelectorAll('.tour-gallery-page')).toHaveLength(4)
+    expect(container.querySelectorAll('.tour-gallery-dot')).toHaveLength(4)
   })
 
   it('warms every viewer photo on load so "next" never waits on the network', async () => {
@@ -183,5 +185,123 @@ describe('TourImageGallery — desktop mosaic', () => {
       expect(img.srcset).toContain('c_limit')
       expect(img.sizes).toBe('100vw')
     }
+  })
+})
+
+describe('buildMobilePages', () => {
+  it('builds the reference five pages from eight or more photos', () => {
+    expect(buildMobilePages(8).map((page) => page.kind)).toEqual([
+      'hero',
+      'single',
+      'stacked',
+      'single',
+      'viewAll',
+    ])
+  })
+
+  it('consumes the photos in the order the pages show them', () => {
+    const pages = buildMobilePages(8)
+    expect(pages[0].indexes).toEqual([0, 1, 2])
+    expect(pages[1].indexes).toEqual([3])
+    expect(pages[2].indexes).toEqual([4, 5, 6])
+    expect(pages[3].indexes).toEqual([7])
+  })
+
+  it('stops when the photos run out instead of repeating one to pad the count', () => {
+    expect(buildMobilePages(1).map((page) => page.kind)).toEqual(['single'])
+    expect(buildMobilePages(2).map((page) => page.kind)).toEqual(['twoUp'])
+    expect(buildMobilePages(3).map((page) => page.kind)).toEqual(['hero'])
+    expect(buildMobilePages(4).map((page) => page.kind)).toEqual(['hero', 'single', 'viewAll'])
+    expect(buildMobilePages(6).map((page) => page.kind)).toEqual([
+      'hero',
+      'single',
+      'twoUp',
+      'viewAll',
+    ])
+    expect(buildMobilePages(7).map((page) => page.kind)).toEqual([
+      'hero',
+      'single',
+      'stacked',
+      'viewAll',
+    ])
+  })
+
+  it('has no pages for an empty gallery', () => {
+    expect(buildMobilePages(0)).toEqual([])
+  })
+})
+
+describe('TourImageGallery — mobile pages', () => {
+  it('lays the first page out as a hero with two tiles beneath it', () => {
+    render(<TourImageGallery images={IMAGES} title="Accra City Tour" />)
+
+    const page = screen.getByTestId('tour-gallery-page-0')
+    expect(page.getAttribute('data-page')).toBe('hero')
+    expect(page.querySelectorAll('.tour-gallery-mobile-tile')).toHaveLength(3)
+    expect(page.querySelectorAll('.tour-gallery-hero-row > *')).toHaveLength(2)
+  })
+
+  it('lays the stacked page out as two tiles beside one tall tile', () => {
+    const eight = Array.from(
+      { length: 8 },
+      (_, i) => `https://res.cloudinary.com/demo/image/upload/v1/tour/p-${i}.jpg`,
+    )
+    render(<TourImageGallery images={eight} title="Eight Photos" />)
+
+    const page = screen.getByTestId('tour-gallery-page-2')
+    expect(page.getAttribute('data-page')).toBe('stacked')
+    expect(page.querySelectorAll('.tour-gallery-mobile-tile')).toHaveLength(3)
+  })
+
+  it('moves a whole page per swipe through a scroll-snap strip', () => {
+    const { container } = render(<TourImageGallery images={IMAGES} title="Accra City Tour" />)
+
+    const scroller = container.querySelector('.tour-gallery-mobile-scroller')!
+    expect(scroller).toBeTruthy()
+    // The pages, not the photos, are the snap targets.
+    expect(scroller.querySelectorAll('.tour-gallery-page')).toHaveLength(4)
+    expect(scroller.getAttribute('aria-roledescription')).toBe('carousel')
+  })
+
+  it('opens the lightbox on the first photo from the View all page', async () => {
+    render(<TourImageGallery images={IMAGES} title="Accra City Tour" />)
+
+    const viewAll = screen
+      .getByTestId('tour-gallery-page-3')
+      .querySelector('.tour-gallery-view-all')!
+    fireEvent.click(viewAll)
+
+    expect(await screen.findByText('1 / 5')).toBeTruthy()
+  })
+
+  it('wires the save and share overlays to their handlers', () => {
+    const onToggleSave = vi.fn()
+    const onShare = vi.fn()
+
+    render(
+      <TourImageGallery
+        images={IMAGES}
+        title="Accra City Tour"
+        isSaved
+        onToggleSave={onToggleSave}
+        onShare={onShare}
+      />,
+    )
+
+    const save = screen.getByLabelText(/remove from wishlist/i)
+    // The saved state is visible, not just internal.
+    expect(save.getAttribute('aria-pressed')).toBe('true')
+
+    fireEvent.click(save)
+    expect(onToggleSave).toHaveBeenCalledTimes(1)
+
+    fireEvent.click(screen.getByLabelText(/^share$/i))
+    expect(onShare).toHaveBeenCalledTimes(1)
+  })
+
+  it('renders no save/share controls when the page does not pass them', () => {
+    const { container } = render(<TourImageGallery images={IMAGES} title="Accra City Tour" />)
+
+    expect(container.querySelector('.tour-gallery-mobile-actions')).toBeNull()
   })
 })

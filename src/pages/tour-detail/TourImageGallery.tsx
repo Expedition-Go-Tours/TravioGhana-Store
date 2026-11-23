@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
-import { Images, ArrowLeft } from 'lucide-react'
+import { Images, ArrowLeft, Heart, Share } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import GalleryDialog from './GalleryDialog'
 import './TourImageGallery.css'
@@ -14,6 +14,12 @@ interface TourImageGalleryProps {
   onBack?: () => void
   /** Hide the overlay back button (e.g. once the sticky bar has taken over). */
   hideBack?: boolean
+  /** Mobile only: the tour is in the wishlist. */
+  isSaved?: boolean
+  /** Mobile only: toggle the wishlist entry. */
+  onToggleSave?: () => void
+  /** Mobile only: share the page (navigator.share with a clipboard fallback). */
+  onShare?: () => void
 }
 
 type Size = { w: number; h: number }
@@ -28,6 +34,17 @@ type Size = { w: number; h: number }
 const TILE_HEIGHT_BUCKET = 40
 function snapTileHeight(height: number): number {
   return Math.max(TILE_HEIGHT_BUCKET, Math.round(height / TILE_HEIGHT_BUCKET) * TILE_HEIGHT_BUCKET)
+}
+
+function sameSizeMap(a: Record<number, Size>, b: Record<number, Size>): boolean {
+  const aKeys = Object.keys(a)
+  return (
+    aKeys.length === Object.keys(b).length &&
+    Object.entries(b).every(([key, box]) => {
+      const before = a[Number(key)]
+      return before?.w === box.w && before?.h === box.h
+    })
+  )
 }
 
 interface Column {
@@ -76,23 +93,102 @@ function buildColumns(count: number): Column[] {
   ]
 }
 
-export default function TourImageGallery({ images, title, fallbackImage, onBack, hideBack }: TourImageGalleryProps) {
+/**
+ * Mobile pagination is over *pages*, not photos — matching the GetYourGuide
+ * screen this mirrors. Each page is one fixed composition and the swipe moves
+ * a whole composition, so the dots count pages. Photos past page 4 stay in the
+ * lightbox, which the last page opens.
+ */
+export type GalleryPage =
+  | { kind: 'hero'; indexes: number[] }
+  | { kind: 'single'; indexes: number[] }
+  | { kind: 'twoUp'; indexes: number[] }
+  | { kind: 'stacked'; indexes: number[] }
+  | { kind: 'viewAll'; indexes: number[] }
+
+/**
+ * hero (3) → single (1) → stacked (3) → single (1) → view all.
+ *
+ * The reference reaches its fifth page with eight or more photos: 3 + 1 + 3 +
+ * 1 fills the four photo pages and "View all" closes the strip. Shorter tours
+ * stop early rather than repeating a photo to pad the count.
+ */
+export function buildMobilePages(count: number): GalleryPage[] {
+  if (count <= 0) return []
+  if (count === 1) return [{ kind: 'single', indexes: [0] }]
+  if (count === 2) return [{ kind: 'twoUp', indexes: [0, 1] }]
+
+  const pages: GalleryPage[] = [{ kind: 'hero', indexes: [0, 1, 2] }]
+  let index = 3
+
+  if (index < count) {
+    pages.push({ kind: 'single', indexes: [index] })
+    index += 1
+  }
+
+  const rest = count - index
+  if (rest >= 3) {
+    pages.push({ kind: 'stacked', indexes: [index, index + 1, index + 2] })
+    index += 3
+  } else if (rest === 2) {
+    pages.push({ kind: 'twoUp', indexes: [index, index + 1] })
+    index += 2
+  } else if (rest === 1) {
+    pages.push({ kind: 'single', indexes: [index] })
+    index += 1
+  }
+
+  if (index < count) {
+    pages.push({ kind: 'single', indexes: [index] })
+  }
+
+  // A "View all" page is only useful once the photo pages cannot show
+  // everything — otherwise it opens a lightbox the strip already exhausted.
+  if (count >= 4) pages.push({ kind: 'viewAll', indexes: [] })
+
+  return pages
+}
+
+function prefersReducedMotion(): boolean {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+export default function TourImageGallery({
+  images,
+  title,
+  fallbackImage,
+  onBack,
+  hideBack,
+  isSaved = false,
+  onToggleSave,
+  onShare,
+}: TourImageGalleryProps) {
   const { t } = useTranslation()
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
-  const [mobileIndex, setMobileIndex] = useState(0)
+  const [activePage, setActivePage] = useState(0)
+  // The gallery can stay mounted while the route swaps to another tour. Reset
+  // the carousel during render (React's documented "adjust state when a prop
+  // changes" pattern) rather than in an effect, which would render the old
+  // index once with the new photos first.
+  const [photoCount, setPhotoCount] = useState(images.length)
+  if (photoCount !== images.length) {
+    setPhotoCount(images.length)
+    setActivePage(0)
+  }
   // Measured tile boxes: GetYourGuide crops every tile at the CDN to the exact
   // box it renders in, so the browser never has to crop (or upscale) anything.
   const [tileSizes, setTileSizes] = useState<Record<number, Size>>({})
-  const [mobileSize, setMobileSize] = useState<Size | null>(null)
+  const [mobileTileSizes, setMobileTileSizes] = useState<Record<number, Size>>({})
 
   const rootRef = useRef<HTMLDivElement>(null)
   const tileRefs = useRef<Record<number, HTMLElement | null>>({})
-  const mobileSlideRef = useRef<HTMLButtonElement>(null)
-  const touchStartXRef = useRef<number | null>(null)
-  const swipedRef = useRef(false)
+  const mobileTileRefs = useRef<Record<number, HTMLElement | null>>({})
+  const scrollerRef = useRef<HTMLDivElement>(null)
 
   const columns = useMemo(() => buildColumns(images.length), [images.length])
   const desktopIndexes = useMemo(() => columns.flatMap((c) => c.indexes), [columns])
+  const pages = useMemo(() => buildMobilePages(images.length), [images.length])
 
   const measure = useCallback(() => {
     const next: Record<number, Size> = {}
@@ -104,28 +200,19 @@ export default function TourImageGallery({ images, title, fallbackImage, onBack,
       const h = Math.round(rect.height)
       if (w > 0 && h > 0) next[index] = { w, h: snapTileHeight(h) }
     }
-    setTileSizes((prev) => {
-      const same =
-        Object.keys(prev).length === Object.keys(next).length &&
-        Object.entries(next).every(([key, box]) => {
-          const before = prev[Number(key)]
-          return before?.w === box.w && before?.h === box.h
-        })
-      return same ? prev : next
-    })
+    setTileSizes((prev) => (sameSizeMap(prev, next) ? prev : next))
 
-    // The mobile carousel shows one slide at a time, so a single measurement
-    // covers every slide: its 4:3 box drives the CDN crop (and the <img>
-    // width/height hints) for every photo in the carousel.
-    const slide = mobileSlideRef.current
-    if (slide) {
-      const rect = slide.getBoundingClientRect()
+    // Mobile tiles differ in size per page (a hero, a half tile, a tall tile),
+    // so each one is measured rather than reusing a single slide box.
+    const nextMobile: Record<number, Size> = {}
+    for (const [key, el] of Object.entries(mobileTileRefs.current)) {
+      if (!el) continue
+      const rect = el.getBoundingClientRect()
       const w = Math.round(rect.width)
       const h = Math.round(rect.height)
-      if (w > 0 && h > 0) {
-        setMobileSize((prev) => (prev && prev.w === w && prev.h === h ? prev : { w, h }))
-      }
+      if (w > 0 && h > 0) nextMobile[Number(key)] = { w, h }
     }
+    setMobileTileSizes((prev) => (sameSizeMap(prev, nextMobile) ? prev : nextMobile))
   }, [desktopIndexes])
 
   useEffect(() => {
@@ -151,37 +238,49 @@ export default function TourImageGallery({ images, title, fallbackImage, onBack,
     [images, fallbackImage],
   )
 
-  const showMobile = useCallback((index: number) => {
-    setMobileIndex((prev) => {
-      const count = images.length
-      if (count === 0) return prev
-      return ((index % count) + count) % count
-    })
+  // Snap the strip back only when the photo set changes. The page index is
+  // reset above, during render.
+  useEffect(() => {
+    const scroller = scrollerRef.current
+    if (!scroller) return
+    // jsdom has no layout engine and no scrollTo; fall back to the property.
+    if (typeof scroller.scrollTo === 'function') scroller.scrollTo({ left: 0 })
+    else scroller.scrollLeft = 0
   }, [images.length])
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartXRef.current = e.touches[0]?.clientX ?? null
-    swipedRef.current = false
-  }
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const startX = touchStartXRef.current
-    touchStartXRef.current = null
-    if (startX === null) return
-    const endX = e.changedTouches[0]?.clientX ?? startX
-    const deltaX = endX - startX
-    if (Math.abs(deltaX) > 45) {
-      swipedRef.current = true
-      showMobile(mobileIndex + (deltaX < 0 ? 1 : -1))
-    }
-  }
-
-  // A swipe on touch devices also fires a click; don't let it open the lightbox.
-  const openLightbox = useCallback((index: number) => {
-    if (swipedRef.current) {
-      swipedRef.current = false
+  const goToPage = useCallback((index: number) => {
+    const scroller = scrollerRef.current
+    if (!scroller) return
+    const page = scroller.children[index] as HTMLElement | undefined
+    if (!page) return
+    if (typeof page.scrollIntoView !== 'function') {
+      // Non-browser host (tests): scroll the strip directly.
+      scroller.scrollLeft = page.offsetLeft
       return
     }
+    page.scrollIntoView({
+      behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+      block: 'nearest',
+      inline: 'start',
+    })
+  }, [])
+
+  const handleScroll = () => {
+    const scroller = scrollerRef.current
+    if (!scroller) return
+    const children = scroller.children
+    if (children.length === 0) return
+    const first = children[0] as HTMLElement
+    const second = children[1] as HTMLElement | undefined
+    const step = second ? second.offsetLeft - first.offsetLeft : first.offsetWidth
+    if (step <= 0) return
+    const next = Math.round(scroller.scrollLeft / step)
+    setActivePage((prev) =>
+      prev === next ? prev : Math.min(Math.max(next, 0), children.length - 1),
+    )
+  }
+
+  const openLightbox = useCallback((index: number) => {
     if (images.length === 0) return
     setLightboxIndex(Math.max(0, Math.min(index, images.length - 1)))
   }, [images.length])
@@ -193,6 +292,89 @@ export default function TourImageGallery({ images, title, fallbackImage, onBack,
       e.currentTarget.dataset.exhausted = 'true'
     }
   }, [fallbackImage])
+
+  const renderMobileTile = (imageIndex: number, className = '') => {
+    const box = mobileTileSizes[imageIndex]
+    return (
+      <button
+        key={imageIndex}
+        type="button"
+        ref={(el) => { mobileTileRefs.current[imageIndex] = el }}
+        className={`tour-gallery-mobile-tile ${className}`.trim()}
+        onClick={() => openLightbox(imageIndex)}
+        aria-label={t('gallery.viewPhoto', { number: imageIndex + 1 })}
+        data-testid={`tour-gallery-mobile-tile-${imageIndex}`}
+      >
+        {box && (
+          <OptimizedImage
+            src={images[imageIndex] || fallbackImage}
+            alt={`${title} ${imageIndex + 1}`}
+            onError={handleImageError}
+            width={box.w}
+            height={box.h}
+            fit="fill"
+            gravity="auto"
+            sizes="100vw"
+            className="tour-gallery-mobile-image"
+            priority={imageIndex === 0}
+          />
+        )}
+      </button>
+    )
+  }
+
+  const renderPage = (page: GalleryPage) => {
+    switch (page.kind) {
+      case 'hero':
+        return (
+          <div className="tour-gallery-hero">
+            {renderMobileTile(page.indexes[0], 'tour-gallery-hero-main')}
+            <div className="tour-gallery-hero-row">
+              {page.indexes.slice(1).map((imageIndex) => renderMobileTile(imageIndex))}
+            </div>
+          </div>
+        )
+      case 'twoUp':
+        return (
+          <div className="tour-gallery-two-up">
+            {page.indexes.map((imageIndex) => renderMobileTile(imageIndex))}
+          </div>
+        )
+      case 'stacked':
+        return (
+          <div className="tour-gallery-stacked">
+            {page.indexes.map((imageIndex) => renderMobileTile(imageIndex))}
+          </div>
+        )
+      case 'viewAll':
+        return (
+          <button
+            type="button"
+            className="tour-gallery-view-all"
+            onClick={() => openLightbox(0)}
+          >
+            <OptimizedImage
+              src={images[0] || fallbackImage}
+              alt=""
+              width={mobileTileSizes[0]?.w}
+              height={mobileTileSizes[0]?.h}
+              fit="fill"
+              gravity="auto"
+              sizes="100vw"
+              className="tour-gallery-mobile-image"
+              onError={handleImageError}
+            />
+            <span className="tour-gallery-view-all-content">
+              <Images size={24} strokeWidth={2} aria-hidden="true" />
+              {t('gallery.viewAll', { defaultValue: 'View all' })}
+            </span>
+          </button>
+        )
+      case 'single':
+      default:
+        return renderMobileTile(page.indexes[0])
+    }
+  }
 
   return (
     <>
@@ -244,57 +426,76 @@ export default function TourImageGallery({ images, title, fallbackImage, onBack,
           </div>
         )}
 
-        {/* Mobile (<768px) — 4:3 swipe carousel */}
-        <div
-          className="tour-gallery-mobile"
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
+        {/* Mobile (<768px) — a page-per-swipe strip with a peeking neighbour */}
+        <div className="tour-gallery-mobile" data-testid="tour-gallery-mobile">
           <div
-            className="tour-gallery-mobile-track"
-            style={{ transform: `translateX(-${mobileIndex * 100}%)` }}
+            ref={scrollerRef}
+            className="tour-gallery-mobile-scroller"
+            onScroll={handleScroll}
+            role="group"
+            aria-roledescription="carousel"
+            aria-label={t('gallery.carouselLabel', { defaultValue: 'Tour photos' })}
           >
-            {images.map((image, index) => (
-              <button
-                type="button"
-                key={index}
-                ref={index === 0 ? mobileSlideRef : undefined}
-                className="tour-gallery-mobile-slide"
-                onClick={() => openLightbox(index)}
-                aria-label={t('gallery.viewPhoto', { number: index + 1 })}
+            {pages.map((page, pageIndex) => (
+              <div
+                key={pageIndex}
+                className="tour-gallery-page"
+                data-page={page.kind}
+                data-testid={`tour-gallery-page-${pageIndex}`}
+                aria-label={`${pageIndex + 1} / ${pages.length}`}
               >
-                {mobileSize && (
-                  <OptimizedImage
-                    src={image || fallbackImage}
-                    alt={`${title} ${index + 1}`}
-                    onError={handleImageError}
-                    width={mobileSize.w}
-                    height={mobileSize.h}
-                    fit="fill"
-                    gravity="auto"
-                    sizes="100vw"
-                    className="tour-gallery-mobile-image"
-                    priority={index === 0}
-                  />
-                )}
-              </button>
+                {renderPage(page)}
+              </div>
             ))}
           </div>
 
-          {images.length > 1 && (
-            <div className="tour-gallery-dots">
-              {images.map((_, index) => (
+          {pages.length > 1 && (
+            <div className="tour-gallery-pagination">
+              {pages.map((_, index) => (
                 <button
                   key={index}
                   type="button"
-                  onClick={() => showMobile(index)}
-                  className={`tour-gallery-dot ${index === mobileIndex ? 'active' : ''}`}
+                  onClick={() => goToPage(index)}
+                  className={`tour-gallery-dot ${index === activePage ? 'active' : ''}`}
                   aria-label={t('gallery.goToImage', { number: index + 1 })}
+                  aria-current={index === activePage ? 'true' : undefined}
                 />
               ))}
             </div>
           )}
         </div>
+
+        {/* Mobile-only save + share, pinned over the strip like the reference.
+            Desktop keeps its own wishlist/share affordances elsewhere. */}
+        {(onToggleSave || onShare) && (
+          <div className="tour-gallery-mobile-actions">
+            {onToggleSave && (
+              <button
+                type="button"
+                className={`tour-gallery-round${isSaved ? ' is-saved' : ''}`}
+                onClick={onToggleSave}
+                aria-label={
+                  isSaved
+                    ? t('common.removeFromWishlist', 'Remove from wishlist')
+                    : t('common.addToWishlist', 'Add to wishlist')
+                }
+                aria-pressed={isSaved}
+              >
+                <Heart size={20} strokeWidth={2} fill={isSaved ? 'currentColor' : 'none'} aria-hidden="true" />
+              </button>
+            )}
+            {onShare && (
+              <button
+                type="button"
+                className="tour-gallery-round"
+                onClick={onShare}
+                aria-label={t('common.share', 'Share')}
+              >
+                <Share size={19} strokeWidth={2} aria-hidden="true" />
+              </button>
+            )}
+          </div>
+        )}
 
         {/* The page's primary back affordance: a bare left arrow on a round
             white button, top-left of the gallery. Once the sticky title/tabs
@@ -310,8 +511,7 @@ export default function TourImageGallery({ images, title, fallbackImage, onBack,
           </button>
         )}
 
-        {/* "View all photos" — bottom-right of the gallery (above the mobile
-            pagination dots). */}
+        {/* "View all photos" — desktop only. On phones the last page owns it. */}
         {images.length > 0 && (
           <button
             type="button"

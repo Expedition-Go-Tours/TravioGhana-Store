@@ -29,6 +29,26 @@
   background: #179237;
 }
 
+/*
+ * Phones: no accent bar, centred headline.
+ *
+ * The bar reads as an editorial pull-quote on a wide column, but on a 390px
+ * screen it eats 21px of the first line — nearly a word — and drags the eye to
+ * the margin instead of the title. Centred with no bar is the same treatment
+ * the storefront's phone gallery reference uses.
+ */
+@media (max-width: 767.98px) {
+  .tour-header-title {
+    padding-left: 0;
+    text-align: center;
+    color: #1e2b47;
+  }
+
+  .tour-header-title::before {
+    display: none;
+  }
+}
+
 /* ── Info card ───────────────────────────────────────────────────────
    One white card (Reviews / Destination / Experience Host, plus the
    conditional trust cues): rounded corners, a hairline border, equal
