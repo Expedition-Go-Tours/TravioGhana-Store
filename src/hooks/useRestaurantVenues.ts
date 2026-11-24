@@ -116,6 +116,11 @@ export interface RestaurantVenueFilters {
   minRating?: number
   minReviews?: number
   featured?: boolean
+  lat?: number
+  lng?: number
+  radiusKm?: number
+  /** Display name of the map place that supplied lat/lng. */
+  place?: string
   sort?: RestaurantSort
 }
 
@@ -140,6 +145,10 @@ export function buildRestaurantVenuePath(
   if (filters.minRating) params.set('minRating', String(filters.minRating))
   if (filters.minReviews != null) params.set('minReviews', String(filters.minReviews))
   if (filters.featured) params.set('featured', 'true')
+  if (filters.lat != null) params.set('lat', String(filters.lat))
+  if (filters.lng != null) params.set('lng', String(filters.lng))
+  if (filters.radiusKm != null) params.set('radiusKm', String(filters.radiusKm))
+  if (filters.place) params.set('place', filters.place)
   if (cursor) params.set('cursor', cursor)
 
   return `/v1/restaurant-venues?${params.toString()}`

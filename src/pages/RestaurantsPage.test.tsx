@@ -18,6 +18,14 @@ vi.mock('../components/RestaurantCard', () => ({
 
 vi.mock('../components/SEO', () => ({ default: () => null }))
 vi.mock('../components/Footer', () => ({ default: () => <footer /> }))
+vi.mock('../hooks/useRestaurantSearch', () => ({
+  useRestaurantSearch: () => ({
+    restaurants: [],
+    places: [],
+    isSearching: false,
+    hasQuery: false,
+  }),
+}))
 
 const mockHook = vi.mocked(useRestaurantVenues)
 
@@ -111,10 +119,9 @@ describe('RestaurantsPage home', () => {
   it('turns a home search into URL filters', () => {
     renderPage('/restaurants')
 
-    fireEvent.change(screen.getByRole('searchbox', { name: 'Search restaurants' }), {
-      target: { value: 'kumasi' },
-    })
-    fireEvent.submit(screen.getByRole('searchbox', { name: 'Search restaurants' }).closest('form')!)
+    const search = screen.getByRole('combobox', { name: 'Search restaurants by name or place' })
+    fireEvent.change(search, { target: { value: 'kumasi' } })
+    fireEvent.submit(search.closest('form')!)
 
     expect(screen.getByTestId('location')).toHaveTextContent('/restaurants?q=kumasi')
   })
@@ -140,10 +147,35 @@ describe('RestaurantsPage results', () => {
       minRating: undefined,
       minReviews: undefined,
       featured: true,
+      lat: undefined,
+      lng: undefined,
+      radiusKm: undefined,
+      place: undefined,
       sort: 'newest',
     })
     expect(screen.getByRole('heading', { name: 'Restaurants in Ghana' })).toBeInTheDocument()
     expect(screen.getByText('The Place')).toBeInTheDocument()
+  })
+
+  it('passes a map place point and radius to the venue hook', () => {
+    renderPage('/restaurants?lat=5.56&lng=-0.19&radiusKm=10&place=Osu')
+
+    expect(mockHook).toHaveBeenCalledWith({
+      q: undefined,
+      city: undefined,
+      cuisine: undefined,
+      dietary: undefined,
+      priceBand: undefined,
+      minRating: undefined,
+      minReviews: undefined,
+      featured: undefined,
+      lat: 5.56,
+      lng: -0.19,
+      radiusKm: 10,
+      place: 'Osu',
+      sort: undefined,
+    })
+    expect(screen.getByText('Showing 1 place near Osu')).toBeInTheDocument()
   })
 
   it('submits the filter search box as a URL filter', () => {

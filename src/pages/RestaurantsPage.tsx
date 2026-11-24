@@ -16,6 +16,7 @@ import {
 import SEO from '../components/SEO'
 import Footer from '../components/Footer'
 import RestaurantCard from '../components/RestaurantCard'
+import RestaurantSearchBar from '../components/RestaurantSearchBar'
 import {
   useRestaurantVenues,
   type RestaurantSort,
@@ -130,6 +131,9 @@ function parseSort(value: string | null): RestaurantSort | undefined {
 }
 
 function buildFilters(params: URLSearchParams): RestaurantVenueFilters {
+  const lat = optionalNumber(params.get('lat'))
+  const lng = optionalNumber(params.get('lng'))
+
   return {
     q: params.get('q') || undefined,
     city: params.get('city') || undefined,
@@ -142,6 +146,12 @@ function buildFilters(params: URLSearchParams): RestaurantVenueFilters {
     minRating: optionalNumber(params.get('minRating')),
     minReviews: optionalNumber(params.get('minReviews')),
     featured: params.get('featured') === 'true' || undefined,
+    lat: lat ?? undefined,
+    lng: lng ?? undefined,
+    radiusKm:
+      (lat != null && lng != null ? optionalNumber(params.get('radiusKm')) ?? 10 : undefined) ||
+      undefined,
+    place: params.get('place') || undefined,
     sort: parseSort(params.get('sort')),
   }
 }
@@ -211,18 +221,8 @@ function RestaurantRail({
 }
 
 function RestaurantHome() {
-  const [searchParams, setSearchParams] = useSearchParams()
   const topRated = useRestaurantVenues({ sort: 'rating' })
   const newest = useRestaurantVenues({ sort: 'newest' })
-
-  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const value = String(new FormData(event.currentTarget).get('q') || '').trim()
-    const next = new URLSearchParams(searchParams)
-    if (value) next.set('q', value)
-    else next.delete('q')
-    setSearchParams(next)
-  }
 
   return (
     <div className="restaurants-page">
@@ -241,21 +241,7 @@ function RestaurantHome() {
             Browse places by city and cuisine. Travio stars come from diners who reviewed on
             Travio, and outside scores stay labelled with their source.
           </p>
-          <form
-            key={`home-${searchParams.toString()}`}
-            className="rh-home-search"
-            onSubmit={submitSearch}
-          >
-            <Search size={18} aria-hidden="true" />
-            <input
-              name="q"
-              type="search"
-              defaultValue={searchParams.get('q') ?? ''}
-              placeholder="Restaurant, neighbourhood or city"
-              aria-label="Search restaurants"
-            />
-            <button type="submit">Search restaurants</button>
-          </form>
+          <RestaurantSearchBar />
           <div className="rh-home-cities">
             <span>Popular cities:</span>
             {CITIES.slice(0, 4).map((city) => (
@@ -348,6 +334,7 @@ type ActiveChip = { key: string; label: string; value?: string }
 function activeChips(filters: RestaurantVenueFilters): ActiveChip[] {
   const chips: ActiveChip[] = []
   if (filters.q) chips.push({ key: 'q', label: `Search: ${filters.q}` })
+  if (filters.place) chips.push({ key: 'place', label: `Near ${filters.place}` })
   if (filters.city) chips.push({ key: 'city', label: filters.city })
   if (filters.cuisine) chips.push({ key: 'cuisine', label: displayLabel(filters.cuisine) })
   if (filters.dietary) {
@@ -395,6 +382,10 @@ function RestaurantResults() {
     if (chip.key === 'dietary') {
       const remaining = dietary.filter((item) => item !== chip.value)
       updateParams({ dietary: remaining.length ? remaining.join(',') : null })
+      return
+    }
+    if (chip.key === 'place') {
+      updateParams({ place: null, lat: null, lng: null, radiusKm: null })
       return
     }
     updateParams({ [chip.key]: null })
@@ -516,7 +507,9 @@ function RestaurantResults() {
                   type="radio"
                   name="city"
                   checked={!filters.city}
-                  onChange={() => updateParams({ city: null })}
+                  onChange={() =>
+                    updateParams({ city: null, place: null, lat: null, lng: null, radiusKm: null })
+                  }
                 />
                 All cities
               </label>
@@ -526,7 +519,9 @@ function RestaurantResults() {
                     type="radio"
                     name="city"
                     checked={filters.city === city}
-                    onChange={() => updateParams({ city })}
+                    onChange={() =>
+                      updateParams({ city, place: null, lat: null, lng: null, radiusKm: null })
+                    }
                   />
                   {city}
                 </label>
@@ -697,7 +692,7 @@ function RestaurantResults() {
               <>
                 <p className="restaurants-count">
                   Showing {venues.length} {venues.length === 1 ? 'place' : 'places'}
-                  {filters.city ? ` in ${filters.city}` : ''}
+                  {filters.place ? ` near ${filters.place}` : filters.city ? ` in ${filters.city}` : ''}
                 </p>
                 <div className="restaurants-grid">
                   {venues.map((venue) => (
