@@ -70,6 +70,10 @@ public/maplibre-gl/
 # treatment as public/mapbox-gl/ above.
 public/stories/*.html
 
+# Generated on every `prebuild` from the live catalogue. A stale copy is worse
+# than none, so Vercel rebuilds it; it is not a file to hand-edit or commit.
+public/llms.txt
+
 # Coverage
 coverage/
 
