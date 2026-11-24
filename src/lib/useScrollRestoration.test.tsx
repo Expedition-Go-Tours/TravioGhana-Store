@@ -27,6 +27,9 @@ function Probe() {
       <button type="button" onClick={() => navigate('/next')}>
         next
       </button>
+      <button type="button" onClick={() => navigate(location.pathname + location.search)}>
+        self
+      </button>
       <button type="button" onClick={() => navigate(-1)}>
         back
       </button>
@@ -130,6 +133,47 @@ describe('useScrollRestoration', () => {
     renderAt(['/a', '/next'], 1)
     // A fresh entry (opened directly) has no saved offset: land at the top.
     await waitFor(() => expect(mockScrollToTop).toHaveBeenCalled())
+  })
+
+  it('restores after a same-URL link, like the footer Home link', async () => {
+    renderAt(['/a'])
+    const keyA = screen.getByTestId('key').textContent as string
+
+    readerScrollsTo(1840)
+    await waitFor(() => expect(readSavedScroll(keyA)).toBe(1840))
+
+    fireEvent.click(screen.getByText('self'))
+    await waitFor(() => expect(screen.getByTestId('key').textContent).not.toBe(keyA))
+    fireEvent.click(screen.getByText('back'))
+    await waitFor(() => expect(screen.getByTestId('key').textContent).toBe(keyA))
+
+    await waitFor(() => expect(mockScrollToPosition).toHaveBeenCalledWith(1840))
+  })
+
+  it('ignores the horizontal wheel tail of a trackpad swipe-back', async () => {
+    renderAt(['/a', '/next'])
+    const keyA = screen.getByTestId('key').textContent as string
+
+    readerScrollsTo(1840)
+    await waitFor(() => expect(readSavedScroll(keyA)).toBe(1840))
+
+    fireEvent.click(screen.getByText('next'))
+    await waitFor(() => expect(screen.getByTestId('path').textContent).toBe('/next'))
+    fireEvent.click(screen.getByText('back'))
+    await waitFor(() => expect(screen.getByTestId('path').textContent).toBe('/a'))
+    fireEvent.wheel(window, { deltaX: 160, deltaY: 0 })
+
+    await waitFor(() => expect(mockScrollToPosition).toHaveBeenCalledWith(1840))
+  })
+
+  it('does not restore a stale offset on a fresh page load', async () => {
+    // A reload or a pasted link reuses the `default` key. React Router calls
+    // that POP, but nobody returned to an entry they had left.
+    writeSavedScroll('default', 1840)
+    renderAt(['/a'])
+
+    await waitFor(() => expect(mockScrollToTop).toHaveBeenCalled())
+    expect(mockScrollToPosition).not.toHaveBeenCalled()
   })
 
   it('ignores a remembered position of zero', () => {
