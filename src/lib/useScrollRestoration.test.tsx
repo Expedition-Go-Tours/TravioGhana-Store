@@ -99,6 +99,24 @@ describe('useScrollRestoration', () => {
     await waitFor(() => expect(mockScrollToPosition).toHaveBeenCalledWith(1840))
   })
 
+  it('keeps scrolling at the ceiling until lazy content makes the page tall', async () => {
+    renderAt(['/a'])
+    const keyA = screen.getByTestId('key').textContent as string
+    writeSavedScroll(keyA, 1840)
+
+    fireEvent.click(screen.getByText('next'))
+    await waitFor(() => expect(screen.getByTestId('path').textContent).toBe('/next'))
+    setPageHeight(1000)
+
+    fireEvent.click(screen.getByText('back'))
+
+    await waitFor(() => expect(mockScrollToPosition).toHaveBeenCalledWith(200))
+    // Page grows as the first scroll mounts more sections; the loop follows.
+    setPageHeight(6000)
+    await waitFor(() => expect(mockScrollToPosition).toHaveBeenCalledWith(1840))
+    expect(readSavedScroll(keyA)).toBe(1840)
+  })
+
   it('lands at the top when following a link', async () => {
     renderAt(['/a', '/next'])
     fireEvent.click(screen.getByText('next'))

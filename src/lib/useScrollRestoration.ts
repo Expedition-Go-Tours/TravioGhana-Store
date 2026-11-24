@@ -122,8 +122,14 @@ function restoreScroll(y: number, onDone: () => void): () => void {
       return
     }
 
-    const target = Math.min(y, maxScrollable())
-    if (Math.abs(window.scrollY - target) > 1) {
+    const max = maxScrollable()
+    const target = Math.min(y, max)
+    // Keep nudging while the page is shorter than the target: once scrollY
+    // equals the clamped target the browser stops firing scroll events, so
+    // below-fold sections never mount and the page never grows. Reissuing the
+    // scroll at the ceiling is what wakes the next batch. When the page is
+    // finally tall enough, only correct a real difference.
+    if (max < y || Math.abs(window.scrollY - target) > 1) {
       scrollToPosition(target)
     }
 
