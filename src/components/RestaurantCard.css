@@ -1,0 +1,123 @@
+.restaurant-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--bv-line, #e5e7eb);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 6px 20px rgb(20 39 31 / 6%);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.restaurant-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgb(20 39 31 / 10%);
+}
+
+.restaurant-card__media {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  background: #f1f5f2;
+}
+
+.restaurant-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.restaurant-card__no-image {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  color: var(--bv-muted, #667085);
+  font-size: 13px;
+}
+
+.restaurant-card__featured,
+.restaurant-card__rank {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 94%);
+  color: var(--bv-forest, #16452f);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.restaurant-card__rank {
+  top: auto;
+  bottom: 12px;
+  background: var(--bv-forest, #16452f);
+  color: #fff;
+}
+
+.restaurant-card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 18px 20px;
+}
+
+.restaurant-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  color: var(--bv-accent, #b45309);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.restaurant-card__name {
+  margin: 0;
+  color: var(--bv-ink, #14271f);
+  font-family: var(--font-heading, inherit);
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.restaurant-card__location {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  color: var(--bv-muted, #667085);
+  font-size: 13px;
+}
+
+.restaurant-card__rating {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  color: var(--bv-muted, #667085);
+  font-size: 13px;
+}
+
+.restaurant-card__rating strong {
+  color: var(--bv-ink, #14271f);
+  font-size: 14px;
+}
+
+.restaurant-card__verified,
+.restaurant-card__external {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  color: var(--bv-muted, #667085);
+  font-size: 12px;
+}
+
+.restaurant-card__verified {
+  color: var(--bv-forest, #16452f);
+}
