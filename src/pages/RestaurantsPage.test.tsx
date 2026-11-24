@@ -99,6 +99,15 @@ describe('RestaurantsPage home', () => {
     expect(mockHook).toHaveBeenNthCalledWith(2, { sort: 'newest' })
   })
 
+  it('links cuisine tiles to lowercase cuisine filters', () => {
+    renderPage('/restaurants')
+
+    expect(
+      screen.getByRole('link', { name: 'See Ghanaian restaurants in Ghana' }),
+    ).toHaveAttribute('href', '/restaurants?cuisine=ghanaian')
+    expect(screen.getByRole('heading', { name: 'What are you in the mood for?' })).toBeInTheDocument()
+  })
+
   it('turns a home search into URL filters', () => {
     renderPage('/restaurants')
 

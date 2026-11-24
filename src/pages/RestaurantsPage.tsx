@@ -1,8 +1,9 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
-  Coffee,
+  ArrowUpRight,
   Fish,
+  Flame,
   Leaf,
   MapPin,
   Pizza,
@@ -10,6 +11,7 @@ import {
   SlidersHorizontal,
   Soup,
   UtensilsCrossed,
+  type LucideIcon,
 } from 'lucide-react'
 import SEO from '../components/SEO'
 import Footer from '../components/Footer'
@@ -19,13 +21,69 @@ import {
   type RestaurantSort,
   type RestaurantVenueFilters,
 } from '../hooks/useRestaurantVenues'
+import ghanaianImage from '../assets/restaurants/cuisine-ghanaian.webp'
+import nigerianImage from '../assets/restaurants/cuisine-nigerian.webp'
+import chineseImage from '../assets/restaurants/cuisine-chinese.webp'
+import indianImage from '../assets/restaurants/cuisine-indian.webp'
+import italianImage from '../assets/restaurants/cuisine-italian.webp'
+import seafoodImage from '../assets/restaurants/cuisine-seafood.webp'
+import vegetarianImage from '../assets/restaurants/cuisine-vegetarian.webp'
 import './RestaurantsPage.css'
 
 const CITIES = ['Accra', 'Kumasi', 'Cape Coast', 'Takoradi', 'Tamale', 'Elmina']
-const CUISINES = ['Ghanaian', 'Nigerian', 'Chinese', 'Indian', 'Italian', 'Seafood', 'Vegetarian']
 const DIETARY = ['vegetarian', 'vegan', 'gluten-free', 'halal']
 
-const CATEGORY_ICONS = [UtensilsCrossed, Soup, Fish, Leaf, Pizza, Coffee, Soup]
+type Cuisine = {
+  label: string
+  note: string
+  image: string
+  Icon: LucideIcon
+}
+
+const CUISINES: Cuisine[] = [
+  {
+    label: 'Ghanaian',
+    note: 'Jollof, banku & soups',
+    image: ghanaianImage,
+    Icon: UtensilsCrossed,
+  },
+  {
+    label: 'Nigerian',
+    note: 'Suya, pepper soup & rice',
+    image: nigerianImage,
+    Icon: Flame,
+  },
+  {
+    label: 'Chinese',
+    note: 'Noodles, dumplings & wok',
+    image: chineseImage,
+    Icon: Soup,
+  },
+  {
+    label: 'Indian',
+    note: 'Curry, thali & tandoor',
+    image: indianImage,
+    Icon: Soup,
+  },
+  {
+    label: 'Italian',
+    note: 'Pasta, pizza & espresso',
+    image: italianImage,
+    Icon: Pizza,
+  },
+  {
+    label: 'Seafood',
+    note: 'Grilled catch & pepper',
+    image: seafoodImage,
+    Icon: Fish,
+  },
+  {
+    label: 'Vegetarian',
+    note: 'Plant-based plates & sides',
+    image: vegetarianImage,
+    Icon: Leaf,
+  },
+]
 
 const SORTS: { value: RestaurantSort; label: string }[] = [
   { value: 'rating', label: 'Top rated' },
@@ -119,7 +177,7 @@ function RestaurantRail({
 
       {query.isPending && (
         <div className="rh-home-rail" aria-label={`Loading ${title}`}>
-          {Array.from({ length: 3 }, (_, index) => (
+          {Array.from({ length: 4 }, (_, index) => (
             <div key={index} className="restaurant-skeleton" />
           ))}
         </div>
@@ -208,30 +266,54 @@ function RestaurantHome() {
           </div>
         </section>
 
-        <section className="rh-home-section">
+        <section className="rh-home-section rh-cuisine-section">
           <div className="rh-section-head">
             <div>
-              <h2>What sounds good?</h2>
-              <p>Pick a cuisine to see matching restaurants.</p>
+              <span className="rh-cuisine-kicker">Explore by cuisine</span>
+              <h2>What are you in the mood for?</h2>
+              <p>Choose a cuisine and we’ll show you the places serving it.</p>
             </div>
           </div>
           <div className="rh-category-grid">
-            {CUISINES.map((cuisine, index) => {
-              const Icon = CATEGORY_ICONS[index % CATEGORY_ICONS.length]
-              return (
+            {CUISINES.map(({ label, note, image, Icon }, index) => (
+              <div
+                key={label}
+                className="rh-category-tile-shell"
+                style={{ animationDelay: `${index * 60}ms` }}
+              >
                 <Link
-                  key={cuisine}
                   className="rh-category-tile"
-                  to={`/restaurants?cuisine=${encodeURIComponent(cuisine.toLowerCase())}`}
+                  to={`/restaurants?cuisine=${encodeURIComponent(label.toLowerCase())}`}
+                  aria-label={`See ${label} restaurants in Ghana`}
                 >
-                  <span className="rh-category-tile__icon" aria-hidden="true">
-                    <Icon size={24} strokeWidth={1.8} />
+                  <img
+                    className="rh-category-tile__image"
+                    src={image}
+                    alt=""
+                    width={560}
+                    height={700}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <span className="rh-category-tile__scrim" aria-hidden="true" />
+                  <span className="rh-category-tile__top" aria-hidden="true">
+                    <span className="rh-category-tile__icon">
+                      <Icon size={18} strokeWidth={1.9} />
+                    </span>
+                    <span className="rh-category-tile__arrow">
+                      <ArrowUpRight size={16} strokeWidth={2} />
+                    </span>
                   </span>
-                  <span className="rh-category-tile__name">{cuisine}</span>
-                  <span className="rh-category-tile__hint">See places</span>
+                  <span className="rh-category-tile__body">
+                    <span className="rh-category-tile__index">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <span className="rh-category-tile__name">{label}</span>
+                    <span className="rh-category-tile__note">{note}</span>
+                  </span>
                 </Link>
-              )
-            })}
+              </div>
+            ))}
           </div>
         </section>
 
@@ -462,15 +544,15 @@ function RestaurantResults() {
                 />
                 Any cuisine
               </label>
-              {CUISINES.map((cuisine) => (
-                <label key={cuisine}>
+              {CUISINES.map(({ label }) => (
+                <label key={label}>
                   <input
                     type="radio"
                     name="cuisine"
-                    checked={filters.cuisine === cuisine.toLowerCase()}
-                    onChange={() => updateParams({ cuisine: cuisine.toLowerCase() })}
+                    checked={filters.cuisine === label.toLowerCase()}
+                    onChange={() => updateParams({ cuisine: label.toLowerCase() })}
                   />
-                  {cuisine}
+                  {label}
                 </label>
               ))}
             </fieldset>

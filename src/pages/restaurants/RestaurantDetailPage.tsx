@@ -285,11 +285,12 @@ export default function RestaurantDetailPage() {
                   width={900}
                   height={560}
                   fit="crop"
+                  sizes="(max-width: 900px) 92vw, 64vw"
                   priority
                 />
               </button>
               <div className="rd-gallery__thumbs">
-                {images.slice(0, 5).map((image, index) => (
+                {images.slice(0, 4).map((image, index) => (
                   <button
                     key={image}
                     type="button"
@@ -297,7 +298,14 @@ export default function RestaurantDetailPage() {
                     onClick={() => setActivePhoto(index)}
                     aria-label={`Show photo ${index + 1}`}
                   >
-                    <OptimizedImage src={image} alt="" width={160} height={110} fit="crop" />
+                    <OptimizedImage
+                      src={image}
+                      alt=""
+                      width={160}
+                      height={110}
+                      fit="crop"
+                      sizes="(max-width: 640px) 30vw, (max-width: 900px) 18vw, 15vw"
+                    />
                   </button>
                 ))}
               </div>

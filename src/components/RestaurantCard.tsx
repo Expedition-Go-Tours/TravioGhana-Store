@@ -55,6 +55,7 @@ export default function RestaurantCard({ venue }: RestaurantCardProps) {
               height={280}
               alt=""
               fit="crop"
+              sizes="(max-width: 640px) 78vw, (max-width: 900px) 48vw, (max-width: 1180px) 32vw, 23vw"
               className="restaurant-card__image"
             />
           ) : (
@@ -82,7 +83,7 @@ export default function RestaurantCard({ venue }: RestaurantCardProps) {
           {locationLabel(venue) && (
             <p className="restaurant-card__location">
               <MapPin size={14} aria-hidden="true" />
-              {locationLabel(venue)}
+              <span>{locationLabel(venue)}</span>
             </p>
           )}
 
