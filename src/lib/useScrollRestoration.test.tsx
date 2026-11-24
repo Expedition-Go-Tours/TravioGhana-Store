@@ -114,4 +114,63 @@ describe('useScrollRestoration', () => {
     writeSavedScroll('at-top', 0)
     expect(readSavedScroll('at-top')).toBeNull()
   })
+
+  it('does not let a route-swap clamp overwrite the real offset', async () => {
+    renderAt(['/a', '/next'])
+    const keyA = screen.getByTestId('key').textContent as string
+
+    setScrollY(1840)
+    fireEvent.scroll(window)
+    await waitFor(() => expect(readSavedScroll(keyA)).toBe(1840))
+
+    // The next route renders short before its content arrives: the browser
+    // clamps scrollY to 0 and fires a scroll event while the old listener is
+    // still mounted. That is not the reader scrolling back to the top.
+    setScrollY(0)
+    fireEvent.scroll(window)
+    await waitFor(() => expect(readSavedScroll(keyA)).toBe(1840))
+  })
+
+  it('records the real offset at click time, before the next route clamps', async () => {
+    renderAt(['/a', '/next'])
+    const keyA = screen.getByTestId('key').textContent as string
+
+    setScrollY(1840)
+    fireEvent.scroll(window)
+    await waitFor(() => expect(readSavedScroll(keyA)).toBe(1840))
+
+    fireEvent.click(screen.getByText('next'))
+    // Capture runs in the capture phase, before our navigate() handler resets
+    // scrollY; the recorded value is where the reader actually was.
+    expect(readSavedScroll(keyA)).toBe(1840)
+  })
+
+  it('does not clear the memory on a transient top, only a sustained one', async () => {
+    renderAt(['/a', '/next'])
+    const keyA = screen.getByTestId('key').textContent as string
+
+    setScrollY(1840)
+    fireEvent.scroll(window)
+    await waitFor(() => expect(readSavedScroll(keyA)).toBe(1840))
+
+    // Lenis/route re-layout can report 0 for a frame. A click in that frame
+    // must not turn it into "the reader left from the top".
+    setScrollY(0)
+    fireEvent.scroll(window)
+    fireEvent.click(screen.getByText('next'))
+    expect(readSavedScroll(keyA)).toBe(1840)
+  })
+
+  it('forgets the offset when the reader deliberately returns to the top', async () => {
+    renderAt(['/a'])
+    const key = screen.getByTestId('key').textContent as string
+
+    setScrollY(1840)
+    fireEvent.scroll(window)
+    await waitFor(() => expect(readSavedScroll(key)).toBe(1840))
+
+    setScrollY(0)
+    fireEvent.scroll(window)
+    await waitFor(() => expect(readSavedScroll(key)).toBeNull(), { timeout: 1500 })
+  })
 })

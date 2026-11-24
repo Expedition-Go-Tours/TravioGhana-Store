@@ -12,6 +12,13 @@
  * - The current offset is written to `sessionStorage` on scroll (one write per
  *   animation frame, not per scroll event) and flushed when the tab is hidden.
  *   Session storage, not local: a restored position belongs to this tab.
+ * - A zero from the scroll listener never replaces a remembered positive
+ *   offset. On navigation the next route renders as a short skeleton first,
+ *   which clamps the browser's scroll to 0 *before* the old entry's save
+ *   listener is torn down. Writing that 0 would make Back look like the reader
+ *   had left from the top. A sustained top (350ms on a tall page) is the only
+ *   thing that clears the memory; a transient 0 from a re-layout or Lenis does
+ *   not count as leaving from the top.
  * - Only POP navigations restore. PUSH/REPLACE still land at the top, so
  *   following a link behaves exactly as it did.
  * - The restore is a short convergence loop, not a single `scrollTo`: below-fold
@@ -30,6 +37,8 @@ import { scrollToPosition, scrollToTop } from './scrollToTop'
 const STORAGE_PREFIX = 'travio:scroll:'
 // How long to keep correcting while lazy content grows the page.
 const MAX_WAIT_MS = 3000
+// How long the reader has to sit at the top before 0 counts as deliberate.
+const AT_TOP_MS = 350
 
 function isBrowser(): boolean {
   return typeof window !== 'undefined' && typeof document !== 'undefined'
@@ -48,10 +57,15 @@ export function readSavedScroll(key: string): number | null {
   }
 }
 
-export function writeSavedScroll(key: string, y: number): void {
+export function writeSavedScroll(key: string, y: number, force = false): void {
   if (!isBrowser() || !key) return
+  const next = Math.max(0, Math.round(y))
   try {
-    window.sessionStorage.setItem(STORAGE_PREFIX + key, String(Math.max(0, Math.round(y))))
+    // A clamped 0 during a route swap is not the reader scrolling to the top;
+    // it is the next page not having rendered yet. Keep the real offset.
+    // `force` is only used once we have proof the reader chose the top.
+    if (!force && next === 0 && readSavedScroll(key) !== null) return
+    window.sessionStorage.setItem(STORAGE_PREFIX + key, String(next))
   } catch {
     // Private mode or a full quota: keep the navigation, lose the memory.
   }
@@ -157,29 +171,64 @@ export function useScrollRestoration(): void {
     if (!isBrowser() || !key) return
 
     let frame = 0
+    // Held while the reader is at the top of a tall page. A single frame at 0
+    // is not enough: Lenis and route-level re-layouts both produce those.
+    let topTimer = 0
     const save = () => {
       frame = 0
       if (restoring.current) return
-      writeSavedScroll(key, window.scrollY)
+      const y = window.scrollY
+      if (y > 0) {
+        if (topTimer) window.clearTimeout(topTimer)
+        topTimer = 0
+        writeSavedScroll(key, y)
+      } else if (!topTimer && maxScrollable() > 0) {
+        topTimer = window.setTimeout(() => {
+          topTimer = 0
+          writeSavedScroll(key, 0, true)
+        }, AT_TOP_MS)
+      }
     }
     const onScroll = () => {
       if (!frame) frame = requestAnimationFrame(save)
     }
     // The last scroll event can land a frame behind where the reader actually
     // stopped; flush synchronously when the tab is hidden or the page unloads.
+    // Not forced: a teardown-time 0 is the short next page, not the reader.
     const flush = () => {
       if (frame) cancelAnimationFrame(frame)
-      save()
+      frame = 0
+      if (!restoring.current) {
+        const y = window.scrollY
+        if (y > 0) writeSavedScroll(key, y)
+      }
+    }
+    // Capture the exact offset at the moment of navigation, before React
+    // renders the next (temporarily short) route and clamps scroll to 0.
+    // Capture phase so it runs before the link's own handler pushes history.
+    // popstate covers Back/Forward, where no click happens. A 0 here is only
+    // written when the reader has been holding the top for AT_TOP_MS.
+    const capture = () => {
+      if (frame) cancelAnimationFrame(frame)
+      frame = 0
+      if (!restoring.current && window.scrollY > 0) {
+        writeSavedScroll(key, window.scrollY)
+      }
     }
 
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('pagehide', flush)
     document.addEventListener('visibilitychange', flush)
+    document.addEventListener('click', capture, true)
+    window.addEventListener('popstate', capture)
 
     return () => {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('pagehide', flush)
       document.removeEventListener('visibilitychange', flush)
+      document.removeEventListener('click', capture, true)
+      window.removeEventListener('popstate', capture)
+      if (topTimer) window.clearTimeout(topTimer)
       flush()
     }
   }, [key])
