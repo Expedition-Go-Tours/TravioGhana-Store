@@ -37,7 +37,7 @@ import { startSessionWatchdog, stopSessionWatchdog } from './auth/sessionManager
 import { trackPageView } from './lib/analytics'
 import { trackGaPageView } from './lib/googleAnalytics'
 import LenisProvider from './lib/LenisProvider'
-import { scrollToTop } from './lib/scrollToTop'
+import { useScrollRestoration } from './lib/useScrollRestoration'
 import { useHomepage, useHomepageByCity } from './hooks/useHomepageSections'
 import GuestClaimPrompt from '@/components/account/GuestClaimPrompt'
 import { enrichToursWithCombinedStats, useExternalReviewStatsData } from './hooks/useExternalReviews'
@@ -289,17 +289,14 @@ function AppContent() {
   const handleGoHome = () => setCurrentPage('home')
   const location = useLocation()
 
-  // Land at the top of the page on every route change (e.g. clicking a supplier
-  // link deep in a tour page shouldn't drop you mid-way down the next page).
-  // scrollToTop drives Lenis too — a bare window.scrollTo(0,0) is dropped
-  // mid-glide and the running animation drags the new page back down.
+  // Back/Forward returns the reader to the offset they left; a forward
+  // navigation still lands at the top. The hook also owns the manual
+  // `history.scrollRestoration` flag, because it has to beat the browser's own
+  // pre-hydration jump. scrollToTop drives Lenis too — a bare
+  // window.scrollTo(0,0) is dropped mid-glide and the running animation drags
+  // the new page back down.
+  useScrollRestoration()
   useEffect(() => {
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual'
-    }
-  }, [])
-  useEffect(() => {
-    scrollToTop()
     const path = location.pathname + location.search
     trackPageView(path)
     trackGaPageView(path)

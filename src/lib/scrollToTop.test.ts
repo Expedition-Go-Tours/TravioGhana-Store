@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { scrollToTop } from './scrollToTop'
+import { scrollToPosition, scrollToTop } from './scrollToTop'
 import { getLenis } from './LenisProvider'
 
 vi.mock('./LenisProvider', () => ({
@@ -45,5 +45,25 @@ describe('scrollToTop', () => {
 
     expect(() => scrollToTop()).not.toThrow()
     expect(window.scrollTo).toHaveBeenCalledWith(0, 0)
+  })
+
+  it('drives Lenis to an absolute offset for scroll restoration', () => {
+    const lenis: LenisDouble = { scrollTo: vi.fn() }
+    mockGetLenis.mockReturnValue(lenis as never)
+
+    scrollToPosition(1840)
+
+    expect(lenis.scrollTo).toHaveBeenCalledWith(1840, { immediate: true, force: true })
+    expect(window.scrollTo).toHaveBeenCalledWith(0, 1840)
+  })
+
+  it('clamps a missing or negative offset to the top', () => {
+    mockGetLenis.mockReturnValue(null)
+
+    scrollToPosition(Number.NaN)
+    expect(window.scrollTo).toHaveBeenLastCalledWith(0, 0)
+
+    scrollToPosition(-50)
+    expect(window.scrollTo).toHaveBeenLastCalledWith(0, 0)
   })
 })

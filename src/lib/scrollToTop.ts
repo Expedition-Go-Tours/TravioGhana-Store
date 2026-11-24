@@ -15,9 +15,22 @@ import { getLenis } from './LenisProvider'
  * for when Lenis isn't mounted (tests, pre-mount frames).
  */
 export function scrollToTop(): void {
+  scrollToPosition(0)
+}
+
+/**
+ * Jump to an absolute document offset, without the glide.
+ *
+ * Scroll restoration is a *return*, not a scroll: animating a 6,000px glide
+ * would look like a page still loading. Driving Lenis with `immediate` also
+ * syncs its `animatedScroll`/`targetScroll`, so the next wheel event starts
+ * from the restored position instead of the top.
+ */
+export function scrollToPosition(y: number): void {
+  const target = Number.isFinite(y) ? Math.max(0, y) : 0
   const lenis = getLenis()
   if (lenis) {
-    lenis.scrollTo(0, { immediate: true, force: true })
+    lenis.scrollTo(target, { immediate: true, force: true })
   }
-  window.scrollTo(0, 0)
+  window.scrollTo(0, target)
 }
