@@ -75,7 +75,10 @@ function buildFilters(params: URLSearchParams): RestaurantVenueFilters {
   return {
     q: params.get('q') || undefined,
     city: params.get('city') || undefined,
-    cuisine: params.get('cuisine') || undefined,
+    // Venue cuisines are stored lowercase; the labels stay title-cased for
+    // display only. Normalise here so the category tiles and filter radio
+    // buttons both reach the same API filter.
+    cuisine: params.get('cuisine')?.trim().toLowerCase() || undefined,
     dietary: parseDietary(params.get('dietary')),
     priceBand: optionalNumber(params.get('priceBand')),
     minRating: optionalNumber(params.get('minRating')),
@@ -219,7 +222,7 @@ function RestaurantHome() {
                 <Link
                   key={cuisine}
                   className="rh-category-tile"
-                  to={`/restaurants?cuisine=${encodeURIComponent(cuisine)}`}
+                  to={`/restaurants?cuisine=${encodeURIComponent(cuisine.toLowerCase())}`}
                 >
                   <span className="rh-category-tile__icon" aria-hidden="true">
                     <Icon size={24} strokeWidth={1.8} />
@@ -464,8 +467,8 @@ function RestaurantResults() {
                   <input
                     type="radio"
                     name="cuisine"
-                    checked={filters.cuisine === cuisine}
-                    onChange={() => updateParams({ cuisine })}
+                    checked={filters.cuisine === cuisine.toLowerCase()}
+                    onChange={() => updateParams({ cuisine: cuisine.toLowerCase() })}
                   />
                   {cuisine}
                 </label>

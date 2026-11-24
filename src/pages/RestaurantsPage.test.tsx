@@ -125,7 +125,7 @@ describe('RestaurantsPage results', () => {
     expect(mockHook).toHaveBeenCalledWith({
       q: undefined,
       city: 'Accra',
-      cuisine: 'Ghanaian',
+      cuisine: 'ghanaian',
       dietary: undefined,
       priceBand: undefined,
       minRating: undefined,
