@@ -67,9 +67,16 @@ interface PortableBlock {
   markDefs?: PortableMarkDef[]
   url?: string
   alt?: string
+  title?: string
 }
 
 const HEADING_TAGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const
+
+/** Inline images carry an optional caption in `title`, falling back to `alt`. */
+function figureCaption(value?: string): ReactNode {
+  const text = (value || '').trim()
+  return text ? <figcaption>{text}</figcaption> : null
+}
 
 function applyTipTapMarks(text: string, marks?: TipTapMark[]): ReactNode {
   if (!marks?.length) return text
@@ -132,6 +139,7 @@ function renderTipTap(node: TipTapNode, key: string): ReactNode {
       return node.attrs?.src ? (
         <figure key={key} className="article-body__figure">
           <img src={node.attrs.src} alt={node.attrs.alt || ''} loading="lazy" />
+          {figureCaption(node.attrs.title || node.attrs.alt)}
         </figure>
       ) : null
     case 'text':
@@ -213,6 +221,7 @@ function renderPortableText(blocks: PortableBlock[]): ReactNode[] {
         out.push(
           <figure key={key} className="article-body__figure">
             <img src={block.url} alt={block.alt || ''} loading="lazy" />
+            {figureCaption(block.title || block.alt)}
           </figure>,
         )
       }

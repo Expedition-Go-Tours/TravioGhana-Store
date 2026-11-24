@@ -102,6 +102,24 @@ describe('ArticleBody', () => {
     expect(container.querySelectorAll('p')[1].textContent).toBe('Second block.')
   })
 
+  it('captions inline images from the editor title, falling back to alt text', () => {
+    const { container } = render(
+      <ArticleBody
+        value={{
+          type: 'doc',
+          content: [
+            { type: 'image', attrs: { src: '/one.jpg', alt: 'One', title: 'A captioned stop' } },
+            { type: 'image', attrs: { src: '/two.jpg', alt: 'Two' } },
+          ],
+        }}
+      />,
+    )
+
+    const figures = container.querySelectorAll('figure')
+    expect(figures[0].querySelector('figcaption')).toHaveTextContent('A captioned stop')
+    expect(figures[1].querySelector('figcaption')).toHaveTextContent('Two')
+  })
+
   it('renders nothing for empty or unrecognised input (never [object Object])', () => {
     const { container: empty } = render(<ArticleBody value={null} />)
     expect(empty).toBeEmptyDOMElement()
