@@ -6,9 +6,21 @@
 }
 
 .restaurants-page__main {
-  max-width: 1280px;
+  /* Same centered column as the tours page and the default navbar: five
+     295px cards + four 16px gaps, plus the navbar's 32px gutters. Using the
+     same bounds and gutter makes the page edges line up with the logo and
+     profile at every desktop width. */
+  max-width: calc(295px * 5 + 16px * 4 + 64px);
   margin: 0 auto;
-  padding: 40px 24px 80px;
+  padding: 40px 32px 80px;
+}
+
+@media (max-width: 768px) {
+  /* Navbar drops to 16px gutters at the same breakpoint. */
+  .restaurants-page__main {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
 }
 
 /* ── shared bits ───────────────────────────────────────────────────────── */
