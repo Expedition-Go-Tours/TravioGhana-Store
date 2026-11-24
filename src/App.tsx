@@ -50,6 +50,10 @@ const DashboardApp = lazy(() => import('./pages/dashboard/DashboardApp'))
 const TourDetailPage = lazy(() => import('./pages/tour-detail/TourDetailPage'))
 const AllToursPage = lazy(() => import('./pages/AllToursPage'))
 const RestaurantsPage = lazy(() => import('./pages/RestaurantsPage'))
+const RestaurantDetailPage = lazy(() => import('./pages/restaurants/RestaurantDetailPage'))
+const RestaurantReviewFormPage = lazy(() => import('./pages/restaurants/RestaurantReviewFormPage'))
+const RestaurantClaimPage = lazy(() => import('./pages/restaurants/RestaurantClaimPage'))
+const RestaurantManagePage = lazy(() => import('./pages/restaurants/RestaurantManagePage'))
 const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage'))
 const SharedWishlistPage = lazy(() => import('./pages/SharedWishlistPage'))
 const AllReviewsPage = lazy(() => import('./pages/AllReviewsPage'))
@@ -404,6 +408,15 @@ function AppContent() {
           } />
           {/* Placeholder until the restaurant catalogue ships. */}
           <Route path="/restaurants" element={<RestaurantsPage />} />
+          <Route path="/restaurants/manage" element={<RestaurantManagePage />} />
+          <Route path="/restaurants/:slug/review" element={<RestaurantReviewFormPage />} />
+          <Route
+            path="/restaurants/:slug/reviews/:reviewId/edit"
+            element={<RestaurantReviewFormPage />}
+          />
+          <Route path="/restaurants/:slug/claim" element={<RestaurantClaimPage />} />
+          <Route path="/restaurants/:slug/manage" element={<RestaurantManagePage />} />
+          <Route path="/restaurants/:slug" element={<RestaurantDetailPage />} />
           {/* The old dedicated view-all page: the top recommendations are now
               a section filter on All Tours, so deep links forward there. */}
           <Route

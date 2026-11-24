@@ -1,6 +1,16 @@
-import { useMemo, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { MapPin, Search } from 'lucide-react'
+import {
+  Coffee,
+  Fish,
+  Leaf,
+  MapPin,
+  Pizza,
+  Search,
+  SlidersHorizontal,
+  Soup,
+  UtensilsCrossed,
+} from 'lucide-react'
 import SEO from '../components/SEO'
 import Footer from '../components/Footer'
 import RestaurantCard from '../components/RestaurantCard'
@@ -13,6 +23,9 @@ import './RestaurantsPage.css'
 
 const CITIES = ['Accra', 'Kumasi', 'Cape Coast', 'Takoradi', 'Tamale', 'Elmina']
 const CUISINES = ['Ghanaian', 'Nigerian', 'Chinese', 'Indian', 'Italian', 'Seafood', 'Vegetarian']
+const DIETARY = ['vegetarian', 'vegan', 'gluten-free', 'halal']
+
+const CATEGORY_ICONS = [UtensilsCrossed, Soup, Fish, Leaf, Pizza, Coffee, Soup]
 
 const SORTS: { value: RestaurantSort; label: string }[] = [
   { value: 'rating', label: 'Top rated' },
@@ -33,10 +46,25 @@ const MIN_RATINGS = [
   { value: '3.5', label: '3.5 and up' },
 ]
 
+const MIN_REVIEWS = [
+  { value: '100', label: '100 or more' },
+  { value: '50', label: '50 or more' },
+  { value: '10', label: '10 or more' },
+]
+
 function optionalNumber(value: string | null): number | undefined {
   if (!value) return undefined
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : undefined
+}
+
+function parseDietary(value: string | null): string[] | undefined {
+  if (!value) return undefined
+  const values = value
+    .split(',')
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean)
+  return values.length ? values : undefined
 }
 
 function parseSort(value: string | null): RestaurantSort | undefined {
@@ -48,38 +76,91 @@ function buildFilters(params: URLSearchParams): RestaurantVenueFilters {
     q: params.get('q') || undefined,
     city: params.get('city') || undefined,
     cuisine: params.get('cuisine') || undefined,
+    dietary: parseDietary(params.get('dietary')),
     priceBand: optionalNumber(params.get('priceBand')),
     minRating: optionalNumber(params.get('minRating')),
+    minReviews: optionalNumber(params.get('minReviews')),
     featured: params.get('featured') === 'true' || undefined,
     sort: parseSort(params.get('sort')),
   }
 }
 
-export default function RestaurantsPage() {
+function displayLabel(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
+type VenueQuery = ReturnType<typeof useRestaurantVenues>
+
+function RestaurantRail({
+  title,
+  description,
+  query,
+  to,
+}: {
+  title: string
+  description: string
+  query: VenueQuery
+  to: string
+}) {
+  const venues = query.data?.pages.flatMap((page) => page.venues) ?? []
+
+  return (
+    <section className="rh-home-section">
+      <div className="rh-section-head">
+        <div>
+          <h2>{title}</h2>
+          <p>{description}</p>
+        </div>
+        <Link to={to}>See all</Link>
+      </div>
+
+      {query.isPending && (
+        <div className="rh-home-rail" aria-label={`Loading ${title}`}>
+          {Array.from({ length: 3 }, (_, index) => (
+            <div key={index} className="restaurant-skeleton" />
+          ))}
+        </div>
+      )}
+
+      {query.isError && (
+        <div className="rh-home-rail-message">
+          <p>We could not load these restaurants right now.</p>
+          <button type="button" onClick={() => void query.refetch()}>
+            Try again
+          </button>
+        </div>
+      )}
+
+      {!query.isPending && !query.isError && venues.length === 0 && (
+        <div className="rh-home-rail-message">
+          <p>No restaurants here yet. New places are added as we verify them.</p>
+          <Link to={to}>Browse all restaurants</Link>
+        </div>
+      )}
+
+      {!query.isPending && !query.isError && venues.length > 0 && (
+        <div className="rh-home-rail">
+          {venues.map((venue) => (
+            <RestaurantCard key={venue.id} venue={venue} />
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
+function RestaurantHome() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const filters = useMemo(() => buildFilters(searchParams), [searchParams])
-  const { data, isPending, isError, error, refetch, hasNextPage, isFetchingNextPage, fetchNextPage } =
-    useRestaurantVenues(filters)
-
-  const venues = data?.pages.flatMap((page) => page.venues) ?? []
-  const activeFilters = Object.values(filters).filter((value) => value !== undefined).length
-
-  const updateParams = (patch: Record<string, string | null>) => {
-    const next = new URLSearchParams(searchParams)
-    for (const [key, value] of Object.entries(patch)) {
-      if (value) next.set(key, value)
-      else next.delete(key)
-    }
-    next.delete('cursor')
-    setSearchParams(next, { replace: true })
-  }
-
-  const clearFilters = () => setSearchParams(new URLSearchParams(), { replace: true })
+  const topRated = useRestaurantVenues({ sort: 'rating' })
+  const newest = useRestaurantVenues({ sort: 'newest' })
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const value = String(new FormData(event.currentTarget).get('q') || '').trim()
-    updateParams({ q: value || null })
+    const next = new URLSearchParams(searchParams)
+    if (value) next.set('q', value)
+    else next.delete('q')
+    setSearchParams(next)
   }
 
   return (
@@ -92,185 +173,78 @@ export default function RestaurantsPage() {
       />
 
       <main className="restaurants-page__main">
-        <section className="restaurants-hero">
-          <span className="restaurants-hero__eyebrow">Travio Ghana</span>
-          <h1>Restaurants in Ghana</h1>
+        <section className="rh-home-hero">
+          <span className="rh-home-hero__eyebrow">Restaurants in Ghana</span>
+          <h1>Find a good meal nearby</h1>
           <p>
-            Find a place by city, cuisine or price. Ratings come from Travio reviews; outside
-            scores are labelled with their source.
+            Browse places by city and cuisine. Travio stars come from diners who reviewed on
+            Travio, and outside scores stay labelled with their source.
           </p>
-        </section>
-
-        <section className="restaurants-controls" aria-label="Restaurant filters">
           <form
-            key={`search-${searchParams.toString()}`}
-            className="restaurants-search"
+            key={`home-${searchParams.toString()}`}
+            className="rh-home-search"
             onSubmit={submitSearch}
           >
             <Search size={18} aria-hidden="true" />
             <input
               name="q"
               type="search"
-              defaultValue={filters.q ?? ''}
+              defaultValue={searchParams.get('q') ?? ''}
               placeholder="Restaurant, neighbourhood or city"
               aria-label="Search restaurants"
             />
-            <button type="submit">Search</button>
+            <button type="submit">Search restaurants</button>
           </form>
-
-          <div className="restaurants-filters">
-            <label>
-              <span>City</span>
-              <select
-                value={filters.city ?? ''}
-                onChange={(event) => updateParams({ city: event.target.value || null })}
-              >
-                <option value="">All cities</option>
-                {CITIES.map((city) => (
-                  <option key={city} value={city}>
-                    {city}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label>
-              <span>Cuisine</span>
-              <select
-                value={filters.cuisine ?? ''}
-                onChange={(event) => updateParams({ cuisine: event.target.value || null })}
-              >
-                <option value="">Any cuisine</option>
-                {CUISINES.map((cuisine) => (
-                  <option key={cuisine} value={cuisine}>
-                    {cuisine}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label>
-              <span>Price</span>
-              <select
-                value={filters.priceBand?.toString() ?? ''}
-                onChange={(event) => updateParams({ priceBand: event.target.value || null })}
-              >
-                <option value="">Any price</option>
-                {PRICE_BANDS.map((band) => (
-                  <option key={band.value} value={band.value}>
-                    {band.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label>
-              <span>Rating</span>
-              <select
-                value={filters.minRating?.toString() ?? ''}
-                onChange={(event) => updateParams({ minRating: event.target.value || null })}
-              >
-                <option value="">Any rating</option>
-                {MIN_RATINGS.map((rating) => (
-                  <option key={rating.value} value={rating.value}>
-                    {rating.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label>
-              <span>Sort</span>
-              <select
-                value={filters.sort ?? 'rating'}
-                onChange={(event) => updateParams({ sort: event.target.value || null })}
-              >
-                {SORTS.map((sort) => (
-                  <option key={sort.value} value={sort.value}>
-                    {sort.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="restaurants-toggle">
-              <input
-                type="checkbox"
-                checked={Boolean(filters.featured)}
-                onChange={(event) => updateParams({ featured: event.target.checked ? 'true' : null })}
-              />
-              Featured only
-            </label>
+          <div className="rh-home-cities">
+            <span>Popular cities:</span>
+            {CITIES.slice(0, 4).map((city) => (
+              <Link key={city} to={`/restaurants?city=${encodeURIComponent(city)}`}>
+                {city}
+              </Link>
+            ))}
           </div>
-
-          {activeFilters > 0 && (
-            <button className="restaurants-clear" type="button" onClick={clearFilters}>
-              Clear filters
-            </button>
-          )}
         </section>
 
-        <section className="restaurants-results" aria-live="polite">
-          {isPending && (
-            <>
-              <p className="restaurants-count">Loading restaurants…</p>
-              <div className="restaurants-grid">
-                {Array.from({ length: 6 }, (_, index) => (
-                  <div key={index} className="restaurant-skeleton" />
-                ))}
-              </div>
-            </>
-          )}
-
-          {isError && (
-            <div className="restaurants-state">
-              <h2>We could not load restaurants</h2>
-              <p>{error instanceof Error ? error.message : 'Check your connection and try again.'}</p>
-              <button type="button" onClick={() => void refetch()}>
-                Try again
-              </button>
+        <section className="rh-home-section">
+          <div className="rh-section-head">
+            <div>
+              <h2>What sounds good?</h2>
+              <p>Pick a cuisine to see matching restaurants.</p>
             </div>
-          )}
-
-          {!isPending && !isError && venues.length === 0 && (
-            <div className="restaurants-state">
-              <h2>No restaurants match yet</h2>
-              <p>Try another city or clear your filters.</p>
-              <div className="restaurants-state__actions">
-                {activeFilters > 0 && (
-                  <button type="button" onClick={clearFilters}>
-                    Clear filters
-                  </button>
-                )}
-                <Link to="/">Browse tours and activities</Link>
-              </div>
-            </div>
-          )}
-
-          {!isPending && !isError && venues.length > 0 && (
-            <>
-              <p className="restaurants-count">
-                Showing {venues.length} {venues.length === 1 ? 'place' : 'places'}
-                {filters.city ? ` in ${filters.city}` : ''}
-              </p>
-              <div className="restaurants-grid">
-                {venues.map((venue) => (
-                  <RestaurantCard key={venue.id} venue={venue} />
-                ))}
-              </div>
-              {hasNextPage && (
-                <button
-                  className="restaurants-load-more"
-                  type="button"
-                  disabled={isFetchingNextPage}
-                  onClick={() => void fetchNextPage()}
+          </div>
+          <div className="rh-category-grid">
+            {CUISINES.map((cuisine, index) => {
+              const Icon = CATEGORY_ICONS[index % CATEGORY_ICONS.length]
+              return (
+                <Link
+                  key={cuisine}
+                  className="rh-category-tile"
+                  to={`/restaurants?cuisine=${encodeURIComponent(cuisine)}`}
                 >
-                  {isFetchingNextPage ? 'Loading more…' : 'Show more restaurants'}
-                </button>
-              )}
-            </>
-          )}
+                  <span className="rh-category-tile__icon" aria-hidden="true">
+                    <Icon size={24} strokeWidth={1.8} />
+                  </span>
+                  <span className="rh-category-tile__name">{cuisine}</span>
+                  <span className="rh-category-tile__hint">See places</span>
+                </Link>
+              )
+            })}
+          </div>
         </section>
+
+        <RestaurantRail
+          title="Top rated on Travio"
+          description="Places with the strongest Travio diner ratings."
+          query={topRated}
+          to="/restaurants?sort=rating"
+        />
+
+        <RestaurantRail
+          title="Recently added"
+          description="New restaurants added to the Ghana guide."
+          query={newest}
+          to="/restaurants?sort=newest"
+        />
 
         <aside className="restaurants-note">
           <MapPin size={16} aria-hidden="true" />
@@ -282,4 +256,397 @@ export default function RestaurantsPage() {
       <Footer />
     </div>
   )
+}
+
+type ActiveChip = { key: string; label: string; value?: string }
+
+function activeChips(filters: RestaurantVenueFilters): ActiveChip[] {
+  const chips: ActiveChip[] = []
+  if (filters.q) chips.push({ key: 'q', label: `Search: ${filters.q}` })
+  if (filters.city) chips.push({ key: 'city', label: filters.city })
+  if (filters.cuisine) chips.push({ key: 'cuisine', label: displayLabel(filters.cuisine) })
+  if (filters.dietary) {
+    for (const item of filters.dietary) chips.push({ key: 'dietary', label: displayLabel(item), value: item })
+  }
+  if (filters.priceBand) {
+    const band = PRICE_BANDS.find((option) => option.value === String(filters.priceBand))
+    chips.push({ key: 'priceBand', label: band?.label ?? `Price ${filters.priceBand}` })
+  }
+  if (filters.minRating) chips.push({ key: 'minRating', label: `${filters.minRating} and up` })
+  if (filters.minReviews) chips.push({ key: 'minReviews', label: `${filters.minReviews}+ reviews` })
+  if (filters.featured) chips.push({ key: 'featured', label: 'Featured' })
+  return chips
+}
+
+function RestaurantResults() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+  const filters = useMemo(() => buildFilters(searchParams), [searchParams])
+  const chips = useMemo(() => activeChips(filters), [filters])
+  const { data, isPending, isError, error, refetch, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useRestaurantVenues(filters)
+
+  const venues = data?.pages.flatMap((page) => page.venues) ?? []
+  const dietary = filters.dietary ?? []
+
+  const updateParams = (patch: Record<string, string | null>) => {
+    const next = new URLSearchParams(searchParams)
+    for (const [key, value] of Object.entries(patch)) {
+      if (value) next.set(key, value)
+      else next.delete(key)
+    }
+    next.delete('cursor')
+    setSearchParams(next, { replace: true })
+  }
+
+  const clearFilters = () => {
+    const next = new URLSearchParams()
+    if (filters.sort) next.set('sort', filters.sort)
+    setSearchParams(next, { replace: true })
+    setMobileFiltersOpen(false)
+  }
+
+  const removeChip = (chip: ActiveChip) => {
+    if (chip.key === 'dietary') {
+      const remaining = dietary.filter((item) => item !== chip.value)
+      updateParams({ dietary: remaining.length ? remaining.join(',') : null })
+      return
+    }
+    updateParams({ [chip.key]: null })
+  }
+
+  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const value = String(new FormData(event.currentTarget).get('q') || '').trim()
+    updateParams({ q: value || null })
+  }
+
+  const toggleDietary = (value: string, checked: boolean) => {
+    const next = new Set(dietary)
+    if (checked) next.add(value)
+    else next.delete(value)
+    updateParams({ dietary: next.size ? [...next].join(',') : null })
+  }
+
+  return (
+    <div className="restaurants-page restaurants-page--results">
+      <SEO
+        title="Restaurants in Ghana"
+        description="Filter Ghana restaurants by city, cuisine, price, rating and dietary needs. Ratings come from Travio reviews."
+        keywords="Ghana restaurants, Accra restaurants, restaurants by cuisine"
+        canonical="https://www.travioghana.com/restaurants"
+      />
+
+      <main className="restaurants-page__main">
+        <nav className="rh-breadcrumb" aria-label="Breadcrumb">
+          <Link to="/">Home</Link>
+          <span aria-hidden="true">/</span>
+          <span>Restaurants</span>
+        </nav>
+
+        <div className="rh-results-heading">
+          <div>
+            <h1>Restaurants in Ghana</h1>
+            <p>Narrow the list by city, cuisine, price and what diners reported.</p>
+          </div>
+          <label className="rh-sort">
+            <span>Sort by</span>
+            <select
+              value={filters.sort ?? 'rating'}
+              onChange={(event) => updateParams({ sort: event.target.value || null })}
+            >
+              {SORTS.map((sort) => (
+                <option key={sort.value} value={sort.value}>
+                  {sort.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <button
+          className="rh-mobile-filter-toggle"
+          type="button"
+          aria-expanded={mobileFiltersOpen}
+          onClick={() => setMobileFiltersOpen((open) => !open)}
+        >
+          <SlidersHorizontal size={16} aria-hidden="true" />
+          {mobileFiltersOpen ? 'Hide filters' : 'Show filters'}
+          {chips.length > 0 && <span>{chips.length}</span>}
+        </button>
+
+        {chips.length > 0 && (
+          <div className="rh-active-filters" aria-label="Active filters">
+            {chips.map((chip) => (
+              <button
+                key={`${chip.key}-${chip.value ?? chip.label}`}
+                type="button"
+                onClick={() => removeChip(chip)}
+                aria-label={`Remove ${chip.label} filter`}
+              >
+                {chip.label}
+                <span aria-hidden="true">×</span>
+              </button>
+            ))}
+            <button className="rh-active-filters__clear" type="button" onClick={clearFilters}>
+              Clear all
+            </button>
+          </div>
+        )}
+
+        <div className="rh-results-layout">
+          <aside
+            className={`rh-filters${mobileFiltersOpen ? ' rh-filters--open' : ''}`}
+            aria-label="Restaurant filters"
+          >
+            <div className="rh-filters__head">
+              <h2>Filters</h2>
+              {chips.length > 0 && (
+                <button type="button" onClick={clearFilters}>
+                  Clear all
+                </button>
+              )}
+            </div>
+
+            <form
+              key={`results-${searchParams.toString()}`}
+              className="rh-filters__search"
+              onSubmit={submitSearch}
+            >
+              <Search size={16} aria-hidden="true" />
+              <input
+                name="q"
+                type="search"
+                defaultValue={filters.q ?? ''}
+                placeholder="Search restaurants"
+                aria-label="Search restaurants"
+              />
+              <button type="submit">Go</button>
+            </form>
+
+            <fieldset className="rh-filter-group">
+              <legend>City</legend>
+              <label>
+                <input
+                  type="radio"
+                  name="city"
+                  checked={!filters.city}
+                  onChange={() => updateParams({ city: null })}
+                />
+                All cities
+              </label>
+              {CITIES.map((city) => (
+                <label key={city}>
+                  <input
+                    type="radio"
+                    name="city"
+                    checked={filters.city === city}
+                    onChange={() => updateParams({ city })}
+                  />
+                  {city}
+                </label>
+              ))}
+            </fieldset>
+
+            <fieldset className="rh-filter-group">
+              <legend>Cuisine</legend>
+              <label>
+                <input
+                  type="radio"
+                  name="cuisine"
+                  checked={!filters.cuisine}
+                  onChange={() => updateParams({ cuisine: null })}
+                />
+                Any cuisine
+              </label>
+              {CUISINES.map((cuisine) => (
+                <label key={cuisine}>
+                  <input
+                    type="radio"
+                    name="cuisine"
+                    checked={filters.cuisine === cuisine}
+                    onChange={() => updateParams({ cuisine })}
+                  />
+                  {cuisine}
+                </label>
+              ))}
+            </fieldset>
+
+            <fieldset className="rh-filter-group">
+              <legend>Price</legend>
+              <label>
+                <input
+                  type="radio"
+                  name="priceBand"
+                  checked={!filters.priceBand}
+                  onChange={() => updateParams({ priceBand: null })}
+                />
+                Any price
+              </label>
+              {PRICE_BANDS.map((band) => (
+                <label key={band.value}>
+                  <input
+                    type="radio"
+                    name="priceBand"
+                    checked={filters.priceBand?.toString() === band.value}
+                    onChange={() => updateParams({ priceBand: band.value })}
+                  />
+                  {band.label}
+                </label>
+              ))}
+            </fieldset>
+
+            <fieldset className="rh-filter-group">
+              <legend>Travio rating</legend>
+              <label>
+                <input
+                  type="radio"
+                  name="minRating"
+                  checked={!filters.minRating}
+                  onChange={() => updateParams({ minRating: null })}
+                />
+                Any rating
+              </label>
+              {MIN_RATINGS.map((rating) => (
+                <label key={rating.value}>
+                  <input
+                    type="radio"
+                    name="minRating"
+                    checked={filters.minRating?.toString() === rating.value}
+                    onChange={() => updateParams({ minRating: rating.value })}
+                  />
+                  {rating.label}
+                </label>
+              ))}
+            </fieldset>
+
+            <fieldset className="rh-filter-group">
+              <legend>Dietary needs</legend>
+              {DIETARY.map((item) => (
+                <label key={item}>
+                  <input
+                    type="checkbox"
+                    checked={dietary.includes(item)}
+                    onChange={(event) => toggleDietary(item, event.target.checked)}
+                  />
+                  {displayLabel(item)}
+                </label>
+              ))}
+            </fieldset>
+
+            <fieldset className="rh-filter-group">
+              <legend>Minimum reviews</legend>
+              <label>
+                <input
+                  type="radio"
+                  name="minReviews"
+                  checked={!filters.minReviews}
+                  onChange={() => updateParams({ minReviews: null })}
+                />
+                Any number
+              </label>
+              {MIN_REVIEWS.map((count) => (
+                <label key={count.value}>
+                  <input
+                    type="radio"
+                    name="minReviews"
+                    checked={filters.minReviews?.toString() === count.value}
+                    onChange={() => updateParams({ minReviews: count.value })}
+                  />
+                  {count.label}
+                </label>
+              ))}
+            </fieldset>
+
+            <fieldset className="rh-filter-group">
+              <legend>Listing</legend>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={Boolean(filters.featured)}
+                  onChange={(event) => updateParams({ featured: event.target.checked ? 'true' : null })}
+                />
+                Featured restaurants
+              </label>
+            </fieldset>
+          </aside>
+
+          <section className="rh-results-results" aria-live="polite">
+            {isPending && (
+              <>
+                <p className="restaurants-count">Loading restaurants…</p>
+                <div className="restaurants-grid">
+                  {Array.from({ length: 6 }, (_, index) => (
+                    <div key={index} className="restaurant-skeleton" />
+                  ))}
+                </div>
+              </>
+            )}
+
+            {isError && (
+              <div className="restaurants-state">
+                <h2>We could not load restaurants</h2>
+                <p>{error instanceof Error ? error.message : 'Check your connection and try again.'}</p>
+                <button type="button" onClick={() => void refetch()}>
+                  Try again
+                </button>
+              </div>
+            )}
+
+            {!isPending && !isError && venues.length === 0 && (
+              <div className="restaurants-state">
+                <h2>No restaurants match yet</h2>
+                <p>Try another city or clear your filters.</p>
+                <div className="restaurants-state__actions">
+                  {chips.length > 0 && (
+                    <button type="button" onClick={clearFilters}>
+                      Clear filters
+                    </button>
+                  )}
+                  <Link to="/">Browse tours and activities</Link>
+                </div>
+              </div>
+            )}
+
+            {!isPending && !isError && venues.length > 0 && (
+              <>
+                <p className="restaurants-count">
+                  Showing {venues.length} {venues.length === 1 ? 'place' : 'places'}
+                  {filters.city ? ` in ${filters.city}` : ''}
+                </p>
+                <div className="restaurants-grid">
+                  {venues.map((venue) => (
+                    <RestaurantCard key={venue.id} venue={venue} />
+                  ))}
+                </div>
+                {hasNextPage && (
+                  <button
+                    className="restaurants-load-more"
+                    type="button"
+                    disabled={isFetchingNextPage}
+                    onClick={() => void fetchNextPage()}
+                  >
+                    {isFetchingNextPage ? 'Loading more…' : 'Show more restaurants'}
+                  </button>
+                )}
+              </>
+            )}
+          </section>
+        </div>
+
+        <aside className="restaurants-note">
+          <MapPin size={16} aria-hidden="true" />
+          Restaurants are listed once we have verified details. Outside ratings are never mixed
+          into the Travio score.
+        </aside>
+      </main>
+
+      <Footer />
+    </div>
+  )
+}
+
+export default function RestaurantsPage() {
+  const [searchParams] = useSearchParams()
+  return Array.from(searchParams.keys()).length > 0 ? <RestaurantResults /> : <RestaurantHome />
 }
