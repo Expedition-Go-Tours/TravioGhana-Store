@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, usePa
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
 import { Toaster } from 'sonner'
 import Navbar from './components/Navbar'
+import PreviewBanner from './components/PreviewBanner'
 import Hero from './components/Hero'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
 import ContinuePlanningSection from './components/ContinuePlanningSection'
@@ -48,6 +49,7 @@ const AuthForm = lazy(() => import('./pages/AuthForm'))
 const DashboardApp = lazy(() => import('./pages/dashboard/DashboardApp'))
 const TourDetailPage = lazy(() => import('./pages/tour-detail/TourDetailPage'))
 const AllToursPage = lazy(() => import('./pages/AllToursPage'))
+const RestaurantsPage = lazy(() => import('./pages/RestaurantsPage'))
 const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage'))
 const SharedWishlistPage = lazy(() => import('./pages/SharedWishlistPage'))
 const AllReviewsPage = lazy(() => import('./pages/AllReviewsPage'))
@@ -369,6 +371,7 @@ function AppContent() {
 
   return (
     <>
+      <PreviewBanner />
       <Toaster position="top-center" duration={2500} closeButton />
       {/* Offline/online status toasts — separate react-hot-toast stack at the
           bottom so the red/green connectivity messages never mix with the
@@ -399,6 +402,8 @@ function AppContent() {
           <Route path="/tours" element={
             <AllToursPage />
           } />
+          {/* Placeholder until the restaurant catalogue ships. */}
+          <Route path="/restaurants" element={<RestaurantsPage />} />
           {/* The old dedicated view-all page: the top recommendations are now
               a section filter on All Tours, so deep links forward there. */}
           <Route

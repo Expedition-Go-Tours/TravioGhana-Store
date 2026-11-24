@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import SearchBar from './SearchBar'
+import VerticalSwitch from './VerticalSwitch'
 import './Hero.css'
 
 export default function Hero() {
@@ -16,6 +17,7 @@ export default function Hero() {
         ) : title}</h1>
         <p className="hero-tagline">{t('hero.subtitle')}</p>
         <SearchBar />
+        <VerticalSwitch />
       </div>
     </section>
   )

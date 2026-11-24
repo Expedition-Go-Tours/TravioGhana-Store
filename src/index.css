@@ -76,6 +76,9 @@
   --border: var(--bv-border);
   --font-heading: 'Manrope', sans-serif;
   --font-body: 'DM Sans', sans-serif;
+  /* PreviewBanner publishes its measured height here on staging previews.
+     0px on production keeps every existing fixed offset unchanged. */
+  --preview-banner-height: 0px;
 
   font-family: var(--font-body);
   font-size: 18px;
@@ -119,6 +122,9 @@ html {
 
 body {
   margin: 0;
+  /* The preview banner is fixed, so reserve its height above the page. The
+     navbar reads the same variable to sit underneath it. */
+  padding-top: var(--preview-banner-height, 0px);
   /* Stop scroll-anchoring from nudging the scroll position when an overlay
      (dropdown) opens near the bottom of the page. */
   overflow-anchor: none;
