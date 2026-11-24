@@ -12,22 +12,18 @@
  * - The current offset is written to `sessionStorage` on scroll (one write per
  *   animation frame, not per scroll event) and flushed when the tab is hidden.
  *   Session storage, not local: a restored position belongs to this tab.
- * - A zero from the scroll listener never replaces a remembered positive
- *   offset. On navigation the next route renders as a short skeleton first,
- *   which clamps the browser's scroll to 0 *before* the old entry's save
- *   listener is torn down. Writing that 0 would make Back look like the reader
- *   had left from the top. A sustained top (350ms on a tall page) is the only
- *   thing that clears the memory; a transient 0 from a re-layout or Lenis does
- *   not count as leaving from the top.
- * - Only POP navigations restore. PUSH/REPLACE still land at the top, so
- *   following a link behaves exactly as it did.
+ * - Only scrolls that follow real input (wheel/touch/key/pointer) are saved.
+ *   Lenis, the browser's own POP jump and this hook's restore loop all emit
+ *   scroll events with no input behind them; writing those replaced the
+ *   remembered offset with a half-rendered, clamped one.
+ * - A zero never replaces a remembered positive offset unless the reader held
+ *   the top for AT_TOP_MS. The next route renders as a short skeleton first,
+ *   which clamps scrollY to 0 before the outgoing save listener is removed.
  * - The restore is a short convergence loop, not a single `scrollTo`: below-fold
  *   sections mount on view, so the document is shorter than the remembered
  *   offset when the effect first runs. It scrolls as far as the page allows,
- *   lets that mount the next batch, and repeats for up to 3 s. Saves are paused
- *   while it runs, so a clamped position never overwrites the real one. Any
- *   real input (wheel, touch, key, pointer) cancels it — a reader who starts
- *   scrolling immediately is never yanked back.
+ *   lets that mount the next batch, and repeats for up to 3 s. Any real input
+ *   cancels it — a reader who starts scrolling is never yanked back.
  */
 
 import { useEffect, useRef } from 'react'
@@ -39,6 +35,9 @@ const STORAGE_PREFIX = 'travio:scroll:'
 const MAX_WAIT_MS = 3000
 // How long the reader has to sit at the top before 0 counts as deliberate.
 const AT_TOP_MS = 350
+// A wheel/touch/key can leave Lenis gliding for over a second. Keep treating
+// its scroll events as the reader's for the length of that glide.
+const USER_SCROLL_GRACE_MS = 1800
 
 function isBrowser(): boolean {
   return typeof window !== 'undefined' && typeof document !== 'undefined'
@@ -151,17 +150,29 @@ export function useScrollRestoration(): void {
   const location = useLocation()
   const navigationType = useNavigationType()
   const { key, pathname, search } = location
-  // True while the convergence loop is moving the page. Scroll events are a
-  // side effect of that movement, and saving them would overwrite the real
-  // remembered offset with a clamped, half-loaded one.
+  // True while the convergence loop is moving the page.
   const restoring = useRef(false)
+  // Last real scroll input, used to tell the reader's scroll from Lenis's,
+  // the browser's POP jump and our own restore loop.
+  const lastInputAt = useRef(0)
 
-  // Manual, or the browser's own (instant, pre-hydration) restoration races
-  // ours and wins on some engines.
   useEffect(() => {
     if (!isBrowser()) return
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual'
+    }
+
+    const markInput = () => {
+      lastInputAt.current = performance.now()
+    }
+    const events = ['wheel', 'touchstart', 'keydown', 'pointerdown']
+    for (const name of events) {
+      window.addEventListener(name, markInput, { passive: true, capture: true })
+    }
+    return () => {
+      for (const name of events) {
+        window.removeEventListener(name, markInput, true)
+      }
     }
   }, [])
 
@@ -171,20 +182,25 @@ export function useScrollRestoration(): void {
     if (!isBrowser() || !key) return
 
     let frame = 0
-    // Held while the reader is at the top of a tall page. A single frame at 0
-    // is not enough: Lenis and route-level re-layouts both produce those.
     let topTimer = 0
+    let sustainedTop = false
     const save = () => {
       frame = 0
       if (restoring.current) return
+      // A programmatic scroll (Lenis glide, browser POP jump, restore loop)
+      // is not a statement of where the reader wants to return.
+      if (performance.now() - lastInputAt.current > USER_SCROLL_GRACE_MS) return
+
       const y = window.scrollY
       if (y > 0) {
         if (topTimer) window.clearTimeout(topTimer)
         topTimer = 0
+        sustainedTop = false
         writeSavedScroll(key, y)
-      } else if (!topTimer && maxScrollable() > 0) {
+      } else if (!topTimer && !sustainedTop && maxScrollable() > 0) {
         topTimer = window.setTimeout(() => {
           topTimer = 0
+          sustainedTop = true
           writeSavedScroll(key, 0, true)
         }, AT_TOP_MS)
       }
@@ -194,26 +210,24 @@ export function useScrollRestoration(): void {
     }
     // The last scroll event can land a frame behind where the reader actually
     // stopped; flush synchronously when the tab is hidden or the page unloads.
-    // Not forced: a teardown-time 0 is the short next page, not the reader.
     const flush = () => {
-      if (frame) cancelAnimationFrame(frame)
-      frame = 0
-      if (!restoring.current) {
-        const y = window.scrollY
-        if (y > 0) writeSavedScroll(key, y)
-      }
-    }
-    // Capture the exact offset at the moment of navigation, before React
-    // renders the next (temporarily short) route and clamps scroll to 0.
-    // Capture phase so it runs before the link's own handler pushes history.
-    // popstate covers Back/Forward, where no click happens. A 0 here is only
-    // written when the reader has been holding the top for AT_TOP_MS.
-    const capture = () => {
       if (frame) cancelAnimationFrame(frame)
       frame = 0
       if (!restoring.current && window.scrollY > 0) {
         writeSavedScroll(key, window.scrollY)
       }
+    }
+    // Capture the exact offset at the moment of navigation, before React
+    // renders the next (temporarily short) route and clamps scroll to 0.
+    // Capture phase so it runs before the link's own handler pushes history.
+    // popstate covers Back/Forward, where no click happens.
+    const capture = () => {
+      if (frame) cancelAnimationFrame(frame)
+      frame = 0
+      if (restoring.current) return
+      const y = window.scrollY
+      if (y > 0) writeSavedScroll(key, y)
+      else if (sustainedTop) writeSavedScroll(key, 0, true)
     }
 
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -229,7 +243,8 @@ export function useScrollRestoration(): void {
       document.removeEventListener('click', capture, true)
       window.removeEventListener('popstate', capture)
       if (topTimer) window.clearTimeout(topTimer)
-      flush()
+      // No teardown flush: a route swap's scrollY belongs to the next page.
+      // The capture above has already recorded where the reader left.
     }
   }, [key])
 

@@ -54,6 +54,13 @@ function setPageHeight(scrollHeight: number, innerHeight = 800) {
   Object.defineProperty(window, 'innerHeight', { value: innerHeight, configurable: true })
 }
 
+/** A scroll with real input behind it: wheel, then the resulting scroll event. */
+function readerScrollsTo(value: number) {
+  fireEvent.wheel(window)
+  setScrollY(value)
+  fireEvent.scroll(window)
+}
+
 describe('useScrollRestoration', () => {
   beforeEach(() => {
     window.sessionStorage.clear()
@@ -71,8 +78,7 @@ describe('useScrollRestoration', () => {
     renderAt(['/a'])
     const key = screen.getByTestId('key').textContent as string
 
-    setScrollY(1840)
-    fireEvent.scroll(window)
+    readerScrollsTo(1840)
 
     await waitFor(() => expect(readSavedScroll(key)).toBe(1840))
   })
@@ -81,8 +87,7 @@ describe('useScrollRestoration', () => {
     renderAt(['/a', '/next'])
     const keyA = screen.getByTestId('key').textContent as string
 
-    setScrollY(1840)
-    fireEvent.scroll(window)
+    readerScrollsTo(1840)
     await waitFor(() => expect(readSavedScroll(keyA)).toBe(1840))
 
     fireEvent.click(screen.getByText('next'))
@@ -119,58 +124,40 @@ describe('useScrollRestoration', () => {
     renderAt(['/a', '/next'])
     const keyA = screen.getByTestId('key').textContent as string
 
-    setScrollY(1840)
-    fireEvent.scroll(window)
+    readerScrollsTo(1840)
     await waitFor(() => expect(readSavedScroll(keyA)).toBe(1840))
 
-    // The next route renders short before its content arrives: the browser
-    // clamps scrollY to 0 and fires a scroll event while the old listener is
-    // still mounted. That is not the reader scrolling back to the top.
+    // The browser's own jump when we return, or a re-layout with no user
+    // input, must not be mistaken for the reader moving.
     setScrollY(0)
     fireEvent.scroll(window)
     await waitFor(() => expect(readSavedScroll(keyA)).toBe(1840))
   })
 
-  it('records the real offset at click time, before the next route clamps', async () => {
-    renderAt(['/a', '/next'])
-    const keyA = screen.getByTestId('key').textContent as string
+  it('ignores programmatic scrolls even while Lenis is gliding', async () => {
+    renderAt(['/a'])
+    const key = screen.getByTestId('key').textContent as string
 
-    setScrollY(1840)
-    fireEvent.scroll(window)
-    await waitFor(() => expect(readSavedScroll(keyA)).toBe(1840))
+    fireEvent.wheel(window)
+    readerScrollsTo(1840)
+    await waitFor(() => expect(readSavedScroll(key)).toBe(1840))
 
-    fireEvent.click(screen.getByText('next'))
-    // Capture runs in the capture phase, before our navigate() handler resets
-    // scrollY; the recorded value is where the reader actually was.
-    expect(readSavedScroll(keyA)).toBe(1840)
-  })
-
-  it('does not clear the memory on a transient top, only a sustained one', async () => {
-    renderAt(['/a', '/next'])
-    const keyA = screen.getByTestId('key').textContent as string
-
-    setScrollY(1840)
-    fireEvent.scroll(window)
-    await waitFor(() => expect(readSavedScroll(keyA)).toBe(1840))
-
-    // Lenis/route re-layout can report 0 for a frame. A click in that frame
-    // must not turn it into "the reader left from the top".
+    // Lenis keeps emitting scroll events for its momentum; none of them have
+    // a fresh input event behind them, and the page is now shorter.
+    setPageHeight(2000)
     setScrollY(0)
     fireEvent.scroll(window)
-    fireEvent.click(screen.getByText('next'))
-    expect(readSavedScroll(keyA)).toBe(1840)
+    await waitFor(() => expect(readSavedScroll(key)).toBe(1840))
   })
 
   it('forgets the offset when the reader deliberately returns to the top', async () => {
     renderAt(['/a'])
     const key = screen.getByTestId('key').textContent as string
 
-    setScrollY(1840)
-    fireEvent.scroll(window)
+    readerScrollsTo(1840)
     await waitFor(() => expect(readSavedScroll(key)).toBe(1840))
 
-    setScrollY(0)
-    fireEvent.scroll(window)
+    readerScrollsTo(0)
     await waitFor(() => expect(readSavedScroll(key)).toBeNull(), { timeout: 1500 })
   })
 })
