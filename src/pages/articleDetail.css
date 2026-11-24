@@ -17,7 +17,9 @@
   color: var(--explorer-ink);
   font-family: var(--font-body, 'DM Sans', sans-serif);
   min-height: 100vh;
-  overflow-x: hidden;
+  /* `overflow-x: hidden` would make this a scroll container and break the
+     sticky TOC rail. `clip` prevents horizontal overflow without becoming one. */
+  overflow-x: clip;
 }
 
 .explorer-breadcrumbs {
