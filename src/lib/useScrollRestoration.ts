@@ -19,24 +19,22 @@
  * - A zero never replaces a remembered positive offset unless the reader held
  *   the top for AT_TOP_MS. The next route renders as a short skeleton first,
  *   which clamps scrollY to 0 before the outgoing save listener is removed.
- * - The restore is a short walk down, not a single `scrollTo`: below-fold
- *   sections mount on view, so a jump to the remembered offset skips their
- *   zero-height wrappers, they never mount, and the page stays short. The walk
- *   advances a viewport at a time, letting each observer fire, then holds at
- *   the target while lazy content settles (up to 3 s). Any real input cancels
- *   it — a reader who starts scrolling is never yanked back.
+ * - A return lands at the remembered offset in one jump. Below-fold sections
+ *   normally mount only when their wrapper enters the viewport; a jump would
+ *   skip those wrappers and be clamped short. The restore tells them to mount
+ *   first, then jumps once and silently corrects while late content settles.
+ *   Any real input cancels the correction — a reader who starts scrolling is
+ *   never yanked back.
  */
 
 import { useEffect, useRef } from 'react'
 import { useLocation, useNavigationType } from 'react-router-dom'
 import { scrollToPosition, scrollToTop } from './scrollToTop'
+import { beginScrollRestore, endScrollRestore } from './scrollRestoreSignal'
 
 const STORAGE_PREFIX = 'travio:scroll:'
-// How long to keep walking/correcting while lazy content grows the page.
+// How long to keep a silent correction alive while lazy content grows the page.
 const MAX_WAIT_MS = 3000
-// One frame between steps: enough for IntersectionObservers to mount the next
-// section, short enough that Back reads as a jump rather than a scroll replay.
-const STEP_MS = 16
 // How long the reader has to sit at the top before 0 counts as deliberate.
 const AT_TOP_MS = 350
 // A wheel/touch/key can leave Lenis gliding for over a second. Keep treating
@@ -92,23 +90,18 @@ function maxScrollable(): number {
 }
 
 /**
- * Put the reader back at `y`, then stop.
+ * Put the reader back at `y` in one jump, then hold there quietly.
  *
- * Below-fold sections mount on view. Jumping straight to `y` skips their
- * zero-height wrappers: they never intersect, never mount, and the page stays
- * short. Walk down in viewport-sized steps instead, pausing at each so its
- * observer can fire and grow the document, then hold at `y` while the last
- * sections settle. Landing short for a moment is invisible next to landing at
- * the top for good.
+ * `beginScrollRestore` tells below-fold wrappers to mount before the jump, so
+ * the document is already tall enough and the landing is not clamped. Late
+ * data can still grow the page; re-applying the same target each frame keeps
+ * the reader at `y` without turning the correction into a visible scroll.
  *
  * Returns a cleanup function so a second navigation during the restore (the
  * reader pressing Back again) cancels this one instead of fighting it.
  */
 function restoreScroll(y: number, onDone: () => void): () => void {
   const startedAt = performance.now()
-  const stepSize = Math.max(300, (window.innerHeight || 800) * 0.75)
-  let nextStep = 0
-  let lastStepAt = 0
   let frame = 0
   let cancelled = false
 
@@ -140,7 +133,13 @@ function restoreScroll(y: number, onDone: () => void): () => void {
     for (const [name, target] of events) {
       target.removeEventListener(name, cancel)
     }
+    endScrollRestore()
     onDone()
+  }
+
+  const apply = () => {
+    const target = Math.min(y, maxScrollable())
+    if (Math.abs(window.scrollY - target) > 1) scrollToPosition(target)
   }
 
   const tick = () => {
@@ -148,29 +147,25 @@ function restoreScroll(y: number, onDone: () => void): () => void {
       cleanup()
       return
     }
-
-    const now = performance.now()
-    if (now - lastStepAt >= STEP_MS) {
-      lastStepAt = now
-      const max = maxScrollable()
-      // Walk from the top towards y. Each pause lets an observer mount the
-      // next section; skipping a section leaves a zero-height hole forever.
-      const desired = Math.min(nextStep, y)
-      const target = Math.min(desired, max)
-      if (Math.abs(window.scrollY - target) > 1 || desired > max) {
-        scrollToPosition(target)
-      }
-      nextStep += stepSize
-    }
-
-    if (now - startedAt < MAX_WAIT_MS) {
+    apply()
+    if (performance.now() - startedAt < MAX_WAIT_MS) {
       frame = requestAnimationFrame(tick)
     } else {
       cleanup()
     }
   }
 
-  frame = requestAnimationFrame(tick)
+  beginScrollRestore()
+  // First frame: let the restore event's state updates mount the sections.
+  // Second frame: jump straight there, then keep quiet watch over the height.
+  frame = requestAnimationFrame(() => {
+    if (cancelled) {
+      cleanup()
+      return
+    }
+    apply()
+    frame = requestAnimationFrame(tick)
+  })
 
   return () => {
     cancelled = true
