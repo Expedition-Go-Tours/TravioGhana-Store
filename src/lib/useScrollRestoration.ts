@@ -14,22 +14,22 @@
  *   Session storage, not local: a restored position belongs to this tab.
  * - Only POP navigations restore. PUSH/REPLACE still land at the top, so
  *   following a link behaves exactly as it did.
- * - The restore is not a single `scrollTo`: pages are lazy and mount on view,
- *   so the document may be too short when the effect runs. We hold until the
- *   remembered offset is reachable, then settle for a beat in case content
- *   above still arrives. Any real input (wheel, touch, key, pointer) cancels
- *   it — a reader who starts scrolling immediately is never yanked back.
+ * - The restore is a short convergence loop, not a single `scrollTo`: below-fold
+ *   sections mount on view, so the document is shorter than the remembered
+ *   offset when the effect first runs. It scrolls as far as the page allows,
+ *   lets that mount the next batch, and repeats for up to 3 s. Saves are paused
+ *   while it runs, so a clamped position never overwrites the real one. Any
+ *   real input (wheel, touch, key, pointer) cancels it — a reader who starts
+ *   scrolling immediately is never yanked back.
  */
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useLocation, useNavigationType } from 'react-router-dom'
 import { scrollToPosition, scrollToTop } from './scrollToTop'
 
 const STORAGE_PREFIX = 'travio:scroll:'
-// How long to wait for lazy content to make the remembered offset reachable.
-const MAX_WAIT_MS = 2500
-// How long to keep correcting after the offset is first applied.
-const SETTLE_MS = 600
+// How long to keep correcting while lazy content grows the page.
+const MAX_WAIT_MS = 3000
 
 function isBrowser(): boolean {
   return typeof window !== 'undefined' && typeof document !== 'undefined'
@@ -65,12 +65,17 @@ function maxScrollable(): number {
 /**
  * Put the reader back at `y`, then stop.
  *
+ * The document may be shorter than `y` when this runs — below-fold sections on
+ * these pages mount on view — so this is a convergence loop, not a single jump:
+ * scroll to what the page can hold, let that mount the next batch, scroll
+ * again, until the target is reached or the budget runs out. Landing short of
+ * `y` for a frame is invisible next to landing at the top for good.
+ *
  * Returns a cleanup function so a second navigation during the restore (the
  * reader pressing Back again) cancels this one instead of fighting it.
  */
-function restoreScroll(y: number): () => void {
+function restoreScroll(y: number, onDone: () => void): () => void {
   const startedAt = performance.now()
-  let appliedAt: number | null = null
   let frame = 0
   let cancelled = false
 
@@ -95,6 +100,7 @@ function restoreScroll(y: number): () => void {
     for (const [name, target] of events) {
       target.removeEventListener(name, cancel)
     }
+    onDone()
   }
 
   const tick = () => {
@@ -103,24 +109,12 @@ function restoreScroll(y: number): () => void {
       return
     }
 
-    const now = performance.now()
-    const max = maxScrollable()
-
-    // Too short to hold the remembered offset yet. Wait for lazy sections and
-    // images to arrive rather than parking the reader at the bottom of a
-    // half-rendered page.
-    if (max + 1 < y && now - startedAt < MAX_WAIT_MS) {
-      frame = requestAnimationFrame(tick)
-      return
-    }
-
-    const target = Math.min(y, max)
+    const target = Math.min(y, maxScrollable())
     if (Math.abs(window.scrollY - target) > 1) {
       scrollToPosition(target)
     }
 
-    if (appliedAt === null) appliedAt = now
-    if (now - appliedAt < SETTLE_MS) {
+    if (performance.now() - startedAt < MAX_WAIT_MS) {
       frame = requestAnimationFrame(tick)
     } else {
       cleanup()
@@ -143,6 +137,10 @@ export function useScrollRestoration(): void {
   const location = useLocation()
   const navigationType = useNavigationType()
   const { key, pathname, search } = location
+  // True while the convergence loop is moving the page. Scroll events are a
+  // side effect of that movement, and saving them would overwrite the real
+  // remembered offset with a clamped, half-loaded one.
+  const restoring = useRef(false)
 
   // Manual, or the browser's own (instant, pre-hydration) restoration races
   // ours and wins on some engines.
@@ -161,6 +159,7 @@ export function useScrollRestoration(): void {
     let frame = 0
     const save = () => {
       frame = 0
+      if (restoring.current) return
       writeSavedScroll(key, window.scrollY)
     }
     const onScroll = () => {
@@ -195,7 +194,16 @@ export function useScrollRestoration(): void {
 
     if (navigationType === 'POP') {
       const y = readSavedScroll(key)
-      if (y) return restoreScroll(y)
+      if (y) {
+        restoring.current = true
+        const stop = restoreScroll(y, () => {
+          restoring.current = false
+        })
+        return () => {
+          restoring.current = false
+          stop()
+        }
+      }
     }
 
     scrollToTop()
