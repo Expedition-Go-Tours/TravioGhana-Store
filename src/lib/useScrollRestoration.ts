@@ -34,8 +34,9 @@ import { scrollToPosition, scrollToTop } from './scrollToTop'
 const STORAGE_PREFIX = 'travio:scroll:'
 // How long to keep walking/correcting while lazy content grows the page.
 const MAX_WAIT_MS = 3000
-// Pause between steps so IntersectionObservers can mount the next section.
-const STEP_MS = 90
+// One frame between steps: enough for IntersectionObservers to mount the next
+// section, short enough that Back reads as a jump rather than a scroll replay.
+const STEP_MS = 16
 // How long the reader has to sit at the top before 0 counts as deliberate.
 const AT_TOP_MS = 350
 // A wheel/touch/key can leave Lenis gliding for over a second. Keep treating
@@ -44,6 +45,18 @@ const USER_SCROLL_GRACE_MS = 1800
 
 function isBrowser(): boolean {
   return typeof window !== 'undefined' && typeof document !== 'undefined'
+}
+
+/**
+ * React Router reports POP on the very first render too. Without this check a
+ * reload — or a link pasted into the same tab — would restore the offset left
+ * under the reused `default` key instead of opening at the top. Only a genuine
+ * browser Back/Forward load is allowed to restore on first render.
+ */
+function isBackForwardLoad(): boolean {
+  if (!isBrowser() || typeof performance === 'undefined') return false
+  const entries = performance.getEntriesByType?.('navigation') as PerformanceNavigationTiming[] | undefined
+  return entries?.[0]?.type === 'back_forward'
 }
 
 /** sessionStorage throws in some privacy modes; a lost position is not fatal. */
@@ -104,8 +117,14 @@ function restoreScroll(y: number, onDone: () => void): () => void {
   const cancel = () => {
     cancelled = true
   }
+  // A two-finger horizontal swipe is how many trackpad users press Back. Its
+  // wheel tail arrives *after* the navigation and must not abort the restore
+  // it just triggered. Only a vertical wheel means "I am scrolling now".
+  const cancelOnWheel = (event: WheelEvent) => {
+    if (Math.abs(event.deltaY) >= Math.abs(event.deltaX)) cancel()
+  }
+  window.addEventListener('wheel', cancelOnWheel, { passive: true })
   const events: [string, EventTarget][] = [
-    ['wheel', window],
     ['touchstart', window],
     ['keydown', window],
     ['pointerdown', window],
@@ -117,6 +136,7 @@ function restoreScroll(y: number, onDone: () => void): () => void {
   const cleanup = () => {
     if (frame) cancelAnimationFrame(frame)
     frame = 0
+    window.removeEventListener('wheel', cancelOnWheel)
     for (const [name, target] of events) {
       target.removeEventListener(name, cancel)
     }
@@ -171,6 +191,9 @@ export function useScrollRestoration(): void {
   // Last real scroll input, used to tell the reader's scroll from Lenis's,
   // the browser's POP jump and our own restore loop.
   const lastInputAt = useRef(0)
+  // The route we last rendered. A first render is not a return to a saved
+  // entry, even though React Router labels its navigation type POP.
+  const lastRoute = useRef<string | null>(null)
 
   useEffect(() => {
     if (!isBrowser()) return
@@ -272,7 +295,16 @@ export function useScrollRestoration(): void {
   useEffect(() => {
     if (!isBrowser()) return
 
-    if (navigationType === 'POP') {
+    // The key distinguishes two entries on the same URL — e.g. the footer's
+    // "Home" link pushes a second '/' while the reader is already on '/'.
+    const route = key + pathname + search
+    const isFirstRoute = lastRoute.current === null || lastRoute.current === route
+    lastRoute.current = route
+
+    // A fresh mount is not a return, even when React Router calls it POP.
+    // The only exception is a real browser Back/Forward load, where the whole
+    // document was recreated and sessionStorage still holds the old offset.
+    if (navigationType === 'POP' && (!isFirstRoute || isBackForwardLoad())) {
       const y = readSavedScroll(key)
       if (y) {
         restoring.current = true
