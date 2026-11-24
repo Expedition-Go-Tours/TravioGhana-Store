@@ -19,11 +19,12 @@
  * - A zero never replaces a remembered positive offset unless the reader held
  *   the top for AT_TOP_MS. The next route renders as a short skeleton first,
  *   which clamps scrollY to 0 before the outgoing save listener is removed.
- * - The restore is a short convergence loop, not a single `scrollTo`: below-fold
- *   sections mount on view, so the document is shorter than the remembered
- *   offset when the effect first runs. It scrolls as far as the page allows,
- *   lets that mount the next batch, and repeats for up to 3 s. Any real input
- *   cancels it — a reader who starts scrolling is never yanked back.
+ * - The restore is a short walk down, not a single `scrollTo`: below-fold
+ *   sections mount on view, so a jump to the remembered offset skips their
+ *   zero-height wrappers, they never mount, and the page stays short. The walk
+ *   advances a viewport at a time, letting each observer fire, then holds at
+ *   the target while lazy content settles (up to 3 s). Any real input cancels
+ *   it — a reader who starts scrolling is never yanked back.
  */
 
 import { useEffect, useRef } from 'react'
@@ -31,8 +32,10 @@ import { useLocation, useNavigationType } from 'react-router-dom'
 import { scrollToPosition, scrollToTop } from './scrollToTop'
 
 const STORAGE_PREFIX = 'travio:scroll:'
-// How long to keep correcting while lazy content grows the page.
+// How long to keep walking/correcting while lazy content grows the page.
 const MAX_WAIT_MS = 3000
+// Pause between steps so IntersectionObservers can mount the next section.
+const STEP_MS = 90
 // How long the reader has to sit at the top before 0 counts as deliberate.
 const AT_TOP_MS = 350
 // A wheel/touch/key can leave Lenis gliding for over a second. Keep treating
@@ -78,17 +81,21 @@ function maxScrollable(): number {
 /**
  * Put the reader back at `y`, then stop.
  *
- * The document may be shorter than `y` when this runs — below-fold sections on
- * these pages mount on view — so this is a convergence loop, not a single jump:
- * scroll to what the page can hold, let that mount the next batch, scroll
- * again, until the target is reached or the budget runs out. Landing short of
- * `y` for a frame is invisible next to landing at the top for good.
+ * Below-fold sections mount on view. Jumping straight to `y` skips their
+ * zero-height wrappers: they never intersect, never mount, and the page stays
+ * short. Walk down in viewport-sized steps instead, pausing at each so its
+ * observer can fire and grow the document, then hold at `y` while the last
+ * sections settle. Landing short for a moment is invisible next to landing at
+ * the top for good.
  *
  * Returns a cleanup function so a second navigation during the restore (the
  * reader pressing Back again) cancels this one instead of fighting it.
  */
 function restoreScroll(y: number, onDone: () => void): () => void {
   const startedAt = performance.now()
+  const stepSize = Math.max(300, (window.innerHeight || 800) * 0.75)
+  let nextStep = 0
+  let lastStepAt = 0
   let frame = 0
   let cancelled = false
 
@@ -122,18 +129,21 @@ function restoreScroll(y: number, onDone: () => void): () => void {
       return
     }
 
-    const max = maxScrollable()
-    const target = Math.min(y, max)
-    // Keep nudging while the page is shorter than the target: once scrollY
-    // equals the clamped target the browser stops firing scroll events, so
-    // below-fold sections never mount and the page never grows. Reissuing the
-    // scroll at the ceiling is what wakes the next batch. When the page is
-    // finally tall enough, only correct a real difference.
-    if (max < y || Math.abs(window.scrollY - target) > 1) {
-      scrollToPosition(target)
+    const now = performance.now()
+    if (now - lastStepAt >= STEP_MS) {
+      lastStepAt = now
+      const max = maxScrollable()
+      // Walk from the top towards y. Each pause lets an observer mount the
+      // next section; skipping a section leaves a zero-height hole forever.
+      const desired = Math.min(nextStep, y)
+      const target = Math.min(desired, max)
+      if (Math.abs(window.scrollY - target) > 1 || desired > max) {
+        scrollToPosition(target)
+      }
+      nextStep += stepSize
     }
 
-    if (performance.now() - startedAt < MAX_WAIT_MS) {
+    if (now - startedAt < MAX_WAIT_MS) {
       frame = requestAnimationFrame(tick)
     } else {
       cleanup()
