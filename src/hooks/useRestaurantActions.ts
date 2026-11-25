@@ -14,6 +14,7 @@ export interface AuthorRestaurantReview {
   title: string | null
   body: string | null
   photos: string[]
+  companions: string[]
   visitedAt: string | null
   source: string
   proofMethod: string | null
@@ -31,6 +32,7 @@ export interface RestaurantReviewInput {
   title?: string
   body: string
   photos?: string[]
+  companions?: string[]
   proofToken?: string
   visitedAt?: string
 }

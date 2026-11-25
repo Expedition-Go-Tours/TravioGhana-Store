@@ -1,7 +1,9 @@
 import StarRating from '../../components/StarRating'
 
 export function displayLabel(value: string): string {
-  return value.charAt(0).toUpperCase() + value.slice(1)
+  return String(value || '')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b[a-z]/g, (letter) => letter.toUpperCase())
 }
 
 export function formatDate(value: string | null | undefined): string {
@@ -56,7 +58,7 @@ export function Stars({ value, label }: { value: number; label?: string }) {
 
 export function formatHourValue(value: unknown): string {
   if (value == null) return ''
-  if (Array.isArray(value)) return value.map(formatHourValue).filter(Boolean).join(', ')
+  if (Array.isArray(value)) return value.map(formatHourValue).filter(Boolean).join(' – ')
   if (typeof value === 'string' || typeof value === 'number') return String(value)
   if (typeof value === 'object') {
     const row = value as Record<string, unknown>

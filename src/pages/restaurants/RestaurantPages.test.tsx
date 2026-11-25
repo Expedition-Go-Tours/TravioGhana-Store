@@ -51,6 +51,11 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
 vi.mock('../../hooks/useRestaurantVenues', () => ({
   useRestaurantVenue: () => mocks.useRestaurantVenue(),
   useRestaurantVenueReviews: () => mocks.useRestaurantVenueReviews(),
+  useRestaurantVenues: () => ({
+    data: { pages: [{ venues: [], pagination: { hasMore: false, nextCursor: null, limit: 12 } }] },
+    isPending: false,
+    isError: false,
+  }),
 }))
 
 vi.mock('../../hooks/useRestaurantActions', () => ({
@@ -122,6 +127,7 @@ const review = {
   title: 'Good jollof',
   body: 'The jollof was excellent and the service was quick.',
   photos: [],
+  companions: ['COUPLES'],
   visitedAt: '2026-02-10T00:00:00.000Z',
   source: 'TRAVIO_VERIFIED',
   proofMethod: 'EMAIL_INVITE',
@@ -220,6 +226,7 @@ function setDefaultMocks() {
 }
 
 beforeEach(() => {
+  localStorage.clear()
   setDefaultMocks()
 })
 
@@ -228,11 +235,11 @@ describe('RestaurantDetailPage', () => {
     renderAt('/restaurants/the-place', '/restaurants/:slug', <RestaurantDetailPage />)
 
     expect(screen.getByRole('heading', { name: 'The Place' })).toBeInTheDocument()
-    expect(screen.getByText('1 Travio reviews')).toBeInTheDocument()
+    expect(screen.getAllByText(/1 review/).length).toBeGreaterThan(0)
     expect(screen.getByRole('heading', { name: 'Ratings from other sites' })).toBeInTheDocument()
-    expect(screen.getByText('Google')).toBeInTheDocument()
-    expect(screen.getByText('Good jollof')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Is this your restaurant?' })).toBeInTheDocument()
+    expect(screen.getAllByText('Google').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Good jollof').length).toBeGreaterThan(0)
+    expect(screen.getByRole('link', { name: 'Claim this restaurant' })).toBeInTheDocument()
   })
 
   it('submits a review report through the real hook', async () => {
@@ -275,6 +282,8 @@ describe('RestaurantReviewFormPage', () => {
       target: { value: 'The food and service were both excellent.' },
     })
     fireEvent.change(screen.getByLabelText('Add review photos'), { target: { files: [file] } })
+    fireEvent.click(screen.getByLabelText('Couples'))
+    fireEvent.click(screen.getByRole('checkbox', { name: /I certify that this review/ }))
     fireEvent.click(screen.getByRole('button', { name: 'Send review' }))
 
     await vi.waitFor(() => expect(mocks.uploadMutate).toHaveBeenCalledWith([file]))
@@ -283,6 +292,7 @@ describe('RestaurantReviewFormPage', () => {
         expect.objectContaining({
           rating: 5,
           body: 'The food and service were both excellent.',
+          companions: ['COUPLES'],
           photos: ['https://res.cloudinary.com/demo/image/upload/v1/photo.jpg'],
         }),
       ),
@@ -290,6 +300,18 @@ describe('RestaurantReviewFormPage', () => {
     expect(mocks.navigate).toHaveBeenCalledWith('/restaurants/the-place?review=submitted', {
       replace: true,
     })
+  })
+
+  it('does not submit until the diner certifies the review', () => {
+    renderAt('/restaurants/the-place/review', '/restaurants/:slug/review', <RestaurantReviewFormPage />)
+
+    fireEvent.click(screen.getByRole('radio', { name: /Excellent/ }))
+    fireEvent.change(screen.getByLabelText(/Your review/), {
+      target: { value: 'The food and service were both excellent.' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Send review' }))
+
+    expect(mocks.createMutate).not.toHaveBeenCalled()
   })
 
   it('loads an owned review and submits a correction through the replace endpoint', async () => {
@@ -306,6 +328,7 @@ describe('RestaurantReviewFormPage', () => {
     )
 
     expect(screen.getByRole('heading', { name: 'Update your review' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('checkbox', { name: /I certify that this review/ }))
     fireEvent.click(screen.getByRole('button', { name: 'Send updated review' }))
 
     await vi.waitFor(() =>

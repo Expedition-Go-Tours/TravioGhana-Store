@@ -2,27 +2,35 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import {
   BadgeCheck,
+  Camera,
+  Check,
+  ChevronLeft,
   ChevronRight,
-  Clock3,
   ExternalLink,
   Flag,
   MapPin,
   Navigation,
   PenLine,
   Phone,
+  Share2,
   ShieldCheck,
+  Sparkles,
+  X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import SEO, { SITE_URL } from '../../components/SEO'
 import Footer from '../../components/Footer'
 import OptimizedImage from '../../components/shared/OptimizedImage'
+import RestaurantCard from '../../components/RestaurantCard'
 import StarRating from '../../components/StarRating'
 import { useAuthUser } from '../../hooks/useAuthUser'
 import { useAuthContext } from '../../context/AuthContext'
 import {
   useRestaurantVenue,
   useRestaurantVenueReviews,
+  useRestaurantVenues,
   type RestaurantVenueDetail,
+  type RestaurantVenueReview,
 } from '../../hooks/useRestaurantVenues'
 import {
   useMyRestaurantClaim,
@@ -38,6 +46,7 @@ import {
 } from './RestaurantPageBits'
 import '../RestaurantsPage.css'
 import './RestaurantPages.css'
+import './RestaurantDetailPage.css'
 
 const REPORT_REASONS = [
   'Not a first-hand visit',
@@ -45,6 +54,14 @@ const REPORT_REASONS = [
   'Offensive or irrelevant content',
   'Conflict of interest',
 ]
+
+const COMPANION_LABELS: Record<string, string> = {
+  BUSINESS: 'Business',
+  COUPLES: 'Couples',
+  FAMILY: 'Family',
+  FRIENDS: 'Friends',
+  SOLO: 'Solo',
+}
 
 function galleryImages(venue: RestaurantVenueDetail): string[] {
   return [...new Set([venue.coverPhoto, ...venue.photos].filter(Boolean) as string[])]
@@ -70,17 +87,147 @@ function formatHours(hours: Record<string, unknown> | null): { day: string; valu
     .filter((row) => row.value)
 }
 
-function FacetList({ title, values }: { title: string; values: string[] }) {
-  if (!values.length) return null
+function average(values: (number | null)[]): number | null {
+  const present = values.filter((value): value is number => typeof value === 'number' && value > 0)
+  if (!present.length) return null
+  return present.reduce((sum, value) => sum + value, 0) / present.length
+}
+
+function RatingBar({ stars, count, total }: { stars: number; count: number; total: number }) {
+  const percent = total > 0 ? Math.round((count / total) * 100) : 0
   return (
-    <div className="rd-facet">
-      <h3>{title}</h3>
-      <div className="rd-chips">
-        {values.map((value) => (
-          <span key={value}>{displayLabel(value)}</span>
-        ))}
-      </div>
+    <div className="rvd-bar">
+      <span className="rvd-bar__label">{stars}</span>
+      <span className="rvd-bar__track">
+        <span style={{ width: `${percent}%` }} />
+      </span>
+      <span className="rvd-bar__count">{count}</span>
     </div>
+  )
+}
+
+function ReviewCard({
+  review,
+  slug,
+  user,
+  promptSignIn,
+  onReport,
+  reporting,
+  reportState,
+}: {
+  review: RestaurantVenueReview
+  slug: string
+  user: unknown
+  promptSignIn: (path: string) => void
+  onReport: (reviewId: string | null) => void
+  reporting: boolean
+  reportState: {
+    reason: string
+    detail: string
+    setReason: (value: string) => void
+    setDetail: (value: string) => void
+    submit: (event: FormEvent<HTMLFormElement>) => void
+    pending: boolean
+  }
+}) {
+  return (
+    <article className="rvd-review">
+      <header className="rvd-review__head">
+        <div className="rvd-review__person">
+          {review.author.photoURL ? (
+            <img src={review.author.photoURL} alt="" className="rvd-review__avatar" />
+          ) : (
+            <span className="rvd-review__avatar rvd-review__avatar--fallback">
+              {(review.author.name ?? 'D')[0]}
+            </span>
+          )}
+          <div>
+            <strong>{review.author.name ?? 'Travio diner'}</strong>
+            <span>
+              {formatDate(review.visitedAt || review.createdAt)}
+              {review.verified && (
+                <>
+                  {' · '}
+                  <BadgeCheck size={12} aria-hidden="true" /> Verified visit
+                </>
+              )}
+            </span>
+          </div>
+        </div>
+        <StarRating value={review.rating} size={15} />
+      </header>
+
+      {review.title && <h3>{review.title}</h3>}
+      {review.body && <p>{review.body}</p>}
+
+      {review.companions.length > 0 && (
+        <div className="rvd-review__companions" aria-label="Who they went with">
+          {review.companions.map((companion) => (
+            <span key={companion}>{COMPANION_LABELS[companion] ?? displayLabel(companion)}</span>
+          ))}
+        </div>
+      )}
+
+      {review.photos.length > 0 && (
+        <div className="rvd-review__photos">
+          {review.photos.map((photo) => (
+            <OptimizedImage key={photo} src={photo} alt="" width={150} height={110} fit="crop" />
+          ))}
+        </div>
+      )}
+
+      <footer className="rvd-review__foot">
+        <span className="rvd-review__helpful">
+          <Sparkles size={14} aria-hidden="true" />
+          Helpful · {review.helpfulCount}
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            if (!user) {
+              promptSignIn(`/restaurants/${slug}`)
+              return
+            }
+            onReport(reporting ? null : review.id)
+          }}
+        >
+          <Flag size={13} aria-hidden="true" /> Report
+        </button>
+      </footer>
+
+      {reporting && (
+        <form className="rvd-report" onSubmit={(event) => reportState.submit(event)}>
+          <label>
+            Reason
+            <select
+              value={reportState.reason}
+              onChange={(event) => reportState.setReason(event.target.value)}
+            >
+              {REPORT_REASONS.map((reason) => (
+                <option key={reason}>{reason}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            More detail (optional)
+            <textarea
+              value={reportState.detail}
+              onChange={(event) => reportState.setDetail(event.target.value)}
+              rows={2}
+              maxLength={1000}
+            />
+          </label>
+          <div>
+            <button type="submit" disabled={reportState.pending}>
+              {reportState.pending ? 'Sending…' : 'Send report'}
+            </button>
+            <button type="button" onClick={() => onReport(null)}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+    </article>
   )
 }
 
@@ -94,13 +241,22 @@ export default function RestaurantDetailPage() {
   const claimQuery = useMyRestaurantClaim(slug, Boolean(user))
   const report = useReportRestaurantReview(slug)
   const [activePhoto, setActivePhoto] = useState(0)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [aboutOpen, setAboutOpen] = useState(false)
   const [reportingReview, setReportingReview] = useState<string | null>(null)
   const [reportReason, setReportReason] = useState(REPORT_REASONS[0])
   const [reportDetail, setReportDetail] = useState('')
+  const [reviewSearch, setReviewSearch] = useState('')
+  const [reviewRating, setReviewRating] = useState('all')
+  const [reviewSort, setReviewSort] = useState('recent')
 
   const venue = venueQuery.data
+  const nearbyQuery = useRestaurantVenues({ city: venue?.city ?? undefined, sort: 'rating' })
   const images = useMemo(() => (venue ? galleryImages(venue) : []), [venue])
-  const reviews = reviewsQuery.data?.pages.flatMap((page) => page.reviews) ?? []
+  const reviews = useMemo(
+    () => reviewsQuery.data?.pages.flatMap((page) => page.reviews) ?? [],
+    [reviewsQuery.data],
+  )
   const distribution =
     reviewsQuery.data?.pages[0]?.distribution ?? venue?.distribution ?? null
   const distributionTotal = distribution
@@ -108,6 +264,43 @@ export default function RestaurantDetailPage() {
     : 0
   const hours = formatHours(venue?.hours ?? null)
   const isManager = Boolean(claimQuery.data?.membership)
+
+  const allPhotos = useMemo(() => {
+    const reviewPhotos = reviews.flatMap((review) => review.photos)
+    return [...new Set([...images, ...reviewPhotos])]
+  }, [images, reviews])
+
+  const filteredReviews = useMemo(() => {
+    const needle = reviewSearch.trim().toLowerCase()
+    const filtered = reviews.filter((review) => {
+      if (reviewRating !== 'all' && review.rating !== Number(reviewRating)) return false
+      if (!needle) return true
+      return [review.title, review.body, review.author.name]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(needle))
+    })
+    return [...filtered].sort((a, b) => {
+      if (reviewSort === 'highest') return b.rating - a.rating
+      if (reviewSort === 'lowest') return a.rating - b.rating
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    })
+  }, [reviews, reviewRating, reviewSearch, reviewSort])
+
+  const recentLoved = useMemo(
+    () => reviews.filter((review) => review.rating >= 4).slice(0, 3),
+    [reviews],
+  )
+
+  const nearby = useMemo(() => {
+    const rows = nearbyQuery.data?.pages.flatMap((page) => page.venues) ?? []
+    return rows.filter((row) => row.id !== venue?.id).slice(0, 4)
+  }, [nearbyQuery.data, venue?.id])
+
+  const external = venue?.externalStats[0] ?? null
+  const foodAverage = average(reviews.map((review) => review.foodRating))
+  const serviceAverage = average(reviews.map((review) => review.serviceRating))
+  const atmosphereAverage = average(reviews.map((review) => review.atmosphereRating))
+  const valueAverage = average(reviews.map((review) => review.valueRating))
 
   if (venueQuery.isPending) {
     return (
@@ -136,15 +329,16 @@ export default function RestaurantDetailPage() {
     )
   }
 
-  const submitReport = async (event: FormEvent<HTMLFormElement>, reviewId: string) => {
+  const submitReport = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!user) {
       promptSignIn(`/restaurants/${slug}`)
       return
     }
+    if (!reportingReview) return
     try {
       await report.mutateAsync({
-        reviewId,
+        reviewId: reportingReview,
         reason: reportReason,
         detail: reportDetail.trim() || undefined,
       })
@@ -156,11 +350,32 @@ export default function RestaurantDetailPage() {
     }
   }
 
+  const share = async () => {
+    const url = window.location.href
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: venue.name, text: `Dining at ${venue.name}`, url })
+        return
+      }
+      await navigator.clipboard.writeText(url)
+      toast.success('Link copied')
+    } catch {
+      toast.error('We could not share this page.')
+    }
+  }
+
   const dismissSubmittedNotice = () => {
     const next = new URLSearchParams(searchParams)
     next.delete('review')
     setSearchParams(next, { replace: true })
   }
+
+  const externalLabel = external ? sourceLabel(external.source) : ''
+  const rankLabel = venue.rank
+    ? `#${venue.rank.position}${venue.rank.of ? ` of ${venue.rank.of}` : ''} in ${venue.city ?? 'Ghana'}`
+    : null
+  const heroPhoto = images[0] ?? null
+  const activeImage = allPhotos[Math.min(activePhoto, Math.max(0, allPhotos.length - 1))] ?? null
 
   return (
     <div className="restaurants-page">
@@ -199,7 +414,7 @@ export default function RestaurantDetailPage() {
         }}
       />
 
-      <main className="restaurants-page__main rd-page">
+      <main className="restaurants-page__main rvd-page">
         <nav className="rh-breadcrumb" aria-label="Breadcrumb">
           <Link to="/">Home</Link>
           <ChevronRight size={13} aria-hidden="true" />
@@ -215,200 +430,341 @@ export default function RestaurantDetailPage() {
         </nav>
 
         {searchParams.get('review') === 'submitted' && (
-          <div className="rd-notice" role="status">
+          <div className="rvd-notice" role="status">
+            <Check size={17} aria-hidden="true" />
             <span>Your review was sent. It will appear here once our moderators clear it.</span>
             <button type="button" onClick={dismissSubmittedNotice} aria-label="Dismiss message">
-              ×
+              <X size={16} />
             </button>
           </div>
         )}
 
-        <header className="rd-heading">
-          <div>
-            <div className="rd-heading__badges">
-              {venue.rank && (
-                <span className="rd-rank">
-                  #{venue.rank.position}
-                  {venue.rank.of ? ` of ${venue.rank.of}` : ''} in {venue.city ?? 'Ghana'}
+        <header className="rvd-header">
+          <div className="rvd-header__main">
+            <div className="rvd-badges">
+              {rankLabel && <span className="rvd-badge rvd-badge--rank">{rankLabel}</span>}
+              {venue.rank?.position === 1 && (
+                <span className="rvd-badge rvd-badge--award">
+                  <Sparkles size={13} aria-hidden="true" /> Top-ranked in {venue.city ?? 'the city'}
                 </span>
               )}
-              {venue.featured && !venue.rank && <span className="rd-rank">Featured</span>}
               {venue.verifiedReviewCount > 0 && (
-                <span className="rd-verified">
-                  <BadgeCheck size={14} aria-hidden="true" />
+                <span className="rvd-badge rvd-badge--verified">
+                  <BadgeCheck size={13} aria-hidden="true" />
                   {venue.verifiedReviewCount} verified visits
                 </span>
               )}
             </div>
+
             <h1>{venue.name}</h1>
-            <div className="rd-heading__rating">
+
+            <div className="rvd-header__meta">
               {venue.rating != null ? (
-                <>
-                  <StarRating value={venue.rating} size={18} />
+                <span className="rvd-header__rating">
+                  <StarRating value={venue.rating} size={17} />
                   <strong>{venue.rating.toFixed(1)}</strong>
                   <span>{venue.reviewCount} Travio reviews</span>
-                </>
+                </span>
               ) : (
-                <span>No Travio reviews yet</span>
+                <span className="rvd-header__rating rvd-header__rating--new">New on Travio</span>
+              )}
+              {external && (
+                <span className="rvd-header__external">
+                  {externalLabel} <strong>{external.rating?.toFixed(1)}</strong>
+                  <span>· {external.reviewCount.toLocaleString()} reviews</span>
+                </span>
               )}
             </div>
-            <p className="rd-heading__location">
-              <MapPin size={16} aria-hidden="true" />
-              {locationText(venue) || 'Location to be confirmed'}
-            </p>
+
+            <div className="rvd-header__facts">
+              <span>
+                <MapPin size={15} aria-hidden="true" />
+                {locationText(venue) || 'Location to be confirmed'}
+              </span>
+              <span>{venue.cuisines.slice(0, 3).map(displayLabel).join(' · ') || 'Restaurant'}</span>
+              {venue.priceBand && <span>{priceLabel(venue.priceBand)}</span>}
+            </div>
           </div>
-          <div className="rd-heading__actions">
-            <Link className="rd-primary-action" to={`/restaurants/${venue.slug}/review`}>
-              <PenLine size={16} aria-hidden="true" />
-              Write a review
+
+          <div className="rvd-header__actions">
+            <Link className="rvd-button rvd-button--primary" to={`/restaurants/${venue.slug}/review`}>
+              <PenLine size={16} aria-hidden="true" /> Write a review
             </Link>
-            {isManager ? (
-              <Link to={`/restaurants/${venue.slug}/manage`}>Manage listing</Link>
-            ) : (
-              <Link to={`/restaurants/${venue.slug}/claim`}>Is this your restaurant?</Link>
-            )}
+            <button className="rvd-button rvd-button--quiet" type="button" onClick={() => void share()}>
+              <Share2 size={16} aria-hidden="true" /> Share
+            </button>
+            <a className="rvd-button rvd-button--quiet" href={mapHref(venue)} target="_blank" rel="noreferrer">
+              <Navigation size={16} aria-hidden="true" /> Directions
+            </a>
           </div>
         </header>
 
-        <section className="rd-gallery" aria-label={`Photos of ${venue.name}`}>
-          {images.length > 0 ? (
-            <>
-              <button
-                type="button"
-                className="rd-gallery__main"
-                onClick={() => setActivePhoto((index) => (index + 1) % images.length)}
-                aria-label="Show next photo"
-              >
-                <OptimizedImage
-                  src={images[Math.min(activePhoto, images.length - 1)]}
-                  alt={`${venue.name} photo ${Math.min(activePhoto, images.length - 1) + 1}`}
-                  width={900}
-                  height={560}
-                  fit="crop"
-                  sizes="(max-width: 900px) 92vw, 64vw"
-                  priority
-                />
-              </button>
-              <div className="rd-gallery__thumbs">
-                {images.slice(0, 4).map((image, index) => (
-                  <button
-                    key={image}
-                    type="button"
-                    className={index === activePhoto ? 'is-active' : ''}
-                    onClick={() => setActivePhoto(index)}
-                    aria-label={`Show photo ${index + 1}`}
-                  >
-                    <OptimizedImage
-                      src={image}
-                      alt=""
-                      width={160}
-                      height={110}
-                      fit="crop"
-                      sizes="(max-width: 640px) 30vw, (max-width: 900px) 18vw, 15vw"
-                    />
-                  </button>
-                ))}
-              </div>
-            </>
+        <section className="rvd-gallery" id="photos" aria-label={`Photos of ${venue.name}`}>
+          {heroPhoto ? (
+            <button
+              type="button"
+              className={`rvd-gallery__hero ${allPhotos.length === 1 ? 'rvd-gallery__hero--single' : ''}`}
+              onClick={() => {
+                setActivePhoto(0)
+                setLightboxOpen(true)
+              }}
+              aria-label={`Open photo 1 of ${allPhotos.length}`}
+            >
+              <OptimizedImage
+                src={heroPhoto}
+                alt={`${venue.name} photo`}
+                width={1200}
+                height={620}
+                fit="crop"
+                sizes="(max-width: 900px) 100vw, 1200px"
+                priority
+              />
+              <span className="rvd-gallery__scrim" aria-hidden="true" />
+              <span className="rvd-gallery__label">
+                <Camera size={16} aria-hidden="true" /> {allPhotos.length} photo{allPhotos.length === 1 ? '' : 's'}
+              </span>
+            </button>
           ) : (
-            <div className="rd-gallery__empty">Photos will be added when the listing is verified.</div>
+            <div className="rvd-gallery__empty">
+              <Camera size={22} aria-hidden="true" />
+              <strong>Photos will be added when the listing is verified.</strong>
+              <Link to={`/restaurants/${venue.slug}/review`}>Add a photo with your review</Link>
+            </div>
+          )}
+
+          {allPhotos.length > 1 && (
+            <div className="rvd-gallery__strip" aria-label="More photos">
+              {allPhotos.slice(1, 5).map((image, index) => (
+                <button
+                  key={image}
+                  type="button"
+                  onClick={() => {
+                    setActivePhoto(index + 1)
+                    setLightboxOpen(true)
+                  }}
+                  aria-label={`Open photo ${index + 2} of ${allPhotos.length}`}
+                >
+                  <OptimizedImage src={image} alt="" width={260} height={170} fit="crop" />
+                </button>
+              ))}
+            </div>
           )}
         </section>
 
-        <div className="rd-layout">
-          <div className="rd-main-column">
-            <section className="rd-panel" id="about">
-              <h2>About {venue.name}</h2>
-              {venue.description ? (
-                <p>{venue.description}</p>
-              ) : (
-                <p>
-                  We are still collecting the details for this restaurant. The listing stays live
-                  without a description while we verify it with the business.
-                </p>
-              )}
-              <FacetList title="Cuisines" values={venue.cuisines} />
-              <FacetList title="Dietary options" values={venue.dietary} />
-              <FacetList title="Amenities" values={venue.amenities} />
-            </section>
+        <nav className="rvd-anchor-nav" aria-label="Restaurant sections">
+          <a href="#overview">Overview</a>
+          <a href="#hours">Hours</a>
+          <a href="#location">Location</a>
+          <a href="#reviews">Reviews</a>
+        </nav>
 
-            <section className="rd-panel" id="hours">
-              <h2>Hours and location</h2>
-              <div className="rd-two-columns">
-                <div>
-                  <h3>
-                    <Clock3 size={15} aria-hidden="true" /> Opening hours
-                  </h3>
-                  {hours.length ? (
-                    <dl className="rd-hours">
-                      {hours.map((row) => (
-                        <div key={row.day}>
-                          <dt>{row.day}</dt>
-                          <dd>{row.value}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                  ) : (
-                    <p>Hours have not been added yet.</p>
-                  )}
-                </div>
-                <div>
-                  <h3>
-                    <MapPin size={15} aria-hidden="true" /> Getting here
-                  </h3>
-                  <p>{venue.addressLine || 'Street address to be confirmed'}</p>
-                  <a href={mapHref(venue)} target="_blank" rel="noreferrer">
-                    <Navigation size={14} aria-hidden="true" /> Open in Google Maps
+        <div className="rvd-layout">
+          <div className="rvd-main-column">
+            <section className="rvd-section rvd-at-glance" id="overview">
+              <h2>At a glance</h2>
+              <p className="rvd-open-status">
+                {hours[0]?.value ? `Dinner service · ${hours[0].value}` : 'Hours not added yet'}
+              </p>
+              <a className="rvd-address" href={mapHref(venue)} target="_blank" rel="noreferrer">
+                <MapPin size={16} aria-hidden="true" />
+                {venue.addressLine || locationText(venue) || 'Open in Maps'}
+              </a>
+              <div className="rvd-at-glance__links">
+                {venue.website && (
+                  <a href={websiteHref(venue.website)} target="_blank" rel="noreferrer">
+                    <ExternalLink size={14} aria-hidden="true" /> Website
                   </a>
-                  {venue.phone && (
-                    <p>
-                      <Phone size={14} aria-hidden="true" />
-                      <a href={`tel:${venue.phone.replace(/\s/g, '')}`}>{venue.phone}</a>
-                    </p>
-                  )}
-                  {venue.website && (
-                    <p>
-                      <ExternalLink size={14} aria-hidden="true" />
-                      <a href={websiteHref(venue.website)} target="_blank" rel="noreferrer">
-                        Restaurant website
-                      </a>
-                    </p>
-                  )}
-                </div>
+                )}
+                {venue.phone && (
+                  <a href={`tel:${venue.phone.replace(/\s/g, '')}`}>
+                    <Phone size={14} aria-hidden="true" /> {venue.phone}
+                  </a>
+                )}
+                <Link to={isManager ? `/restaurants/${venue.slug}/manage` : `/restaurants/${venue.slug}/claim`}>
+                  Improve this listing
+                </Link>
               </div>
             </section>
 
-            <section className="rd-panel" id="reviews">
-              <div className="rd-panel__head">
+            <section className="rvd-section">
+              <h2>About {venue.name}</h2>
+              <div className={`rvd-about${aboutOpen ? ' is-open' : ''}`}>
+                <p>
+                  {venue.description ||
+                    `A neighbourhood restaurant in ${venue.city ?? 'Ghana'}. We are still collecting the full story from the business.`}
+                </p>
+              </div>
+              {venue.description && venue.description.length > 180 && (
+                <button
+                  className="rvd-text-button"
+                  type="button"
+                  onClick={() => setAboutOpen((open) => !open)}
+                >
+                  {aboutOpen ? 'Read less' : 'Read more'}
+                  <ChevronRight size={14} className={aboutOpen ? 'is-open' : ''} aria-hidden="true" />
+                </button>
+              )}
+
+              <div className="rvd-feature-grid">
+                {venue.cuisines.length > 0 && (
+                  <div className="rvd-feature-group">
+                    <h3>Cuisines</h3>
+                    <div className="rvd-chips">
+                      {venue.cuisines.map((value) => (
+                        <span key={value}>{displayLabel(value)}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {venue.dietary.length > 0 && (
+                  <div className="rvd-feature-group">
+                    <h3>Dietary options</h3>
+                    <div className="rvd-chips">
+                      {venue.dietary.map((value) => (
+                        <span key={value}>{displayLabel(value)}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {venue.amenities.length > 0 && (
+                  <div className="rvd-feature-group">
+                    <h3>Features</h3>
+                    <div className="rvd-chips">
+                      {venue.amenities.map((value) => (
+                        <span key={value}>{displayLabel(value)}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <section className="rvd-section rvd-love" aria-labelledby="why-love">
+              <div className="rvd-section__heading">
+                <h2 id="why-love">Why diners love this</h2>
+              </div>
+
+              {recentLoved.length > 0 ? (
+                <div className="rvd-love__rail">
+                  {recentLoved.map((review) => (
+                    <article key={review.id} className="rvd-love__card">
+                      <StarRating value={review.rating} size={14} />
+                      <h3>{review.title || 'A recent visit'}</h3>
+                      <p>{review.body}</p>
+                      <span>{review.author.name ?? 'Travio diner'}</span>
+                    </article>
+                  ))}
+                </div>
+              ) : external ? (
+                <div className="rvd-love__external">
+                  <div className="rvd-love__score">
+                    <strong>{external.rating?.toFixed(1) ?? '—'}</strong>
+                    <StarRating value={external.rating ?? 0} size={18} />
+                    <span>{external.reviewCount.toLocaleString()} reviews on {externalLabel}</span>
+                  </div>
+                  <div>
+                    <h3>A local favourite, according to {externalLabel}</h3>
+                    <p>
+                      We keep outside scores separate from Travio ratings. Read the full review history on{' '}
+                      {externalLabel} while our own diner reviews build.
+                    </p>
+                    {external.productUrl && (
+                      <a href={external.productUrl} target="_blank" rel="noreferrer">
+                        Read on {externalLabel} <ExternalLink size={13} aria-hidden="true" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="rvd-love__empty">
+                  <Sparkles size={20} aria-hidden="true" />
+                  <div>
+                    <h3>Be the first to put this place on the map</h3>
+                    <p>Share a visit and help the next diner choose well.</p>
+                  </div>
+                  <Link to={`/restaurants/${venue.slug}/review`}>Write a review</Link>
+                </div>
+              )}
+            </section>
+
+            <section className="rvd-section" id="reviews">
+              <div className="rvd-section__heading rvd-section__heading--row">
                 <div>
                   <h2>Travio reviews</h2>
-                  <p>
-                    These stars come from people who reviewed {venue.name} on Travio. Outside scores
-                    are shown separately.
-                  </p>
+                  <p>Only Travio diner reviews shape this rating. Outside scores stay separate.</p>
                 </div>
-                <Link to={`/restaurants/${venue.slug}/review`}>Write a review</Link>
+                <Link className="rvd-button rvd-button--small" to={`/restaurants/${venue.slug}/review`}>
+                  <PenLine size={15} aria-hidden="true" /> Write a review
+                </Link>
               </div>
 
-              <div className="rd-distribution" aria-label="Rating distribution">
-                {[5, 4, 3, 2, 1].map((rating) => {
-                  const count = Number(distribution?.[String(rating)] ?? 0)
-                  const percent = distributionTotal ? Math.round((count / distributionTotal) * 100) : 0
-                  return (
-                    <div key={rating} className="rd-distribution__row">
-                      <span>{rating} star</span>
-                      <div className="rd-distribution__bar">
-                        <span style={{ width: `${percent}%` }} />
-                      </div>
-                      <span>{count}</span>
+              <div className="rvd-review-summary">
+                <div className="rvd-review-summary__score">
+                  <strong>{venue.rating != null ? venue.rating.toFixed(1) : '—'}</strong>
+                  <StarRating value={venue.rating ?? 0} size={18} />
+                  <span>
+                    {venue.reviewCount} {venue.reviewCount === 1 ? 'review' : 'reviews'}
+                  </span>
+                </div>
+                <div className="rvd-review-summary__bars">
+                  {[5, 4, 3, 2, 1].map((stars) => (
+                    <RatingBar
+                      key={stars}
+                      stars={stars}
+                      count={Number(distribution?.[String(stars)] ?? 0)}
+                      total={distributionTotal}
+                    />
+                  ))}
+                </div>
+                <div className="rvd-review-summary__subs">
+                  {[
+                    ['Food', foodAverage],
+                    ['Service', serviceAverage],
+                    ['Atmosphere', atmosphereAverage],
+                    ['Value', valueAverage],
+                  ].map(([label, value]) => (
+                    <div key={label as string}>
+                      <span>{label as string}</span>
+                      <strong>{typeof value === 'number' ? value.toFixed(1) : '—'}</strong>
                     </div>
-                  )
-                })}
+                  ))}
+                </div>
               </div>
 
-              {reviewsQuery.isPending && <p className="rd-muted">Loading reviews…</p>}
+              <div className="rvd-review-tools">
+                <label className="rvd-search">
+                  <span className="sr-only">Search reviews</span>
+                  <input
+                    type="search"
+                    placeholder="Search reviews"
+                    value={reviewSearch}
+                    onChange={(event) => setReviewSearch(event.target.value)}
+                  />
+                </label>
+                <label>
+                  <span className="sr-only">Filter by rating</span>
+                  <select value={reviewRating} onChange={(event) => setReviewRating(event.target.value)}>
+                    <option value="all">All ratings</option>
+                    <option value="5">5 stars</option>
+                    <option value="4">4 stars</option>
+                    <option value="3">3 stars</option>
+                    <option value="2">2 stars</option>
+                    <option value="1">1 star</option>
+                  </select>
+                </label>
+                <label>
+                  <span className="sr-only">Sort reviews</span>
+                  <select value={reviewSort} onChange={(event) => setReviewSort(event.target.value)}>
+                    <option value="recent">Most recent</option>
+                    <option value="highest">Highest rated</option>
+                    <option value="lowest">Lowest rated</option>
+                  </select>
+                </label>
+              </div>
+
+              {reviewsQuery.isPending && <p className="rvd-muted">Loading reviews…</p>}
               {reviewsQuery.isError && (
-                <div className="rd-inline-state">
+                <div className="rvd-inline-state">
                   <p>We could not load reviews right now.</p>
                   <button type="button" onClick={() => void reviewsQuery.refetch()}>
                     Try again
@@ -417,98 +773,45 @@ export default function RestaurantDetailPage() {
               )}
 
               {!reviewsQuery.isPending && !reviewsQuery.isError && reviews.length === 0 && (
-                <div className="rd-inline-state">
-                  <p>No Travio reviews have been published for this restaurant yet.</p>
+                <div className="rvd-empty-reviews">
+                  <div>
+                    <StarRating value={0} size={18} />
+                    <h3>No Travio reviews yet</h3>
+                    <p>This table is waiting for its first diner story.</p>
+                  </div>
                   <Link to={`/restaurants/${venue.slug}/review`}>Be the first to review</Link>
                 </div>
               )}
 
-              <div className="rd-reviews">
-                {reviews.map((review) => (
-                  <article key={review.id} className="rd-review">
-                    <div className="rd-review__head">
-                      <div>
-                        {review.author.photoURL ? (
-                          <img src={review.author.photoURL} alt="" className="rd-review__avatar" />
-                        ) : (
-                          <span className="rd-review__avatar rd-review__avatar--fallback">
-                            {(review.author.name ?? 'D')[0]}
-                          </span>
-                        )}
-                        <div>
-                          <strong>{review.author.name ?? 'Travio diner'}</strong>
-                          <span>
-                            {formatDate(review.visitedAt || review.createdAt)}
-                            {review.verified && (
-                              <>
-                                {' · '}
-                                <BadgeCheck size={12} aria-hidden="true" /> Verified visit
-                              </>
-                            )}
-                          </span>
-                        </div>
-                      </div>
-                      <StarRating value={review.rating} size={15} />
-                    </div>
-                    {review.title && <h3>{review.title}</h3>}
-                    {review.body && <p>{review.body}</p>}
-                    {review.photos.length > 0 && (
-                      <div className="rd-review__photos">
-                        {review.photos.map((photo) => (
-                          <OptimizedImage key={photo} src={photo} alt="" width={120} height={90} fit="crop" />
-                        ))}
-                      </div>
-                    )}
-                    <div className="rd-review__foot">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!user) {
-                            promptSignIn(`/restaurants/${slug}`)
-                            return
-                          }
-                          setReportingReview(review.id === reportingReview ? null : review.id)
-                        }}
-                      >
-                        <Flag size={13} aria-hidden="true" /> Report
-                      </button>
-                    </div>
-                    {reportingReview === review.id && (
-                      <form className="rd-report-form" onSubmit={(event) => void submitReport(event, review.id)}>
-                        <label>
-                          Reason
-                          <select value={reportReason} onChange={(event) => setReportReason(event.target.value)}>
-                            {REPORT_REASONS.map((reason) => (
-                              <option key={reason}>{reason}</option>
-                            ))}
-                          </select>
-                        </label>
-                        <label>
-                          More detail (optional)
-                          <textarea
-                            value={reportDetail}
-                            onChange={(event) => setReportDetail(event.target.value)}
-                            rows={2}
-                            maxLength={1000}
-                          />
-                        </label>
-                        <div>
-                          <button type="submit" disabled={report.isPending}>
-                            {report.isPending ? 'Sending…' : 'Send report'}
-                          </button>
-                          <button type="button" onClick={() => setReportingReview(null)}>
-                            Cancel
-                          </button>
-                        </div>
-                      </form>
-                    )}
-                  </article>
+              {!reviewsQuery.isPending && reviews.length > 0 && filteredReviews.length === 0 && (
+                <p className="rvd-muted">No reviews match that search.</p>
+              )}
+
+              <div className="rvd-reviews">
+                {filteredReviews.map((review) => (
+                  <ReviewCard
+                    key={review.id}
+                    review={review}
+                    slug={slug}
+                    user={user}
+                    promptSignIn={promptSignIn}
+                    onReport={setReportingReview}
+                    reporting={reportingReview === review.id}
+                    reportState={{
+                      reason: reportReason,
+                      detail: reportDetail,
+                      setReason: setReportReason,
+                      setDetail: setReportDetail,
+                      submit: submitReport,
+                      pending: report.isPending,
+                    }}
+                  />
                 ))}
               </div>
 
               {reviewsQuery.hasNextPage && (
                 <button
-                  className="rd-load-more"
+                  className="rvd-load-more"
                   type="button"
                   disabled={reviewsQuery.isFetchingNextPage}
                   onClick={() => void reviewsQuery.fetchNextPage()}
@@ -517,37 +820,95 @@ export default function RestaurantDetailPage() {
                 </button>
               )}
             </section>
-          </div>
 
-          <aside className="rd-sidebar">
-            <section className="rd-side-card">
-              <h2>Restaurant details</h2>
-              <dl>
-                <div>
-                  <dt>Cuisine</dt>
-                  <dd>{venue.cuisines.map(displayLabel).join(', ') || 'Not listed yet'}</dd>
+            <section className="rvd-section" id="location">
+              <div className="rvd-section__heading">
+                <h2>Location</h2>
+              </div>
+              <div className="rvd-location">
+                <div className="rvd-map">
+                  <MapPin size={26} aria-hidden="true" />
+                  <span>{venue.neighbourhood || venue.city || 'Accra'}</span>
                 </div>
                 <div>
-                  <dt>Price</dt>
-                  <dd>{priceLabel(venue.priceBand) || 'Not listed yet'}</dd>
+                  <strong>{venue.addressLine || 'Street address to be confirmed'}</strong>
+                  <p>{[venue.city, venue.region, venue.country].filter(Boolean).join(', ')}</p>
+                  <a className="rvd-button rvd-button--small" href={mapHref(venue)} target="_blank" rel="noreferrer">
+                    <Navigation size={14} aria-hidden="true" /> Open in Google Maps
+                  </a>
                 </div>
-                <div>
-                  <dt>Neighbourhood</dt>
-                  <dd>{venue.neighbourhood || venue.city || 'Not listed yet'}</dd>
-                </div>
-              </dl>
-              <div className="rd-side-card__trust">
-                <ShieldCheck size={16} aria-hidden="true" />
-                Verified reviews are tied to a signed visit invite. Community reviews wait for
-                moderation.
               </div>
             </section>
 
+            <section className="rvd-owner-band" id="owners">
+              <div>
+                <span className="rvd-eyebrow">For the people behind the pass</span>
+                <h2>{isManager ? 'You manage this restaurant' : 'Is this your restaurant?'}</h2>
+                <p>
+                  {isManager
+                    ? 'Update the description, hours and contact details diners see.'
+                    : 'Claim the listing to add your story, photos and the details that make this place yours.'}
+                </p>
+              </div>
+              <Link className="rvd-button rvd-button--primary" to={isManager ? `/restaurants/${venue.slug}/manage` : `/restaurants/${venue.slug}/claim`}>
+                {isManager ? 'Open owner tools' : 'Claim this restaurant'}
+              </Link>
+            </section>
+
+            {nearby.length > 0 && (
+              <section className="rvd-nearby" aria-labelledby="nearby-title">
+                <div className="rvd-section__heading rvd-section__heading--row">
+                  <div>
+                    <h2 id="nearby-title">More restaurants nearby</h2>
+                  </div>
+                  <Link className="rvd-text-button" to={`/restaurants?city=${encodeURIComponent(venue.city ?? '')}`}>
+                    See all <ChevronRight size={14} aria-hidden="true" />
+                  </Link>
+                </div>
+                <div className="rvd-nearby__rail">
+                  {nearby.map((row) => (
+                    <RestaurantCard key={row.id} venue={row} />
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+
+          <aside className="rvd-sidebar">
+            <section className="rvd-side-card rvd-side-card--cta">
+              <h2>Share this restaurant</h2>
+              <p>Been here? Your visit helps the next diner choose well.</p>
+              <Link className="rvd-side-button" to={`/restaurants/${venue.slug}/review`}>
+                <PenLine size={15} aria-hidden="true" /> Write a review
+              </Link>
+            </section>
+
+            <section className="rvd-side-card" id="hours">
+              <div className="rvd-side-card__head">
+                <h2>Hours</h2>
+                <Link to={isManager ? `/restaurants/${venue.slug}/manage` : `/restaurants/${venue.slug}/claim`}>
+                  Suggest an edit
+                </Link>
+              </div>
+              {hours.length ? (
+                <dl className="rvd-hours">
+                  {hours.map((row) => (
+                    <div key={row.day}>
+                      <dt>{row.day}</dt>
+                      <dd>{row.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              ) : (
+                <p>Hours have not been added yet.</p>
+              )}
+            </section>
+
             {venue.externalStats.length > 0 && (
-              <section className="rd-side-card">
+              <section className="rvd-side-card">
                 <h2>Ratings from other sites</h2>
                 <p>Listed separately. They are not added to the Travio score.</p>
-                <ul className="rd-external-list">
+                <ul className="rvd-external-list">
                   {venue.externalStats.map((stat) => (
                     <li key={stat.source}>
                       <span>{sourceLabel(stat.source)}</span>
@@ -564,19 +925,65 @@ export default function RestaurantDetailPage() {
               </section>
             )}
 
-            <section className="rd-side-card rd-side-card--claim">
-              <h2>Manage this listing</h2>
+            <section className="rvd-side-card rvd-side-card--trust">
+              <ShieldCheck size={18} aria-hidden="true" />
               <p>
-                Restaurant staff can ask to update the listing description, hours and contact
-                details.
+                Verified reviews are tied to a signed visit invite. Community reviews wait for
+                moderation before they affect this page.
               </p>
-              <Link to={isManager ? `/restaurants/${venue.slug}/manage` : `/restaurants/${venue.slug}/claim`}>
-                {isManager ? 'Open owner tools' : 'Claim this restaurant'}
-              </Link>
             </section>
           </aside>
         </div>
       </main>
+
+      {lightboxOpen && activeImage && (
+        <div
+          className="rvd-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Photos of ${venue.name}`}
+          onClick={() => setLightboxOpen(false)}
+        >
+          <button
+            className="rvd-lightbox__close"
+            type="button"
+            aria-label="Close photos"
+            onClick={() => setLightboxOpen(false)}
+          >
+            <X size={22} />
+          </button>
+          <button
+            className="rvd-lightbox__nav rvd-lightbox__nav--prev"
+            type="button"
+            aria-label="Previous photo"
+            onClick={(event) => {
+              event.stopPropagation()
+              setActivePhoto((index) => (index - 1 + allPhotos.length) % allPhotos.length)
+            }}
+          >
+            <ChevronLeft size={24} />
+          </button>
+          <img
+            src={activeImage}
+            alt=""
+            onClick={(event) => event.stopPropagation()}
+          />
+          <button
+            className="rvd-lightbox__nav rvd-lightbox__nav--next"
+            type="button"
+            aria-label="Next photo"
+            onClick={(event) => {
+              event.stopPropagation()
+              setActivePhoto((index) => (index + 1) % allPhotos.length)
+            }}
+          >
+            <ChevronRight size={24} />
+          </button>
+          <span className="rvd-lightbox__count">
+            {activePhoto + 1} / {allPhotos.length}
+          </span>
+        </div>
+      )}
 
       <Footer />
     </div>

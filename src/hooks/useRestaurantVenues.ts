@@ -86,6 +86,7 @@ export interface RestaurantVenueReview {
   title: string | null
   body: string | null
   photos: string[]
+  companions: string[]
   visitedAt: string | null
   source: string
   verified: boolean
