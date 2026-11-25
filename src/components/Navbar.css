@@ -36,6 +36,14 @@
   background-image: linear-gradient(180deg, rgba(23, 146, 55, 0.1) 0%, rgba(23, 146, 55, 0.04) 100%);
 }
 
+/* A vertical switch is a tab change: the navbar must land on its final state
+   in the same frame as the click. Without this, moving from a solid-white
+   results page to a hero homepage animates the old white/shadowed chrome for
+   300ms, which reads as a white flash over the new hero. */
+body.vertical-switching .navbar {
+  transition: none !important;
+}
+
 /* Shadow only while scrolling — same resting look as the homepage. Applied on
    every route by Navbar (`.navbar--elevated` is toggled past a few pixels). */
 .navbar--elevated {

@@ -143,9 +143,14 @@
 /* ── restaurant home ───────────────────────────────────────────────────── */
 
 /* The shared hero owns the fixed-navbar offset; only the plain results page
-   needs this page-level padding. */
+   needs this page-level padding. The hero gradient is translucent at the top
+   and is designed to composite over white, exactly like the Tours homepage.
+   Keeping the page's light-green canvas behind it made the tinted navbar look
+   whiter than Tours, so the hero variant inherits the white canvas and the
+   light green stays on the results/catalogue pages. */
 .restaurants-page--hero {
   padding-top: 0;
+  background: #fff;
 }
 
 .rh-popular-cities {
