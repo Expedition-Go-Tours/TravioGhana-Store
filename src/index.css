@@ -76,6 +76,9 @@
   --border: var(--bv-border);
   --font-heading: 'Manrope', sans-serif;
   --font-body: 'DM Sans', sans-serif;
+  /* PreviewBanner publishes its measured height here on staging previews.
+     0px on production keeps every existing fixed offset unchanged. */
+  --preview-banner-height: 0px;
 
   font-family: var(--font-body);
   font-size: 18px;
@@ -119,6 +122,9 @@ html {
 
 body {
   margin: 0;
+  /* The preview banner is fixed, so reserve its height above the page. The
+     navbar reads the same variable to sit underneath it. */
+  padding-top: var(--preview-banner-height, 0px);
   /* Stop scroll-anchoring from nudging the scroll position when an overlay
      (dropdown) opens near the bottom of the page. */
   overflow-anchor: none;
@@ -426,13 +432,24 @@ input[type="radio"].pickup-radio:checked:focus {
   }
 }
 
-/* Below-fold homepage sections: the browser skips style/layout/paint for
-   off-screen children entirely. `auto` intrinsic size reuses the real
-   rendered height once a section has been seen, so the scrollbar stays
-   stable. */
-.home-deferred > * {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 600px;
+/* MountOnView already keeps below-fold sections out of the DOM until they are
+   near the viewport. Do not also put `content-visibility: auto` on its empty
+   wrappers: Chrome reserves the 600px intrinsic size for those empty boxes on
+   the first frame, so returning to Tours briefly made the document ~600px
+   taller and then snapped back as the observers settled. */
+
+/* Vertical tab switches ease in only the content below the shared hero. The
+   hero keeps its exact geometry; opacity/transform are compositor-only, so the
+   transition cannot reflow the page. The reduced-motion rule above zeroes the
+   duration, so this becomes an instant swap there. */
+@keyframes verticalContentIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.restaurants-page__main,
+.home-deferred {
+  animation: verticalContentIn 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* "Coming soon" affordance for controls whose feature is not built yet.
