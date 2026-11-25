@@ -30,21 +30,39 @@ vi.mock('../hooks/useRestaurantHomepage', () => ({
   useRestaurantSectionIds: vi.fn(),
 }))
 
-vi.mock('../hooks/useRecentRestaurantReviews', () => ({
-  useRecentRestaurantReviews: () => ({
-    data: {
-      pages: [
-        {
-          reviews: [],
-          pagination: { hasMore: false, nextCursor: null, limit: 6 },
-        },
-      ],
-    },
-    isPending: false,
-    isError: false,
-    refetch: vi.fn(),
-  }),
-}))
+vi.mock('../hooks/useRecentRestaurantReviews', () => {
+  const review = (id: string, venueName: string) => ({
+    id,
+    venueId: `venue-${id}`,
+    venueName,
+    venueSlug: venueName.toLowerCase().replace(/\s+/g, '-'),
+    venueCity: 'Accra',
+    venueCoverPhoto: null,
+    rating: 4.8,
+    title: 'Worth the queue',
+    body: 'The jollof arrived smoky and the service was quick even on a busy Friday evening.',
+    createdAt: '2026-11-24T00:00:00.000Z',
+    author: { name: 'Ama', photoURL: null },
+    verified: true,
+  })
+
+  return {
+    useRecentRestaurantReviews: () => ({
+      data: {
+        pages: [
+          {
+            reviews: [review('r1', 'Buka Restaurant'), review('r2', 'Chop Bar')],
+            stats: { averageRating: 4.6, totalReviews: 24 },
+            pagination: { hasMore: false, nextCursor: null, limit: 6 },
+          },
+        ],
+      },
+      isPending: false,
+      isError: false,
+      refetch: vi.fn(),
+    }),
+  }
+})
 
 vi.mock('../components/RestaurantCard', () => ({
   default: ({ venue }: { venue: { name: string } }) => <article>{venue.name}</article>,
@@ -233,6 +251,54 @@ describe('RestaurantsPage home', () => {
       'href',
       '/restaurants?section=offers',
     )
+  })
+
+  it('presents diner reviews in a tours-style stats rail with a read-more modal', () => {
+    const originalScrollHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollHeight')
+    const originalClientHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientHeight')
+    Object.defineProperty(HTMLElement.prototype, 'scrollHeight', { configurable: true, value: 300 })
+    Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, value: 60 })
+
+    try {
+      renderPage('/restaurants')
+
+      const reviews = railSection('What Diners Are Saying')
+      expect(within(reviews).getByRole('link', { name: 'View All' })).toHaveAttribute(
+        'href',
+        '/restaurants?sort=reviews',
+      )
+      expect(within(reviews).getByRole('button', { name: 'Scroll left' })).toBeInTheDocument()
+      expect(within(reviews).getByRole('button', { name: 'Scroll right' })).toBeInTheDocument()
+      expect(within(reviews).getByText(/From/)).toHaveTextContent('From 24 reviews')
+      expect(reviews.querySelectorAll('.rh-diner-reviews-card-wrap[aria-hidden="true"]')).toHaveLength(4)
+
+      const cta = within(reviews).getAllByRole('link', { name: 'View Restaurant' })[0]
+      expect(cta).toHaveAttribute('href', '/restaurants/buka-restaurant#reviews')
+
+      const readMore = within(reviews).getAllByRole('button', { name: 'Read more' })[0]
+      fireEvent.click(readMore)
+
+      const dialog = screen.getByRole('dialog', { name: 'Review of Buka Restaurant' })
+      expect(within(dialog).getByText('The jollof arrived smoky and the service was quick even on a busy Friday evening.')).toBeInTheDocument()
+      expect(within(dialog).getByRole('link', { name: 'View Restaurant' })).toHaveAttribute(
+        'href',
+        '/restaurants/buka-restaurant#reviews',
+      )
+
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Close review' }))
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    } finally {
+      if (originalScrollHeight) {
+        Object.defineProperty(HTMLElement.prototype, 'scrollHeight', originalScrollHeight)
+      } else {
+        delete (HTMLElement.prototype as { scrollHeight?: number }).scrollHeight
+      }
+      if (originalClientHeight) {
+        Object.defineProperty(HTMLElement.prototype, 'clientHeight', originalClientHeight)
+      } else {
+        delete (HTMLElement.prototype as { clientHeight?: number }).clientHeight
+      }
+    }
   })
 
   it('uses the shared hero shell and keeps Restaurants active in the switch', () => {

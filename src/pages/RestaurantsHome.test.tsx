@@ -40,6 +40,7 @@ vi.mock('../hooks/useRecentRestaurantReviews', () => ({
       pages: [
         {
           reviews: [],
+          stats: { averageRating: null, totalReviews: 0 },
           pagination: { hasMore: false, nextCursor: null, limit: 6 },
         },
       ],

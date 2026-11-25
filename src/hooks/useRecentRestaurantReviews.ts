@@ -7,6 +7,8 @@ export interface RecentRestaurantReview {
   venueName: string
   venueSlug: string
   venueCity: string | null
+  /** Venue artwork for the review card, with a neutral fallback in the UI. */
+  venueCoverPhoto: string | null
   rating: number
   title: string | null
   body: string | null
@@ -15,8 +17,15 @@ export interface RecentRestaurantReview {
   verified: boolean
 }
 
+export interface RecentRestaurantReviewStats {
+  averageRating: number | null
+  totalReviews: number
+}
+
 export interface RecentRestaurantReviewsPage {
   reviews: RecentRestaurantReview[]
+  /** Whole-feed totals, independent of the current cursor page. */
+  stats: RecentRestaurantReviewStats
   pagination: {
     limit: number
     hasMore: boolean

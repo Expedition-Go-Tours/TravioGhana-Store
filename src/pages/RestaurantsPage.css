@@ -451,142 +451,445 @@
   cursor: pointer;
 }
 
-.rh-review-card {
+/* ── What Diners Are Saying (tours-style review rail) ─────────────────── */
+
+.rh-diner-reviews-section {
+  margin: 0 -32px 52px;
+  padding: 45px 32px;
+  background: #fff;
+}
+
+.rh-diner-reviews-container,
+.rh-diner-reviews-viewport {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.rh-diner-reviews-section .section-view-all {
+  color: #111827;
+  font-size: 15px;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.rh-diner-reviews-section .section-view-all:hover {
+  color: #111827;
+  opacity: 0.7;
+}
+
+.rh-diner-reviews-section .section-arrow {
+  width: 40px;
+  height: 40px;
+  border-color: #e5e5e5;
+  color: #6b7280;
+}
+
+.rh-diner-reviews-section .section-arrow:hover {
+  border-color: #c9c9c9;
+  color: #111827;
+}
+
+.rh-diner-reviews-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 2px;
+  margin-bottom: 20px;
+}
+
+.rh-diner-reviews-stats__rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rh-diner-reviews-stats__number {
+  color: #1a1a1a;
+  font-family: 'Manrope', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.rh-diner-reviews-stats__stars {
+  display: flex;
+  gap: 1px;
+}
+
+.rh-diner-reviews-stats__divider {
+  width: 1px;
+  height: 20px;
+  flex-shrink: 0;
+  background: #e5e7eb;
+}
+
+.rh-diner-reviews-stats__text {
+  color: #6b7280;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+}
+
+.rh-diner-reviews-stats__text strong {
+  color: #374151;
+  font-weight: 700;
+}
+
+.rh-diner-reviews-clip {
+  overflow: hidden;
+}
+
+.rh-diner-reviews-carousel {
+  --rh-review-gap: 20px;
+  display: flex;
+  gap: var(--rh-review-gap);
+  width: 100%;
+  padding: 4px 0 8px;
+  overflow-x: auto;
+  align-items: stretch;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.rh-diner-reviews-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.rh-diner-reviews-card-wrap {
+  display: flex;
+  flex: 0 0 calc((100% - 3 * var(--rh-review-gap)) / 4);
+  align-self: stretch;
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+.rh-diner-reviews-card-wrap > * {
+  width: 100%;
+}
+
+.rh-diner-review-card {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 10px;
-  min-height: 260px;
-  padding: 18px;
-  border: 1px solid rgb(0 0 0 / 6%);
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 4%);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.rh-review-card:hover {
-  box-shadow: 0 10px 24px rgb(17 24 39 / 10%);
-  transform: translateY(-3px);
-}
-
-.rh-review-card__venue {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 8px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
-  color: var(--bv-muted, #667085);
-}
-
-.rh-review-card__venue a {
-  color: var(--bv-ink, #14271f);
-  font-size: 14px;
-  font-weight: 800;
-  text-decoration: none;
-}
-
-.rh-review-card__venue a:hover {
-  text-decoration: underline;
-}
-
-.rh-review-card__stars {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  color: var(--bv-muted, #667085);
-  font-size: 11px;
-}
-
-.rh-review-card__copy {
-  display: -webkit-box;
   overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
+  border: 1px solid #e7e7e7;
+  border-radius: 14px;
+  background: #fff;
+  height: 100%;
 }
 
-.rh-review-card__copy h3 {
-  margin: 0 0 5px;
-  color: var(--bv-ink, #14271f);
-  font-family: var(--font-heading, 'Manrope', sans-serif);
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.rh-review-card__copy p {
-  margin: 0;
-  color: #374151;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.rh-review-card__author {
+.rh-diner-review-card__body {
   display: flex;
-  align-items: center;
-  gap: 9px;
-  margin-top: auto;
-}
-
-.rh-review-card__avatar {
-  display: grid;
-  flex: 0 0 auto;
-  width: 30px;
-  height: 30px;
-  place-items: center;
-  border-radius: 999px;
-  background: var(--bv-accent-soft, #e9f8ef);
-  color: var(--bv-forest, #16452f);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.rh-review-card__author div {
-  display: grid;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
   min-width: 0;
 }
 
-.rh-review-card__author strong {
+.rh-diner-review-card__head {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-items: start;
+  gap: 2px 12px;
+  margin-bottom: 2px;
+}
+
+.rh-diner-review-card__thumb {
+  display: block;
+  grid-row: 1 / span 2;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  background: #eef2ef;
+  object-fit: cover;
+}
+
+.rh-diner-review-card__thumb--placeholder {
+  display: grid;
+  place-items: center;
+  color: #179237;
+  background: linear-gradient(135deg, #eaf6ee 0%, #d9ecdf 100%);
+}
+
+.rh-diner-review-card__venue-title {
   overflow: hidden;
-  color: var(--bv-ink, #14271f);
-  font-size: 12px;
+  color: #111827;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.rh-review-card__author span {
-  color: var(--bv-muted, #667085);
-  font-size: 11px;
+.rh-diner-review-card__venue-city {
+  color: #9ca3af;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  line-height: 1.3;
 }
 
-.rh-review-card__footer {
+.rh-diner-review-card__stars {
+  display: flex;
+  gap: 1px;
+  margin-top: 2px;
+}
+
+.rh-diner-review-card__reviewer,
+.rh-diner-review-modal__reviewer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0;
+  min-width: 0;
+  color: #6b7280;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+}
+
+.rh-diner-review-card__reviewer-name {
+  overflow: hidden;
+  color: #6b7280;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rh-diner-review-card__date {
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+.rh-diner-review-card__verified {
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #eaf6ee;
+  color: #16452f;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rh-diner-review-card__title,
+.rh-diner-review-modal__title {
+  margin: 0;
+  color: #111827;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.rh-diner-review-card__title {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.rh-diner-review-card__text {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: #4b5563;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.rh-diner-review-card__read-more {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #111827;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.rh-diner-review-card__read-more:hover {
+  color: var(--bv-forest, #16452f);
+}
+
+.rh-diner-review-card__footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding-top: 10px;
-  border-top: 1px solid var(--bv-line, #eef1ee);
-  font-size: 12px;
+  margin-top: auto;
+  padding-top: 6px;
 }
 
-.rh-review-card__verified {
+.rh-diner-review-card__cta {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  color: var(--bv-forest, #16452f);
-  font-weight: 700;
-}
-
-.rh-review-card__footer a {
-  color: var(--bv-forest, #16452f);
-  font-weight: 700;
+  justify-content: center;
+  padding: 12px 24px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--bv-forest, #16452f);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
   text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.2s;
 }
 
-.rh-review-card__footer a:hover {
-  text-decoration: underline;
+.rh-diner-review-card__cta:hover {
+  background: var(--bv-forest-hover, #0f3524);
+}
+
+/* ── review modal ─────────────────────────────────────────────────────── */
+
+.rh-diner-review-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgb(0 0 0 / 50%);
+}
+
+.rh-diner-review-modal {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 28px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 20px 60px rgb(0 0 0 / 20%);
+}
+
+.rh-diner-review-modal__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: #f3f4f6;
+  color: #6b7280;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.rh-diner-review-modal__close:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.rh-diner-review-modal__header {
+  margin-bottom: 16px;
+  padding-right: 36px;
+}
+
+.rh-diner-review-modal__venue-title {
+  display: block;
+  margin-bottom: 8px;
+  color: #111827;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.rh-diner-review-modal__stars {
+  display: flex;
+  gap: 1px;
+  margin-bottom: 8px;
+}
+
+.rh-diner-review-modal__title {
+  margin-bottom: 12px;
+  color: #1a1a1a;
+}
+
+.rh-diner-review-modal__text {
+  margin: 0 0 20px;
+  color: #374151;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.rh-diner-review-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #f3f4f6;
+}
+
+@media (max-width: 1279px) {
+  .rh-diner-reviews-card-wrap {
+    flex-basis: calc((100% - 2 * var(--rh-review-gap)) / 3);
+  }
+}
+
+@media (max-width: 1023px) {
+  .rh-diner-reviews-carousel {
+    --rh-review-gap: 16px;
+  }
+
+  .rh-diner-reviews-card-wrap {
+    flex-basis: calc((100% - var(--rh-review-gap)) / 2);
+  }
+}
+
+@media (max-width: 768px) {
+  .rh-diner-reviews-section {
+    margin: 0 -16px 40px;
+    padding: 30px 16px;
+  }
+
+  .rh-diner-reviews-card-wrap {
+    /* One full card plus a 32px peek of the next (16px gap + 32px card). */
+    flex-basis: calc(100% - 48px);
+  }
+
+  .rh-diner-review-card__body {
+    padding: 16px;
+  }
+
+  .rh-diner-reviews-stats {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .rh-diner-reviews-stats__number {
+    font-size: 19px;
+  }
+
+  .rh-diner-reviews-stats__text {
+    font-size: 13px;
+  }
+
+  .rh-diner-reviews-section .section-view-all {
+    font-size: 14px;
+  }
 }
 
 /* ── filtered results ──────────────────────────────────────────────────── */
@@ -1006,7 +1309,6 @@
   }
 
   .rh-home-rail > .restaurant-card,
-  .rh-home-rail > .rh-review-card,
   .rh-home-rail > .restaurant-skeleton {
     flex: 0 0 clamp(250px, 78vw, 320px);
     scroll-snap-align: start;

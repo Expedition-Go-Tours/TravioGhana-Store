@@ -1,8 +1,17 @@
-import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { useReducedMotion } from 'framer-motion'
 import {
   ArrowUpRight,
-  BadgeCheck,
   Fish,
   Flame,
   Leaf,
@@ -17,6 +26,7 @@ import {
 import SEO from '../components/SEO'
 import Footer from '../components/Footer'
 import Hero from '../components/Hero'
+import SectionHeading from '../components/SectionHeading'
 import StarRating from '../components/StarRating'
 import VerticalSwitch from '../components/VerticalSwitch'
 import RestaurantCard from '../components/RestaurantCard'
@@ -38,6 +48,8 @@ import {
   useRecentRestaurantReviews,
   type RecentRestaurantReview,
 } from '../hooks/useRecentRestaurantReviews'
+import useMediaQuery from '../hooks/useMediaQuery'
+import useRafCallback from '../hooks/useRafCallback'
 import ghanaianImage from '../assets/restaurants/cuisine-ghanaian.webp'
 import nigerianImage from '../assets/restaurants/cuisine-nigerian.webp'
 import chineseImage from '../assets/restaurants/cuisine-chinese.webp'
@@ -127,6 +139,10 @@ const MIN_REVIEWS = [
   { value: '50', label: '50 or more' },
   { value: '10', label: '10 or more' },
 ]
+
+const REVIEW_AUTO_SCROLL_INTERVAL = 5000
+/** Copies of the review rail used for the endless swipe (previous/current/next). */
+const REVIEW_LOOP_COPIES = 3
 
 function optionalNumber(value: string | null): number | undefined {
   if (!value) return undefined
@@ -265,92 +281,416 @@ function formatReviewDate(value: string): string {
   return new Intl.DateTimeFormat('en-GB', { month: 'short', year: 'numeric' }).format(date)
 }
 
-function DinerReviewCard({ review }: { review: RecentRestaurantReview }) {
+function DinerReviewCard({
+  review,
+  decorative = false,
+}: {
+  review: RecentRestaurantReview
+  decorative?: boolean
+}) {
+  const [showModal, setShowModal] = useState(false)
+  const textRef = useRef<HTMLParagraphElement>(null)
+  const [isTruncated, setIsTruncated] = useState(false)
   const author = review.author.name?.trim() || 'Travio diner'
-  const initial = author.charAt(0).toUpperCase()
+  const formattedDate = formatReviewDate(review.createdAt)
   const venuePath = `/restaurants/${review.venueSlug}`
 
+  useLayoutEffect(() => {
+    const el = textRef.current
+    if (!el) return
+    const check = () => setIsTruncated(el.scrollHeight > el.clientHeight + 1)
+    check()
+    if (typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(check)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [review.body])
+
+  const stars = (size: number) => (
+    <StarRating
+      value={review.rating}
+      size={size}
+      gap={1}
+      filledColor="#16a34a"
+      emptyColor="#e5e7eb"
+    />
+  )
+
+  const reviewer = (
+    <div className="rh-diner-review-card__reviewer">
+      <span className="rh-diner-review-card__reviewer-name">{author}</span>
+      {formattedDate && <span className="rh-diner-review-card__date">, {formattedDate}</span>}
+      {review.verified && <span className="rh-diner-review-card__verified">Verified visit</span>}
+    </div>
+  )
+
   return (
-    <article className="rh-review-card">
-      <div className="rh-review-card__venue">
-        <Link to={venuePath}>{review.venueName}</Link>
-        {review.venueCity && <span>{review.venueCity}</span>}
-      </div>
-      <div className="rh-review-card__stars">
-        <StarRating value={review.rating} size={14} ariaLabel={`${review.rating} out of 5`} />
-        <time dateTime={review.createdAt}>{formatReviewDate(review.createdAt)}</time>
-      </div>
-      <div className="rh-review-card__copy">
-        {review.title && <h3>{review.title}</h3>}
-        <p>{review.body}</p>
-      </div>
-      <div className="rh-review-card__author">
-        <span className="rh-review-card__avatar" aria-hidden="true">
-          {initial}
-        </span>
-        <div>
-          <strong>{author}</strong>
-          <span>{review.verified ? 'Verified visit' : 'Travio review'}</span>
+    <>
+      <article className="rh-diner-review-card" aria-hidden={decorative || undefined}>
+        <div className="rh-diner-review-card__body">
+          <div className="rh-diner-review-card__head">
+            {review.venueCoverPhoto ? (
+              <img
+                src={review.venueCoverPhoto}
+                alt=""
+                aria-hidden="true"
+                className="rh-diner-review-card__thumb"
+                loading="lazy"
+                decoding="async"
+                width={56}
+                height={56}
+              />
+            ) : (
+              <span
+                className="rh-diner-review-card__thumb rh-diner-review-card__thumb--placeholder"
+                aria-hidden="true"
+              >
+                <UtensilsCrossed size={22} strokeWidth={1.8} />
+              </span>
+            )}
+            <span className="rh-diner-review-card__venue-title">{review.venueName}</span>
+            {review.venueCity && (
+              <span className="rh-diner-review-card__venue-city">{review.venueCity}</span>
+            )}
+          </div>
+
+          <div className="rh-diner-review-card__stars">{stars(18)}</div>
+          {reviewer}
+
+          {review.title && <h3 className="rh-diner-review-card__title">{review.title}</h3>}
+          <p ref={textRef} className="rh-diner-review-card__text">
+            {review.body}
+          </p>
+          {isTruncated && (
+            <button
+              type="button"
+              onClick={() => setShowModal(true)}
+              className="rh-diner-review-card__read-more"
+              tabIndex={decorative ? -1 : undefined}
+            >
+              Read more
+            </button>
+          )}
+
+          <div className="rh-diner-review-card__footer">
+            <Link
+              to={`${venuePath}#reviews`}
+              className="rh-diner-review-card__cta"
+              tabIndex={decorative ? -1 : undefined}
+            >
+              View Restaurant
+            </Link>
+          </div>
         </div>
-      </div>
-      <div className="rh-review-card__footer">
-        {review.verified && (
-          <span className="rh-review-card__verified">
-            <BadgeCheck size={13} aria-hidden="true" />
-            Verified
-          </span>
-        )}
-        <Link to={`${venuePath}#reviews`}>Read review</Link>
-      </div>
-    </article>
+      </article>
+
+      {showModal && (
+        <div className="rh-diner-review-modal-overlay" onClick={() => setShowModal(false)}>
+          <div
+            className="rh-diner-review-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Review of ${review.venueName}`}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="rh-diner-review-modal__close"
+              aria-label="Close review"
+              onClick={() => setShowModal(false)}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+
+            <div className="rh-diner-review-modal__header">
+              <span className="rh-diner-review-modal__venue-title">{review.venueName}</span>
+              <div className="rh-diner-review-modal__stars">{stars(20)}</div>
+              {reviewer}
+            </div>
+
+            {review.title && <h3 className="rh-diner-review-modal__title">{review.title}</h3>}
+            <p className="rh-diner-review-modal__text">{review.body}</p>
+
+            <div className="rh-diner-review-modal__footer">
+              <Link to={`${venuePath}#reviews`} className="rh-diner-review-card__cta">
+                View Restaurant
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 
 function DinerReviewsRail() {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const sectionRef = useRef<HTMLElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(true)
+  const [sectionVisible, setSectionVisible] = useState(false)
+  const [pageVisible, setPageVisible] = useState(() =>
+    typeof document === 'undefined' ? true : document.visibilityState !== 'hidden',
+  )
+  // Touch users swipe the rail themselves; auto-advancing fights their scroll.
+  const isMobile = useMediaQuery('(max-width: 1023px)')
+  const reduceMotion = useReducedMotion()
+  const isHovering = useRef(false)
+  const autoScrollTimer = useRef<ReturnType<typeof setInterval> | null>(null)
+
   const query = useRecentRestaurantReviews()
-  const reviews = query.data?.pages.flatMap((page) => page.reviews) ?? []
+  const reviews = useMemo(
+    () => query.data?.pages.flatMap((page) => page.reviews) ?? [],
+    [query.data],
+  )
+  const stats = query.data?.pages[0]?.stats ?? null
+  const looping = reviews.length > 1
+
+  /** One card + the rail gap, measured from the DOM so it follows the CSS. */
+  const measureStep = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return 0
+    const first = el.querySelector<HTMLElement>('.rh-diner-reviews-card-wrap')
+    if (!first) return 0
+    const gap = parseFloat(getComputedStyle(el).columnGap || '0') || 0
+    return first.getBoundingClientRect().width + gap
+  }, [])
+
+  const updateArrows = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+
+    if (looping) {
+      const setWidth = measureStep() * reviews.length
+      if (setWidth > 0) {
+        if (el.scrollLeft <= 1) el.scrollLeft += setWidth
+        else if (el.scrollLeft >= setWidth * 2) el.scrollLeft -= setWidth
+      }
+      setCanScrollLeft(true)
+      setCanScrollRight(true)
+      return
+    }
+
+    const maxScroll = el.scrollWidth - el.clientWidth
+    setCanScrollLeft(el.scrollLeft > 5)
+    setCanScrollRight(el.scrollLeft < maxScroll - 5)
+  }, [looping, measureStep, reviews.length])
+  const updateArrowsRaf = useRafCallback(updateArrows)
+
+  const scrollTo = useCallback((target: number) => {
+    const el = scrollRef.current
+    if (!el) return
+    if (looping) {
+      el.scrollTo({ left: target, behavior: 'smooth' })
+      return
+    }
+    const maxScroll = el.scrollWidth - el.clientWidth
+    el.scrollTo({ left: Math.min(target, maxScroll), behavior: 'smooth' })
+  }, [looping])
+
+  /** Advance by a full view so the arrows never leave a clipped card behind. */
+  const pageStep = () => {
+    const el = scrollRef.current
+    const step = measureStep()
+    if (!el || !step) return 0
+    return step * Math.max(1, Math.round(el.clientWidth / step))
+  }
+
+  const scroll = (direction: 'left' | 'right') => {
+    const el = scrollRef.current
+    if (!el) return
+    const delta = pageStep()
+    const current = el.scrollLeft
+    scrollTo(direction === 'left' ? current - delta : current + delta)
+  }
+
+  const loopedCards = useMemo(() => {
+    if (!looping) {
+      return reviews.map((review) => ({ key: review.id, review, decorative: false }))
+    }
+    const cards: { key: string; review: RecentRestaurantReview; decorative: boolean }[] = []
+    for (let copy = 0; copy < REVIEW_LOOP_COPIES; copy += 1) {
+      for (const review of reviews) {
+        cards.push({
+          key: `${copy}:${review.id}`,
+          review,
+          // The middle copy is the real one; the outer copies only keep the
+          // swipe continuous, so they stay out of the accessibility tree.
+          decorative: copy !== 1,
+        })
+      }
+    }
+    return cards
+  }, [looping, reviews])
+
+  // Start in the middle copy so the first swipe works in both directions.
+  useLayoutEffect(() => {
+    const el = scrollRef.current
+    if (!el || !looping) return
+    const setWidth = measureStep() * reviews.length
+    if (setWidth > 0) el.scrollLeft = setWidth
+  }, [looping, measureStep, reviews.length, reviews])
+
+  const startAutoScroll = useCallback(() => {
+    if (autoScrollTimer.current) return
+    autoScrollTimer.current = setInterval(() => {
+      const el = scrollRef.current
+      if (!el || isHovering.current) return
+      const step = measureStep()
+      if (!step) return
+      scrollTo(el.scrollLeft + step)
+    }, REVIEW_AUTO_SCROLL_INTERVAL)
+  }, [measureStep, scrollTo])
+
+  const stopAutoScroll = useCallback(() => {
+    if (autoScrollTimer.current) {
+      clearInterval(autoScrollTimer.current)
+      autoScrollTimer.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    updateArrows()
+    const onScroll = () => updateArrowsRaf()
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [updateArrows, updateArrowsRaf, reviews])
+
+  // A resize changes card width (and therefore a copy's width): recentre so the
+  // rail never starts outside the middle copy.
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el || !looping || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(() => {
+      const setWidth = measureStep() * reviews.length
+      if (setWidth <= 0) return
+      if (el.scrollLeft <= 1 || el.scrollLeft >= setWidth * 2) {
+        el.scrollLeft = setWidth
+      }
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [looping, measureStep, reviews.length, reviews])
+
+  // Ambient auto-scroll only runs while the section is actually on-screen.
+  useEffect(() => {
+    const el = sectionRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(
+      ([entry]) => setSectionVisible(entry.isIntersecting),
+      { rootMargin: '200px' },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [reviews])
+
+  useEffect(() => {
+    const onVisibility = () => setPageVisible(document.visibilityState !== 'hidden')
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [])
+
+  useEffect(() => {
+    if (isMobile || reduceMotion || !sectionVisible || !pageVisible || reviews.length === 0) {
+      stopAutoScroll()
+      return
+    }
+    startAutoScroll()
+    return () => stopAutoScroll()
+  }, [isMobile, reduceMotion, sectionVisible, pageVisible, reviews, startAutoScroll, stopAutoScroll])
 
   return (
-    <section className="rh-home-section">
-      <div className="rh-section-head">
-        <div>
-          <h2>What Diners Are Saying</h2>
-          <p>Recent reviews from people who ate and reviewed on Travio.</p>
+    <section className="rh-diner-reviews-section" ref={sectionRef}>
+      <div className="rh-diner-reviews-container">
+        <div className="rh-diner-reviews-viewport">
+          <SectionHeading
+            title="What Diners Are Saying"
+            subtitle="Recent reviews from people who ate and reviewed on Travio."
+            viewAllLink="/restaurants?sort=reviews"
+            viewAllChevron
+            onScrollLeft={() => scroll('left')}
+            onScrollRight={() => scroll('right')}
+            disableLeft={!canScrollLeft}
+            disableRight={!canScrollRight}
+          />
+
+          {stats && (
+            <div className="rh-diner-reviews-stats">
+              <div className="rh-diner-reviews-stats__rating">
+                <span className="rh-diner-reviews-stats__number">
+                  {stats.averageRating ?? '—'}
+                </span>
+                <div className="rh-diner-reviews-stats__stars">
+                  <StarRating
+                    value={stats.averageRating ?? 0}
+                    size={16}
+                    gap={1}
+                    filledColor="#16a34a"
+                    emptyColor="#e5e7eb"
+                  />
+                </div>
+              </div>
+              <span className="rh-diner-reviews-stats__divider" />
+              <span className="rh-diner-reviews-stats__text">
+                From <strong>{stats.totalReviews}</strong> reviews
+              </span>
+            </div>
+          )}
+
+          {query.isPending && (
+            <div className="rh-home-rail" aria-label="Loading diner reviews">
+              {Array.from({ length: 4 }, (_, index) => (
+                <div key={index} className="restaurant-skeleton" />
+              ))}
+            </div>
+          )}
+
+          {query.isError && (
+            <div className="rh-home-rail-message">
+              <p>We could not load diner reviews right now.</p>
+              <button type="button" onClick={() => void query.refetch()}>
+                Try again
+              </button>
+            </div>
+          )}
+
+          {!query.isPending && !query.isError && reviews.length === 0 && (
+            <div className="rh-home-rail-message">
+              <p>Diner reviews will appear here once the first visits are verified.</p>
+              <Link to="/restaurants">Browse all restaurants</Link>
+            </div>
+          )}
+
+          {!query.isPending && !query.isError && reviews.length > 0 && (
+            <div
+              className="rh-diner-reviews-clip"
+              onMouseEnter={() => { isHovering.current = true }}
+              onMouseLeave={() => { isHovering.current = false }}
+            >
+              <div
+                className="rh-diner-reviews-carousel"
+                ref={scrollRef}
+                aria-label={looping ? 'Reviews, swipe for more' : undefined}
+              >
+                {loopedCards.map(({ key, review, decorative }) => (
+                  <div
+                    key={key}
+                    className="rh-diner-reviews-card-wrap"
+                    aria-hidden={decorative || undefined}
+                  >
+                    <DinerReviewCard review={review} decorative={decorative} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-        <Link to="/restaurants?sort=reviews">See all</Link>
       </div>
-
-      {query.isPending && (
-        <div className="rh-home-rail" aria-label="Loading diner reviews">
-          {Array.from({ length: 4 }, (_, index) => (
-            <div key={index} className="restaurant-skeleton" />
-          ))}
-        </div>
-      )}
-
-      {query.isError && (
-        <div className="rh-home-rail-message">
-          <p>We could not load diner reviews right now.</p>
-          <button type="button" onClick={() => void query.refetch()}>
-            Try again
-          </button>
-        </div>
-      )}
-
-      {!query.isPending && !query.isError && reviews.length === 0 && (
-        <div className="rh-home-rail-message">
-          <p>Diner reviews will appear here once the first visits are verified.</p>
-          <Link to="/restaurants">Browse all restaurants</Link>
-        </div>
-      )}
-
-      {!query.isPending && !query.isError && reviews.length > 0 && (
-        <div className="rh-home-rail">
-          {reviews.map((review) => (
-            <DinerReviewCard key={review.id} review={review} />
-          ))}
-        </div>
-      )}
     </section>
   )
 }
