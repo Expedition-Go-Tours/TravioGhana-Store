@@ -8,7 +8,83 @@ export interface PartyCount {
   adults: number
   children: number
   infants: number
+  seniors?: number
+  counts?: Record<string, number>
   total: number
+}
+
+const PARTY_META_KEYS = new Set(['phoneNumber', 'phone', 'location', 'details', 'name', 'email', 'specialRequests'])
+const PARTY_ORDER = ['adults', 'children', 'infants', 'seniors']
+const PARTY_LABELS: Record<string, [string, string]> = {
+  adults: ['Adult', 'Adults'],
+  children: ['Child', 'Children'],
+  infants: ['Infant', 'Infants'],
+  seniors: ['Senior', 'Seniors'],
+  students: ['Student', 'Students'],
+  youth: ['Youth', 'Youths'],
+  youths: ['Youth', 'Youths'],
+  seniorcitizens: ['Senior citizen', 'Senior citizens'],
+  seniorcitizen: ['Senior citizen', 'Senior citizens'],
+}
+
+function partyCount(value: unknown): number {
+  if (typeof value !== 'number' && !(typeof value === 'string' && /^\d+$/.test(value))) return 0
+  const n = Number(value)
+  return Number.isFinite(n) && n > 0 ? n : 0
+}
+
+function partyKeyForLabel(label: unknown): string {
+  const key = String(label || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '')
+  if (!key) return ''
+  if (key === 'adult' || key === 'adults') return 'adults'
+  if (key === 'child' || key === 'children' || key === 'kid' || key === 'kids') return 'children'
+  if (key === 'infant' || key === 'infants' || key === 'baby' || key === 'babies') return 'infants'
+  return key.endsWith('s') ? key : `${key}s`
+}
+
+function partyCategoryLabel(key: string, count: number): string {
+  const known = PARTY_LABELS[key]
+  if (known) return count === 1 ? known[0] : known[1]
+  const singular = key.endsWith('s') ? key.slice(0, -1) : key
+  const word = count === 1 ? singular : key
+  return word.charAt(0).toUpperCase() + word.slice(1)
+}
+
+/** Parse the booking travellers blob without letting named details replace the counts. */
+export function partyFromTravelers(travelers: unknown): PartyCount {
+  const source = travelers && typeof travelers === 'object' && !Array.isArray(travelers)
+    ? (travelers as Record<string, unknown>)
+    : {}
+  const counts: Record<string, number> = {}
+
+  for (const [key, value] of Object.entries(source)) {
+    if (PARTY_META_KEYS.has(key)) continue
+    const count = partyCount(value)
+    if (count > 0) counts[key] = (counts[key] || 0) + count
+  }
+
+  if (Object.keys(counts).length === 0 && Array.isArray(source.details)) {
+    for (const detail of source.details) {
+      if (!detail || typeof detail !== 'object') continue
+      const row = detail as Record<string, unknown>
+      const key = partyKeyForLabel(row.ageGroup || row.type)
+      if (!key) continue
+      const count = partyCount(row.count ?? row.qty ?? 1)
+      if (count > 0) counts[key] = (counts[key] || 0) + count
+    }
+  }
+
+  const total = Object.values(counts).reduce((sum, count) => sum + count, 0)
+  return {
+    adults: counts.adults || 0,
+    children: counts.children || 0,
+    infants: counts.infants || 0,
+    seniors: counts.seniors || 0,
+    counts,
+    total,
+  }
 }
 
 export function toFiniteNumber(v: unknown): number | null {
@@ -61,14 +137,38 @@ export function formatTimeString(value?: string | null): string {
   return raw
 }
 
-/** "2 Adults", "1 Adult, 1 Child", or "3 People" when details are flat. */
+/** "2 Adults", "1 Adult, 1 Senior", or "3 People" when details are flat. */
 export function partyLabel(party?: PartyCount | null): string {
   if (!party || party.total === 0) return ''
-  const parts: string[] = []
-  if (party.adults) parts.push(`${party.adults} ${party.adults === 1 ? 'Adult' : 'Adults'}`)
-  if (party.children) parts.push(`${party.children} ${party.children === 1 ? 'Child' : 'Children'}`)
-  if (party.infants) parts.push(`${party.infants} ${party.infants === 1 ? 'Infant' : 'Infants'}`)
-  if (parts.length) return parts.join(' · ')
+
+  const counts = party.counts && Object.keys(party.counts).length > 0
+    ? party.counts
+    : {
+        adults: party.adults,
+        children: party.children,
+        infants: party.infants,
+        seniors: party.seniors || 0,
+      }
+
+  const entries = Object.entries(counts)
+    .filter(([, count]) => Number.isFinite(count) && count > 0)
+    .sort(([a], [b]) => {
+      const ai = PARTY_ORDER.indexOf(a)
+      const bi = PARTY_ORDER.indexOf(b)
+      if (ai !== -1 || bi !== -1) {
+        if (ai === -1) return 1
+        if (bi === -1) return -1
+        return ai - bi
+      }
+      return a.localeCompare(b)
+    })
+
+  if (entries.length > 0) {
+    return entries
+      .map(([key, count]) => `${count} ${partyCategoryLabel(key, count)}`)
+      .join(' · ')
+  }
+
   return `${party.total} ${party.total === 1 ? 'Person' : 'People'}`
 }
 

@@ -4,6 +4,7 @@ import { getStoredAuthTokens } from '../lib/auth'
 import { useAuthUser } from './useAuthUser'
 import type { DayAvailability, DayAvailabilityInfo, DayTimeSlot } from '../lib/tourAvailability'
 import type { CancellationChoice, RefundStatus } from '../lib/cancellationChoice'
+import { partyFromTravelers, type PartyCount } from '../lib/bookingUi'
 
 /**
  * `bypassCache` skips the browser's HTTP cache for this request. Availability
@@ -330,7 +331,7 @@ export interface CheckoutDraftSummary {
   }
   travelDate: string
   selectedTime: string | null
-  party: { adults: number; children: number; infants: number; total: number }
+  party: PartyCount
   leadTraveler: { name: string | null; email: string | null; phone: string | null }
   promoCode: string | null
   currency: string
@@ -548,7 +549,7 @@ export interface ExpeditionBookingSummary {
   /** Booked time slot (when the tour uses fixed time slots). */
   selectedTime?: string | null
   /** Traveler party breakdown parsed from the booking's travelers JSON. */
-  party?: { adults: number; children: number; infants: number; total: number }
+  party?: PartyCount
   total: number
   currency: string
   createdAt: string
@@ -628,16 +629,7 @@ function mapBookingSummary(b: RawBookingListRecord): ExpeditionBookingSummary {
         (b.pickup as Record<string, unknown>).status === 'deferred')
     ),
     selectedTime: typeof b.selectedTime === 'string' ? b.selectedTime : null,
-    party: (() => {
-      const t = (b.travelers && typeof b.travelers === 'object' ? b.travelers : {}) as Record<string, unknown>
-      const count = (v: unknown) => (typeof v === 'number' && v > 0 ? v : 0)
-      const adults = count(t.adults)
-      const children = count(t.children)
-      const infants = count(t.infants)
-      const details = Array.isArray(t.details) ? t.details : null
-      const total = details && details.length > 0 ? details.length : adults + children + infants
-      return { adults, children, infants, total }
-    })(),
+    party: partyFromTravelers(b.travelers),
     total: Math.round((Number(b.grossAmount) || 0) * 100) / 100,
     currency: b.currency,
     createdAt: b.createdAt,

@@ -31,10 +31,10 @@ import {
   evaluateCancellationPolicy,
   formatFullDate,
   formatTimeString,
+  partyFromTravelers,
   partyLabel,
   toFiniteNumber,
   formatDeadlineLabel,
-  type PartyCount,
 } from '../../lib/bookingUi'
 import BookingPointMap from './BookingPointMap'
 import { extractItinerary } from '../../hooks/useExpeditionTours'
@@ -506,15 +506,7 @@ export default function BookingWorkspace({ id, onClose }: { id?: string; onClose
   const meeting = useMemo(() => extractMeetingInfo(tour ?? {}), [tour])
 
   const travelers = ((detail?.travelers ?? {}) as TravelersJson) || {}
-  const party: PartyCount = {
-    adults: Number(travelers.adults) || 0,
-    children: Number(travelers.children) || 0,
-    infants: Number(travelers.infants) || 0,
-    total:
-      (travelers.details?.length ?? 0) > 0
-        ? travelers.details!.length
-        : (Number(travelers.adults) || 0) + (Number(travelers.children) || 0) + (Number(travelers.infants) || 0),
-  }
+  const party = partyFromTravelers(detail?.travelers)
   const leadName =
     travelers.details?.[0]?.name || (typeof detail?.leadTravelerName === 'string' ? detail.leadTravelerName : '') || ''
 
