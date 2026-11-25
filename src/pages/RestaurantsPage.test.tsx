@@ -10,9 +10,24 @@ import {
   type RestaurantVenue,
   type RestaurantVenuePage,
 } from '../hooks/useRestaurantVenues'
+import {
+  useLikelyToBookOutRestaurants,
+  useRecommendedRestaurants,
+  useRestaurantSectionIds,
+  useSpecialOfferRestaurants,
+} from '../hooks/useRestaurantHomepage'
 
 vi.mock('../hooks/useRestaurantVenues', () => ({
   useRestaurantVenues: vi.fn(),
+}))
+
+vi.mock('../hooks/useRestaurantHomepage', () => ({
+  isRestaurantHomepageSection: (value: string | null) =>
+    value === 'recommended' || value === 'likely-to-book-out' || value === 'offers',
+  useRecommendedRestaurants: vi.fn(),
+  useLikelyToBookOutRestaurants: vi.fn(),
+  useSpecialOfferRestaurants: vi.fn(),
+  useRestaurantSectionIds: vi.fn(),
 }))
 
 vi.mock('../hooks/useRecentRestaurantReviews', () => ({
@@ -47,6 +62,10 @@ vi.mock('../hooks/useRestaurantSearch', () => ({
 }))
 
 const mockHook = vi.mocked(useRestaurantVenues)
+const mockRecommended = vi.mocked(useRecommendedRestaurants)
+const mockLikelyToBookOut = vi.mocked(useLikelyToBookOutRestaurants)
+const mockSpecialOffers = vi.mocked(useSpecialOfferRestaurants)
+const mockSectionIds = vi.mocked(useRestaurantSectionIds)
 
 const venue: RestaurantVenue = {
   id: 'v1',
@@ -97,6 +116,33 @@ function queryResult(overrides: Record<string, unknown> = {}) {
   } as unknown as ReturnType<typeof useRestaurantVenues>
 }
 
+function rankedResult(venues: RestaurantVenue[]) {
+  return {
+    data: venues,
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  } as unknown as ReturnType<typeof useRecommendedRestaurants>
+}
+
+function sectionIdsResult(ids?: string[]) {
+  return {
+    data: ids,
+    isPending: false,
+    isError: false,
+  } as unknown as ReturnType<typeof useRestaurantSectionIds>
+}
+
+function railVenue(id: string, name: string): RestaurantVenue {
+  return { ...venue, id, name, slug: name.toLowerCase().replace(/\s+/g, '-') }
+}
+
+function railSection(title: string): HTMLElement {
+  const section = screen.getByRole('heading', { name: title }).closest('section')
+  if (!section) throw new Error(`No rail section found for ${title}`)
+  return section
+}
+
 function LocationProbe() {
   const location = useLocation()
   return <div data-testid="location">{`${location.pathname}${location.search}`}</div>
@@ -123,6 +169,14 @@ function renderPage(entry = '/restaurants') {
 beforeEach(() => {
   mockHook.mockReset()
   mockHook.mockReturnValue(queryResult())
+  mockRecommended.mockReset()
+  mockRecommended.mockReturnValue(rankedResult([railVenue('v-rec', 'Recommended Pick')]))
+  mockLikelyToBookOut.mockReset()
+  mockLikelyToBookOut.mockReturnValue(rankedResult([railVenue('v-demand', 'Demand Pick')]))
+  mockSpecialOffers.mockReset()
+  mockSpecialOffers.mockReturnValue(rankedResult([railVenue('v-offer', 'Offer Pick')]))
+  mockSectionIds.mockReset()
+  mockSectionIds.mockReturnValue(sectionIdsResult())
 })
 
 describe('RestaurantsPage home', () => {
@@ -138,14 +192,47 @@ describe('RestaurantsPage home', () => {
     expect(screen.getByRole('heading', { name: 'New Listings' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Top Restaurants in Accra' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'What Diners Are Saying' })).toBeInTheDocument()
-    expect(mockHook).toHaveBeenCalledTimes(7)
-    expect(mockHook).toHaveBeenNthCalledWith(1, { featured: true, sort: 'rating' })
-    expect(mockHook).toHaveBeenNthCalledWith(2, { sort: 'reviews' })
-    expect(mockHook).toHaveBeenNthCalledWith(3, { sort: 'rating' })
-    expect(mockHook).toHaveBeenNthCalledWith(4, { highDemand: true, sort: 'demand' })
-    expect(mockHook).toHaveBeenNthCalledWith(5, { hasOffer: true, sort: 'rating' })
-    expect(mockHook).toHaveBeenNthCalledWith(6, { sort: 'newest' })
-    expect(mockHook).toHaveBeenNthCalledWith(7, { city: 'Accra', sort: 'rating' })
+    expect(mockHook).toHaveBeenCalledTimes(4)
+    expect(mockHook).toHaveBeenNthCalledWith(1, { sort: 'reviews' })
+    expect(mockHook).toHaveBeenNthCalledWith(2, { sort: 'rating' })
+    expect(mockHook).toHaveBeenNthCalledWith(3, { sort: 'newest' })
+    expect(mockHook).toHaveBeenNthCalledWith(4, { city: 'Accra', sort: 'rating' })
+    expect(mockRecommended).toHaveBeenCalledOnce()
+    expect(mockLikelyToBookOut).toHaveBeenCalledOnce()
+    expect(mockSpecialOffers).toHaveBeenCalledOnce()
+  })
+
+  it('renders the ranked rails from their dedicated hooks with section links', () => {
+    renderPage('/restaurants')
+
+    const recommended = railSection('Recommended For You')
+    expect(within(recommended).getByText('Recommended Pick')).toBeInTheDocument()
+    expect(
+      within(recommended).getByText('Picked from diner interest, ratings and places near you.'),
+    ).toBeInTheDocument()
+    expect(within(recommended).getByRole('link', { name: 'See all' })).toHaveAttribute(
+      'href',
+      '/restaurants?section=recommended',
+    )
+
+    const demand = railSection('Likely To Book Out')
+    expect(within(demand).getByText('Demand Pick')).toBeInTheDocument()
+    expect(
+      within(demand).getByText(
+        'Based on recent Travio diner interest, not live table availability.',
+      ),
+    ).toBeInTheDocument()
+    expect(within(demand).getByRole('link', { name: 'See all' })).toHaveAttribute(
+      'href',
+      '/restaurants?section=likely-to-book-out',
+    )
+
+    const offers = railSection('Special Offers')
+    expect(within(offers).getByText('Offer Pick')).toBeInTheDocument()
+    expect(within(offers).getByRole('link', { name: 'See all' })).toHaveAttribute(
+      'href',
+      '/restaurants?section=offers',
+    )
   })
 
   it('uses the shared hero shell and keeps Restaurants active in the switch', () => {
@@ -182,6 +269,9 @@ describe('RestaurantsPage home', () => {
 
   it('shows a graceful message when a rail has no venues', () => {
     mockHook.mockReturnValue(queryResult({ data: { pages: [page([])] }, hasNextPage: false }))
+    mockRecommended.mockReturnValue(rankedResult([]))
+    mockLikelyToBookOut.mockReturnValue(rankedResult([]))
+    mockSpecialOffers.mockReturnValue(rankedResult([]))
     renderPage('/restaurants')
 
     expect(screen.getAllByText('No restaurants here yet. New places are added as we verify them.')).toHaveLength(7)
@@ -196,6 +286,50 @@ describe('RestaurantsPage results', () => {
     expect(container.querySelector('.rh-results-layout')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Restaurants' })).toHaveAttribute('aria-current', 'page')
     expect(screen.getByRole('link', { name: 'Tours & Activities' })).toHaveAttribute('href', '/')
+  })
+
+  it('reorders the loaded list by section ids when a section is requested', () => {
+    const second = railVenue('v2', 'Second Place')
+    mockHook.mockReturnValue(
+      queryResult({ data: { pages: [page([venue, second])] }, hasNextPage: false }),
+    )
+    mockSectionIds.mockReturnValue(sectionIdsResult(['v2', 'v1']))
+
+    const { container } = renderPage('/restaurants?section=recommended')
+
+    expect(mockSectionIds).toHaveBeenCalledWith('recommended', {
+      city: undefined,
+      lat: undefined,
+      lng: undefined,
+    })
+    const names = Array.from(container.querySelectorAll('.restaurants-grid article')).map(
+      (article) => article.textContent,
+    )
+    expect(names).toEqual(['Second Place', 'The Place'])
+    expect(screen.queryByRole('button', { name: 'Show more restaurants' })).not.toBeInTheDocument()
+  })
+
+  it('shows the normal list while section ids are still loading', () => {
+    const second = railVenue('v2', 'Second Place')
+    mockHook.mockReturnValue(
+      queryResult({ data: { pages: [page([venue, second])] }, hasNextPage: false }),
+    )
+    mockSectionIds.mockReturnValue(sectionIdsResult())
+
+    const { container } = renderPage('/restaurants?section=offers')
+
+    const names = Array.from(container.querySelectorAll('.restaurants-grid article')).map(
+      (article) => article.textContent,
+    )
+    expect(names).toEqual(['The Place', 'Second Place'])
+  })
+
+  it('clears the section parameter with the other filters', () => {
+    renderPage('/restaurants?section=offers&city=Accra')
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Clear all' })[0])
+
+    expect(screen.getByTestId('location')).toHaveTextContent('/restaurants')
   })
 
   it('passes URL filters to the venue hook and renders the venue list', () => {

@@ -23,8 +23,17 @@ import RestaurantCard from '../components/RestaurantCard'
 import {
   useRestaurantVenues,
   type RestaurantSort,
+  type RestaurantVenue,
   type RestaurantVenueFilters,
 } from '../hooks/useRestaurantVenues'
+import {
+  isRestaurantHomepageSection,
+  useLikelyToBookOutRestaurants,
+  useRecommendedRestaurants,
+  useRestaurantSectionIds,
+  useSpecialOfferRestaurants,
+} from '../hooks/useRestaurantHomepage'
+import { trackRestaurantSearch } from '../lib/analytics'
 import {
   useRecentRestaurantReviews,
   type RecentRestaurantReview,
@@ -171,21 +180,31 @@ function displayLabel(value: string): string {
 }
 
 type VenueQuery = ReturnType<typeof useRestaurantVenues>
+type RankedVenueQuery = ReturnType<typeof useRecommendedRestaurants>
+type RailQuery = VenueQuery | RankedVenueQuery
+
+function railVenues(query: RailQuery): RestaurantVenue[] {
+  const data = query.data
+  if (!data) return []
+  return Array.isArray(data) ? data : data.pages.flatMap((page) => page.venues)
+}
 
 function RestaurantRail({
   title,
   description,
   query,
+  section,
   to,
   action,
 }: {
   title: string
   description: string
-  query: VenueQuery
+  query: RailQuery
+  section: string
   to: string
   action?: ReactNode
 }) {
-  const venues = query.data?.pages.flatMap((page) => page.venues) ?? []
+  const venues = railVenues(query)
 
   return (
     <section className="rh-home-section">
@@ -226,8 +245,13 @@ function RestaurantRail({
 
       {!query.isPending && !query.isError && venues.length > 0 && (
         <div className="rh-home-rail">
-          {venues.map((venue) => (
-            <RestaurantCard key={venue.id} venue={venue} />
+          {venues.map((venue, index) => (
+            <RestaurantCard
+              key={venue.id}
+              venue={venue}
+              section={section}
+              position={index}
+            />
           ))}
         </div>
       )}
@@ -360,11 +384,11 @@ function useNearbyLocation() {
 }
 
 function RestaurantHome() {
-  const recommended = useRestaurantVenues({ featured: true, sort: 'rating' })
+  const recommended = useRecommendedRestaurants()
   const popular = useRestaurantVenues({ sort: 'reviews' })
   const topRated = useRestaurantVenues({ sort: 'rating' })
-  const highDemand = useRestaurantVenues({ highDemand: true, sort: 'demand' })
-  const offers = useRestaurantVenues({ hasOffer: true, sort: 'rating' })
+  const highDemand = useLikelyToBookOutRestaurants()
+  const offers = useSpecialOfferRestaurants()
   const newest = useRestaurantVenues({ sort: 'newest' })
   const { coords, locating, failed, requestLocation } = useNearbyLocation()
   const nearby = useRestaurantVenues(
@@ -447,15 +471,17 @@ function RestaurantHome() {
 
         <RestaurantRail
           title="Recommended For You"
-          description="Featured places chosen by the Travio team."
+          description="Picked from diner interest, ratings and places near you."
           query={recommended}
-          to="/restaurants?featured=true"
+          section="recommended"
+          to="/restaurants?section=recommended"
         />
 
         <RestaurantRail
           title="Popular Restaurants"
           description="Restaurants with the most diner reviews."
           query={popular}
+          section="popular"
           to="/restaurants?sort=reviews"
         />
 
@@ -463,6 +489,7 @@ function RestaurantHome() {
           title="Top Rated"
           description="Places with the strongest Travio diner ratings."
           query={topRated}
+          section="top-rated"
           to="/restaurants?sort=rating"
         />
 
@@ -470,20 +497,23 @@ function RestaurantHome() {
           title="Likely To Book Out"
           description="Based on recent Travio diner interest, not live table availability."
           query={highDemand}
-          to="/restaurants?highDemand=true"
+          section="likely-to-book-out"
+          to="/restaurants?section=likely-to-book-out"
         />
 
         <RestaurantRail
           title="Special Offers"
           description="Current offers added by the restaurant or Travio team."
           query={offers}
-          to="/restaurants?hasOffer=true"
+          section="offers"
+          to="/restaurants?section=offers"
         />
 
         <RestaurantRail
           title="New Listings"
           description="New restaurants added to the Ghana guide."
           query={newest}
+          section="new-listings"
           to="/restaurants?sort=newest"
         />
 
@@ -497,6 +527,7 @@ function RestaurantHome() {
                 : 'Enable your location to see places near you.'
           }
           query={nearby}
+          section="nearby"
           to={coords ? '/restaurants?sort=rating' : '/restaurants?city=Accra'}
           action={
             <button
@@ -555,7 +586,22 @@ function RestaurantResults() {
   const { data, isPending, isError, error, refetch, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useRestaurantVenues(filters)
 
-  const venues = data?.pages.flatMap((page) => page.venues) ?? []
+  const sectionParam = searchParams.get('section')
+  const section = isRestaurantHomepageSection(sectionParam) ? sectionParam : null
+  const sectionIds = useRestaurantSectionIds(section, {
+    city: filters.city,
+    lat: filters.lat,
+    lng: filters.lng,
+  })
+
+  const allVenues = useMemo(() => data?.pages.flatMap((page) => page.venues) ?? [], [data])
+  const venues = useMemo(() => {
+    if (!section || !sectionIds.data) return allVenues
+    const byId = new Map(allVenues.map((venue) => [venue.id, venue]))
+    return sectionIds.data
+      .map((id) => byId.get(id))
+      .filter((venue): venue is RestaurantVenue => venue != null)
+  }, [allVenues, section, sectionIds.data])
   const dietary = filters.dietary ?? []
 
   const updateParams = (patch: Record<string, string | null>) => {
@@ -570,6 +616,7 @@ function RestaurantResults() {
 
   const clearFilters = () => {
     const next = new URLSearchParams()
+    next.delete('section')
     if (filters.sort) next.set('sort', filters.sort)
     setSearchParams(next, { replace: true })
     setMobileFiltersOpen(false)
@@ -592,6 +639,7 @@ function RestaurantResults() {
     event.preventDefault()
     const value = String(new FormData(event.currentTarget).get('q') || '').trim()
     updateParams({ q: value || null })
+    trackRestaurantSearch(value, filters.city, filters.cuisine)
   }
 
   const toggleDietary = (value: string, checked: boolean) => {
@@ -915,11 +963,16 @@ function RestaurantResults() {
                   {filters.place ? ` near ${filters.place}` : filters.city ? ` in ${filters.city}` : ''}
                 </p>
                 <div className="restaurants-grid">
-                  {venues.map((venue) => (
-                    <RestaurantCard key={venue.id} venue={venue} />
+                  {venues.map((venue, index) => (
+                    <RestaurantCard
+                      key={venue.id}
+                      venue={venue}
+                      section={section ?? 'restaurant'}
+                      position={index}
+                    />
                   ))}
                 </div>
-                {hasNextPage && (
+                {hasNextPage && !section && (
                   <button
                     className="restaurants-load-more"
                     type="button"

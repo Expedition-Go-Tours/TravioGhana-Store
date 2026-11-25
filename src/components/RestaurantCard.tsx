@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { BadgeCheck, Leaf, TrendingUp, UtensilsCrossed } from 'lucide-react'
 import OptimizedImage from './shared/OptimizedImage'
+import { trackRestaurantClick } from '../lib/analytics'
 import type { RestaurantVenue } from '../hooks/useRestaurantVenues'
 import './TourCard.css'
 import './RestaurantCard.css'
@@ -30,9 +31,11 @@ function displayLabel(value: string): string {
 
 interface RestaurantCardProps {
   venue: RestaurantVenue
+  section?: string
+  position?: number
 }
 
-export default function RestaurantCard({ venue }: RestaurantCardProps) {
+export default function RestaurantCard({ venue, section, position }: RestaurantCardProps) {
   const navigate = useNavigate()
   const [current, setCurrent] = useState(0)
   const to = `/restaurants/${venue.slug}`
@@ -51,7 +54,18 @@ export default function RestaurantCard({ venue }: RestaurantCardProps) {
     setCurrent((index) => (index + direction + photos.length) % photos.length)
   }
 
+  const trackActivation = () => {
+    trackRestaurantClick(
+      venue.id,
+      section || 'restaurant',
+      position ?? 0,
+      venue.cuisines[0],
+      venue.city,
+    )
+  }
+
   const handleCardClick = (event?: React.MouseEvent) => {
+    trackActivation()
     const wantsNewTab =
       event != null && (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button === 1)
     if (wantsNewTab) {
@@ -63,6 +77,7 @@ export default function RestaurantCard({ venue }: RestaurantCardProps) {
 
   const handleTitleClick = (event: React.MouseEvent) => {
     event.stopPropagation()
+    trackActivation()
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button === 1) return
     event.preventDefault()
     navigate(to)

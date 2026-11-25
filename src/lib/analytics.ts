@@ -8,6 +8,8 @@
  *  - page_viewed: UTM params, referrer, page path
  *  - search_bar_used: search queries from the SearchBar component
  *  - tour_card_clicked: which tour card was clicked and from which section
+ *  - restaurant_card_clicked: which restaurant was opened and from which rail
+ *  - restaurant_search_used: restaurant results searches
  *  - mood_keyword_clicked: which mood keyword was clicked
  *  - section_impressed: which homepage section became visible
  *  - location_shared: user's geolocation coordinates
@@ -236,6 +238,48 @@ export function trackTourClick(tourId: string, section: string, position: number
     },
     resourceId: tourId,
     resource: 'Tour',
+  })
+}
+
+/**
+ * Track a restaurant card click from a homepage rail or results grid.
+ * Section and position defaults keep older call sites emitting a useful event.
+ */
+export function trackRestaurantClick(
+  venueId: string,
+  section: string,
+  position: number,
+  cuisine: string | null | undefined,
+  city: string | null | undefined,
+): void {
+  enqueue({
+    name: 'restaurant_card_clicked',
+    properties: {
+      section: section || 'restaurant',
+      position: position ?? 0,
+      cuisine: cuisine ?? null,
+      city: city ?? null,
+    },
+    resourceId: venueId,
+    resource: 'RestaurantVenue',
+  })
+}
+
+/**
+ * Track a search submitted on the restaurant results page.
+ */
+export function trackRestaurantSearch(
+  query: string,
+  city?: string,
+  cuisine?: string,
+): void {
+  enqueue({
+    name: 'restaurant_search_used',
+    properties: {
+      query,
+      city: city ?? null,
+      cuisine: cuisine ?? null,
+    },
   })
 }
 

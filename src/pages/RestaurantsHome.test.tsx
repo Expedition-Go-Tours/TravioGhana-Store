@@ -18,6 +18,22 @@ vi.mock('../hooks/useRestaurantVenues', () => ({
   useRestaurantVenues: () => emptyPage,
 }))
 
+vi.mock('../hooks/useRestaurantHomepage', () => {
+  const emptyRanked = {
+    data: [],
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  }
+  return {
+    isRestaurantHomepageSection: () => false,
+    useRecommendedRestaurants: () => emptyRanked,
+    useLikelyToBookOutRestaurants: () => emptyRanked,
+    useSpecialOfferRestaurants: () => emptyRanked,
+    useRestaurantSectionIds: () => ({ data: undefined, isPending: false, isError: false }),
+  }
+})
+
 vi.mock('../hooks/useRecentRestaurantReviews', () => ({
   useRecentRestaurantReviews: () => ({
     data: {

@@ -1,11 +1,16 @@
-import { describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import RestaurantCard from './RestaurantCard'
+import { trackRestaurantClick } from '../lib/analytics'
 import type { RestaurantVenue } from '../hooks/useRestaurantVenues'
 
 vi.mock('./shared/OptimizedImage', () => ({
   default: ({ alt }: { alt?: string }) => <img alt={alt ?? ''} />,
+}))
+
+vi.mock('../lib/analytics', () => ({
+  trackRestaurantClick: vi.fn(),
 }))
 
 const venue: RestaurantVenue = {
@@ -45,13 +50,19 @@ const venue: RestaurantVenue = {
   ],
 }
 
-function renderCard() {
+function renderCard(props: { section?: string; position?: number } = {}) {
   return render(
     <MemoryRouter>
-      <RestaurantCard venue={venue} />
+      <RestaurantCard venue={venue} {...props} />
     </MemoryRouter>,
   )
 }
+
+const mockTrackClick = vi.mocked(trackRestaurantClick)
+
+beforeEach(() => {
+  mockTrackClick.mockClear()
+})
 
 describe('RestaurantCard', () => {
   it('uses the TourCard structure with a crawlable restaurant link', () => {
@@ -85,6 +96,21 @@ describe('RestaurantCard', () => {
     expect(badge).toHaveAttribute(
       'title',
       'Based on recent Travio diner interest, not live table availability.',
+    )
+  })
+
+  it('tracks one restaurant click when the title link is activated', () => {
+    renderCard({ section: 'recommended', position: 2 })
+
+    fireEvent.click(screen.getByRole('link', { name: 'The Place' }))
+
+    expect(mockTrackClick).toHaveBeenCalledOnce()
+    expect(mockTrackClick).toHaveBeenCalledWith(
+      'v1',
+      'recommended',
+      2,
+      'Ghanaian',
+      'Accra',
     )
   })
 
