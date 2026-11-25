@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { heroVariantFromPath } from '../lib/heroVertical'
 import './VerticalSwitch.css'
 
 const OPTIONS = [
@@ -15,9 +16,7 @@ const OPTIONS = [
 export default function VerticalSwitch() {
   const { t } = useTranslation()
   const { pathname } = useLocation()
-  const active = pathname === '/restaurants' || pathname.startsWith('/restaurants/')
-    ? 'restaurants'
-    : 'tours'
+  const active = heroVariantFromPath(pathname)
 
   return (
     <div

@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter, useLocation } from 'react-router-dom'
+import { LocationSearchProvider } from '../context/LocationSearchContext'
+import { SearchInputProvider } from '../context/SearchInputContext'
 import RestaurantsPage from './RestaurantsPage'
 import {
   useRestaurantVenues,
@@ -82,11 +85,20 @@ function LocationProbe() {
 }
 
 function renderPage(entry = '/restaurants') {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
   return render(
-    <MemoryRouter initialEntries={[entry]}>
-      <LocationProbe />
-      <RestaurantsPage />
-    </MemoryRouter>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[entry]}>
+        <LocationSearchProvider>
+          <SearchInputProvider>
+            <LocationProbe />
+            <RestaurantsPage />
+          </SearchInputProvider>
+        </LocationSearchProvider>
+      </MemoryRouter>
+    </QueryClientProvider>,
   )
 }
 
@@ -99,12 +111,25 @@ describe('RestaurantsPage home', () => {
   it('renders the prototype-style landing view with two rails', () => {
     renderPage('/restaurants')
 
-    expect(screen.getByRole('heading', { name: 'Find a good meal nearby' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Discover Your Next Favourite Table' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Top rated on Travio' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Recently added' })).toBeInTheDocument()
     expect(mockHook).toHaveBeenCalledTimes(2)
     expect(mockHook).toHaveBeenNthCalledWith(1, { sort: 'rating' })
     expect(mockHook).toHaveBeenNthCalledWith(2, { sort: 'newest' })
+  })
+
+  it('uses the shared hero shell and keeps Restaurants active in the switch', () => {
+    const { container } = renderPage('/restaurants')
+
+    expect(container.querySelector('.hero')).toBeInTheDocument()
+    expect(container.querySelector('.rh-home-hero')).not.toBeInTheDocument()
+    expect(
+      screen.getByText('Reserve restaurants, rooftop spots and authentic local dining experiences.'),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Find a table' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Restaurants' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: 'Tours & Activities' })).not.toHaveAttribute('aria-current')
   })
 
   it('links cuisine tiles to lowercase cuisine filters', () => {
@@ -135,6 +160,15 @@ describe('RestaurantsPage home', () => {
 })
 
 describe('RestaurantsPage results', () => {
+  it('keeps the results layout and offers the vertical switch without a hero', () => {
+    const { container } = renderPage('/restaurants?city=Accra')
+
+    expect(container.querySelector('.hero')).not.toBeInTheDocument()
+    expect(container.querySelector('.rh-results-layout')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Restaurants' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: 'Tours & Activities' })).toHaveAttribute('href', '/')
+  })
+
   it('passes URL filters to the venue hook and renders the venue list', () => {
     renderPage('/restaurants?city=Accra&cuisine=Ghanaian&sort=newest&featured=true')
 

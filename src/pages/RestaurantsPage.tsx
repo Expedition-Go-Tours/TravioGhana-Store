@@ -15,8 +15,9 @@ import {
 } from 'lucide-react'
 import SEO from '../components/SEO'
 import Footer from '../components/Footer'
+import Hero from '../components/Hero'
+import VerticalSwitch from '../components/VerticalSwitch'
 import RestaurantCard from '../components/RestaurantCard'
-import RestaurantSearchBar from '../components/RestaurantSearchBar'
 import {
   useRestaurantVenues,
   type RestaurantSort,
@@ -225,7 +226,7 @@ function RestaurantHome() {
   const newest = useRestaurantVenues({ sort: 'newest' })
 
   return (
-    <div className="restaurants-page">
+    <div className="restaurants-page restaurants-page--hero">
       <SEO
         title="Restaurants in Ghana"
         description="Find restaurants in Ghana by city, cuisine and price. Ratings come from Travio reviews, with outside scores shown separately."
@@ -233,24 +234,17 @@ function RestaurantHome() {
         canonical="https://www.travioghana.com/restaurants"
       />
 
+      <Hero />
+
       <main className="restaurants-page__main">
-        <section className="rh-home-hero">
-          <span className="rh-home-hero__eyebrow">Restaurants in Ghana</span>
-          <h1>Find a good meal nearby</h1>
-          <p>
-            Browse places by city and cuisine. Travio stars come from diners who reviewed on
-            Travio, and outside scores stay labelled with their source.
-          </p>
-          <RestaurantSearchBar />
-          <div className="rh-home-cities">
-            <span>Popular cities:</span>
-            {CITIES.slice(0, 4).map((city) => (
-              <Link key={city} to={`/restaurants?city=${encodeURIComponent(city)}`}>
-                {city}
-              </Link>
-            ))}
-          </div>
-        </section>
+        <div className="rh-popular-cities">
+          <span>Popular cities:</span>
+          {CITIES.slice(0, 4).map((city) => (
+            <Link key={city} to={`/restaurants?city=${encodeURIComponent(city)}`}>
+              {city}
+            </Link>
+          ))}
+        </div>
 
         <section className="rh-home-section rh-cuisine-section">
           <div className="rh-section-head">
@@ -419,6 +413,10 @@ function RestaurantResults() {
           <span aria-hidden="true">/</span>
           <span>Restaurants</span>
         </nav>
+
+        <div className="rh-results-switch">
+          <VerticalSwitch />
+        </div>
 
         <div className="rh-results-heading">
           <div>
