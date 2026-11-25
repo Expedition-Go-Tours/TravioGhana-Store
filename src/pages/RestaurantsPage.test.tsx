@@ -15,6 +15,22 @@ vi.mock('../hooks/useRestaurantVenues', () => ({
   useRestaurantVenues: vi.fn(),
 }))
 
+vi.mock('../hooks/useRecentRestaurantReviews', () => ({
+  useRecentRestaurantReviews: () => ({
+    data: {
+      pages: [
+        {
+          reviews: [],
+          pagination: { hasMore: false, nextCursor: null, limit: 6 },
+        },
+      ],
+    },
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  }),
+}))
+
 vi.mock('../components/RestaurantCard', () => ({
   default: ({ venue }: { venue: { name: string } }) => <article>{venue.name}</article>,
 }))
@@ -56,6 +72,8 @@ const venue: RestaurantVenue = {
   rank: { position: 1, of: 20 },
   featured: true,
   displayOrder: 0,
+  highDemand: false,
+  offers: [],
 }
 
 function page(venues: RestaurantVenue[]): RestaurantVenuePage {
@@ -108,15 +126,26 @@ beforeEach(() => {
 })
 
 describe('RestaurantsPage home', () => {
-  it('renders the prototype-style landing view with two rails', () => {
+  it('renders the full prototype-style landing view', () => {
     renderPage('/restaurants')
 
     expect(screen.getByRole('heading', { name: 'Discover Your Next Favourite Table' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Top rated on Travio' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Recently added' })).toBeInTheDocument()
-    expect(mockHook).toHaveBeenCalledTimes(2)
-    expect(mockHook).toHaveBeenNthCalledWith(1, { sort: 'rating' })
-    expect(mockHook).toHaveBeenNthCalledWith(2, { sort: 'newest' })
+    expect(screen.getByRole('heading', { name: 'Recommended For You' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Popular Restaurants' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Top Rated' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Likely To Book Out' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Special Offers' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'New Listings' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Top Restaurants in Accra' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'What Diners Are Saying' })).toBeInTheDocument()
+    expect(mockHook).toHaveBeenCalledTimes(7)
+    expect(mockHook).toHaveBeenNthCalledWith(1, { featured: true, sort: 'rating' })
+    expect(mockHook).toHaveBeenNthCalledWith(2, { sort: 'reviews' })
+    expect(mockHook).toHaveBeenNthCalledWith(3, { sort: 'rating' })
+    expect(mockHook).toHaveBeenNthCalledWith(4, { highDemand: true, sort: 'demand' })
+    expect(mockHook).toHaveBeenNthCalledWith(5, { hasOffer: true, sort: 'rating' })
+    expect(mockHook).toHaveBeenNthCalledWith(6, { sort: 'newest' })
+    expect(mockHook).toHaveBeenNthCalledWith(7, { city: 'Accra', sort: 'rating' })
   })
 
   it('uses the shared hero shell and keeps Restaurants active in the switch', () => {
@@ -155,7 +184,7 @@ describe('RestaurantsPage home', () => {
     mockHook.mockReturnValue(queryResult({ data: { pages: [page([])] }, hasNextPage: false }))
     renderPage('/restaurants')
 
-    expect(screen.getAllByText('No restaurants here yet. New places are added as we verify them.')).toHaveLength(2)
+    expect(screen.getAllByText('No restaurants here yet. New places are added as we verify them.')).toHaveLength(7)
   })
 })
 

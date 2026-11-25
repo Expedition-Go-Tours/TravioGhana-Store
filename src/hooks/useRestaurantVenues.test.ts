@@ -44,6 +44,16 @@ describe('buildRestaurantVenuePath', () => {
     })
   })
 
+  it('sends the demand and offer homepage filters', () => {
+    const params = paramsOf(
+      buildRestaurantVenuePath({ highDemand: true, hasOffer: true, sort: 'demand' }),
+    )
+
+    expect(params.get('highDemand')).toBe('true')
+    expect(params.get('hasOffer')).toBe('true')
+    expect(params.get('sort')).toBe('demand')
+  })
+
   it('omits empty filter values instead of sending blank query keys', () => {
     const params = paramsOf(
       buildRestaurantVenuePath({ q: '', city: '', priceBand: undefined, featured: false }),

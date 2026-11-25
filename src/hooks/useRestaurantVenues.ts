@@ -11,6 +11,16 @@ export interface RestaurantVenueExternal {
   reviewCount: number
 }
 
+export interface RestaurantVenueOffer {
+  id: string
+  title: string
+  discountType: string
+  discountValue: number
+  promoCode: string | null
+  endsAt: string | null
+  terms?: string | null
+}
+
 export interface RestaurantVenueExternalStat extends RestaurantVenueExternal {
   distribution: Record<string, number> | null
   productUrl: string | null
@@ -53,6 +63,8 @@ export interface RestaurantVenue {
   rank: RestaurantVenueRank | null
   featured: boolean
   displayOrder: number
+  highDemand: boolean
+  offers: RestaurantVenueOffer[]
 }
 
 export interface RestaurantVenueDetail extends RestaurantVenue {
@@ -108,7 +120,7 @@ export interface RestaurantVenueReviewsPage {
   }
 }
 
-export type RestaurantSort = 'rating' | 'reviews' | 'newest'
+export type RestaurantSort = 'rating' | 'reviews' | 'newest' | 'demand'
 
 export interface RestaurantVenueFilters {
   q?: string
@@ -119,6 +131,8 @@ export interface RestaurantVenueFilters {
   minRating?: number
   minReviews?: number
   featured?: boolean
+  highDemand?: boolean
+  hasOffer?: boolean
   lat?: number
   lng?: number
   radiusKm?: number
@@ -148,6 +162,8 @@ export function buildRestaurantVenuePath(
   if (filters.minRating) params.set('minRating', String(filters.minRating))
   if (filters.minReviews != null) params.set('minReviews', String(filters.minReviews))
   if (filters.featured) params.set('featured', 'true')
+  if (filters.highDemand) params.set('highDemand', 'true')
+  if (filters.hasOffer) params.set('hasOffer', 'true')
   if (filters.lat != null) params.set('lat', String(filters.lat))
   if (filters.lng != null) params.set('lng', String(filters.lng))
   if (filters.radiusKm != null) params.set('radiusKm', String(filters.radiusKm))

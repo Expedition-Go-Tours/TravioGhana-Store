@@ -97,6 +97,8 @@ const venue: RestaurantVenueDetail = {
   rank: { position: 1, of: 20 },
   featured: false,
   displayOrder: 0,
+  highDemand: false,
+  offers: [],
   hours: { monday: { open: '11:00', close: '22:00' } },
   timezone: 'Africa/Accra',
   phone: '+233 20 000 0000',

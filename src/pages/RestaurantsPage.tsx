@@ -1,7 +1,8 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   ArrowUpRight,
+  BadgeCheck,
   Fish,
   Flame,
   Leaf,
@@ -16,6 +17,7 @@ import {
 import SEO from '../components/SEO'
 import Footer from '../components/Footer'
 import Hero from '../components/Hero'
+import StarRating from '../components/StarRating'
 import VerticalSwitch from '../components/VerticalSwitch'
 import RestaurantCard from '../components/RestaurantCard'
 import {
@@ -23,6 +25,10 @@ import {
   type RestaurantSort,
   type RestaurantVenueFilters,
 } from '../hooks/useRestaurantVenues'
+import {
+  useRecentRestaurantReviews,
+  type RecentRestaurantReview,
+} from '../hooks/useRecentRestaurantReviews'
 import ghanaianImage from '../assets/restaurants/cuisine-ghanaian.webp'
 import nigerianImage from '../assets/restaurants/cuisine-nigerian.webp'
 import chineseImage from '../assets/restaurants/cuisine-chinese.webp'
@@ -90,6 +96,7 @@ const CUISINES: Cuisine[] = [
 const SORTS: { value: RestaurantSort; label: string }[] = [
   { value: 'rating', label: 'Top rated' },
   { value: 'reviews', label: 'Most reviewed' },
+  { value: 'demand', label: 'In demand' },
   { value: 'newest', label: 'Newest' },
 ]
 
@@ -147,6 +154,8 @@ function buildFilters(params: URLSearchParams): RestaurantVenueFilters {
     minRating: optionalNumber(params.get('minRating')),
     minReviews: optionalNumber(params.get('minReviews')),
     featured: params.get('featured') === 'true' || undefined,
+    highDemand: params.get('highDemand') === 'true' || undefined,
+    hasOffer: params.get('hasOffer') === 'true' || undefined,
     lat: lat ?? undefined,
     lng: lng ?? undefined,
     radiusKm:
@@ -168,11 +177,13 @@ function RestaurantRail({
   description,
   query,
   to,
+  action,
 }: {
   title: string
   description: string
   query: VenueQuery
   to: string
+  action?: ReactNode
 }) {
   const venues = query.data?.pages.flatMap((page) => page.venues) ?? []
 
@@ -183,7 +194,10 @@ function RestaurantRail({
           <h2>{title}</h2>
           <p>{description}</p>
         </div>
-        <Link to={to}>See all</Link>
+        <div className="rh-section-head__actions">
+          {action}
+          <Link to={to}>See all</Link>
+        </div>
       </div>
 
       {query.isPending && (
@@ -221,9 +235,143 @@ function RestaurantRail({
   )
 }
 
+function formatReviewDate(value: string): string {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return new Intl.DateTimeFormat('en-GB', { month: 'short', year: 'numeric' }).format(date)
+}
+
+function DinerReviewCard({ review }: { review: RecentRestaurantReview }) {
+  const author = review.author.name?.trim() || 'Travio diner'
+  const initial = author.charAt(0).toUpperCase()
+  const venuePath = `/restaurants/${review.venueSlug}`
+
+  return (
+    <article className="rh-review-card">
+      <div className="rh-review-card__venue">
+        <Link to={venuePath}>{review.venueName}</Link>
+        {review.venueCity && <span>{review.venueCity}</span>}
+      </div>
+      <div className="rh-review-card__stars">
+        <StarRating value={review.rating} size={14} ariaLabel={`${review.rating} out of 5`} />
+        <time dateTime={review.createdAt}>{formatReviewDate(review.createdAt)}</time>
+      </div>
+      <div className="rh-review-card__copy">
+        {review.title && <h3>{review.title}</h3>}
+        <p>{review.body}</p>
+      </div>
+      <div className="rh-review-card__author">
+        <span className="rh-review-card__avatar" aria-hidden="true">
+          {initial}
+        </span>
+        <div>
+          <strong>{author}</strong>
+          <span>{review.verified ? 'Verified visit' : 'Travio review'}</span>
+        </div>
+      </div>
+      <div className="rh-review-card__footer">
+        {review.verified && (
+          <span className="rh-review-card__verified">
+            <BadgeCheck size={13} aria-hidden="true" />
+            Verified
+          </span>
+        )}
+        <Link to={`${venuePath}#reviews`}>Read review</Link>
+      </div>
+    </article>
+  )
+}
+
+function DinerReviewsRail() {
+  const query = useRecentRestaurantReviews()
+  const reviews = query.data?.pages.flatMap((page) => page.reviews) ?? []
+
+  return (
+    <section className="rh-home-section">
+      <div className="rh-section-head">
+        <div>
+          <h2>What Diners Are Saying</h2>
+          <p>Recent reviews from people who ate and reviewed on Travio.</p>
+        </div>
+        <Link to="/restaurants?sort=reviews">See all</Link>
+      </div>
+
+      {query.isPending && (
+        <div className="rh-home-rail" aria-label="Loading diner reviews">
+          {Array.from({ length: 4 }, (_, index) => (
+            <div key={index} className="restaurant-skeleton" />
+          ))}
+        </div>
+      )}
+
+      {query.isError && (
+        <div className="rh-home-rail-message">
+          <p>We could not load diner reviews right now.</p>
+          <button type="button" onClick={() => void query.refetch()}>
+            Try again
+          </button>
+        </div>
+      )}
+
+      {!query.isPending && !query.isError && reviews.length === 0 && (
+        <div className="rh-home-rail-message">
+          <p>Diner reviews will appear here once the first visits are verified.</p>
+          <Link to="/restaurants">Browse all restaurants</Link>
+        </div>
+      )}
+
+      {!query.isPending && !query.isError && reviews.length > 0 && (
+        <div className="rh-home-rail">
+          {reviews.map((review) => (
+            <DinerReviewCard key={review.id} review={review} />
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
+function useNearbyLocation() {
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
+  const [locating, setLocating] = useState(false)
+  const [failed, setFailed] = useState(false)
+
+  const requestLocation = () => {
+    if (!navigator.geolocation) {
+      setFailed(true)
+      return
+    }
+    setLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      ({ coords: position }) => {
+        setCoords({ lat: position.latitude, lng: position.longitude })
+        setLocating(false)
+        setFailed(false)
+      },
+      () => {
+        setFailed(true)
+        setLocating(false)
+      },
+      { maximumAge: 600_000, timeout: 8_000 },
+    )
+  }
+
+  return { coords, locating, failed, requestLocation }
+}
+
 function RestaurantHome() {
+  const recommended = useRestaurantVenues({ featured: true, sort: 'rating' })
+  const popular = useRestaurantVenues({ sort: 'reviews' })
   const topRated = useRestaurantVenues({ sort: 'rating' })
+  const highDemand = useRestaurantVenues({ highDemand: true, sort: 'demand' })
+  const offers = useRestaurantVenues({ hasOffer: true, sort: 'rating' })
   const newest = useRestaurantVenues({ sort: 'newest' })
+  const { coords, locating, failed, requestLocation } = useNearbyLocation()
+  const nearby = useRestaurantVenues(
+    coords
+      ? { lat: coords.lat, lng: coords.lng, radiusKm: 10, sort: 'rating' }
+      : { city: 'Accra', sort: 'rating' },
+  )
 
   return (
     <div className="restaurants-page restaurants-page--hero">
@@ -298,18 +446,71 @@ function RestaurantHome() {
         </section>
 
         <RestaurantRail
-          title="Top rated on Travio"
+          title="Recommended For You"
+          description="Featured places chosen by the Travio team."
+          query={recommended}
+          to="/restaurants?featured=true"
+        />
+
+        <RestaurantRail
+          title="Popular Restaurants"
+          description="Restaurants with the most diner reviews."
+          query={popular}
+          to="/restaurants?sort=reviews"
+        />
+
+        <RestaurantRail
+          title="Top Rated"
           description="Places with the strongest Travio diner ratings."
           query={topRated}
           to="/restaurants?sort=rating"
         />
 
         <RestaurantRail
-          title="Recently added"
+          title="Likely To Book Out"
+          description="Based on recent Travio diner interest, not live table availability."
+          query={highDemand}
+          to="/restaurants?highDemand=true"
+        />
+
+        <RestaurantRail
+          title="Special Offers"
+          description="Current offers added by the restaurant or Travio team."
+          query={offers}
+          to="/restaurants?hasOffer=true"
+        />
+
+        <RestaurantRail
+          title="New Listings"
           description="New restaurants added to the Ghana guide."
           query={newest}
           to="/restaurants?sort=newest"
         />
+
+        <RestaurantRail
+          title={coords ? 'Top Restaurants Nearby' : 'Top Restaurants in Accra'}
+          description={
+            coords
+              ? 'Popular places within 10 km of your location.'
+              : failed
+                ? 'Location unavailable — showing popular places in Accra.'
+                : 'Enable your location to see places near you.'
+          }
+          query={nearby}
+          to={coords ? '/restaurants?sort=rating' : '/restaurants?city=Accra'}
+          action={
+            <button
+              className="rh-nearby-button"
+              type="button"
+              disabled={locating}
+              onClick={requestLocation}
+            >
+              {locating ? 'Locating…' : 'Use my location'}
+            </button>
+          }
+        />
+
+        <DinerReviewsRail />
 
         <aside className="restaurants-note">
           <MapPin size={16} aria-hidden="true" />
@@ -341,6 +542,8 @@ function activeChips(filters: RestaurantVenueFilters): ActiveChip[] {
   if (filters.minRating) chips.push({ key: 'minRating', label: `${filters.minRating} and up` })
   if (filters.minReviews) chips.push({ key: 'minReviews', label: `${filters.minReviews}+ reviews` })
   if (filters.featured) chips.push({ key: 'featured', label: 'Featured' })
+  if (filters.highDemand) chips.push({ key: 'highDemand', label: 'Likely to book out' })
+  if (filters.hasOffer) chips.push({ key: 'hasOffer', label: 'Special offers' })
   return chips
 }
 
@@ -645,6 +848,24 @@ function RestaurantResults() {
                   onChange={(event) => updateParams({ featured: event.target.checked ? 'true' : null })}
                 />
                 Featured restaurants
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={Boolean(filters.highDemand)}
+                  onChange={(event) =>
+                    updateParams({ highDemand: event.target.checked ? 'true' : null })
+                  }
+                />
+                Likely to book out
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={Boolean(filters.hasOffer)}
+                  onChange={(event) => updateParams({ hasOffer: event.target.checked ? 'true' : null })}
+                />
+                Special offers
               </label>
             </fieldset>
           </aside>
