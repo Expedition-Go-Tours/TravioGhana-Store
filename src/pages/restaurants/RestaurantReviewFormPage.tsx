@@ -379,7 +379,7 @@ function ReviewForm({
 
       <div className="rvf-submit">
         <button type="submit" disabled={busy}>
-          {busy ? 'Sending…' : review ? 'Send updated review' : 'Send review'}
+          {busy ? 'Sending…' : review ? 'Save changes' : 'Continue'}
         </button>
         <span className={draftSaved ? 'rvf-draft is-saved' : 'rvf-draft'}>
           {review

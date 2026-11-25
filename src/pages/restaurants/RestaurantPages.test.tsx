@@ -284,7 +284,7 @@ describe('RestaurantReviewFormPage', () => {
     fireEvent.change(screen.getByLabelText('Add review photos'), { target: { files: [file] } })
     fireEvent.click(screen.getByLabelText('Couples'))
     fireEvent.click(screen.getByRole('checkbox', { name: /I certify that this review/ }))
-    fireEvent.click(screen.getByRole('button', { name: 'Send review' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
     await vi.waitFor(() => expect(mocks.uploadMutate).toHaveBeenCalledWith([file]))
     await vi.waitFor(() =>
@@ -309,7 +309,7 @@ describe('RestaurantReviewFormPage', () => {
     fireEvent.change(screen.getByLabelText(/Your review/), {
       target: { value: 'The food and service were both excellent.' },
     })
-    fireEvent.click(screen.getByRole('button', { name: 'Send review' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
     expect(mocks.createMutate).not.toHaveBeenCalled()
   })
@@ -329,7 +329,7 @@ describe('RestaurantReviewFormPage', () => {
 
     expect(screen.getByRole('heading', { name: 'Update your review' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('checkbox', { name: /I certify that this review/ }))
-    fireEvent.click(screen.getByRole('button', { name: 'Send updated review' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
 
     await vi.waitFor(() =>
       expect(mocks.replaceMutate).toHaveBeenCalledWith(
