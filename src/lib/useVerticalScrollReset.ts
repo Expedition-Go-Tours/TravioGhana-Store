@@ -14,7 +14,11 @@ import { scrollToPosition } from './scrollToTop'
  */
 export function prepareVerticalSwitch(): void {
   document.body.classList.remove('hero--search-sticky')
+  // Both switch destinations are vertical homepages with a hero, so the
+  // translucent navbar belongs there immediately — before React commits the
+  // route and recomputes isOverHero.
   document.querySelector('.navbar')?.classList.remove('scrolled', 'navbar--elevated')
+  document.querySelector('.navbar')?.classList.add('navbar--over-hero')
   scrollToPosition(0)
 }
 
