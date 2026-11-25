@@ -39,6 +39,8 @@ import { trackPageView } from './lib/analytics'
 import { trackGaPageView } from './lib/googleAnalytics'
 import LenisProvider from './lib/LenisProvider'
 import { useScrollRestoration } from './lib/useScrollRestoration'
+import { useVerticalScrollReset } from './lib/useVerticalScrollReset'
+import RestaurantsPage from './pages/RestaurantsPage'
 import { useHomepage, useHomepageByCity } from './hooks/useHomepageSections'
 import GuestClaimPrompt from '@/components/account/GuestClaimPrompt'
 import { enrichToursWithCombinedStats, useExternalReviewStatsData } from './hooks/useExternalReviews'
@@ -49,7 +51,6 @@ const AuthForm = lazy(() => import('./pages/AuthForm'))
 const DashboardApp = lazy(() => import('./pages/dashboard/DashboardApp'))
 const TourDetailPage = lazy(() => import('./pages/tour-detail/TourDetailPage'))
 const AllToursPage = lazy(() => import('./pages/AllToursPage'))
-const RestaurantsPage = lazy(() => import('./pages/RestaurantsPage'))
 const RestaurantDetailPage = lazy(() => import('./pages/restaurants/RestaurantDetailPage'))
 const RestaurantReviewFormPage = lazy(() => import('./pages/restaurants/RestaurantReviewFormPage'))
 const RestaurantClaimPage = lazy(() => import('./pages/restaurants/RestaurantClaimPage'))
@@ -302,6 +303,9 @@ function AppContent() {
   // window.scrollTo(0,0) is dropped mid-glide and the running animation drags
   // the new page back down.
   useScrollRestoration()
+  // Vertical tabs land at the top before paint. Real Back/Forward is still
+  // owned by useScrollRestoration, so a POP is deliberately left alone.
+  useVerticalScrollReset()
   useEffect(() => {
     const path = location.pathname + location.search
     trackPageView(path)

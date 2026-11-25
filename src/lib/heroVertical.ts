@@ -10,3 +10,8 @@ export function heroVariantFromPath(pathname: string): HeroVariant {
     ? 'restaurants'
     : 'tours'
 }
+
+/** True for a storefront vertical root or any page inside one. */
+export function isVerticalPath(pathname: string): boolean {
+  return pathname === '/' || heroVariantFromPath(pathname) === 'restaurants'
+}

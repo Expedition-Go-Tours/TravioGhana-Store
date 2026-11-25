@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { createMemoryRouter, MemoryRouter, RouterProvider } from 'react-router-dom'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import VerticalSwitch from './VerticalSwitch'
 
 function renderSwitch(path: string) {
@@ -32,5 +32,21 @@ describe('VerticalSwitch', () => {
   it('keeps Restaurants active on a nested URL', () => {
     renderSwitch('/restaurants/accra')
     expect(screen.getByRole('link', { name: 'Restaurants' })).toHaveAttribute('aria-current', 'page')
+  })
+
+  it('replaces the history entry so tabs do not stack and Back stays useful', async () => {
+    const router = createMemoryRouter(
+      [
+        { path: '/', element: <VerticalSwitch /> },
+        { path: '/restaurants', element: <div>Restaurants home</div> },
+      ],
+      { initialEntries: ['/'] },
+    )
+    render(<RouterProvider router={router} />)
+
+    fireEvent.click(screen.getByRole('link', { name: 'Restaurants' }))
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/restaurants'))
+    expect(router.state.historyAction).toBe('REPLACE')
   })
 })
