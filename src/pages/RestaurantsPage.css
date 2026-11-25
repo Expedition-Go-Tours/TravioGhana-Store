@@ -711,19 +711,31 @@
 
 .rh-filters {
   position: sticky;
-  top: 84px;
-  max-height: calc(100vh - 104px);
+  /* Sit below the fixed navbar, including the staging preview banner. */
+  top: calc(84px + var(--preview-banner-height, 0px));
+  max-height: calc(100vh - 104px - var(--preview-banner-height, 0px));
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 22px;
   border: 1px solid var(--bv-line, #e5e7eb);
   border-radius: 14px;
   background: #fff;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-color: #c5d2c9 transparent;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
 }
 
 .rh-filters::-webkit-scrollbar {
-  display: none;
+  width: 6px;
+}
+
+.rh-filters::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.rh-filters::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #c5d2c9;
 }
 
 .rh-filters__head {
@@ -947,9 +959,11 @@
   }
 
   .rh-filters {
-    position: static;
+    position: sticky;
+    top: calc(72px + var(--preview-banner-height, 0px));
+    z-index: 20;
     display: none;
-    max-height: none;
+    max-height: calc(100vh - 80px - var(--preview-banner-height, 0px));
   }
 
   .rh-filters--open {
