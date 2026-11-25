@@ -102,6 +102,8 @@ const venue: RestaurantVenueDetail = {
   phone: '+233 20 000 0000',
   website: 'https://example.com',
   description: 'A neighbourhood restaurant.',
+  menuUrl: 'https://example.com/menu',
+  mealTypes: ['lunch', 'dinner'],
   distribution: { '5': 1, '4': 0, '3': 0, '2': 0, '1': 0 },
   externalStats: [
     {
@@ -240,6 +242,12 @@ describe('RestaurantDetailPage', () => {
     expect(screen.getAllByText('Google').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Good jollof').length).toBeGreaterThan(0)
     expect(screen.getByRole('link', { name: 'Claim this restaurant' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Menu & meal service' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /View the menu/ })).toHaveAttribute(
+      'href',
+      'https://example.com/menu',
+    )
+    expect(screen.getByTitle('Map showing The Place')).toBeInTheDocument()
   })
 
   it('submits a review report through the real hook', async () => {

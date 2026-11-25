@@ -80,6 +80,8 @@ export interface RestaurantVenueUpdate {
   description?: string
   phone?: string
   website?: string
+  menuUrl?: string | null
+  mealTypes?: string[]
   cuisines?: string[]
   dietary?: string[]
   amenities?: string[]

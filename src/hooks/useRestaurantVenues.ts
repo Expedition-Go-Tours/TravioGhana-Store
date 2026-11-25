@@ -63,6 +63,8 @@ export interface RestaurantVenueDetail extends RestaurantVenue {
   phone: string | null
   website: string | null
   description: string | null
+  menuUrl: string | null
+  mealTypes: string[]
   distribution: RestaurantDistribution
   externalStats: RestaurantVenueExternalStat[]
 }

@@ -1,18 +1,25 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import {
+  ArrowUpRight,
   BadgeCheck,
+  Camera,
   Check,
   ChevronRight,
+  Coffee,
   ExternalLink,
   Flag,
   MapPin,
+  Moon,
   Navigation,
   PenLine,
   Phone,
   Share2,
   ShieldCheck,
   Sparkles,
+  Sun,
+  UtensilsCrossed,
+  Wine,
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -76,6 +83,32 @@ function mapHref(venue: RestaurantVenueDetail): string {
 
 function websiteHref(url: string): string {
   return /^https?:\/\//i.test(url) ? url : `https://${url}`
+}
+
+/**
+ * Keyless OpenStreetMap preview centred on the venue. The marker is part of
+ * the OSM embed URL, so the pin lands on the stored coordinates rather than a
+ * stylised grid. No API key, no guessed geocode: without coordinates we show
+ * the address fallback instead.
+ */
+function mapPreviewUrl(lat: number, lng: number): string {
+  const latSpan = 0.0042
+  const lngSpan = latSpan * 1.55
+  const bbox = [lng - lngSpan, lat - latSpan, lng + lngSpan, lat + latSpan]
+    .map((value) => value.toFixed(5))
+    .join('%2C')
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat.toFixed(
+    5,
+  )}%2C${lng.toFixed(5)}`
+}
+
+function mealIcon(meal: string) {
+  const value = meal.toLowerCase()
+  if (value.includes('breakfast') || value.includes('brunch') || value.includes('coffee')) return Coffee
+  if (value.includes('lunch') || value.includes('afternoon')) return Sun
+  if (value.includes('dinner') || value.includes('evening')) return Moon
+  if (value.includes('drink') || value.includes('wine') || value.includes('bar')) return Wine
+  return UtensilsCrossed
 }
 
 function formatHours(hours: Record<string, unknown> | null): { day: string; value: string }[] {
@@ -248,6 +281,9 @@ export default function RestaurantDetailPage() {
   const [reviewSort, setReviewSort] = useState('recent')
 
   const venue = venueQuery.data
+  // Older API builds do not return the menu fields; treat them as empty until
+  // the backend deploy catches up rather than rendering undefined.
+  const mealTypes = venue?.mealTypes ?? []
   const nearbyQuery = useRestaurantVenues({ city: venue?.city ?? undefined, sort: 'rating' })
   const images = useMemo(() => (venue ? galleryImages(venue) : []), [venue])
   const reviews = useMemo(
@@ -533,6 +569,19 @@ export default function RestaurantDetailPage() {
                   ))}
                 </div>
               )}
+              {images.length === 1 && (
+                <div className="rd-gallery__side">
+                  <span className="rd-gallery__side-icon">
+                    <Camera size={19} aria-hidden="true" />
+                  </span>
+                  <strong>1 restaurant photo</strong>
+                  <p>
+                    This listing is still building its photo library. Add a shot from your visit and
+                    help the next diner see the room, the plate or the menu.
+                  </p>
+                  <Link to={`/restaurants/${venue.slug}/review`}>Add a photo with your review</Link>
+                </div>
+              )}
             </>
           ) : (
             <div className="rd-gallery__empty">Photos will be added when the listing is verified.</div>
@@ -541,6 +590,7 @@ export default function RestaurantDetailPage() {
 
         <nav className="rvd-anchor-nav" aria-label="Restaurant sections">
           <a href="#overview">Overview</a>
+          {(venue.menuUrl || mealTypes.length > 0) && <a href="#menu">Menu</a>}
           <a href="#hours">Hours</a>
           <a href="#location">Location</a>
           <a href="#reviews">Reviews</a>
@@ -626,6 +676,77 @@ export default function RestaurantDetailPage() {
                 )}
               </div>
             </section>
+
+            {(venue.menuUrl || mealTypes.length > 0) && (
+              <section className="rvd-section rvd-menu" id="menu" aria-labelledby="menu-title">
+                <div className="rvd-section__heading rvd-section__heading--row">
+                  <div>
+                    <span className="rvd-eyebrow">From the kitchen</span>
+                    <h2 id="menu-title">Menu &amp; meal service</h2>
+                    <p>
+                      What the restaurant publishes about its food service. Dishes and prices stay
+                      with the restaurant, never with Travio.
+                    </p>
+                  </div>
+                  {venue.priceBand && (
+                    <span className="rvd-menu__price">{priceLabel(venue.priceBand)}</span>
+                  )}
+                </div>
+
+                <div className="rvd-menu__card">
+                  <div className="rvd-menu__service">
+                    <span className="rvd-menu__label">Meals served</span>
+                    {mealTypes.length > 0 ? (
+                      <ul>
+                        {mealTypes.map((meal) => {
+                          const Icon = mealIcon(meal)
+                          return (
+                            <li key={meal}>
+                              <span className="rvd-menu__icon">
+                                <Icon size={16} aria-hidden="true" />
+                              </span>
+                              {displayLabel(meal)}
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    ) : (
+                      <p>Meal times have not been added yet.</p>
+                    )}
+                  </div>
+
+                  <div className="rvd-menu__action">
+                    {venue.menuUrl ? (
+                      <>
+                        <span className="rvd-menu__label">The menu</span>
+                        <strong>See what is on before you go</strong>
+                        <p>Opens the restaurant&rsquo;s own menu in a new tab.</p>
+                        <a
+                          className="rvd-menu__button"
+                          href={websiteHref(venue.menuUrl)}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          View the menu <ArrowUpRight size={15} aria-hidden="true" />
+                        </a>
+                      </>
+                    ) : (
+                      <>
+                        <span className="rvd-menu__label">The menu</span>
+                        <strong>Not shared yet</strong>
+                        <p>Claim this listing to publish a menu link and meal services.</p>
+                        <Link
+                          className="rvd-menu__button rvd-menu__button--quiet"
+                          to={isManager ? `/restaurants/${venue.slug}/manage` : `/restaurants/${venue.slug}/claim`}
+                        >
+                          {isManager ? 'Add the menu' : 'Claim this restaurant'}
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
 
             <section className="rvd-section rvd-love" aria-labelledby="why-love">
               <div className="rvd-section__heading">
@@ -815,15 +936,36 @@ export default function RestaurantDetailPage() {
               </div>
               <div className="rvd-location">
                 <div className="rvd-map">
-                  <MapPin size={26} aria-hidden="true" />
-                  <span>{venue.neighbourhood || venue.city || 'Accra'}</span>
+                  {venue.latitude != null && venue.longitude != null ? (
+                    <iframe
+                      title={`Map showing ${venue.name}`}
+                      src={mapPreviewUrl(venue.latitude, venue.longitude)}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  ) : (
+                    <div className="rvd-map__empty">
+                      <MapPin size={24} aria-hidden="true" />
+                      <strong>Map pin coming soon</strong>
+                      <span>{venue.addressLine || locationText(venue) || 'Address to be confirmed'}</span>
+                    </div>
+                  )}
                 </div>
-                <div>
+                <div className="rvd-location__copy">
+                  <span className="rvd-eyebrow">Find the table</span>
                   <strong>{venue.addressLine || 'Street address to be confirmed'}</strong>
-                  <p>{[venue.city, venue.region, venue.country].filter(Boolean).join(', ')}</p>
-                  <a className="rvd-button rvd-button--small" href={mapHref(venue)} target="_blank" rel="noreferrer">
-                    <Navigation size={14} aria-hidden="true" /> Open in Google Maps
-                  </a>
+                  <p>{[venue.neighbourhood, venue.city, venue.region, venue.country].filter(Boolean).join(', ')}</p>
+                  <div className="rvd-location__actions">
+                    <a className="rvd-button rvd-button--small" href={mapHref(venue)} target="_blank" rel="noreferrer">
+                      <Navigation size={14} aria-hidden="true" /> Open in Google Maps
+                    </a>
+                    <Link
+                      className="rvd-text-button"
+                      to={isManager ? `/restaurants/${venue.slug}/manage` : `/restaurants/${venue.slug}/claim`}
+                    >
+                      {isManager ? 'Update this pin' : 'Correct this location'}
+                    </Link>
+                  </div>
                 </div>
               </div>
             </section>

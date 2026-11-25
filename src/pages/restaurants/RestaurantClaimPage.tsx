@@ -8,6 +8,7 @@ import {
   Image,
   LockKeyhole,
   MapPin,
+  PenLine,
   ShieldCheck,
   Sparkles,
 } from 'lucide-react'
@@ -22,7 +23,7 @@ import { useMyRestaurantClaim, useSubmitRestaurantClaim } from '../../hooks/useR
 import { formatDate, locationText, priceLabel } from './RestaurantPageBits'
 import '../RestaurantsPage.css'
 import './RestaurantPages.css'
-import './RestaurantClaimPage.css'
+import './RestaurantOwnerPages.css'
 
 export default function RestaurantClaimPage() {
   const { slug = '' } = useParams<{ slug: string }>()
@@ -69,7 +70,7 @@ export default function RestaurantClaimPage() {
   return (
     <div className="restaurants-page">
       <SEO title={`Claim ${venue?.name ?? 'a restaurant'}`} robots="noindex" />
-      <main className="restaurants-page__main rcl-page">
+      <main className="restaurants-page__main rvo-page">
         <nav className="rh-breadcrumb" aria-label="Breadcrumb">
           <Link to="/">Home</Link>
           <ChevronRight size={13} aria-hidden="true" />
@@ -84,19 +85,30 @@ export default function RestaurantClaimPage() {
           <span>Claim</span>
         </nav>
 
-        <header className="rcl-header">
-          <span className="rcl-eyebrow">For restaurant owners</span>
-          <h1>{venue ? `Claim ${venue.name}` : 'Claim this restaurant'}</h1>
-          <p>
-            Tell us how you are connected to the business and give us something we can verify. Every
-            claim is reviewed by a person before anyone gets access.
-          </p>
+        <header className="rvo-hero">
+          <div>
+            <span className="rvo-eyebrow">For restaurant owners</span>
+            <h1>{venue ? `Claim ${venue.name}` : 'Claim this restaurant'}</h1>
+            <p>
+              Tell us how you are connected to the business and give us something we can verify.
+              Every claim is reviewed by a person before anyone gets access.
+            </p>
+          </div>
+          <aside className="rvo-hero__note">
+            <span>
+              <ShieldCheck size={17} aria-hidden="true" />
+            </span>
+            <div>
+              <strong>Reviewed by a person</strong>
+              <small>Evidence is checked against the listing. Submitting never grants access.</small>
+            </div>
+          </aside>
         </header>
 
         {venueQuery.isPending && <div className="restaurant-skeleton" />}
 
         {venueQuery.isError || (!venueQuery.isPending && !venue) ? (
-          <div className="rcl-state">
+          <div className="rvo-state">
             <h2>We could not find this restaurant</h2>
             <p>Check the link, or browse the restaurant directory.</p>
             <Link to="/restaurants">Browse restaurants</Link>
@@ -104,16 +116,16 @@ export default function RestaurantClaimPage() {
         ) : null}
 
         {venue && (
-          <article className="rcl-venue">
+          <article className="rvo-venue">
             {venuePhoto ? (
-              <OptimizedImage src={venuePhoto} alt="" width={160} height={120} fit="crop" priority />
+              <OptimizedImage src={venuePhoto} alt="" width={180} height={130} fit="crop" priority />
             ) : (
-              <span className="rcl-venue__placeholder">
+              <span className="rvo-venue__placeholder">
                 <Image size={22} />
               </span>
             )}
-            <div className="rcl-venue__copy">
-              <div className="rcl-venue__badges">
+            <div className="rvo-venue__copy">
+              <div className="rvo-venue__badges">
                 {venue.rank && (
                   <span>
                     #{venue.rank.position}
@@ -121,6 +133,7 @@ export default function RestaurantClaimPage() {
                   </span>
                 )}
                 {venue.priceBand && <span>{priceLabel(venue.priceBand)}</span>}
+                {membership && <span>{membership.role.toLowerCase()}</span>}
               </div>
               <strong>{venue.name}</strong>
               <span>
@@ -134,20 +147,38 @@ export default function RestaurantClaimPage() {
         )}
 
         {!user && (
-          <div className="rcl-state rcl-state--gate">
-            <LockKeyhole size={22} aria-hidden="true" />
-            <h2>Sign in to claim a listing</h2>
-            <p>We link every claim to an account so the review trail stays clear.</p>
-            <button type="button" onClick={() => promptSignIn(`/restaurants/${slug}/claim`)}>
-              Sign in
-            </button>
+          <div className="rvo-gate">
+            <div className="rvo-gate__copy">
+              <span>
+                <LockKeyhole size={20} aria-hidden="true" />
+              </span>
+              <h2>Sign in to start your claim</h2>
+              <p>
+                We link every claim to an account so the review trail stays clear. Sign in, then tell
+                us your role and what we can check.
+              </p>
+              <button type="button" onClick={() => promptSignIn(`/restaurants/${slug}/claim`)}>
+                Sign in to continue
+              </button>
+            </div>
+            <ul className="rvo-unlock">
+              <li>
+                <PenLine size={17} aria-hidden="true" /> Update the story diners read
+              </li>
+              <li>
+                <Clock3 size={17} aria-hidden="true" /> Correct hours, phone and website
+              </li>
+              <li>
+                <Sparkles size={17} aria-hidden="true" /> Add photos, amenities and the menu
+              </li>
+            </ul>
           </div>
         )}
 
         {user && claimQuery.isPending && <div className="restaurant-skeleton" />}
 
         {user && claimQuery.isError && (
-          <div className="rcl-state">
+          <div className="rvo-state">
             <h2>We could not load your claim</h2>
             <p>{claimQuery.error instanceof Error ? claimQuery.error.message : 'Try again.'}</p>
             <button type="button" onClick={() => void claimQuery.refetch()}>
@@ -157,7 +188,7 @@ export default function RestaurantClaimPage() {
         )}
 
         {user && membership && (
-          <div className="rcl-state rcl-state--success">
+          <div className="rvo-state rvo-state--success">
             <BadgeCheck size={22} aria-hidden="true" />
             <h2>You already manage this restaurant</h2>
             <p>You can update the description, hours and contact details diners see.</p>
@@ -166,7 +197,7 @@ export default function RestaurantClaimPage() {
         )}
 
         {user && !membership && claim?.status === 'PENDING' && (
-          <div className="rcl-state rcl-state--pending">
+          <div className="rvo-state rvo-state--pending">
             <Clock3 size={22} aria-hidden="true" />
             <h2>Your claim is waiting for review</h2>
             <p>Sent {formatDate(claim.createdAt)}. We will let you know what we decide.</p>
@@ -175,25 +206,25 @@ export default function RestaurantClaimPage() {
         )}
 
         {user && canSubmit && (
-          <div className="rcl-shell">
-            <form className="rcl-form" onSubmit={(event) => void onSubmit(event)}>
+          <div className="rvo-layout">
+            <form className="rvo-form" onSubmit={(event) => void onSubmit(event)}>
               {claim?.status === 'REJECTED' && (
-                <div className="rcl-rejected">
+                <div className="rvo-state rvo-state--pending">
                   <strong>Your earlier claim was not approved.</strong>
                   {claim.reviewNote ? <span>{claim.reviewNote}</span> : null}
                   <span>You can send a new claim with clearer evidence.</span>
                 </div>
               )}
 
-              <section className="rcl-section">
-                <div className="rcl-section__head">
-                  <span className="rcl-step">01</span>
+              <section className="rvo-section">
+                <div className="rvo-section__head">
+                  <span className="rvo-step">01</span>
                   <div>
                     <h2>Confirm the business</h2>
                     <p>Use the name diners know and the role you hold.</p>
                   </div>
                 </div>
-                <div className="rcl-row">
+                <div className="rvo-row">
                   <label>
                     Business name
                     <input
@@ -215,17 +246,17 @@ export default function RestaurantClaimPage() {
                 </div>
               </section>
 
-              <section className="rcl-section">
-                <div className="rcl-section__head">
-                  <span className="rcl-step">02</span>
+              <section className="rvo-section">
+                <div className="rvo-section__head">
+                  <span className="rvo-step">02</span>
                   <div>
                     <h2>How we reach you</h2>
                     <p>We use this only to review the claim.</p>
                   </div>
                 </div>
-                <div className="rcl-row">
+                <div className="rvo-row">
                   <label>
-                    Contact email <span aria-hidden="true">*</span>
+                    Contact email *
                     <input
                       type="email"
                       required
@@ -246,16 +277,16 @@ export default function RestaurantClaimPage() {
                 </div>
               </section>
 
-              <section className="rcl-section">
-                <div className="rcl-section__head">
-                  <span className="rcl-step">03</span>
+              <section className="rvo-section">
+                <div className="rvo-section__head">
+                  <span className="rvo-step">03</span>
                   <div>
                     <h2>Give us something to verify</h2>
                     <p>A public link or a clear explanation is enough to start.</p>
                   </div>
                 </div>
                 <label>
-                  Why should we believe you represent this restaurant? <span aria-hidden="true">*</span>
+                  Why should we believe you represent this restaurant? *
                   <textarea
                     required
                     minLength={10}
@@ -279,7 +310,7 @@ export default function RestaurantClaimPage() {
                 </label>
               </section>
 
-              <div className="rcl-submit">
+              <div className="rvo-submit">
                 <span>
                   <ShieldCheck size={15} aria-hidden="true" /> Submitting a claim does not grant access.
                 </span>
@@ -289,9 +320,8 @@ export default function RestaurantClaimPage() {
               </div>
             </form>
 
-            <aside className="rcl-aside">
-              <section>
-                <span className="rcl-eyebrow">The review</span>
+            <aside className="rvo-aside">
+              <section className="rvo-side">
                 <h2>What happens next</h2>
                 <ol>
                   <li>We check the details you send against the listing.</li>
@@ -299,19 +329,28 @@ export default function RestaurantClaimPage() {
                   <li>Approved owners can edit the presentation fields.</li>
                 </ol>
               </section>
-              <section>
-                <span className="rcl-eyebrow">After approval</span>
-                <h2>What you can update</h2>
+              <section className="rvo-side">
+                <h2>Once approved</h2>
                 <ul>
-                  <li>Description and story</li>
-                  <li>Hours and contact details</li>
-                  <li>Photos and amenities</li>
+                  <li>
+                    <BadgeCheck size={15} aria-hidden="true" /> Description and story
+                  </li>
+                  <li>
+                    <BadgeCheck size={15} aria-hidden="true" /> Hours, phone and website
+                  </li>
+                  <li>
+                    <BadgeCheck size={15} aria-hidden="true" /> Photos, amenities and menu link
+                  </li>
                 </ul>
               </section>
-              <p className="rcl-aside__note">
-                <Sparkles size={15} aria-hidden="true" /> Owners cannot change Travio ratings, ranking
-                inputs or outside scores. Those stay independent.
-              </p>
+              <section className="rvo-side rvo-side--dark">
+                <span className="rvo-side__label">What stays independent</span>
+                <h2>Travio keeps the score</h2>
+                <p>
+                  Owners cannot change Travio ratings, ranking inputs or outside-source scores. Those
+                  stay with the diners and the sources that produced them.
+                </p>
+              </section>
             </aside>
           </div>
         )}

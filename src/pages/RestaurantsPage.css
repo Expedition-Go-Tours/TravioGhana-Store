@@ -531,11 +531,15 @@
   text-decoration: underline;
 }
 
+.restaurants-page--results .restaurants-page__main {
+  max-width: 1720px;
+}
+
 .rh-results-layout {
   display: grid;
-  grid-template-columns: 232px minmax(0, 1fr);
+  grid-template-columns: 300px minmax(0, 1fr);
   align-items: start;
-  gap: 28px;
+  gap: 32px;
 }
 
 .rh-filters {
@@ -543,10 +547,16 @@
   top: 84px;
   max-height: calc(100vh - 104px);
   overflow-y: auto;
-  padding: 20px;
+  padding: 22px;
   border: 1px solid var(--bv-line, #e5e7eb);
   border-radius: 14px;
   background: #fff;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.rh-filters::-webkit-scrollbar {
+  display: none;
 }
 
 .rh-filters__head {
