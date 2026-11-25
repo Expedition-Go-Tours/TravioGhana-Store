@@ -2,9 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import {
   BadgeCheck,
-  Camera,
   Check,
-  ChevronLeft,
   ChevronRight,
   ExternalLink,
   Flag,
@@ -241,7 +239,6 @@ export default function RestaurantDetailPage() {
   const claimQuery = useMyRestaurantClaim(slug, Boolean(user))
   const report = useReportRestaurantReview(slug)
   const [activePhoto, setActivePhoto] = useState(0)
-  const [lightboxOpen, setLightboxOpen] = useState(false)
   const [aboutOpen, setAboutOpen] = useState(false)
   const [reportingReview, setReportingReview] = useState<string | null>(null)
   const [reportReason, setReportReason] = useState(REPORT_REASONS[0])
@@ -264,11 +261,6 @@ export default function RestaurantDetailPage() {
     : 0
   const hours = formatHours(venue?.hours ?? null)
   const isManager = Boolean(claimQuery.data?.membership)
-
-  const allPhotos = useMemo(() => {
-    const reviewPhotos = reviews.flatMap((review) => review.photos)
-    return [...new Set([...images, ...reviewPhotos])]
-  }, [images, reviews])
 
   const filteredReviews = useMemo(() => {
     const needle = reviewSearch.trim().toLowerCase()
@@ -374,9 +366,6 @@ export default function RestaurantDetailPage() {
   const rankLabel = venue.rank
     ? `#${venue.rank.position}${venue.rank.of ? ` of ${venue.rank.of}` : ''} in ${venue.city ?? 'Ghana'}`
     : null
-  const heroPhoto = images[0] ?? null
-  const activeImage = allPhotos[Math.min(activePhoto, Math.max(0, allPhotos.length - 1))] ?? null
-
   return (
     <div className="restaurants-page">
       <SEO
@@ -499,55 +488,54 @@ export default function RestaurantDetailPage() {
           </div>
         </header>
 
-        <section className="rvd-gallery" id="photos" aria-label={`Photos of ${venue.name}`}>
-          {heroPhoto ? (
-            <button
-              type="button"
-              className={`rvd-gallery__hero ${allPhotos.length === 1 ? 'rvd-gallery__hero--single' : ''}`}
-              onClick={() => {
-                setActivePhoto(0)
-                setLightboxOpen(true)
-              }}
-              aria-label={`Open photo 1 of ${allPhotos.length}`}
-            >
-              <OptimizedImage
-                src={heroPhoto}
-                alt={`${venue.name} photo`}
-                width={1200}
-                height={620}
-                fit="crop"
-                sizes="(max-width: 900px) 100vw, 1200px"
-                priority
-              />
-              <span className="rvd-gallery__scrim" aria-hidden="true" />
-              <span className="rvd-gallery__label">
-                <Camera size={16} aria-hidden="true" /> {allPhotos.length} photo{allPhotos.length === 1 ? '' : 's'}
-              </span>
-            </button>
+        <section
+          className={`rd-gallery${images.length === 1 ? ' rd-gallery--single' : ''}`}
+          id="photos"
+          aria-label={`Photos of ${venue.name}`}
+        >
+          {images.length > 0 ? (
+            <>
+              <button
+                type="button"
+                className="rd-gallery__main"
+                onClick={() => setActivePhoto((index) => (index + 1) % images.length)}
+                aria-label="Show next photo"
+              >
+                <OptimizedImage
+                  src={images[Math.min(activePhoto, images.length - 1)]}
+                  alt={`${venue.name} photo ${Math.min(activePhoto, images.length - 1) + 1}`}
+                  width={900}
+                  height={560}
+                  fit="crop"
+                  sizes="(max-width: 900px) 92vw, 64vw"
+                  priority
+                />
+              </button>
+              {images.length > 1 && (
+                <div className="rd-gallery__thumbs">
+                  {images.slice(0, 4).map((image, index) => (
+                    <button
+                      key={image}
+                      type="button"
+                      className={index === activePhoto ? 'is-active' : ''}
+                      onClick={() => setActivePhoto(index)}
+                      aria-label={`Show photo ${index + 1}`}
+                    >
+                      <OptimizedImage
+                        src={image}
+                        alt=""
+                        width={160}
+                        height={110}
+                        fit="crop"
+                        sizes="(max-width: 640px) 30vw, (max-width: 900px) 18vw, 15vw"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
           ) : (
-            <div className="rvd-gallery__empty">
-              <Camera size={22} aria-hidden="true" />
-              <strong>Photos will be added when the listing is verified.</strong>
-              <Link to={`/restaurants/${venue.slug}/review`}>Add a photo with your review</Link>
-            </div>
-          )}
-
-          {allPhotos.length > 1 && (
-            <div className="rvd-gallery__strip" aria-label="More photos">
-              {allPhotos.slice(1, 5).map((image, index) => (
-                <button
-                  key={image}
-                  type="button"
-                  onClick={() => {
-                    setActivePhoto(index + 1)
-                    setLightboxOpen(true)
-                  }}
-                  aria-label={`Open photo ${index + 2} of ${allPhotos.length}`}
-                >
-                  <OptimizedImage src={image} alt="" width={260} height={170} fit="crop" />
-                </button>
-              ))}
-            </div>
+            <div className="rd-gallery__empty">Photos will be added when the listing is verified.</div>
           )}
         </section>
 
@@ -935,55 +923,6 @@ export default function RestaurantDetailPage() {
           </aside>
         </div>
       </main>
-
-      {lightboxOpen && activeImage && (
-        <div
-          className="rvd-lightbox"
-          role="dialog"
-          aria-modal="true"
-          aria-label={`Photos of ${venue.name}`}
-          onClick={() => setLightboxOpen(false)}
-        >
-          <button
-            className="rvd-lightbox__close"
-            type="button"
-            aria-label="Close photos"
-            onClick={() => setLightboxOpen(false)}
-          >
-            <X size={22} />
-          </button>
-          <button
-            className="rvd-lightbox__nav rvd-lightbox__nav--prev"
-            type="button"
-            aria-label="Previous photo"
-            onClick={(event) => {
-              event.stopPropagation()
-              setActivePhoto((index) => (index - 1 + allPhotos.length) % allPhotos.length)
-            }}
-          >
-            <ChevronLeft size={24} />
-          </button>
-          <img
-            src={activeImage}
-            alt=""
-            onClick={(event) => event.stopPropagation()}
-          />
-          <button
-            className="rvd-lightbox__nav rvd-lightbox__nav--next"
-            type="button"
-            aria-label="Next photo"
-            onClick={(event) => {
-              event.stopPropagation()
-              setActivePhoto((index) => (index + 1) % allPhotos.length)
-            }}
-          >
-            <ChevronRight size={24} />
-          </button>
-          <span className="rvd-lightbox__count">
-            {activePhoto + 1} / {allPhotos.length}
-          </span>
-        </div>
-      )}
 
       <Footer />
     </div>

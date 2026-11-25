@@ -666,6 +666,14 @@
   cursor: pointer;
 }
 
+.rd-gallery--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.rd-gallery--single .rd-gallery__main {
+  aspect-ratio: 16 / 9;
+}
+
 .rd-gallery__main {
   aspect-ratio: 16 / 10;
 }
