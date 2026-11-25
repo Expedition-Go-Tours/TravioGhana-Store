@@ -25,6 +25,7 @@ import {
 import { toast } from 'sonner'
 import SEO, { SITE_URL } from '../../components/SEO'
 import Footer from '../../components/Footer'
+import RestaurantDetailSkeleton from './RestaurantDetailSkeleton'
 import OptimizedImage from '../../components/shared/OptimizedImage'
 import RestaurantCard from '../../components/RestaurantCard'
 import StarRating from '../../components/StarRating'
@@ -331,14 +332,7 @@ export default function RestaurantDetailPage() {
   const valueAverage = average(reviews.map((review) => review.valueRating))
 
   if (venueQuery.isPending) {
-    return (
-      <div className="restaurants-page">
-        <main className="restaurants-page__main">
-          <div className="restaurant-skeleton" />
-        </main>
-        <Footer />
-      </div>
-    )
+    return <RestaurantDetailSkeleton />
   }
 
   if (venueQuery.isError || !venue) {
