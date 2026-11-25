@@ -32,11 +32,6 @@
   color: #fff;
 }
 
-.restaurant-card__price-badge {
-  color: #4b5563;
-  font-weight: 700;
-}
-
 .restaurant-card__diet-badge,
 .restaurant-card__verified-badge {
   color: #166534;

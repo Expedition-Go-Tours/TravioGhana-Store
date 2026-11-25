@@ -6,13 +6,6 @@ import type { RestaurantVenue } from '../hooks/useRestaurantVenues'
 import './TourCard.css'
 import './RestaurantCard.css'
 
-const PRICE_LABELS: Record<number, string> = {
-  1: 'Budget',
-  2: 'Mid-range',
-  3: 'Upscale',
-  4: 'Fine dining',
-}
-
 const EXTERNAL_LABELS: Record<string, string> = {
   GOOGLE: 'Google',
   TRIPADVISOR: 'Tripadvisor',
@@ -217,11 +210,6 @@ export default function RestaurantCard({ venue }: RestaurantCardProps) {
         </h3>
 
         <div className="tour-card-meta">
-          {venue.priceBand && (
-            <span className="tour-card-badge restaurant-card__price-badge">
-              {PRICE_LABELS[venue.priceBand]}
-            </span>
-          )}
           {tags.map((tag) => (
             <span
               key={`${tag.kind}-${tag.label}`}
@@ -266,12 +254,6 @@ export default function RestaurantCard({ venue }: RestaurantCardProps) {
               <span className="tour-card-rating-reviews">({venue.reviewCount})</span>
             )}
           </div>
-          {venue.priceBand && (
-            <div className="tour-card-price">
-              <span className="tour-card-from">Avg spend</span>
-              <span className="tour-card-price-value">{PRICE_LABELS[venue.priceBand]}</span>
-            </div>
-          )}
         </div>
       </div>
     </div>

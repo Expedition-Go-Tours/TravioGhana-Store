@@ -88,11 +88,13 @@ describe('RestaurantCard', () => {
     )
   })
 
-  it('renders TourCard-style tags, rating and price band', () => {
+  it('renders TourCard-style tags and rating without price text', () => {
     const { container } = renderCard()
 
-    expect(container.querySelector('.restaurant-card__price-badge')?.textContent).toBe('Mid-range')
-    expect(container.querySelector('.tour-card-price-value')?.textContent).toBe('Mid-range')
+    expect(container.querySelector('.restaurant-card__price-badge')).toBeNull()
+    expect(container.querySelector('.tour-card-price')).toBeNull()
+    expect(container.textContent).not.toContain('Avg spend')
+    expect(container.textContent).not.toContain('Mid-range')
     expect(screen.getByText('Vegetarian')).toBeTruthy()
     expect(screen.getByText('3 verified')).toBeTruthy()
     expect(container.querySelector('.tour-card-rating-value')?.textContent).toBe('4.6')
