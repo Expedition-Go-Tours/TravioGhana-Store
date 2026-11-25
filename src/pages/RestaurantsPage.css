@@ -132,10 +132,10 @@
   }
 }
 
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-select:focus-visible {
+/* Keep this inside the restaurant catalogue. A bare `input:focus-visible`
+   rule leaked onto every route once RestaurantsPage joined the initial bundle
+   and drew a green box around the shared hero search field. */
+.restaurants-page__main :is(button, a, input, select):focus-visible {
   outline: 2px solid var(--bv-accent, #b45309);
   outline-offset: 2px;
 }
