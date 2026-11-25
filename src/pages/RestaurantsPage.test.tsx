@@ -314,5 +314,8 @@ describe('RestaurantsPage results', () => {
       'aria-expanded',
       'true',
     )
+    expect(screen.getByRole('complementary', { name: 'Restaurant filters' })).toHaveAttribute(
+      'data-lenis-prevent',
+    )
   })
 })

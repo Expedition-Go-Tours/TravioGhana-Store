@@ -675,6 +675,7 @@ function RestaurantResults() {
           <aside
             className={`rh-filters${mobileFiltersOpen ? ' rh-filters--open' : ''}`}
             aria-label="Restaurant filters"
+            data-lenis-prevent
           >
             <div className="rh-filters__head">
               <h2>Filters</h2>
