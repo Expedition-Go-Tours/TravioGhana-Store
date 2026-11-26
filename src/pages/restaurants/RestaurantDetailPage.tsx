@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useState, type FormEvent, type MouseEvent } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type MouseEvent,
+} from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import {
   ArrowUpRight,
@@ -92,18 +99,32 @@ function sectionTop(id: string): number {
   return element.getBoundingClientRect().top + window.scrollY
 }
 
+/** Section order follows the page as it scrolls, including the stacked mobile layout. */
+function sectionsInScrollOrder(ids: string[]): string[] {
+  return [...ids].sort((a, b) => sectionTop(a) - sectionTop(b))
+}
+
 function activeSectionFor(ids: string[]): string | null {
   if (!ids.length) return null
-  const trigger = window.scrollY + sectionTriggerOffset()
-  const ranked = ids
-    .map((id, index) => ({ id, index, top: sectionTop(id) }))
-    .filter((row) => Number.isFinite(row.top) && row.top <= trigger)
-    .sort((a, b) => b.top - a.top || a.index - b.index)
-  if (ranked.length) return ranked[0].id
+  const ranked = sectionsInScrollOrder(ids).filter((id) => Number.isFinite(sectionTop(id)))
+  if (!ranked.length) return ids[0]
 
-  return ids.reduce((closest, id) =>
-    sectionTop(id) < sectionTop(closest) ? id : closest,
-  )
+  const documentHeight = document.documentElement.scrollHeight
+  if (documentHeight > 0 && window.innerHeight + window.scrollY >= documentHeight - 2) {
+    return ranked[ranked.length - 1]
+  }
+
+  const trigger = window.scrollY + sectionTriggerOffset()
+  let active = ranked[0]
+  for (const id of ranked) {
+    if (sectionTop(id) > trigger) break
+    active = id
+  }
+  return active
+}
+
+function sameOrder(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((id, index) => id === b[index])
 }
 
 function galleryImages(venue: RestaurantVenueDetail): string[] {
@@ -349,7 +370,7 @@ export default function RestaurantDetailPage() {
   const hasMenu = Boolean(
     venueQuery.data?.menuUrl || (venueQuery.data?.mealTypes?.length ?? 0) > 0,
   )
-  const sectionIds = useMemo(
+  const baseSectionIds = useMemo(
     () => [
       'overview',
       ...(hasMenu ? ['menu'] : []),
@@ -359,7 +380,30 @@ export default function RestaurantDetailPage() {
     ],
     [hasMenu],
   )
-  const [activeSection, setActiveSection] = useState(sectionIds[0])
+  const [sectionIds, setSectionIds] = useState(baseSectionIds)
+  const [activeSection, setActiveSection] = useState(baseSectionIds[0])
+  const navigationLock = useRef<{ id: string; until: number } | null>(null)
+
+  useEffect(() => {
+    let frame = 0
+    const reorder = () => {
+      frame = 0
+      const next = sectionsInScrollOrder(
+        baseSectionIds.filter((id) => document.getElementById(id)),
+      )
+      setSectionIds((current) => (sameOrder(current, next) ? current : next))
+    }
+    const schedule = () => {
+      if (!frame) frame = window.requestAnimationFrame(reorder)
+    }
+
+    schedule()
+    window.addEventListener('resize', schedule)
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame)
+      window.removeEventListener('resize', schedule)
+    }
+  }, [baseSectionIds, venueReady])
 
   useEffect(() => {
     const hash = decodeURIComponent(window.location.hash.slice(1))
@@ -367,16 +411,27 @@ export default function RestaurantDetailPage() {
 
     let frame = 0
     let initialFrame = 0
-    const sync = () => {
+    const sync = (timeStamp: number) => {
       frame = 0
+      const lock = navigationLock.current
+      const lockedTarget = lock ? document.getElementById(lock.id) : null
+      if (
+        lock &&
+        lockedTarget &&
+        timeStamp < lock.until &&
+        lockedTarget.getBoundingClientRect().top > sectionTriggerOffset() - 8
+      ) {
+        return
+      }
+      navigationLock.current = null
       setActiveSection(activeSectionFor(sectionIds) ?? sectionIds[0])
     }
-    const onScroll = () => {
-      if (!frame) frame = window.requestAnimationFrame(sync)
+    const onScroll = (event: Event) => {
+      if (!frame) frame = window.requestAnimationFrame(() => sync(event.timeStamp))
     }
 
     initialFrame = window.requestAnimationFrame(() => {
-      sync()
+      sync(Number.POSITIVE_INFINITY)
       if (initialId) {
         setActiveSection(initialId)
         document.getElementById(initialId)?.scrollIntoView({ behavior: 'auto', block: 'start' })
@@ -390,7 +445,7 @@ export default function RestaurantDetailPage() {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
     }
-  }, [sectionIds, venueReady])
+  }, [sectionIds])
 
   const onSectionClick = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return
@@ -399,6 +454,7 @@ export default function RestaurantDetailPage() {
 
     event.preventDefault()
     const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    navigationLock.current = { id, until: event.timeStamp + 4000 }
     target.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' })
     window.history.replaceState(null, '', `#${id}`)
     setActiveSection(id)

@@ -383,6 +383,100 @@ describe('RestaurantDetailPage', () => {
       }
     }
   })
+
+  it('orders tabs by where sections appear while scrolling', async () => {
+    const originalScrollY = Object.getOwnPropertyDescriptor(window, 'scrollY')
+    const tops: Record<string, number> = {
+      overview: 955,
+      menu: 1676,
+      hours: 1110,
+      reviews: 2331,
+      location: 2855,
+    }
+    const rectSpy = vi
+      .spyOn(Element.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: Element) {
+        const top = tops[this.id] ?? 0
+        return { top, bottom: top, left: 0, right: 0, width: 0, height: 0 } as DOMRect
+      })
+    Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 })
+
+    try {
+      renderAt('/restaurants/the-place', '/restaurants/:slug', <RestaurantDetailPage />)
+
+      await vi.waitFor(() => {
+        const links = screen
+          .getByRole('navigation', { name: 'Restaurant sections' })
+          .querySelectorAll('a')
+        expect([...links].map((link) => link.textContent)).toEqual([
+          'Overview',
+          'Hours',
+          'Menu',
+          'Reviews',
+          'Location',
+        ])
+      })
+      expect(screen.getByRole('link', { name: 'Overview' })).toHaveAttribute(
+        'aria-current',
+        'location',
+      )
+    } finally {
+      rectSpy.mockRestore()
+      if (originalScrollY) {
+        Object.defineProperty(window, 'scrollY', originalScrollY)
+      } else {
+        Reflect.deleteProperty(window, 'scrollY')
+      }
+    }
+  })
+
+  it('activates Reviews before Location when scrolling past the review section', async () => {
+    const originalScrollY = Object.getOwnPropertyDescriptor(window, 'scrollY')
+    const tops: Record<string, number> = {
+      overview: 955,
+      menu: 1676,
+      hours: 1110,
+      reviews: 2331,
+      location: 2855,
+    }
+    const rectSpy = vi
+      .spyOn(Element.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: Element) {
+        const top = (tops[this.id] ?? 0) - window.scrollY
+        return { top, bottom: top, left: 0, right: 0, width: 0, height: 0 } as DOMRect
+      })
+    Object.defineProperty(window, 'scrollY', { configurable: true, value: 2200 })
+
+    try {
+      renderAt('/restaurants/the-place', '/restaurants/:slug', <RestaurantDetailPage />)
+      window.dispatchEvent(new Event('scroll'))
+
+      await vi.waitFor(() =>
+        expect(screen.getByRole('link', { name: 'Reviews' })).toHaveAttribute(
+          'aria-current',
+          'location',
+        ),
+      )
+      expect(screen.getByRole('link', { name: 'Location' })).not.toHaveAttribute('aria-current')
+
+      Object.defineProperty(window, 'scrollY', { configurable: true, value: 2750 })
+      window.dispatchEvent(new Event('scroll'))
+
+      await vi.waitFor(() =>
+        expect(screen.getByRole('link', { name: 'Location' })).toHaveAttribute(
+          'aria-current',
+          'location',
+        ),
+      )
+    } finally {
+      rectSpy.mockRestore()
+      if (originalScrollY) {
+        Object.defineProperty(window, 'scrollY', originalScrollY)
+      } else {
+        Reflect.deleteProperty(window, 'scrollY')
+      }
+    }
+  })
 })
 
 describe('RestaurantReviewFormPage', () => {
