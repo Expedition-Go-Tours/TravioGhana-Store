@@ -26,6 +26,7 @@ import { toast } from 'sonner'
 import SEO, { SITE_URL } from '../../components/SEO'
 import Footer from '../../components/Footer'
 import RestaurantDetailSkeleton from './RestaurantDetailSkeleton'
+import GalleryDialog from '../tour-detail/GalleryDialog'
 import OptimizedImage from '../../components/shared/OptimizedImage'
 import RestaurantCard from '../../components/RestaurantCard'
 import StarRating from '../../components/StarRating'
@@ -272,7 +273,8 @@ export default function RestaurantDetailPage() {
   const reviewsQuery = useRestaurantVenueReviews(slug)
   const claimQuery = useMyRestaurantClaim(slug, Boolean(user))
   const report = useReportRestaurantReview(slug)
-  const [activePhoto, setActivePhoto] = useState(0)
+  const [galleryOpen, setGalleryOpen] = useState(false)
+  const [galleryIndex, setGalleryIndex] = useState(0)
   const [aboutOpen, setAboutOpen] = useState(false)
   const [reportingReview, setReportingReview] = useState<string | null>(null)
   const [reportReason, setReportReason] = useState(REPORT_REASONS[0])
@@ -528,37 +530,53 @@ export default function RestaurantDetailPage() {
               <button
                 type="button"
                 className="rd-gallery__main"
-                onClick={() => setActivePhoto((index) => (index + 1) % images.length)}
-                aria-label="Show next photo"
+                onClick={() => {
+                  setGalleryIndex(0)
+                  setGalleryOpen(true)
+                }}
+                aria-label={`View all ${images.length} photos`}
               >
                 <OptimizedImage
-                  src={images[Math.min(activePhoto, images.length - 1)]}
-                  alt={`${venue.name} photo ${Math.min(activePhoto, images.length - 1) + 1}`}
+                  src={images[0]}
+                  alt={`${venue.name} photo 1`}
                   width={900}
                   height={560}
                   fit="crop"
                   sizes="(max-width: 900px) 92vw, 64vw"
                   priority
                 />
+                {images.length > 1 && (
+                  <span className="rd-gallery__count" aria-hidden="true">
+                    <Camera size={19} strokeWidth={2} />
+                    {images.length}
+                  </span>
+                )}
               </button>
               {images.length > 1 && (
-                <div className="rd-gallery__thumbs">
-                  {images.slice(0, 4).map((image, index) => (
+                <div className="rd-gallery__tiles">
+                  {images.slice(1, 4).map((image, index) => (
                     <button
                       key={image}
                       type="button"
-                      className={index === activePhoto ? 'is-active' : ''}
-                      onClick={() => setActivePhoto(index)}
-                      aria-label={`Show photo ${index + 1}`}
+                      className="rd-gallery__tile"
+                      onClick={() => {
+                        setGalleryIndex(index + 1)
+                        setGalleryOpen(true)
+                      }}
+                      aria-label={`Open photo ${index + 2} of ${images.length}`}
                     >
                       <OptimizedImage
                         src={image}
                         alt=""
-                        width={160}
-                        height={110}
+                        width={300}
+                        height={220}
                         fit="crop"
-                        sizes="(max-width: 640px) 30vw, (max-width: 900px) 18vw, 15vw"
+                        sizes="(max-width: 900px) 30vw, 204px"
                       />
+                      <span className="rd-gallery__tile-label">Photo {index + 2}</span>
+                      <span className="rd-gallery__tile-count">
+                        {index + 2} / {images.length}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -581,6 +599,13 @@ export default function RestaurantDetailPage() {
             <div className="rd-gallery__empty">Photos will be added when the listing is verified.</div>
           )}
         </section>
+        <GalleryDialog
+          key={`${galleryOpen ? 'open' : 'closed'}-${galleryIndex}`}
+          open={galleryOpen}
+          onOpenChange={setGalleryOpen}
+          images={images}
+          initialIndex={galleryIndex}
+        />
 
         <nav className="rvd-anchor-nav" aria-label="Restaurant sections">
           <a href="#overview">Overview</a>

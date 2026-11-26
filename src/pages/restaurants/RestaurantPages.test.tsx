@@ -252,6 +252,29 @@ describe('RestaurantDetailPage', () => {
     expect(screen.getByTitle('Map showing The Place')).toBeInTheDocument()
   })
 
+  it('matches the TripAdvisor photo mosaic and opens the lightbox', async () => {
+    mocks.useRestaurantVenue.mockReturnValue({
+      data: {
+        ...venue,
+        coverPhoto: 'cover.jpg',
+        photos: ['food.jpg', 'room.jpg', 'menu.jpg', 'extra.jpg'],
+      },
+      isPending: false,
+      isError: false,
+      refetch: vi.fn(),
+    })
+
+    renderAt('/restaurants/the-place', '/restaurants/:slug', <RestaurantDetailPage />)
+
+    const hero = screen.getByRole('button', { name: 'View all 5 photos' })
+    expect(hero.querySelector('.rd-gallery__count')).toHaveTextContent('5')
+    expect(screen.getAllByRole('button', { name: /^Open photo \d+ of 5$/ })).toHaveLength(3)
+
+    fireEvent.click(hero)
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText('1 / 5')).toBeInTheDocument()
+  })
+
   it('submits a review report through the real hook', async () => {
     renderAt('/restaurants/the-place', '/restaurants/:slug', <RestaurantDetailPage />)
 
