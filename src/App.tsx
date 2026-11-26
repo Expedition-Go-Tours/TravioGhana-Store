@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, usePa
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
 import { Toaster } from 'sonner'
 import Navbar from './components/Navbar'
-import PreviewBanner from './components/PreviewBanner'
 import Hero from './components/Hero'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
 import ContinuePlanningSection from './components/ContinuePlanningSection'
@@ -39,8 +38,6 @@ import { trackPageView } from './lib/analytics'
 import { trackGaPageView } from './lib/googleAnalytics'
 import LenisProvider from './lib/LenisProvider'
 import { useScrollRestoration } from './lib/useScrollRestoration'
-import { useVerticalScrollReset } from './lib/useVerticalScrollReset'
-import RestaurantsPage from './pages/RestaurantsPage'
 import { useHomepage, useHomepageByCity } from './hooks/useHomepageSections'
 import GuestClaimPrompt from '@/components/account/GuestClaimPrompt'
 import { enrichToursWithCombinedStats, useExternalReviewStatsData } from './hooks/useExternalReviews'
@@ -51,10 +48,6 @@ const AuthForm = lazy(() => import('./pages/AuthForm'))
 const DashboardApp = lazy(() => import('./pages/dashboard/DashboardApp'))
 const TourDetailPage = lazy(() => import('./pages/tour-detail/TourDetailPage'))
 const AllToursPage = lazy(() => import('./pages/AllToursPage'))
-const RestaurantDetailPage = lazy(() => import('./pages/restaurants/RestaurantDetailPage'))
-const RestaurantReviewFormPage = lazy(() => import('./pages/restaurants/RestaurantReviewFormPage'))
-const RestaurantClaimPage = lazy(() => import('./pages/restaurants/RestaurantClaimPage'))
-const RestaurantManagePage = lazy(() => import('./pages/restaurants/RestaurantManagePage'))
 const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage'))
 const SharedWishlistPage = lazy(() => import('./pages/SharedWishlistPage'))
 const AllReviewsPage = lazy(() => import('./pages/AllReviewsPage'))
@@ -303,9 +296,6 @@ function AppContent() {
   // window.scrollTo(0,0) is dropped mid-glide and the running animation drags
   // the new page back down.
   useScrollRestoration()
-  // Vertical tabs land at the top before paint. Real Back/Forward is still
-  // owned by useScrollRestoration, so a POP is deliberately left alone.
-  useVerticalScrollReset()
   useEffect(() => {
     const path = location.pathname + location.search
     trackPageView(path)
@@ -379,7 +369,6 @@ function AppContent() {
 
   return (
     <>
-      <PreviewBanner />
       <Toaster position="top-center" duration={2500} closeButton />
       {/* Offline/online status toasts — separate react-hot-toast stack at the
           bottom so the red/green connectivity messages never mix with the
@@ -410,17 +399,6 @@ function AppContent() {
           <Route path="/tours" element={
             <AllToursPage />
           } />
-          {/* Placeholder until the restaurant catalogue ships. */}
-          <Route path="/restaurants" element={<RestaurantsPage />} />
-          <Route path="/restaurants/manage" element={<RestaurantManagePage />} />
-          <Route path="/restaurants/:slug/review" element={<RestaurantReviewFormPage />} />
-          <Route
-            path="/restaurants/:slug/reviews/:reviewId/edit"
-            element={<RestaurantReviewFormPage />}
-          />
-          <Route path="/restaurants/:slug/claim" element={<RestaurantClaimPage />} />
-          <Route path="/restaurants/:slug/manage" element={<RestaurantManagePage />} />
-          <Route path="/restaurants/:slug" element={<RestaurantDetailPage />} />
           {/* The old dedicated view-all page: the top recommendations are now
               a section filter on All Tours, so deep links forward there. */}
           <Route

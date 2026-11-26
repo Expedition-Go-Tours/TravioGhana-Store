@@ -272,18 +272,6 @@ describe('Navbar route classes', () => {
 
     expect(container.querySelector('.navbar')?.classList.contains('navbar--tour-detail')).toBe(true)
   })
-
-  it('uses the tinted navbar over the tours and restaurants heroes', () => {
-    expect(renderNavbarAt('/').querySelector('.navbar')?.classList.contains('navbar--over-hero')).toBe(true)
-    cleanup()
-    expect(renderNavbarAt('/restaurants').querySelector('.navbar')?.classList.contains('navbar--over-hero')).toBe(true)
-  })
-
-  it('uses the solid navbar on restaurant results, which have no hero', () => {
-    const container = renderNavbarAt('/restaurants?q=Accra')
-
-    expect(container.querySelector('.navbar')?.classList.contains('navbar--over-hero')).toBe(false)
-  })
 })
 
 /**

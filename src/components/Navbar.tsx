@@ -82,12 +82,11 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   const isTourDetailPage = location.pathname.startsWith('/tour/')
   const [user, setUser] = useState<AuthUser | null>(getStoredAuthUser)
   const [searchBarSticky, setSearchBarSticky] = useState(false)
-  // The tinted "over the hero" navbar belongs on both vertical homepages while
-  // the hero is still at the top. Results pages, detail pages and footer pages
-  // render a solid white navbar from the first frame instead of starting
-  // translucent and flipping to white once their content mounts.
-  const isRestaurantsHome = location.pathname === '/restaurants' && !location.search
-  const isOverHero = (location.pathname === '/' || isRestaurantsHome) && !searchBarSticky
+  // The tinted "over the hero" navbar is only for the homepage at the very top
+  // of the page. Every other route renders a solid white navbar from the first
+  // frame, instead of starting translucent/green-tinted and flipping to white
+  // once the route's content (e.g. a footer page) mounts.
+  const isOverHero = location.pathname === '/' && !searchBarSticky
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [subDrawerTab, setSubDrawerTab] = useState<SubDrawerTab | null>(null)
