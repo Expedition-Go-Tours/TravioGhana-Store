@@ -127,6 +127,24 @@ function sameOrder(a: string[], b: string[]): boolean {
   return a.length === b.length && a.every((id, index) => id === b[index])
 }
 
+/** The Hours card sits in a sticky sidebar; measure its flow position before scrolling. */
+function scrollToSection(id: string, behavior: ScrollBehavior): void {
+  const element = document.getElementById(id)
+  if (!element) return
+
+  const stickyParent = element.closest('.rvd-sidebar') as HTMLElement | null
+  if (!stickyParent) {
+    element.scrollIntoView({ behavior, block: 'start' })
+    return
+  }
+
+  const previousPosition = stickyParent.style.position
+  stickyParent.style.position = 'static'
+  const flowTop = element.getBoundingClientRect().top + window.scrollY
+  stickyParent.style.position = previousPosition
+  window.scrollTo({ top: Math.max(0, flowTop - sectionTriggerOffset()), behavior })
+}
+
 function galleryImages(venue: RestaurantVenueDetail): string[] {
   return [...new Set([venue.coverPhoto, ...venue.photos].filter(Boolean) as string[])]
 }
@@ -434,7 +452,7 @@ export default function RestaurantDetailPage() {
       sync(Number.POSITIVE_INFINITY)
       if (initialId) {
         setActiveSection(initialId)
-        document.getElementById(initialId)?.scrollIntoView({ behavior: 'auto', block: 'start' })
+        scrollToSection(initialId, 'auto')
       }
     })
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -455,7 +473,7 @@ export default function RestaurantDetailPage() {
     event.preventDefault()
     const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
     navigationLock.current = { id, until: event.timeStamp + 4000 }
-    target.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' })
+    scrollToSection(id, reduced ? 'auto' : 'smooth')
     window.history.replaceState(null, '', `#${id}`)
     setActiveSection(id)
   }

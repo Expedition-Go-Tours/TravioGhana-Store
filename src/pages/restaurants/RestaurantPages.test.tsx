@@ -336,6 +336,28 @@ describe('RestaurantDetailPage', () => {
     }
   })
 
+  it('scrolls the sticky Hours card to its original page position', () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    const rectSpy = vi
+      .spyOn(Element.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: Element) {
+        const top = this.id === 'hours' ? 1110 : 0
+        return { top, bottom: top, left: 0, right: 0, width: 0, height: 0 } as DOMRect
+      })
+
+    try {
+      renderAt('/restaurants/the-place', '/restaurants/:slug', <RestaurantDetailPage />)
+      fireEvent.click(screen.getByRole('link', { name: 'Hours' }))
+
+      expect(scrollTo).toHaveBeenCalledWith({ top: 970, behavior: 'smooth' })
+      expect(window.location.hash).toBe('#hours')
+    } finally {
+      scrollTo.mockRestore()
+      rectSpy.mockRestore()
+      window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    }
+  })
+
   it('updates the active section while scrolling', async () => {
     const originalScrollY = Object.getOwnPropertyDescriptor(window, 'scrollY')
     const tops: Record<string, number> = {
