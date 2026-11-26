@@ -20,6 +20,7 @@ import {
   Search,
   SlidersHorizontal,
   Soup,
+  ThumbsUp,
   UtensilsCrossed,
   type LucideIcon,
 } from 'lucide-react'
@@ -278,6 +279,26 @@ function formatReviewDate(value: string): string {
   return new Intl.DateTimeFormat('en-GB', { month: 'short', year: 'numeric' }).format(date)
 }
 
+function reviewInitial(name: string): string {
+  return (name.trim()[0] || 'T').toUpperCase()
+}
+
+/** TripAdvisor-style bubble rating; filled bubbles round to the nearest score. */
+function ReviewBubbles({ value }: { value: number }) {
+  const filled = Math.min(5, Math.max(0, Math.round(value || 0)))
+  return (
+    <span className="rh-review-bubbles" role="img" aria-label={`${value} out of 5 bubbles`}>
+      {Array.from({ length: 5 }, (_, index) => (
+        <span
+          key={index}
+          className={`rh-review-bubble${index < filled ? ' rh-review-bubble--filled' : ''}`}
+          aria-hidden="true"
+        />
+      ))}
+    </span>
+  )
+}
+
 function DinerReviewCard({
   review,
   decorative = false,
@@ -303,21 +324,31 @@ function DinerReviewCard({
     return () => observer.disconnect()
   }, [review.body])
 
-  const stars = (size: number) => (
-    <StarRating
-      value={review.rating}
-      size={size}
-      gap={1}
-      filledColor="#16a34a"
-      emptyColor="#e5e7eb"
-    />
-  )
-
   const reviewer = (
     <div className="rh-diner-review-card__reviewer">
-      <span className="rh-diner-review-card__reviewer-name">{author}</span>
-      {formattedDate && <span className="rh-diner-review-card__date">, {formattedDate}</span>}
-      {review.verified && <span className="rh-diner-review-card__verified">Verified visit</span>}
+      {review.author.photoURL ? (
+        <img
+          src={review.author.photoURL}
+          alt=""
+          aria-hidden="true"
+          className="rh-diner-review-card__avatar"
+          loading="lazy"
+          decoding="async"
+          width={36}
+          height={36}
+        />
+      ) : (
+        <span className="rh-diner-review-card__avatar" aria-hidden="true">
+          {reviewInitial(author)}
+        </span>
+      )}
+      <div className="rh-diner-review-card__reviewer-meta">
+        <div className="rh-diner-review-card__reviewer-line">
+          <span className="rh-diner-review-card__reviewer-name">{author}</span>
+          {formattedDate && <span className="rh-diner-review-card__date">{formattedDate}</span>}
+        </div>
+        {review.verified && <span className="rh-diner-review-card__verified">Verified visit</span>}
+      </div>
     </div>
   )
 
@@ -325,34 +356,9 @@ function DinerReviewCard({
     <>
       <article className="rh-diner-review-card" aria-hidden={decorative || undefined}>
         <div className="rh-diner-review-card__body">
-          <div className="rh-diner-review-card__head">
-            {review.venueCoverPhoto ? (
-              <img
-                src={review.venueCoverPhoto}
-                alt=""
-                aria-hidden="true"
-                className="rh-diner-review-card__thumb"
-                loading="lazy"
-                decoding="async"
-                width={56}
-                height={56}
-              />
-            ) : (
-              <span
-                className="rh-diner-review-card__thumb rh-diner-review-card__thumb--placeholder"
-                aria-hidden="true"
-              >
-                <UtensilsCrossed size={22} strokeWidth={1.8} />
-              </span>
-            )}
-            <span className="rh-diner-review-card__venue-title">{review.venueName}</span>
-            {review.venueCity && (
-              <span className="rh-diner-review-card__venue-city">{review.venueCity}</span>
-            )}
-          </div>
-
-          <div className="rh-diner-review-card__stars">{stars(18)}</div>
           {reviewer}
+
+          <ReviewBubbles value={review.rating} />
 
           {review.title && <h3 className="rh-diner-review-card__title">{review.title}</h3>}
           <p ref={textRef} className="rh-diner-review-card__text">
@@ -369,7 +375,19 @@ function DinerReviewCard({
             </button>
           )}
 
+          <div className="rh-diner-review-card__venue">
+            <MapPin size={13} strokeWidth={1.8} aria-hidden="true" />
+            <span className="rh-diner-review-card__venue-title">{review.venueName}</span>
+            {review.venueCity && (
+              <span className="rh-diner-review-card__venue-city">{review.venueCity}</span>
+            )}
+          </div>
+
           <div className="rh-diner-review-card__footer">
+            <span className="rh-diner-review-card__helpful" aria-label="0 helpful votes">
+              <ThumbsUp size={14} strokeWidth={1.8} aria-hidden="true" />
+              Helpful · 0
+            </span>
             <Link
               to={`${venuePath}#reviews`}
               className="rh-diner-review-card__cta"
@@ -404,8 +422,8 @@ function DinerReviewCard({
 
             <div className="rh-diner-review-modal__header">
               <span className="rh-diner-review-modal__venue-title">{review.venueName}</span>
-              <div className="rh-diner-review-modal__stars">{stars(20)}</div>
               {reviewer}
+              <ReviewBubbles value={review.rating} />
             </div>
 
             {review.title && <h3 className="rh-diner-review-modal__title">{review.title}</h3>}
