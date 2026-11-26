@@ -305,6 +305,84 @@ describe('RestaurantDetailPage', () => {
       ),
     )
   })
+
+  it('smooth-scrolls section links and marks the clicked section active', () => {
+    const originalScrollIntoView = Object.getOwnPropertyDescriptor(
+      Element.prototype,
+      'scrollIntoView',
+    )
+    const scrollIntoView = vi.fn()
+    Object.defineProperty(Element.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoView,
+    })
+
+    try {
+      renderAt('/restaurants/the-place', '/restaurants/:slug', <RestaurantDetailPage />)
+
+      const reviewsLink = screen.getByRole('link', { name: 'Reviews' })
+      fireEvent.click(reviewsLink)
+
+      expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' })
+      expect(reviewsLink).toHaveAttribute('aria-current', 'location')
+      expect(window.location.hash).toBe('#reviews')
+    } finally {
+      if (originalScrollIntoView) {
+        Object.defineProperty(Element.prototype, 'scrollIntoView', originalScrollIntoView)
+      } else {
+        Reflect.deleteProperty(Element.prototype, 'scrollIntoView')
+      }
+      window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    }
+  })
+
+  it('updates the active section while scrolling', async () => {
+    const originalScrollY = Object.getOwnPropertyDescriptor(window, 'scrollY')
+    const tops: Record<string, number> = {
+      overview: 100,
+      menu: 180,
+      hours: 220,
+      location: 500,
+      reviews: 800,
+    }
+    const rectSpy = vi
+      .spyOn(Element.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: Element) {
+        const top = (tops[this.id] ?? 0) - window.scrollY
+        return {
+          top,
+          bottom: top,
+          left: 0,
+          right: 0,
+          width: 0,
+          height: 0,
+          x: 0,
+          y: top,
+          toJSON: () => ({}),
+        } as DOMRect
+      })
+    Object.defineProperty(window, 'scrollY', { configurable: true, value: 600 })
+
+    try {
+      renderAt('/restaurants/the-place', '/restaurants/:slug', <RestaurantDetailPage />)
+      window.dispatchEvent(new Event('scroll'))
+
+      await vi.waitFor(() =>
+        expect(screen.getByRole('link', { name: 'Location' })).toHaveAttribute(
+          'aria-current',
+          'location',
+        ),
+      )
+      expect(screen.getByRole('link', { name: 'Reviews' })).not.toHaveAttribute('aria-current')
+    } finally {
+      rectSpy.mockRestore()
+      if (originalScrollY) {
+        Object.defineProperty(window, 'scrollY', originalScrollY)
+      } else {
+        Reflect.deleteProperty(window, 'scrollY')
+      }
+    }
+  })
 })
 
 describe('RestaurantReviewFormPage', () => {

@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent, type MouseEvent } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import {
   ArrowUpRight,
@@ -69,6 +69,41 @@ const COMPANION_LABELS: Record<string, string> = {
   FAMILY: 'Family',
   FRIENDS: 'Friends',
   SOLO: 'Solo',
+}
+
+const SECTION_LABELS: Record<string, string> = {
+  overview: 'Overview',
+  menu: 'Menu',
+  hours: 'Hours',
+  location: 'Location',
+  reviews: 'Reviews',
+}
+
+/** Matches the section scroll-margin so a heading becomes active under the sticky nav. */
+function sectionTriggerOffset(): number {
+  const rootStyle = getComputedStyle(document.documentElement)
+  const banner = Number.parseFloat(rootStyle.getPropertyValue('--preview-banner-height')) || 0
+  return 140 + banner
+}
+
+function sectionTop(id: string): number {
+  const element = document.getElementById(id)
+  if (!element) return Number.POSITIVE_INFINITY
+  return element.getBoundingClientRect().top + window.scrollY
+}
+
+function activeSectionFor(ids: string[]): string | null {
+  if (!ids.length) return null
+  const trigger = window.scrollY + sectionTriggerOffset()
+  const ranked = ids
+    .map((id, index) => ({ id, index, top: sectionTop(id) }))
+    .filter((row) => Number.isFinite(row.top) && row.top <= trigger)
+    .sort((a, b) => b.top - a.top || a.index - b.index)
+  if (ranked.length) return ranked[0].id
+
+  return ids.reduce((closest, id) =>
+    sectionTop(id) < sectionTop(closest) ? id : closest,
+  )
 }
 
 function galleryImages(venue: RestaurantVenueDetail): string[] {
@@ -309,6 +344,65 @@ export default function RestaurantDetailPage() {
   const [reviewSearch, setReviewSearch] = useState('')
   const [reviewRating, setReviewRating] = useState('all')
   const [reviewSort, setReviewSort] = useState('recent')
+
+  const venueReady = Boolean(venueQuery.data)
+  const hasMenu = Boolean(
+    venueQuery.data?.menuUrl || (venueQuery.data?.mealTypes?.length ?? 0) > 0,
+  )
+  const sectionIds = useMemo(
+    () => [
+      'overview',
+      ...(hasMenu ? ['menu'] : []),
+      'hours',
+      'location',
+      'reviews',
+    ],
+    [hasMenu],
+  )
+  const [activeSection, setActiveSection] = useState(sectionIds[0])
+
+  useEffect(() => {
+    const hash = decodeURIComponent(window.location.hash.slice(1))
+    const initialId = sectionIds.includes(hash) ? hash : null
+
+    let frame = 0
+    let initialFrame = 0
+    const sync = () => {
+      frame = 0
+      setActiveSection(activeSectionFor(sectionIds) ?? sectionIds[0])
+    }
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(sync)
+    }
+
+    initialFrame = window.requestAnimationFrame(() => {
+      sync()
+      if (initialId) {
+        setActiveSection(initialId)
+        document.getElementById(initialId)?.scrollIntoView({ behavior: 'auto', block: 'start' })
+      }
+    })
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame)
+      if (initialFrame) window.cancelAnimationFrame(initialFrame)
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
+  }, [sectionIds, venueReady])
+
+  const onSectionClick = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return
+    const target = document.getElementById(id)
+    if (!target) return
+
+    event.preventDefault()
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    target.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' })
+    window.history.replaceState(null, '', `#${id}`)
+    setActiveSection(id)
+  }
 
   const venue = venueQuery.data
   // Older API builds do not return the menu fields; treat them as empty until
@@ -635,11 +729,20 @@ export default function RestaurantDetailPage() {
         />
 
         <nav className="rvd-anchor-nav" aria-label="Restaurant sections">
-          <a href="#overview">Overview</a>
-          {(venue.menuUrl || mealTypes.length > 0) && <a href="#menu">Menu</a>}
-          <a href="#hours">Hours</a>
-          <a href="#location">Location</a>
-          <a href="#reviews">Reviews</a>
+          {sectionIds.map((id) => {
+            const isActive = activeSection === id
+            return (
+              <a
+                key={id}
+                href={`#${id}`}
+                className={isActive ? 'is-active' : undefined}
+                aria-current={isActive ? 'location' : undefined}
+                onClick={(event) => onSectionClick(event, id)}
+              >
+                {SECTION_LABELS[id]}
+              </a>
+            )
+          })}
         </nav>
 
         <div className="rvd-layout">
