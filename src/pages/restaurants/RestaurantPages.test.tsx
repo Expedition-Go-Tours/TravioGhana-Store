@@ -250,6 +250,18 @@ describe('RestaurantDetailPage', () => {
       'https://example.com/menu',
     )
     expect(screen.getByTitle('Map showing The Place')).toBeInTheDocument()
+
+    const card = document.querySelector('.rvd-review') as HTMLElement
+    expect(card.querySelector('.rvd-review__avatar--fallback')).toHaveTextContent('A')
+    expect(card.querySelector('.rvd-review__person-meta')).toHaveTextContent('Feb 2026')
+    expect(card.querySelector('.rvd-review__person-meta')).toHaveTextContent('Verified visit')
+    expect(card.querySelector('.rvd-review__trip')).toHaveTextContent('Couples')
+    expect(card.querySelector('.rvd-review__stars .star-rating')).toHaveAttribute(
+      'aria-label',
+      '5 out of 5 stars',
+    )
+    expect(card).toHaveTextContent('Helpful · 2')
+    expect(card.querySelector('.rvd-review-bubble')).toBeNull()
   })
 
   it('matches the TripAdvisor photo mosaic and opens the lightbox', async () => {

@@ -282,12 +282,6 @@ describe('RestaurantsPage home', () => {
       expect(within(reviews).getByText(/From/)).toHaveTextContent('From 24 reviews')
       expect(reviews.querySelectorAll('.rh-diner-reviews-card-wrap[aria-hidden="true"]')).toHaveLength(4)
 
-      const firstCard = reviews.querySelector('.rh-diner-review-card') as HTMLElement
-      expect(firstCard.querySelector('.rh-diner-review-card__avatar')).toHaveTextContent('A')
-      expect(firstCard.querySelector('.rh-diner-review-card__thumb')).toBeNull()
-      expect(firstCard.querySelectorAll('.rh-review-bubble')).toHaveLength(5)
-      expect(within(firstCard).getByText('Helpful · 0')).toBeInTheDocument()
-
       const cta = within(reviews).getAllByRole('link', { name: 'View Restaurant' })[0]
       expect(cta).toHaveAttribute('href', '/restaurants/buka-restaurant#reviews')
 

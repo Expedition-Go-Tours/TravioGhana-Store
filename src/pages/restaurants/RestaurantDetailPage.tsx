@@ -18,6 +18,7 @@ import {
   ShieldCheck,
   Sparkles,
   Sun,
+  ThumbsUp,
   UtensilsCrossed,
   Wine,
   X,
@@ -139,6 +140,10 @@ function RatingBar({ stars, count, total }: { stars: number; count: number; tota
   )
 }
 
+function reviewInitial(name: string | null): string {
+  return (name?.trim()[0] || 'D').toUpperCase()
+}
+
 function ReviewCard({
   review,
   slug,
@@ -168,15 +173,24 @@ function ReviewCard({
       <header className="rvd-review__head">
         <div className="rvd-review__person">
           {review.author.photoURL ? (
-            <img src={review.author.photoURL} alt="" className="rvd-review__avatar" />
+            <img
+              src={review.author.photoURL}
+              alt=""
+              aria-hidden="true"
+              className="rvd-review__avatar"
+              loading="lazy"
+              decoding="async"
+              width={44}
+              height={44}
+            />
           ) : (
-            <span className="rvd-review__avatar rvd-review__avatar--fallback">
-              {(review.author.name ?? 'D')[0]}
+            <span className="rvd-review__avatar rvd-review__avatar--fallback" aria-hidden="true">
+              {reviewInitial(review.author.name)}
             </span>
           )}
-          <div>
+          <div className="rvd-review__person-copy">
             <strong>{review.author.name ?? 'Travio diner'}</strong>
-            <span>
+            <span className="rvd-review__person-meta">
               {formatDate(review.visitedAt || review.createdAt)}
               {review.verified && (
                 <>
@@ -187,17 +201,30 @@ function ReviewCard({
             </span>
           </div>
         </div>
-        <StarRating value={review.rating} size={15} />
       </header>
+
+      <div className="rvd-review__stars">
+        <StarRating
+          value={review.rating}
+          size={18}
+          gap={2}
+          filledColor="#3a9a4e"
+          emptyColor="#e5e7eb"
+          ariaLabel={`${review.rating} out of 5 stars`}
+        />
+      </div>
 
       {review.title && <h3>{review.title}</h3>}
       {review.body && <p>{review.body}</p>}
 
       {review.companions.length > 0 && (
-        <div className="rvd-review__companions" aria-label="Who they went with">
-          {review.companions.map((companion) => (
-            <span key={companion}>{COMPANION_LABELS[companion] ?? displayLabel(companion)}</span>
-          ))}
+        <div className="rvd-review__trip" aria-label="Who they went with">
+          <span className="rvd-review__trip-label">Trip type:</span>
+          <strong>
+            {review.companions
+              .map((companion) => COMPANION_LABELS[companion] ?? displayLabel(companion))
+              .join(', ')}
+          </strong>
         </div>
       )}
 
@@ -211,7 +238,7 @@ function ReviewCard({
 
       <footer className="rvd-review__foot">
         <span className="rvd-review__helpful">
-          <Sparkles size={14} aria-hidden="true" />
+          <ThumbsUp size={14} aria-hidden="true" />
           Helpful · {review.helpfulCount}
         </span>
         <button
