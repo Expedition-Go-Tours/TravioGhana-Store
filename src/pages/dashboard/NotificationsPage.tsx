@@ -32,6 +32,10 @@ interface BackendNotification {
     amount?: number;
     currency?: string;
     refundPercentage?: number;
+    claimId?: string;
+    reviewId?: string;
+    venueId?: string;
+    venueSlug?: string;
   } | null;
   read: boolean;
   readAt?: string | null;
@@ -84,6 +88,24 @@ const typeConfig: Record<
     iconClass: "",
     label: "Review",
   },
+  REVIEW_STATUS_UPDATE: {
+    icon: Star,
+    colorClass: "review",
+    iconClass: "",
+    label: "Review",
+  },
+  REVIEW_REMOVED: {
+    icon: Star,
+    colorClass: "review",
+    iconClass: "",
+    label: "Review",
+  },
+  RESTAURANT_CLAIM_UPDATE: {
+    icon: Info,
+    colorClass: "system",
+    iconClass: "",
+    label: "Restaurant",
+  },
   NEW_MESSAGE: {
     icon: MessageCircle,
     colorClass: "message",
@@ -124,7 +146,13 @@ function matchesFilter(n: BackendNotification, filter: FilterKey): boolean {
     return n.type === "BOOKING_CONFIRMED" || n.type === "BOOKING_CANCELLED";
   if (filter === "message") return n.type === "NEW_MESSAGE";
   if (filter === "payment") return n.type === "PAYMENT_RECEIVED";
-  if (filter === "review") return n.type === "REVIEW_RECEIVED" || n.type === "REVIEW_REQUEST";
+  if (filter === "review")
+    return (
+      n.type === "REVIEW_RECEIVED" ||
+      n.type === "REVIEW_REQUEST" ||
+      n.type === "REVIEW_STATUS_UPDATE" ||
+      n.type === "REVIEW_REMOVED"
+    );
   return true;
 }
 
@@ -190,6 +218,17 @@ function getNotificationTarget(n: BackendNotification): NavTarget {
   if (n.type === "REVIEW_RECEIVED") {
     return { path: "/dashboard/reviews" };
   }
+  if (
+    (n.type === "REVIEW_STATUS_UPDATE" || n.type === "REVIEW_REMOVED") &&
+    n.data?.venueSlug
+  ) {
+    return { path: `/restaurants/${encodeURIComponent(n.data.venueSlug)}#reviews` };
+  }
+  if (n.type === "RESTAURANT_CLAIM_UPDATE" && n.data?.venueSlug) {
+    // The claim page renders the current state for either decision: approved
+    // claims surface the owner tools, rejected claims offer a fresh attempt.
+    return { path: `/restaurants/${encodeURIComponent(n.data.venueSlug)}/claim` };
+  }
   if (n.type === "REVIEW_REQUEST" && n.data?.bookingId) {
     const { bookingId, tourId, tourSlug, tourTitle, clientOrigin } = n.data;
     // The booking was made on another brand's storefront — open that app's
@@ -223,6 +262,12 @@ function getActionLabel(n: BackendNotification): string | null {
   if (n.type === "PAYMENT_RECEIVED") return "View Booking";
   if (n.type === "REVIEW_RECEIVED") return "View Reviews";
   if (n.type === "REVIEW_REQUEST") return "Write a review";
+  if (
+    (n.type === "REVIEW_STATUS_UPDATE" || n.type === "REVIEW_REMOVED") &&
+    n.data?.venueSlug
+  )
+    return "View review";
+  if (n.type === "RESTAURANT_CLAIM_UPDATE" && n.data?.venueSlug) return "View claim";
   return null;
 }
 
