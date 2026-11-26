@@ -10,6 +10,7 @@ import {
   type RestaurantVenue,
   type RestaurantVenuePage,
 } from '../hooks/useRestaurantVenues'
+import { useCuisinePhotos } from '../hooks/useCuisinePhotos'
 import {
   useLikelyToBookOutRestaurants,
   useRecommendedRestaurants,
@@ -19,6 +20,10 @@ import {
 
 vi.mock('../hooks/useRestaurantVenues', () => ({
   useRestaurantVenues: vi.fn(),
+}))
+
+vi.mock('../hooks/useCuisinePhotos', () => ({
+  useCuisinePhotos: vi.fn(),
 }))
 
 vi.mock('../hooks/useRestaurantHomepage', () => ({
@@ -84,6 +89,7 @@ const mockRecommended = vi.mocked(useRecommendedRestaurants)
 const mockLikelyToBookOut = vi.mocked(useLikelyToBookOutRestaurants)
 const mockSpecialOffers = vi.mocked(useSpecialOfferRestaurants)
 const mockSectionIds = vi.mocked(useRestaurantSectionIds)
+const mockCuisinePhotos = vi.mocked(useCuisinePhotos)
 
 const venue: RestaurantVenue = {
   id: 'v1',
@@ -195,6 +201,10 @@ beforeEach(() => {
   mockSpecialOffers.mockReturnValue(rankedResult([railVenue('v-offer', 'Offer Pick')]))
   mockSectionIds.mockReset()
   mockSectionIds.mockReturnValue(sectionIdsResult())
+  mockCuisinePhotos.mockReset()
+  mockCuisinePhotos.mockReturnValue({
+    data: { Ghanaian: 'https://cdn.example.test/restaurant-ghanaian.jpg' },
+  } as unknown as ReturnType<typeof useCuisinePhotos>)
 })
 
 describe('RestaurantsPage home', () => {
@@ -321,6 +331,21 @@ describe('RestaurantsPage home', () => {
       screen.getByRole('link', { name: 'See Ghanaian restaurants in Ghana' }),
     ).toHaveAttribute('href', '/restaurants?cuisine=ghanaian')
     expect(screen.getByRole('heading', { name: 'What are you in the mood for?' })).toBeInTheDocument()
+  })
+
+  it('uses restaurant catalogue photos on cuisine tiles', () => {
+    renderPage('/restaurants')
+
+    const ghanaian = screen.getByRole('link', { name: 'See Ghanaian restaurants in Ghana' })
+    expect(ghanaian.querySelector('img')).toHaveAttribute(
+      'src',
+      'https://cdn.example.test/restaurant-ghanaian.jpg',
+    )
+
+    // Cuisines without a matching venue keep a neutral tile, not stock art.
+    const vegetarian = screen.getByRole('link', { name: 'See Vegetarian restaurants in Ghana' })
+    expect(vegetarian.querySelector('img')).toBeNull()
+    expect(vegetarian.querySelector('.rh-category-tile__placeholder')).toBeInTheDocument()
   })
 
   it('turns a home search into URL filters', () => {

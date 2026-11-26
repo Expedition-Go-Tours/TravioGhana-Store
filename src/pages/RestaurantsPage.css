@@ -304,6 +304,15 @@
   transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 300ms ease;
 }
 
+/* Shown until the catalogue photo loads, or when no venue matches the tile. */
+.rh-category-tile__placeholder {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 28% 18%, rgb(255 255 255 / 16%), transparent 52%),
+    linear-gradient(145deg, #1d5a3b, #0b2e22);
+}
+
 .rh-category-tile:hover .rh-category-tile__image,
 .rh-category-tile:focus-visible .rh-category-tile__image {
   filter: saturate(1.12);

@@ -50,13 +50,7 @@ import {
 } from '../hooks/useRecentRestaurantReviews'
 import useMediaQuery from '../hooks/useMediaQuery'
 import useRafCallback from '../hooks/useRafCallback'
-import ghanaianImage from '../assets/restaurants/cuisine-ghanaian.webp'
-import nigerianImage from '../assets/restaurants/cuisine-nigerian.webp'
-import chineseImage from '../assets/restaurants/cuisine-chinese.webp'
-import indianImage from '../assets/restaurants/cuisine-indian.webp'
-import italianImage from '../assets/restaurants/cuisine-italian.webp'
-import seafoodImage from '../assets/restaurants/cuisine-seafood.webp'
-import vegetarianImage from '../assets/restaurants/cuisine-vegetarian.webp'
+import { useCuisinePhotos } from '../hooks/useCuisinePhotos'
 import './RestaurantsPage.css'
 
 const CITIES = ['Accra', 'Kumasi', 'Cape Coast', 'Takoradi', 'Tamale', 'Elmina']
@@ -65,7 +59,7 @@ const DIETARY = ['vegetarian', 'vegan', 'gluten-free', 'halal']
 type Cuisine = {
   label: string
   note: string
-  image: string
+  query: RestaurantVenueFilters
   Icon: LucideIcon
 }
 
@@ -73,46 +67,49 @@ const CUISINES: Cuisine[] = [
   {
     label: 'Ghanaian',
     note: 'Jollof, banku & soups',
-    image: ghanaianImage,
+    query: { cuisine: 'ghanaian' },
     Icon: UtensilsCrossed,
   },
   {
     label: 'Nigerian',
     note: 'Suya, pepper soup & rice',
-    image: nigerianImage,
+    query: { cuisine: 'nigerian' },
     Icon: Flame,
   },
   {
     label: 'Chinese',
     note: 'Noodles, dumplings & wok',
-    image: chineseImage,
+    query: { cuisine: 'chinese' },
     Icon: Soup,
   },
   {
     label: 'Indian',
     note: 'Curry, thali & tandoor',
-    image: indianImage,
+    query: { cuisine: 'indian' },
     Icon: Soup,
   },
   {
     label: 'Italian',
     note: 'Pasta, pizza & espresso',
-    image: italianImage,
+    query: { cuisine: 'italian' },
     Icon: Pizza,
   },
   {
     label: 'Seafood',
     note: 'Grilled catch & pepper',
-    image: seafoodImage,
+    query: { cuisine: 'seafood' },
     Icon: Fish,
   },
   {
     label: 'Vegetarian',
     note: 'Plant-based plates & sides',
-    image: vegetarianImage,
+    // The catalogue stores vegetarian as a dietary attribute, not a cuisine.
+    query: { dietary: ['vegetarian'] },
     Icon: Leaf,
   },
 ]
+
+const CUISINE_PHOTO_QUERIES = CUISINES.map(({ label, query }) => ({ label, query }))
 
 const SORTS: { value: RestaurantSort; label: string }[] = [
   { value: 'rating', label: 'Top rated' },
@@ -736,6 +733,7 @@ function RestaurantHome() {
       ? { lat: coords.lat, lng: coords.lng, radiusKm: 10, sort: 'rating' }
       : { city: 'Accra', sort: 'rating' },
   )
+  const cuisinePhotos = useCuisinePhotos(CUISINE_PHOTO_QUERIES)
 
   return (
     <div className="restaurants-page restaurants-page--hero">
@@ -767,45 +765,52 @@ function RestaurantHome() {
             </div>
           </div>
           <div className="rh-category-grid">
-            {CUISINES.map(({ label, note, image, Icon }, index) => (
-              <div
-                key={label}
-                className="rh-category-tile-shell"
-                style={{ animationDelay: `${index * 60}ms` }}
-              >
-                <Link
-                  className="rh-category-tile"
-                  to={`/restaurants?cuisine=${encodeURIComponent(label.toLowerCase())}`}
-                  aria-label={`See ${label} restaurants in Ghana`}
+            {CUISINES.map(({ label, note, Icon }, index) => {
+              const photo = cuisinePhotos.data?.[label]
+              return (
+                <div
+                  key={label}
+                  className="rh-category-tile-shell"
+                  style={{ animationDelay: `${index * 60}ms` }}
                 >
-                  <img
-                    className="rh-category-tile__image"
-                    src={image}
-                    alt=""
-                    width={560}
-                    height={700}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <span className="rh-category-tile__scrim" aria-hidden="true" />
-                  <span className="rh-category-tile__top" aria-hidden="true">
-                    <span className="rh-category-tile__icon">
-                      <Icon size={18} strokeWidth={1.9} />
+                  <Link
+                    className="rh-category-tile"
+                    to={`/restaurants?cuisine=${encodeURIComponent(label.toLowerCase())}`}
+                    aria-label={`See ${label} restaurants in Ghana`}
+                  >
+                    {photo ? (
+                      <img
+                        className="rh-category-tile__image"
+                        src={photo}
+                        alt=""
+                        width={560}
+                        height={700}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <span className="rh-category-tile__placeholder" aria-hidden="true" />
+                    )}
+                    <span className="rh-category-tile__scrim" aria-hidden="true" />
+                    <span className="rh-category-tile__top" aria-hidden="true">
+                      <span className="rh-category-tile__icon">
+                        <Icon size={18} strokeWidth={1.9} />
+                      </span>
+                      <span className="rh-category-tile__arrow">
+                        <ArrowUpRight size={16} strokeWidth={2} />
+                      </span>
                     </span>
-                    <span className="rh-category-tile__arrow">
-                      <ArrowUpRight size={16} strokeWidth={2} />
+                    <span className="rh-category-tile__body">
+                      <span className="rh-category-tile__index">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <span className="rh-category-tile__name">{label}</span>
+                      <span className="rh-category-tile__note">{note}</span>
                     </span>
-                  </span>
-                  <span className="rh-category-tile__body">
-                    <span className="rh-category-tile__index">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                    <span className="rh-category-tile__name">{label}</span>
-                    <span className="rh-category-tile__note">{note}</span>
-                  </span>
-                </Link>
-              </div>
-            ))}
+                  </Link>
+                </div>
+              )
+            })}
           </div>
         </section>
 

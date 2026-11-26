@@ -34,6 +34,10 @@ vi.mock('../hooks/useRestaurantHomepage', () => {
   }
 })
 
+vi.mock('../hooks/useCuisinePhotos', () => ({
+  useCuisinePhotos: () => ({ data: {} }),
+}))
+
 vi.mock('../hooks/useRecentRestaurantReviews', () => ({
   useRecentRestaurantReviews: () => ({
     data: {

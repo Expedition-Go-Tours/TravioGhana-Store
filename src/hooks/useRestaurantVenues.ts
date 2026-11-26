@@ -139,6 +139,8 @@ export interface RestaurantVenueFilters {
   /** Display name of the map place that supplied lat/lng. */
   place?: string
   sort?: RestaurantSort
+  /** Override the page size for small lookups (e.g. one venue per cuisine). */
+  limit?: number
 }
 
 const PAGE_SIZE = 12
@@ -151,7 +153,7 @@ export function buildRestaurantVenuePath(
 ): string {
   const params = new URLSearchParams()
   params.set('brand', 'ghana')
-  params.set('limit', String(PAGE_SIZE))
+  params.set('limit', String(filters.limit ?? PAGE_SIZE))
   params.set('sort', filters.sort ?? 'rating')
 
   if (filters.q) params.set('q', filters.q)

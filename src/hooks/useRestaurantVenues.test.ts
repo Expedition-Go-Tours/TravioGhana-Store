@@ -54,6 +54,13 @@ describe('buildRestaurantVenuePath', () => {
     expect(params.get('sort')).toBe('demand')
   })
 
+  it('allows a small lookup to override the page size', () => {
+    const params = paramsOf(buildRestaurantVenuePath({ cuisine: 'ghanaian', limit: 1 }))
+
+    expect(params.get('limit')).toBe('1')
+    expect(params.get('cuisine')).toBe('ghanaian')
+  })
+
   it('omits empty filter values instead of sending blank query keys', () => {
     const params = paramsOf(
       buildRestaurantVenuePath({ q: '', city: '', priceBand: undefined, featured: false }),
