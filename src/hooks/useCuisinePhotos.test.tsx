@@ -19,13 +19,15 @@ describe('useCuisinePhotos', () => {
     mockFetch.mockReset()
   })
 
-  it('takes one top-rated venue photo per cuisine from the catalogue', async () => {
+  it('takes top-rated venue photos and real counts per cuisine from the catalogue', async () => {
     mockFetch
       .mockResolvedValueOnce({
         venues: [{ coverPhoto: 'https://cdn.example.test/ghanaian.jpg', photos: [] }],
+        pagination: { limit: 50, hasMore: false, nextCursor: null },
       })
       .mockResolvedValueOnce({
         venues: [{ coverPhoto: null, photos: ['https://cdn.example.test/vegetarian.jpg'] }],
+        pagination: { limit: 50, hasMore: true, nextCursor: 'next' },
       })
 
     const { result } = renderHook(
@@ -40,23 +42,32 @@ describe('useCuisinePhotos', () => {
     await waitFor(() => expect(result.current.data).toBeDefined())
 
     expect(result.current.data).toEqual({
-      Ghanaian: 'https://cdn.example.test/ghanaian.jpg',
-      Vegetarian: 'https://cdn.example.test/vegetarian.jpg',
+      Ghanaian: {
+        photo: 'https://cdn.example.test/ghanaian.jpg',
+        count: 1,
+        hasMore: false,
+      },
+      Vegetarian: {
+        photo: 'https://cdn.example.test/vegetarian.jpg',
+        count: 1,
+        hasMore: true,
+      },
     })
     expect(mockFetch).toHaveBeenNthCalledWith(
       1,
-      '/v1/restaurant-venues?brand=ghana&limit=1&sort=rating&cuisine=ghanaian',
+      '/v1/restaurant-venues?brand=ghana&limit=50&sort=rating&cuisine=ghanaian',
     )
     expect(mockFetch).toHaveBeenNthCalledWith(
       2,
-      '/v1/restaurant-venues?brand=ghana&limit=1&sort=rating&dietary=vegetarian',
+      '/v1/restaurant-venues?brand=ghana&limit=50&sort=rating&dietary=vegetarian',
     )
   })
 
-  it('keeps the photos it got when another cuisine lookup fails', async () => {
+  it('keeps the cards it got when another cuisine lookup fails', async () => {
     mockFetch
       .mockResolvedValueOnce({
         venues: [{ coverPhoto: 'https://cdn.example.test/chinese.jpg', photos: [] }],
+        pagination: { limit: 50, hasMore: false, nextCursor: null },
       })
       .mockRejectedValueOnce(new Error('network down'))
 
@@ -71,6 +82,12 @@ describe('useCuisinePhotos', () => {
 
     await waitFor(() => expect(result.current.data).toBeDefined())
 
-    expect(result.current.data).toEqual({ Chinese: 'https://cdn.example.test/chinese.jpg' })
+    expect(result.current.data).toEqual({
+      Chinese: {
+        photo: 'https://cdn.example.test/chinese.jpg',
+        count: 1,
+        hasMore: false,
+      },
+    })
   })
 })

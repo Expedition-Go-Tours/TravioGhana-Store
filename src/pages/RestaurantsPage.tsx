@@ -11,17 +11,12 @@ import {
 import { Link, useSearchParams } from 'react-router-dom'
 import { useReducedMotion } from 'framer-motion'
 import {
-  ArrowUpRight,
-  Fish,
-  Flame,
-  Leaf,
+  ChevronLeft,
+  ChevronRight,
   MapPin,
-  Pizza,
   Search,
   SlidersHorizontal,
-  Soup,
   UtensilsCrossed,
-  type LucideIcon,
 } from 'lucide-react'
 import SEO from '../components/SEO'
 import Footer from '../components/Footer'
@@ -44,13 +39,14 @@ import {
   useSpecialOfferRestaurants,
 } from '../hooks/useRestaurantHomepage'
 import { trackRestaurantSearch } from '../lib/analytics'
+import { transformImage } from '../lib/image'
 import {
   useRecentRestaurantReviews,
   type RecentRestaurantReview,
 } from '../hooks/useRecentRestaurantReviews'
 import useMediaQuery from '../hooks/useMediaQuery'
 import useRafCallback from '../hooks/useRafCallback'
-import { useCuisinePhotos } from '../hooks/useCuisinePhotos'
+import { useCuisinePhotos, type CuisineCardInfo } from '../hooks/useCuisinePhotos'
 import './RestaurantsPage.css'
 
 const CITIES = ['Accra', 'Kumasi', 'Cape Coast', 'Takoradi', 'Tamale', 'Elmina']
@@ -58,54 +54,22 @@ const DIETARY = ['vegetarian', 'vegan', 'gluten-free', 'halal']
 
 type Cuisine = {
   label: string
-  note: string
   query: RestaurantVenueFilters
-  Icon: LucideIcon
+  href: string
 }
 
 const CUISINES: Cuisine[] = [
-  {
-    label: 'Ghanaian',
-    note: 'Jollof, banku & soups',
-    query: { cuisine: 'ghanaian' },
-    Icon: UtensilsCrossed,
-  },
-  {
-    label: 'Nigerian',
-    note: 'Suya, pepper soup & rice',
-    query: { cuisine: 'nigerian' },
-    Icon: Flame,
-  },
-  {
-    label: 'Chinese',
-    note: 'Noodles, dumplings & wok',
-    query: { cuisine: 'chinese' },
-    Icon: Soup,
-  },
-  {
-    label: 'Indian',
-    note: 'Curry, thali & tandoor',
-    query: { cuisine: 'indian' },
-    Icon: Soup,
-  },
-  {
-    label: 'Italian',
-    note: 'Pasta, pizza & espresso',
-    query: { cuisine: 'italian' },
-    Icon: Pizza,
-  },
-  {
-    label: 'Seafood',
-    note: 'Grilled catch & pepper',
-    query: { cuisine: 'seafood' },
-    Icon: Fish,
-  },
+  { label: 'Ghanaian', query: { cuisine: 'ghanaian' }, href: '/restaurants?cuisine=ghanaian' },
+  { label: 'Nigerian', query: { cuisine: 'nigerian' }, href: '/restaurants?cuisine=nigerian' },
+  { label: 'Chinese', query: { cuisine: 'chinese' }, href: '/restaurants?cuisine=chinese' },
+  { label: 'Indian', query: { cuisine: 'indian' }, href: '/restaurants?cuisine=indian' },
+  { label: 'Italian', query: { cuisine: 'italian' }, href: '/restaurants?cuisine=italian' },
+  { label: 'Seafood', query: { cuisine: 'seafood' }, href: '/restaurants?cuisine=seafood' },
   {
     label: 'Vegetarian',
-    note: 'Plant-based plates & sides',
     // The catalogue stores vegetarian as a dietary attribute, not a cuisine.
     query: { dietary: ['vegetarian'] },
-    Icon: Leaf,
+    href: '/restaurants?dietary=vegetarian',
   },
 ]
 
@@ -420,6 +384,137 @@ function DinerReviewCard({
         </div>
       )}
     </>
+  )
+}
+
+function cuisineCountLabel(info: CuisineCardInfo): string {
+  const overflow = info.hasMore && info.count >= 50 ? '+' : ''
+  const noun = info.count === 1 && !overflow ? 'place' : 'places'
+  return `${info.count}${overflow} ${noun}`
+}
+
+function CuisineSection({ cards }: { cards?: Record<string, CuisineCardInfo> }) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(true)
+  const reduceMotion = useReducedMotion()
+
+  /** One card + the rail gap, measured from the DOM so it follows the CSS. */
+  const measureStep = useCallback(() => {
+    const el = scrollRef.current
+    const first = el?.querySelector<HTMLElement>('.rh-cuisine-card-wrap')
+    if (!el || !first) return 0
+    const gap = parseFloat(getComputedStyle(el).columnGap || '0') || 0
+    return first.getBoundingClientRect().width + gap
+  }, [])
+
+  const updateArrows = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const maxScroll = el.scrollWidth - el.clientWidth
+    setCanScrollLeft(el.scrollLeft > 2)
+    setCanScrollRight(el.scrollLeft < maxScroll - 2)
+  }, [])
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    updateArrows()
+    el.addEventListener('scroll', updateArrows, { passive: true })
+    window.addEventListener('resize', updateArrows)
+    return () => {
+      el.removeEventListener('scroll', updateArrows)
+      window.removeEventListener('resize', updateArrows)
+    }
+  }, [updateArrows])
+
+  const scroll = (direction: 'left' | 'right') => {
+    const el = scrollRef.current
+    if (!el) return
+    const step = measureStep() * 3 || el.clientWidth * 0.8
+    el.scrollBy({
+      left: direction === 'left' ? -step : step,
+      behavior: reduceMotion ? 'auto' : 'smooth',
+    })
+  }
+
+  return (
+    <section className="rh-home-section rh-cuisine-section">
+      <div className="rh-section-head">
+        <div>
+          <span className="rh-cuisine-kicker">Explore by cuisine</span>
+          <h2>What are you in the mood for?</h2>
+          <p>Choose a cuisine and we’ll show you the places serving it.</p>
+        </div>
+        <div className="rh-cuisine-arrows">
+          <button
+            type="button"
+            className={`rh-cuisine-arrow${!canScrollLeft ? ' muted' : ''}`}
+            onClick={() => scroll('left')}
+            aria-label="Scroll cuisine cards left"
+            disabled={!canScrollLeft}
+          >
+            <ChevronLeft size={18} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className={`rh-cuisine-arrow${!canScrollRight ? ' muted' : ''}`}
+            onClick={() => scroll('right')}
+            aria-label="Scroll cuisine cards right"
+            disabled={!canScrollRight}
+          >
+            <ChevronRight size={18} aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+
+      <div className="rh-cuisine-clip">
+        <div className="rh-cuisine-rail" ref={scrollRef}>
+          {CUISINES.map(({ label, href }) => {
+            const info = cards?.[label]
+            const photo = info?.photo
+            const image = photo
+              ? transformImage(photo, { width: 600, quality: 'auto:good', format: 'auto' }) ?? photo
+              : null
+
+            return (
+              <div className="rh-cuisine-card-wrap" key={label}>
+                <Link
+                  className="rh-cuisine-card"
+                  to={href}
+                  aria-label={`See ${label} restaurants in Ghana`}
+                >
+                  {image ? (
+                    <img
+                      className="rh-cuisine-card__image"
+                      src={image}
+                      alt=""
+                      width={590}
+                      height={440}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <span className="rh-cuisine-card__placeholder" aria-hidden="true" />
+                  )}
+                  <span className="rh-cuisine-card__gradient" aria-hidden="true" />
+                  <span className="rh-cuisine-card__top" aria-hidden="true">
+                    <span className="rh-cuisine-card__label">{label}</span>
+                    {info && <span className="rh-cuisine-card__count">{cuisineCountLabel(info)}</span>}
+                  </span>
+                  <span className="rh-cuisine-card__footer">
+                    <span className="rh-cuisine-card__name">{label}</span>
+                    <span className="rh-cuisine-card__arrow">
+                      <ChevronRight size={22} aria-hidden="true" />
+                    </span>
+                  </span>
+                </Link>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -756,63 +851,7 @@ function RestaurantHome() {
           ))}
         </div>
 
-        <section className="rh-home-section rh-cuisine-section">
-          <div className="rh-section-head">
-            <div>
-              <span className="rh-cuisine-kicker">Explore by cuisine</span>
-              <h2>What are you in the mood for?</h2>
-              <p>Choose a cuisine and we’ll show you the places serving it.</p>
-            </div>
-          </div>
-          <div className="rh-category-grid">
-            {CUISINES.map(({ label, note, Icon }, index) => {
-              const photo = cuisinePhotos.data?.[label]
-              return (
-                <div
-                  key={label}
-                  className="rh-category-tile-shell"
-                  style={{ animationDelay: `${index * 60}ms` }}
-                >
-                  <Link
-                    className="rh-category-tile"
-                    to={`/restaurants?cuisine=${encodeURIComponent(label.toLowerCase())}`}
-                    aria-label={`See ${label} restaurants in Ghana`}
-                  >
-                    {photo ? (
-                      <img
-                        className="rh-category-tile__image"
-                        src={photo}
-                        alt=""
-                        width={560}
-                        height={700}
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    ) : (
-                      <span className="rh-category-tile__placeholder" aria-hidden="true" />
-                    )}
-                    <span className="rh-category-tile__scrim" aria-hidden="true" />
-                    <span className="rh-category-tile__top" aria-hidden="true">
-                      <span className="rh-category-tile__icon">
-                        <Icon size={18} strokeWidth={1.9} />
-                      </span>
-                      <span className="rh-category-tile__arrow">
-                        <ArrowUpRight size={16} strokeWidth={2} />
-                      </span>
-                    </span>
-                    <span className="rh-category-tile__body">
-                      <span className="rh-category-tile__index">
-                        {String(index + 1).padStart(2, '0')}
-                      </span>
-                      <span className="rh-category-tile__name">{label}</span>
-                      <span className="rh-category-tile__note">{note}</span>
-                    </span>
-                  </Link>
-                </div>
-              )
-            })}
-          </div>
-        </section>
+        <CuisineSection cards={cuisinePhotos.data} />
 
         <RestaurantRail
           title="Recommended For You"

@@ -203,7 +203,13 @@ beforeEach(() => {
   mockSectionIds.mockReturnValue(sectionIdsResult())
   mockCuisinePhotos.mockReset()
   mockCuisinePhotos.mockReturnValue({
-    data: { Ghanaian: 'https://cdn.example.test/restaurant-ghanaian.jpg' },
+    data: {
+      Ghanaian: {
+        photo: 'https://cdn.example.test/restaurant-ghanaian.jpg',
+        count: 12,
+        hasMore: false,
+      },
+    },
   } as unknown as ReturnType<typeof useCuisinePhotos>)
 })
 
@@ -324,28 +330,57 @@ describe('RestaurantsPage home', () => {
     expect(screen.getByRole('link', { name: 'Tours & Activities' })).not.toHaveAttribute('aria-current')
   })
 
-  it('links cuisine tiles to lowercase cuisine filters', () => {
+  it('renders cuisine cards as a snap rail with real filters and counts', () => {
     renderPage('/restaurants')
 
+    expect(screen.getByRole('heading', { name: 'What are you in the mood for?' })).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: 'See Ghanaian restaurants in Ghana' }),
     ).toHaveAttribute('href', '/restaurants?cuisine=ghanaian')
-    expect(screen.getByRole('heading', { name: 'What are you in the mood for?' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'See Vegetarian restaurants in Ghana' }),
+    ).toHaveAttribute('href', '/restaurants?dietary=vegetarian')
+    expect(screen.getByText('12 places')).toBeInTheDocument()
+    expect(document.querySelectorAll('.rh-cuisine-card')).toHaveLength(7)
+    expect(screen.getByRole('button', { name: 'Scroll cuisine cards left' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Scroll cuisine cards right' })).toBeInTheDocument()
   })
 
-  it('uses restaurant catalogue photos on cuisine tiles', () => {
+  it('uses restaurant catalogue photos and neutral artwork for missing cards', () => {
     renderPage('/restaurants')
 
     const ghanaian = screen.getByRole('link', { name: 'See Ghanaian restaurants in Ghana' })
-    expect(ghanaian.querySelector('img')).toHaveAttribute(
+    expect(ghanaian).toHaveClass('rh-cuisine-card')
+    expect(ghanaian.querySelector('.rh-cuisine-card__image')).toHaveAttribute(
       'src',
       'https://cdn.example.test/restaurant-ghanaian.jpg',
     )
 
-    // Cuisines without a matching venue keep a neutral tile, not stock art.
+    // Cuisines without a matching venue keep neutral artwork, not stock art or
+    // an invented listing count.
     const vegetarian = screen.getByRole('link', { name: 'See Vegetarian restaurants in Ghana' })
-    expect(vegetarian.querySelector('img')).toBeNull()
-    expect(vegetarian.querySelector('.rh-category-tile__placeholder')).toBeInTheDocument()
+    expect(vegetarian.querySelector('.rh-cuisine-card__image')).toBeNull()
+    expect(vegetarian.querySelector('.rh-cuisine-card__placeholder')).toBeInTheDocument()
+    expect(within(vegetarian).queryByText(/places/)).toBeNull()
+  })
+
+  it('scrolls the cuisine rail with the header arrows', () => {
+    const { container } = renderPage('/restaurants')
+    const rail = container.querySelector<HTMLElement>('.rh-cuisine-rail')!
+
+    // jsdom has no layout or scrolling, so give the rail a scrollable range and
+    // observe what the right arrow asks the browser to do.
+    Object.defineProperty(rail, 'scrollWidth', { configurable: true, value: 2000 })
+    Object.defineProperty(rail, 'clientWidth', { configurable: true, value: 800 })
+    const scrollBy = vi.fn()
+    Object.defineProperty(rail, 'scrollBy', { configurable: true, value: scrollBy })
+    fireEvent(window, new Event('resize'))
+
+    const right = screen.getByRole('button', { name: 'Scroll cuisine cards right' })
+    fireEvent.click(right)
+
+    expect(scrollBy).toHaveBeenCalledTimes(1)
+    expect(scrollBy.mock.calls[0][0].left).toBeGreaterThan(0)
   })
 
   it('turns a home search into URL filters', () => {

@@ -227,85 +227,71 @@
   content: '';
 }
 
-.rh-category-grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.rh-category-tile-shell {
-  min-width: 0;
-  animation: cuisine-tile-in 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-
-@keyframes cuisine-tile-in {
-  from {
-    opacity: 0;
-    transform: translateY(18px) scale(0.98);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.rh-category-tile {
-  position: relative;
-  display: block;
+/* The restaurant cuisine rail mirrors the tours "What do you want to
+   explore?" cards: same 295x220 card, pills, gradient and circular arrow.
+   Only the data is different — every photo and count comes from the catalogue. */
+.rh-cuisine-clip {
   overflow: hidden;
-  aspect-ratio: 4 / 5;
-  min-height: 200px;
-  isolation: isolate;
-  border-radius: 18px;
-  background: var(--bv-forest, #16452f);
-  box-shadow: 0 8px 20px rgb(20 39 31 / 10%);
+}
+
+.rh-cuisine-rail {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.rh-cuisine-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.rh-cuisine-card-wrap {
+  display: flex;
+  flex: 0 0 auto;
+  width: 295px;
+  min-width: 295px;
+  align-self: stretch;
+  scroll-snap-align: start;
+}
+
+.rh-cuisine-card-wrap > * {
+  width: 100%;
+}
+
+.rh-cuisine-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 220px;
+  overflow: hidden;
+  border-radius: 22px;
+  background: linear-gradient(145deg, #1d5a3b, #0b2e22);
   color: #fff;
   text-decoration: none;
-  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 240ms ease;
-  will-change: transform;
 }
 
-.rh-category-tile::after {
-  position: absolute;
-  z-index: 2;
-  inset: 0;
-  background: linear-gradient(
-    115deg,
-    transparent 24%,
-    rgb(255 255 255 / 16%) 48%,
-    transparent 72%
-  );
-  content: '';
-  pointer-events: none;
-  transform: translateX(-120%);
-  transition: transform 700ms ease;
-}
-
-.rh-category-tile:hover,
-.rh-category-tile:focus-visible {
-  transform: translateY(-6px);
-  box-shadow: 0 18px 34px rgb(20 39 31 / 18%);
-}
-
-.rh-category-tile:hover::after,
-.rh-category-tile:focus-visible::after {
-  transform: translateX(120%);
-}
-
-.rh-category-tile__image {
+.rh-cuisine-card__image {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scale(1.04);
-  transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 300ms ease;
+  object-position: center;
+  transition: transform 0.3s ease;
 }
 
-/* Shown until the catalogue photo loads, or when no venue matches the tile. */
-.rh-category-tile__placeholder {
+.rh-cuisine-card:hover .rh-cuisine-card__image,
+.rh-cuisine-card:focus-visible .rh-cuisine-card__image {
+  transform: scale(1.06);
+}
+
+/* Neutral gradient when a cuisine lookup fails or returns no artwork. */
+.rh-cuisine-card__placeholder {
   position: absolute;
   inset: 0;
   background:
@@ -313,114 +299,128 @@
     linear-gradient(145deg, #1d5a3b, #0b2e22);
 }
 
-.rh-category-tile:hover .rh-category-tile__image,
-.rh-category-tile:focus-visible .rh-category-tile__image {
-  filter: saturate(1.12);
-  transform: scale(1.13);
-}
-
-.rh-category-tile__scrim {
+.rh-cuisine-card__gradient {
   position: absolute;
   z-index: 1;
   inset: 0;
   background: linear-gradient(
-    180deg,
-    rgb(8 22 14 / 8%) 0%,
-    rgb(8 22 14 / 24%) 42%,
-    rgb(8 22 14 / 90%) 100%
+    to top,
+    rgb(0 0 0 / 70%) 0%,
+    rgb(0 0 0 / 12%) 50%,
+    transparent 100%
   );
-  transition: opacity 240ms ease;
 }
 
-.rh-category-tile:hover .rh-category-tile__scrim,
-.rh-category-tile:focus-visible .rh-category-tile__scrim {
-  opacity: 0.88;
-}
-
-.rh-category-tile__top {
+.rh-cuisine-card__top {
   position: absolute;
-  z-index: 3;
-  top: 14px;
-  right: 14px;
-  left: 14px;
+  z-index: 2;
+  top: 16px;
+  right: 16px;
+  left: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
 }
 
-.rh-category-tile__icon,
-.rh-category-tile__arrow {
+.rh-cuisine-card__label,
+.rh-cuisine-card__count {
+  flex: 0 0 auto;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-family: var(--font-body, 'DM Sans', sans-serif);
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
+}
+
+.rh-cuisine-card__label {
+  background: rgb(23 146 55 / 90%);
+  color: #fff;
+  font-weight: 600;
+}
+
+.rh-cuisine-card__count {
+  background: rgb(255 255 255 / 90%);
+  color: #333;
+  font-weight: 700;
+}
+
+.rh-cuisine-card__footer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding: 0 20px 20px;
+}
+
+.rh-cuisine-card__name {
+  font-family: var(--font-heading, 'Manrope', sans-serif);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-shadow: 0 1px 4px rgb(0 0 0 / 30%);
+}
+
+.rh-cuisine-card__arrow {
   display: grid;
   flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--bv-forest, #16452f);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+  transition: transform 0.2s;
+}
+
+.rh-cuisine-card:hover .rh-cuisine-card__arrow,
+.rh-cuisine-card:focus-visible .rh-cuisine-card__arrow {
+  transform: scale(1.1);
+}
+
+.rh-cuisine-arrows {
+  display: flex;
+  gap: 8px;
+}
+
+.rh-cuisine-arrow {
+  display: flex;
   width: 36px;
   height: 36px;
-  place-items: center;
-  border-radius: 11px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  background: #fff;
+  color: #666;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 4%);
+  transition: all 0.2s;
 }
 
-.rh-category-tile__icon {
-  border: 1px solid rgb(255 255 255 / 30%);
-  background: rgb(255 255 255 / 18%);
-  backdrop-filter: blur(8px);
-  color: #fff;
+.rh-cuisine-arrow:hover {
+  border-color: var(--bv-forest, #16452f);
+  color: var(--bv-forest, #16452f);
 }
 
-.rh-category-tile__arrow {
-  border: 1px solid rgb(255 255 255 / 26%);
-  background: rgb(255 255 255 / 14%);
-  color: rgb(255 255 255 / 86%);
-  transition: transform 240ms ease, background 240ms ease, color 240ms ease;
-}
-
-.rh-category-tile:hover .rh-category-tile__arrow,
-.rh-category-tile:focus-visible .rh-category-tile__arrow {
-  background: #fbbf7a;
-  color: var(--bv-ink, #14271f);
-  transform: translate(2px, -2px);
-}
-
-.rh-category-tile__body {
-  position: absolute;
-  z-index: 3;
-  right: 15px;
-  bottom: 15px;
-  left: 15px;
-  display: grid;
-  gap: 4px;
-}
-
-.rh-category-tile__index {
-  color: #fbbf7a;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-}
-
-.rh-category-tile__name {
-  font-family: var(--font-heading, 'Manrope', sans-serif);
-  font-size: clamp(17px, 1.6vw, 20px);
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  text-shadow: 0 1px 12px rgb(8 22 14 / 35%);
-}
-
-.rh-category-tile__note {
-  color: rgb(255 255 255 / 84%);
-  font-size: 10.5px;
-  line-height: 1.4;
+.rh-cuisine-arrow.muted {
+  border-color: #e5e4e7;
+  color: #bbb;
+  cursor: default;
+  opacity: 0.35;
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rh-category-tile-shell {
-    animation: none;
-  }
-
-  .rh-category-tile,
-  .rh-category-tile::after,
-  .rh-category-tile__image,
-  .rh-category-tile__scrim,
-  .rh-category-tile__arrow {
+  .rh-cuisine-card__image,
+  .rh-cuisine-card__arrow,
+  .rh-cuisine-arrow {
     transition: none;
   }
 }
@@ -1240,10 +1240,6 @@
 /* ── breakpoints ───────────────────────────────────────────────────────── */
 
 @media (max-width: 1180px) {
-  .rh-category-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
   .rh-home-rail {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -1254,10 +1250,6 @@
 }
 
 @media (max-width: 900px) {
-  .rh-category-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
   .rh-home-rail {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1287,6 +1279,13 @@
   }
 }
 
+@media (max-width: 768px) {
+  /* Touch users swipe the rail; the header arrows only add clutter. */
+  .rh-cuisine-arrows {
+    display: none;
+  }
+}
+
 @media (max-width: 640px) {
   .restaurants-page__main {
     padding: 28px 16px 64px;
@@ -1296,9 +1295,31 @@
     margin-bottom: 28px;
   }
 
-  .rh-category-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+  .rh-cuisine-rail {
+    gap: 12px;
+    padding-bottom: 12px;
+  }
+
+  .rh-cuisine-card-wrap {
+    width: 260px;
+    min-width: 260px;
+  }
+
+  .rh-cuisine-card {
+    height: 195px;
+  }
+
+  .rh-cuisine-card__footer {
+    padding: 0 16px 16px;
+  }
+
+  .rh-cuisine-card__name {
+    font-size: 18px;
+  }
+
+  .rh-cuisine-card__arrow {
+    width: 36px;
+    height: 36px;
   }
 
   .rh-home-rail {
@@ -1338,10 +1359,6 @@
 
   .restaurants-grid {
     grid-template-columns: 1fr;
-  }
-
-  .rh-category-tile {
-    min-height: 200px;
   }
 
   .rh-section-head {
