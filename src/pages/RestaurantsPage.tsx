@@ -181,7 +181,47 @@ function RestaurantRail({
   to: string
   action?: ReactNode
 }) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(true)
+  const reduceMotion = useReducedMotion()
   const venues = railVenues(query)
+  const showRail = !query.isPending && !query.isError && venues.length > 0
+
+  const measureStep = useCallback(() => {
+    const el = scrollRef.current
+    const first = el?.querySelector<HTMLElement>('.rh-home-card-wrap')
+    if (!el || !first) return 0
+    const gap = parseFloat(getComputedStyle(el).columnGap || '0') || 0
+    return first.getBoundingClientRect().width + gap
+  }, [])
+
+  const updateArrows = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const maxScroll = el.scrollWidth - el.clientWidth
+    setCanScrollLeft(el.scrollLeft > 2)
+    setCanScrollRight(el.scrollLeft < maxScroll - 2)
+  }, [])
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    updateArrows()
+    el.addEventListener('scroll', updateArrows, { passive: true })
+    window.addEventListener('resize', updateArrows)
+    return () => {
+      el.removeEventListener('scroll', updateArrows)
+      window.removeEventListener('resize', updateArrows)
+    }
+  }, [showRail, updateArrows])
+
+  const scroll = (direction: 'left' | 'right') => {
+    const el = scrollRef.current
+    if (!el) return
+    const step = measureStep() * 3 || el.clientWidth * 0.8
+    el.scrollBy({ left: direction === 'left' ? -step : step, behavior: reduceMotion ? 'auto' : 'smooth' })
+  }
 
   return (
     <section className="rh-home-section">
@@ -192,14 +232,36 @@ function RestaurantRail({
         </div>
         <div className="rh-section-head__actions">
           {action}
+          <div className="rh-rail-arrows">
+            <button
+              type="button"
+              className={`rh-rail-arrow${!canScrollLeft ? ' muted' : ''}`}
+              onClick={() => scroll('left')}
+              aria-label={`Scroll ${title} left`}
+              disabled={!canScrollLeft}
+            >
+              <ChevronLeft size={18} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className={`rh-rail-arrow${!canScrollRight ? ' muted' : ''}`}
+              onClick={() => scroll('right')}
+              aria-label={`Scroll ${title} right`}
+              disabled={!canScrollRight}
+            >
+              <ChevronRight size={18} aria-hidden="true" />
+            </button>
+          </div>
           <Link to={to}>See all</Link>
         </div>
       </div>
 
       {query.isPending && (
         <div className="rh-home-rail" aria-label={`Loading ${title}`}>
-          {Array.from({ length: 4 }, (_, index) => (
-            <div key={index} className="restaurant-skeleton" />
+          {Array.from({ length: 5 }, (_, index) => (
+            <div key={index} className="rh-home-card-wrap">
+              <div className="restaurant-skeleton" />
+            </div>
           ))}
         </div>
       )}
@@ -220,16 +282,19 @@ function RestaurantRail({
         </div>
       )}
 
-      {!query.isPending && !query.isError && venues.length > 0 && (
-        <div className="rh-home-rail">
-          {venues.map((venue, index) => (
-            <RestaurantCard
-              key={venue.id}
-              venue={venue}
-              section={section}
-              position={index}
-            />
-          ))}
+      {showRail && (
+        <div className="rh-rail-clip">
+          <div className="rh-home-rail" ref={scrollRef} aria-label={title}>
+            {venues.map((venue, index) => (
+              <div key={venue.id} className="rh-home-card-wrap">
+                <RestaurantCard
+                  venue={venue}
+                  section={section}
+                  position={index}
+                />
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </section>

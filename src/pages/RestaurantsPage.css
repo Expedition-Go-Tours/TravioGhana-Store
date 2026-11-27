@@ -417,6 +417,40 @@
   pointer-events: none;
 }
 
+/* Restaurant-rail arrows — same circular chevron control as the cuisine rail. */
+.rh-rail-arrows {
+  display: flex;
+  gap: 8px;
+}
+
+.rh-rail-arrow {
+  display: flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  background: #fff;
+  color: #666;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 4%);
+  transition: all 0.2s;
+}
+
+.rh-rail-arrow:hover {
+  border-color: var(--bv-forest, #16452f);
+  color: var(--bv-forest, #16452f);
+}
+
+.rh-rail-arrow.muted {
+  border-color: #e5e4e7;
+  color: #bbb;
+  cursor: default;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rh-cuisine-card__image,
   .rh-cuisine-card__arrow,
@@ -426,9 +460,43 @@
 }
 
 .rh-home-rail {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 18px;
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.rh-home-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.rh-rail-clip {
+  overflow: hidden;
+}
+
+.rh-home-card-wrap {
+  display: flex;
+  flex: 0 0 auto;
+  width: 295px;
+  min-width: 295px;
+  align-self: stretch;
+  scroll-snap-align: start;
+}
+
+.rh-home-card-wrap > * {
+  width: 100%;
+}
+
+.rh-home-rail > .restaurant-skeleton {
+  flex: 0 0 auto;
+  width: 295px;
+  min-width: 295px;
+  scroll-snap-align: start;
 }
 
 .rh-home-rail-message {
@@ -1240,20 +1308,12 @@
 /* ── breakpoints ───────────────────────────────────────────────────────── */
 
 @media (max-width: 1180px) {
-  .rh-home-rail {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
   .restaurants-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 900px) {
-  .rh-home-rail {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .rh-mobile-filter-toggle {
     display: inline-flex;
   }
@@ -1281,7 +1341,8 @@
 
 @media (max-width: 768px) {
   /* Touch users swipe the rail; the header arrows only add clutter. */
-  .rh-cuisine-arrows {
+  .rh-cuisine-arrows,
+  .rh-rail-arrows {
     display: none;
   }
 }
@@ -1323,38 +1384,14 @@
   }
 
   .rh-home-rail {
-    display: flex;
-    align-items: stretch;
     gap: 12px;
-    grid-template-columns: none;
-    margin: 0 -16px;
-    padding: 2px 16px 12px;
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    scroll-padding-inline: 16px;
-    scroll-snap-type: x mandatory;
-    scrollbar-color: #c5d2c9 transparent;
-    scrollbar-width: thin;
-    -webkit-overflow-scrolling: touch;
+    padding-bottom: 12px;
   }
 
-  .rh-home-rail > .restaurant-card,
+  .rh-home-card-wrap,
   .rh-home-rail > .restaurant-skeleton {
-    flex: 0 0 clamp(250px, 78vw, 320px);
-    scroll-snap-align: start;
-  }
-
-  .rh-home-rail::-webkit-scrollbar {
-    height: 6px;
-  }
-
-  .rh-home-rail::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .rh-home-rail::-webkit-scrollbar-thumb {
-    border-radius: 999px;
-    background: #c5d2c9;
+    width: 260px;
+    min-width: 260px;
   }
 
   .restaurants-grid {
