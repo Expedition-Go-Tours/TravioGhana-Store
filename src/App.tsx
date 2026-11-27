@@ -55,6 +55,18 @@ const RestaurantDetailPage = lazy(() => import('./pages/restaurants/RestaurantDe
 const RestaurantReviewFormPage = lazy(() => import('./pages/restaurants/RestaurantReviewFormPage'))
 const RestaurantClaimPage = lazy(() => import('./pages/restaurants/RestaurantClaimPage'))
 const RestaurantManagePage = lazy(() => import('./pages/restaurants/RestaurantManagePage'))
+const RestaurantDashboardPage = lazy(() => import('./pages/restaurants/dashboard/RestaurantDashboardPage'))
+const DashboardOverviewPage = lazy(() => import('./pages/restaurants/dashboard/DashboardOverview'))
+const DashboardReviewsPage = lazy(() => import('./pages/restaurants/dashboard/DashboardReviews'))
+const DashboardPhotosPage = lazy(() => import('./pages/restaurants/dashboard/DashboardPhotos'))
+const DashboardHoursPage = lazy(() => import('./pages/restaurants/dashboard/DashboardHours'))
+const DashboardBusinessInfoPage = lazy(() => import('./pages/restaurants/dashboard/DashboardBusinessInfo'))
+const DashboardMenuPage = lazy(() => import('./pages/restaurants/dashboard/DashboardMenu'))
+const DashboardTeamPage = lazy(() => import('./pages/restaurants/dashboard/DashboardTeam'))
+const DashboardInsightsPage = lazy(() => import('./pages/restaurants/dashboard/DashboardInsights'))
+const DashboardActivityPage = lazy(() => import('./pages/restaurants/dashboard/DashboardActivity'))
+const DashboardSettingsPage = lazy(() => import('./pages/restaurants/dashboard/DashboardSettings'))
+const RestaurantInvitePage = lazy(() => import('./pages/restaurants/dashboard/RestaurantInvitePage'))
 const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage'))
 const SharedWishlistPage = lazy(() => import('./pages/SharedWishlistPage'))
 const AllReviewsPage = lazy(() => import('./pages/AllReviewsPage'))
@@ -412,6 +424,7 @@ function AppContent() {
           } />
           {/* Placeholder until the restaurant catalogue ships. */}
           <Route path="/restaurants" element={<RestaurantsPage />} />
+          <Route path="/restaurants/manage/invite" element={<RestaurantInvitePage />} />
           <Route path="/restaurants/manage" element={<RestaurantManagePage />} />
           <Route path="/restaurants/:slug/review" element={<RestaurantReviewFormPage />} />
           <Route
@@ -419,7 +432,18 @@ function AppContent() {
             element={<RestaurantReviewFormPage />}
           />
           <Route path="/restaurants/:slug/claim" element={<RestaurantClaimPage />} />
-          <Route path="/restaurants/:slug/manage" element={<RestaurantManagePage />} />
+          <Route path="/restaurants/:slug/manage" element={<RestaurantDashboardPage />}>
+            <Route index element={<DashboardOverviewPage />} />
+            <Route path="reviews" element={<DashboardReviewsPage />} />
+            <Route path="photos" element={<DashboardPhotosPage />} />
+            <Route path="hours" element={<DashboardHoursPage />} />
+            <Route path="business-info" element={<DashboardBusinessInfoPage />} />
+            <Route path="menu" element={<DashboardMenuPage />} />
+            <Route path="team" element={<DashboardTeamPage />} />
+            <Route path="insights" element={<DashboardInsightsPage />} />
+            <Route path="activity" element={<DashboardActivityPage />} />
+            <Route path="settings" element={<DashboardSettingsPage />} />
+          </Route>
           <Route path="/restaurants/:slug" element={<RestaurantDetailPage />} />
           {/* The old dedicated view-all page: the top recommendations are now
               a section filter on All Tours, so deep links forward there. */}

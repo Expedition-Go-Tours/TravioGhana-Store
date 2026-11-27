@@ -88,6 +88,7 @@ export interface RestaurantVenueUpdate {
   hours?: Record<string, unknown>
   photos?: string[]
   coverPhoto?: string | null
+  status?: 'ACTIVE' | 'PAUSED'
 }
 
 function writeOptions(method: 'POST' | 'PATCH', body: unknown): RequestInit {
@@ -245,6 +246,9 @@ export function useUpdateOwnRestaurantVenue(slugOrId: string) {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['restaurant-venue', slugOrId] })
       void queryClient.invalidateQueries({ queryKey: ['restaurant-venue-my-venues'] })
+      // The dashboard session carries the editable fields, so it has to follow
+      // every owner edit (hours, business info and status included).
+      void queryClient.invalidateQueries({ queryKey: ['restaurant-dashboard', slugOrId] })
     },
   })
 }
