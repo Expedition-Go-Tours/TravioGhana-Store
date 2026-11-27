@@ -72,7 +72,7 @@ describe('shared Hero', () => {
     expect(
       screen.getByText('Reserve restaurants, rooftop spots and authentic local dining experiences.'),
     ).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Search cities, neighbourhoods or cuisines')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Search restaurants, cities or cuisines')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Find a table' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Restaurants' })).toHaveAttribute('aria-current', 'page')
     expect(screen.getByRole('link', { name: 'Tours & Activities' })).not.toHaveAttribute('aria-current')

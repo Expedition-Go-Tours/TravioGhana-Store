@@ -431,7 +431,7 @@ export default function SearchBar({ variant = 'tours' }: SearchBarProps) {
                 type="text"
                 className="hero-search-input"
                 placeholder={isRestaurants
-                  ? 'Search cities, neighbourhoods or cuisines'
+                  ? 'Search restaurants, cities or cuisines'
                   : isPersonalizing
                     ? `${t('hero.search')}...`
                     : t('hero.destinationPlaceholder')}
