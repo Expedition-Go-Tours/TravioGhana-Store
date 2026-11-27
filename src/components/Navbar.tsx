@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { tourPath } from '../lib/tourPath'
 import { AnimatePresence, motion, type Variants } from 'framer-motion'
 import { toast } from 'sonner'
-import { Globe, Megaphone, LayoutDashboard, ChevronRight, LogIn, LogOut, DollarSign, Bell, Settings } from 'lucide-react'
+import { Globe, Megaphone, LayoutDashboard, ChevronRight, LogIn, LogOut, DollarSign, Bell, Settings, MapPin, UtensilsCrossed } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n/config'
 import { resolveLanguage } from '../i18n/languages'
@@ -23,6 +23,8 @@ import { useLocationSearch } from '../context/LocationSearchContext'
 import { useContinuePlanning } from '../context/ContinuePlanningContext'
 import { useSearchInput } from '../context/SearchInputContext'
 import { useSearchAutocomplete, type SearchSuggestion } from '../hooks/useSearchAutocomplete'
+import { useRestaurantSearch, type RestaurantPlaceSuggestion } from '../hooks/useRestaurantSearch'
+import type { RestaurantVenue } from '../hooks/useRestaurantVenues'
 import { useRecentSearches, type RecentSearch } from '../hooks/useRecentSearches'
 import BookingsIcon from './shared/BookingsIcon'
 import SearchSuggestionIcon from './shared/SearchSuggestionIcon'
@@ -48,6 +50,27 @@ const navDropdownVariants: Variants = {
 
 /* BookingsIcon now lives in components/shared/BookingsIcon.tsx (imported above)
    so the search-dropdown suggestion icons can reuse it. */
+
+/** Restaurant / place rows for the compact navbar search on restaurant routes. */
+type NavRestaurantRow =
+  | {
+      kind: 'restaurant'
+      id: string
+      name: string
+      subtitle: string
+      venue: RestaurantVenue
+    }
+  | {
+      kind: 'place'
+      id: string
+      name: string
+      subtitle: string
+      place: RestaurantPlaceSuggestion
+    }
+
+function titleCase(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
 
 interface NavbarProps {
   onOpenAuth?: (mode: 'signin' | 'signup') => void
@@ -117,6 +140,34 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   const navSearchRef = useRef<HTMLDivElement>(null)
   const navInputRef = useRef<HTMLInputElement>(null)
   const { suggestions: navSuggestions, isSearching: navIsSearching } = useSearchAutocomplete(navSearchValue)
+  // On restaurant routes the compact search must search restaurants, not the
+  // tours index: a diner who scrolls and searches a restaurant name should land
+  // on its results, not an empty Tours page.
+  const isRestaurantsPath =
+    location.pathname === '/restaurants' || location.pathname.startsWith('/restaurants/')
+  const restaurantSearch = useRestaurantSearch(isRestaurantsPath ? navSearchValue : '')
+  const navRestaurantRows = useMemo<NavRestaurantRow[]>(() => {
+    if (!isRestaurantsPath) return []
+    const restaurants = restaurantSearch.restaurants.map((venue) => ({
+      kind: 'restaurant' as const,
+      id: venue.id,
+      name: venue.name,
+      subtitle: [venue.city, ...(venue.cuisines ?? []).slice(0, 2).map(titleCase)]
+        .filter(Boolean)
+        .join(' · '),
+      venue,
+    }))
+    const places = restaurantSearch.places.map((place) => ({
+      kind: 'place' as const,
+      id: `place-${place.name}`,
+      name: place.name,
+      subtitle: place.subtitle,
+      place,
+    }))
+    return [...restaurants, ...places]
+  }, [isRestaurantsPath, restaurantSearch.restaurants, restaurantSearch.places])
+  const navActiveCount = isRestaurantsPath ? navRestaurantRows.length : navSuggestions.length
+  const navActiveSearching = isRestaurantsPath ? restaurantSearch.isSearching : navIsSearching
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches()
   const { hasActiveSearch, setLocation, resetLocation } = useLocationSearch()
   const { clearContinuePlanning } = useContinuePlanning()
@@ -238,7 +289,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
       if (suggestion.region) setLocation(suggestion.region)
       navigate(tourPath(suggestion.tourId, suggestion.slug))
     }
-  }, [navigate, addSearch, setLocation])
+  }, [navigate, addSearch, setLocation, setNavSearchValue])
 
   const navigateToRecent = useCallback((item: RecentSearch) => {
     setShowNavDropdown(false)
@@ -258,7 +309,34 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
     } else if (item.type === 'tour' && item.slug) {
       navigate(tourPath(item.id, item.slug))
     }
-  }, [navigate, setLocation])
+  }, [navigate, setLocation, setNavSearchValue])
+
+  const navigateToRestaurantRow = useCallback((row: NavRestaurantRow) => {
+    setShowNavDropdown(false)
+    setNavHighlightedIndex(-1)
+    setNavSearchValue('')
+    setNavIsFocused(false)
+    navInputRef.current?.blur()
+
+    if (row.kind === 'restaurant') {
+      navigate(`/restaurants/${row.venue.slug}`)
+      return
+    }
+
+    const { place } = row
+    if (place.latitude == null || place.longitude == null) {
+      navigate(`/restaurants?q=${encodeURIComponent(place.name)}`)
+      return
+    }
+
+    const params = new URLSearchParams({
+      lat: String(place.latitude),
+      lng: String(place.longitude),
+      radiusKm: String(place.radiusKm ?? 10),
+      place: place.name,
+    })
+    navigate(`/restaurants?${params.toString()}`)
+  }, [navigate, setNavSearchValue])
 
   const navigateToSearchPage = useCallback(() => {
     setShowNavDropdown(false)
@@ -271,6 +349,10 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
     setNavSearchValue('')
     setNavIsFocused(false)
     navInputRef.current?.blur()
+    if (isRestaurantsPath) {
+      navigate(`/restaurants?q=${encodeURIComponent(q)}`)
+      return
+    }
     if (navSuggestions.length > 0) {
       const top = navSuggestions[0]
       // Find a place/region that actually matches the query (not a random substring match)
@@ -296,7 +378,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
     } else {
       navigate(`/tours?place=${encodeURIComponent(q)}`)
     }
-  }, [navSearchValue, navigate, setLocation, navSuggestions])
+  }, [navSearchValue, navigate, setLocation, navSuggestions, isRestaurantsPath, setNavSearchValue])
 
   // Navbar "List an Experience" CTA (desktop).
   //
@@ -404,9 +486,19 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
     }
   }, [location.state])
 
+  const activateNavHighlighted = (index: number) => {
+    if (isRestaurantsPath) {
+      const row = navRestaurantRows[index]
+      if (row) navigateToRestaurantRow(row)
+      return
+    }
+    const suggestion = navSuggestions[index]
+    if (suggestion) navigateToSuggestion(suggestion)
+  }
+
   const handleNavKeyDown = (e: React.KeyboardEvent) => {
     if (!showNavDropdown) {
-      if (e.key === 'ArrowDown' && navSuggestions.length > 0) {
+      if (e.key === 'ArrowDown' && navActiveCount > 0) {
         e.preventDefault()
         setShowNavDropdown(true)
         setNavHighlightedIndex(0)
@@ -417,27 +509,27 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
       case 'ArrowDown':
         e.preventDefault()
         setNavHighlightedIndex(prev =>
-          prev < navSuggestions.length - 1 ? prev + 1 : 0
+          prev < navActiveCount - 1 ? prev + 1 : 0
         )
         break
       case 'ArrowUp':
         e.preventDefault()
         setNavHighlightedIndex(prev =>
-          prev > 0 ? prev - 1 : navSuggestions.length - 1
+          prev > 0 ? prev - 1 : navActiveCount - 1
         )
         break
       case 'Enter':
         e.preventDefault()
-        if (navHighlightedIndex >= 0 && navHighlightedIndex < navSuggestions.length) {
-          navigateToSuggestion(navSuggestions[navHighlightedIndex])
+        if (navHighlightedIndex >= 0 && navHighlightedIndex < navActiveCount) {
+          activateNavHighlighted(navHighlightedIndex)
         } else {
           navigateToSearchPage()
         }
         break
       case 'Tab':
-        if (navHighlightedIndex >= 0 && navHighlightedIndex < navSuggestions.length) {
+        if (navHighlightedIndex >= 0 && navHighlightedIndex < navActiveCount) {
           e.preventDefault()
-          navigateToSuggestion(navSuggestions[navHighlightedIndex])
+          activateNavHighlighted(navHighlightedIndex)
         } else {
           setShowNavDropdown(false)
         }
@@ -452,17 +544,17 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   }
 
   useEffect(() => {
-    if (navSuggestions.length > 0 && navSearchValue.trim().length >= 2) {
+    if (navActiveCount > 0 && navSearchValue.trim().length >= 2) {
       window.setTimeout(() => setShowNavDropdown(true), 0)
       window.setTimeout(() => setNavHighlightedIndex(-1), 0)
-    } else if (!navIsSearching && navSearchValue.trim().length >= 2) {
+    } else if (!navActiveSearching && navSearchValue.trim().length >= 2) {
       window.setTimeout(() => setShowNavDropdown(true), 0)
       window.setTimeout(() => setNavHighlightedIndex(-1), 0)
     } else {
       window.setTimeout(() => setShowNavDropdown(false), 0)
       window.setTimeout(() => setNavHighlightedIndex(-1), 0)
     }
-  }, [navSuggestions, navSearchValue, navIsSearching])
+  }, [navActiveCount, navSearchValue, navActiveSearching])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -485,12 +577,15 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
       : []),
   ]
 
-  const navDropdownOpen =
-    (navIsFocused && !navSearchValue.trim() && recentSearches.length > 0) ||
-    (showNavDropdown && navSuggestions.length > 0) ||
-    (navIsSearching && navIsFocused)
+  const navDropdownOpen = isRestaurantsPath
+    ? navIsFocused && navSearchValue.trim().length >= 2
+    : (navIsFocused && !navSearchValue.trim() && recentSearches.length > 0) ||
+      (showNavDropdown && navSuggestions.length > 0) ||
+      (navIsSearching && navIsFocused)
 
-  const navShowSkeleton = navIsSearching && navIsFocused && navSuggestions.length === 0
+  const navShowSkeleton = isRestaurantsPath
+    ? navIsFocused && restaurantSearch.isSearching && navRestaurantRows.length === 0
+    : navIsSearching && navIsFocused && navSuggestions.length === 0
 
   return (
     <>
@@ -526,7 +621,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                   ref={navInputRef}
                   type="text"
                   className="navbar-search-input"
-                  placeholder={t('hero.destinationPlaceholder')}
+                  placeholder={isRestaurantsPath ? 'Search restaurants, cities or cuisines' : t('hero.destinationPlaceholder')}
                   autoComplete="off"
                   value={navSearchValue}
                   onChange={(e) => setNavSearchValue(e.target.value)}
@@ -569,6 +664,52 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                       </div>
                     ))}
                   </div>
+                ) : isRestaurantsPath ? (
+                  <>
+                    {navRestaurantRows.length > 0 && (
+                      <>
+                        <div className="search-smart-header">
+                          <strong>Restaurants</strong>
+                          <span>Matching &ldquo;{navSearchValue.trim()}&rdquo;</span>
+                        </div>
+                        {navRestaurantRows.map((row, idx) => (
+                          <div
+                            key={row.id}
+                            className={`search-suggestion suggestion--${row.kind === 'restaurant' ? 'tour' : 'region'}${idx === navHighlightedIndex ? ' highlighted' : ''}`}
+                            onMouseDown={(e) => {
+                              e.preventDefault()
+                              navigateToRestaurantRow(row)
+                            }}
+                          >
+                            <div className="search-suggestion-icon-wrap">
+                              <span className="search-suggestion-icon">
+                                {row.kind === 'restaurant' ? <UtensilsCrossed size={18} /> : <MapPin size={18} />}
+                              </span>
+                            </div>
+                            <div className="search-suggestion-text">
+                              <span className="search-suggestion-title">{row.name}</span>
+                              {row.subtitle && (
+                                <span className="search-suggestion-sub">{row.subtitle}</span>
+                              )}
+                            </div>
+                            <span className="search-suggestion-badge">
+                              {row.kind === 'restaurant' ? 'Restaurant' : 'Place'}
+                            </span>
+                          </div>
+                        ))}
+                        <div className="search-smart-footer">
+                          <span>{restaurantSearch.restaurants.length} restaurants · {restaurantSearch.places.length} places</span>
+                          <span>Ghana restaurant directory</span>
+                        </div>
+                      </>
+                    )}
+                    {navRestaurantRows.length === 0 && !restaurantSearch.isSearching && navSearchValue.trim().length >= 2 && (
+                      <div className="search-suggestion-empty">
+                        <b>No matching restaurant found</b>
+                        Try the restaurant name, a city or a cuisine.
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <>
                     {navIsFocused && !navSearchValue.trim() && recentSearches.length > 0 && (

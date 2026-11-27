@@ -90,6 +90,10 @@ vi.mock('../hooks/useSearchAutocomplete', () => ({
   useSearchAutocomplete: () => ({ suggestions: [], isSearching: false }),
 }))
 
+vi.mock('../hooks/useRestaurantSearch', () => ({
+  useRestaurantSearch: () => ({ restaurants: [], places: [], isSearching: false, hasQuery: false }),
+}))
+
 vi.mock('../hooks/useRecentSearches', () => ({
   useRecentSearches: () => ({ recentSearches: [], addSearch: vi.fn(), removeSearch: vi.fn(), clearAll: vi.fn() }),
 }))
