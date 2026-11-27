@@ -45,66 +45,82 @@
   outline-offset: 2px;
 }
 
-/* ── Hero variant — tabs live inside the search card (icon + underline) ─── */
-
-.vertical-switch--hero {
-  position: relative;
-  display: flex;
-  width: 100%;
-  gap: 8px;
-  margin: 0;
-  padding: 14px 12px 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+.vertical-switch__text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
 }
 
-.vertical-switch--hero::-webkit-scrollbar {
-  display: none;
+/* ── Hero variant — a full-width 3-column tab bar inside the search card ──
+   The tabs span exactly the same width as the search field and the button
+   below (the card's inner width), split into three equal columns. */
+
+.vertical-switch--hero {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 18px 18px 0 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: hidden;
 }
 
 .vertical-switch--hero .vertical-switch__option {
   position: relative;
-  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
   min-width: 0;
-  min-height: 48px;
-  gap: 10px;
-  padding: 10px 18px 14px;
-  border-radius: 14px 14px 0 0;
-  color: var(--bv-text);
-  font-family: var(--font-heading);
-  font-size: 15px;
+  min-height: 54px;
+  padding: 10px 12px;
+  border: 0;
+  /* Hairline between columns, the way the reference divides the tabs. */
+  border-left: 1px solid #eef1f4;
+  border-radius: 0;
+  color: var(--bv-text, #344054);
+  font-family: var(--hero-font, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, Roboto,
+      'Helvetica Neue', Arial, sans-serif);
+  font-size: clamp(12.5px, 1.05vw, 14px);
   font-weight: 700;
-  line-height: 1;
-  text-align: left;
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
+  /* Only the indicator changes colour; the tab itself stays the card's white. */
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.vertical-switch--hero .vertical-switch__option:first-child {
+  border-left: 0;
 }
 
 .vertical-switch--hero .vertical-switch__option:hover {
-  background: transparent;
-  color: var(--bv-forest);
+  background: #f7f9f8;
+  color: var(--bv-forest, #065f46);
 }
 
 .vertical-switch--hero .vertical-switch__option--active,
 .vertical-switch--hero .vertical-switch__option--active:hover {
-  background: var(--bv-accent-soft);
-  color: var(--bv-accent-strong);
+  background: transparent;
+  color: var(--bv-accent-strong, #15803d);
   box-shadow: none;
 }
 
-/* Green underline hugging the divider for the active tab. */
+/* The green indicator owns the whole column and sits on the divider. */
 .vertical-switch--hero .vertical-switch__option--active::after {
   position: absolute;
-  right: 18px;
+  right: 0;
   bottom: 0;
-  left: 18px;
+  left: 0;
   height: 3px;
-  border-radius: 3px 3px 0 0;
-  background: var(--bv-accent);
+  border-radius: 0;
+  background: var(--bv-accent, #16a34a);
   content: '';
 }
 
@@ -113,11 +129,19 @@
 }
 
 .vertical-switch--hero .vertical-switch__label {
-  white-space: nowrap;
+  /* "Hotels & Accommodations" is longer than a third of the card: let it
+     wrap inside its column instead of overflowing into the next one. */
+  white-space: normal;
+  text-wrap: balance;
 }
 
 .vertical-switch__option--soon {
   cursor: not-allowed;
+  color: var(--bv-muted);
+}
+
+/* Keep the coming-soon tab visually secondary inside the hero bar too. */
+.vertical-switch--hero .vertical-switch__option--soon {
   color: var(--bv-muted);
 }
 
@@ -133,33 +157,50 @@
   line-height: 1;
 }
 
-@media (max-width: 768px) {
-  /* The third tab ("Hotels & Accommodations") overflows the strip on phones;
-     a right-edge fade signals that more tabs sit off-screen and can be swiped. */
-  .vertical-switch--hero::after {
-    position: absolute;
-    top: 14px;
-    right: 0;
-    bottom: 0;
-    width: 34px;
-    background: linear-gradient(to right, rgba(255, 255, 255, 0), #fff 78%);
-    content: '';
-    pointer-events: none;
+/* Tablets and phones: stack icon over a wrapped label in each equal column
+   (no horizontal scrolling, nothing hidden off-screen). Starting the column
+   at the top keeps every icon and label on the same line instead of letting
+   each tab centre its own differently-sized block. */
+@media (max-width: 900px) {
+  .vertical-switch--hero .vertical-switch__option {
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 7px;
+    min-height: 0;
+    padding: 12px 4px 10px;
+    font-size: clamp(11.5px, 2.4vw, 12.5px);
+    line-height: 1.15;
   }
 
-  .vertical-switch--hero {
-    padding-right: 20px;
+  .vertical-switch--hero .vertical-switch__icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .vertical-switch--hero .vertical-switch__label {
+    white-space: normal;
+  }
+
+  .vertical-switch--hero .vertical-switch__text {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .vertical-switch--hero .vertical-switch__option--active::after {
+    height: 3px;
   }
 }
 
 @media (max-width: 480px) {
-  .vertical-switch {
+  /* Pill variant only — the hero tab bar always spans the full card width and
+     must not inherit the pill's max-width or top margin. */
+  .vertical-switch:not(.vertical-switch--hero) {
     width: 100%;
     max-width: 320px;
     margin-top: 14px;
   }
 
-  .vertical-switch__option {
+  .vertical-switch:not(.vertical-switch--hero) .vertical-switch__option {
     flex: 1;
     min-width: 0;
     padding: 8px 10px;
@@ -167,18 +208,6 @@
   }
 
   .vertical-switch--hero {
-    padding: 6px 8px 0;
-    gap: 2px;
-  }
-
-  .vertical-switch--hero .vertical-switch__option {
-    padding: 9px 14px 12px;
-    font-size: 13.5px;
-    gap: 7px;
-  }
-
-  .vertical-switch--hero .vertical-switch__option--active::after {
-    right: 14px;
-    left: 14px;
+    border-radius: 16px 16px 0 0;
   }
 }

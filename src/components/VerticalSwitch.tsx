@@ -1,8 +1,9 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { BedDouble, Route, UtensilsCrossed, type LucideIcon } from 'lucide-react'
+import { BedDouble, Map, UtensilsCrossed, type LucideIcon } from 'lucide-react'
 import { heroVariantFromPath } from '../lib/heroVertical'
 import { prepareVerticalSwitch } from '../lib/useVerticalScrollReset'
+import { prefetchRestaurantHome } from '../lib/prefetchVertical'
 import './VerticalSwitch.css'
 
 interface VerticalOption {
@@ -15,14 +16,13 @@ interface VerticalOption {
 }
 
 /**
- * "Tours & Activities" uses a route glyph rather than a compass: a journey
- * reads as a guided tour/itinerary and never gets mistaken for navigation,
- * which the location pin already covers.
+ * "Tours & Activities" uses a map glyph: it reads as a guided itinerary, and
+ * the location pin in the search field already owns the "place" metaphor.
  */
 const OPTIONS: VerticalOption[] = [
-  { id: 'tours', to: '/', labelKey: 'hero.verticalTours', label: 'Tours & Activities', icon: Route },
+  { id: 'tours', to: '/', labelKey: 'hero.verticalTours', label: 'Tours & Activities', icon: Map },
   { id: 'restaurants', to: '/restaurants', labelKey: 'hero.verticalRestaurants', label: 'Restaurants', icon: UtensilsCrossed },
-  { id: 'hotels', labelKey: 'hero.verticalHotels', label: 'Hotels & Accommodations', icon: BedDouble, comingSoon: true },
+  { id: 'hotels', labelKey: 'hero.verticalHotels', label: 'Hotels & Stays', icon: BedDouble, comingSoon: true },
 ]
 
 interface VerticalSwitchProps {
@@ -60,14 +60,18 @@ export default function VerticalSwitch({ variant = 'pill' }: VerticalSwitchProps
               key={option.id}
               className="vertical-switch__option vertical-switch__option--soon"
               aria-disabled="true"
-              title={t('hero.verticalSoon', { defaultValue: 'Coming soon' })}
+              title={t('hero.verticalHotelsTitle', {
+                defaultValue: 'Hotels & Accommodations — coming soon',
+              })}
             >
-              <Icon className="vertical-switch__icon" size={isHero ? 22 : 16} aria-hidden="true" />
-              <span className="vertical-switch__label">
-                {t(option.labelKey, { defaultValue: option.label })}
-              </span>
-              <span className="vertical-switch__soon-badge">
-                {t('hero.verticalSoon', { defaultValue: 'Soon' })}
+              <Icon className="vertical-switch__icon" size={isHero ? 20 : 16} aria-hidden="true" />
+              <span className="vertical-switch__text">
+                <span className="vertical-switch__label">
+                  {t(option.labelKey, { defaultValue: option.label })}
+                </span>
+                <span className="vertical-switch__soon-badge">
+                  {t('hero.verticalSoon', { defaultValue: 'Soon' })}
+                </span>
               </span>
             </span>
           )
@@ -80,20 +84,20 @@ export default function VerticalSwitch({ variant = 'pill' }: VerticalSwitchProps
             replace
             className={`vertical-switch__option${isActive ? ' vertical-switch__option--active' : ''}`}
             aria-current={isActive ? 'page' : undefined}
+            onMouseEnter={option.id === 'restaurants' && !isActive ? prefetchRestaurantHome : undefined}
+            onFocus={option.id === 'restaurants' && !isActive ? prefetchRestaurantHome : undefined}
             onClick={(event) => {
               // Let the browser handle new-tab / modified clicks as usual.
               if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
               prepareVerticalSwitch()
             }}
           >
-            <Icon className="vertical-switch__icon" size={isHero ? 22 : 16} aria-hidden="true" />
-            {isHero ? (
+            <Icon className="vertical-switch__icon" size={isHero ? 20 : 16} aria-hidden="true" />
+            <span className="vertical-switch__text">
               <span className="vertical-switch__label">
                 {t(option.labelKey, { defaultValue: option.label })}
               </span>
-            ) : (
-              t(option.labelKey, { defaultValue: option.label })
-            )}
+            </span>
           </Link>
         )
       })}

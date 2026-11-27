@@ -14,24 +14,35 @@
   align-items: center;
   width: 100%;
   border: 0;
-  border-radius: 0 0 20px 20px;
+  border-radius: 0 0 18px 18px;
   background: #fff;
   box-shadow: none;
-  min-height: 66px;
+  min-height: 58px;
 }
 
 .hero-search-input-wrap {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   flex: 1;
   min-width: 0;
-  padding: 12px 14px 12px 24px;
+  padding: 10px 14px 10px 20px;
+}
+
+.hero-search-icon-slot {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-self: stretch;
+  align-items: center;
+  justify-content: center;
+  padding-right: 11px;
+  border-right: 1px solid #e2e8f0;
+  color: #334155;
 }
 
 .hero-search-icon {
   flex-shrink: 0;
-  color: var(--bv-forest, #065f46);
+  color: inherit;
 }
 
 .hero-search-input-inner {
@@ -44,8 +55,9 @@
 }
 
 .hero-search-label {
-  font-family: 'Manrope', sans-serif;
-  font-size: 13px;
+  font-family: var(--hero-font, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, Roboto,
+      'Helvetica Neue', Arial, sans-serif);
+  font-size: clamp(12px, 1.3vw, 12.5px);
   font-weight: 700;
   color: var(--bv-ink, #101828);
   line-height: 1.2;
@@ -59,8 +71,9 @@
   border: none;
   outline: none;
   background: transparent;
-  font-size: 16px;
-  font-family: 'DM Sans', sans-serif;
+  font-size: clamp(14px, 1.4vw, 15px);
+  font-family: var(--hero-font, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, Roboto,
+      'Helvetica Neue', Arial, sans-serif);
   color: #333;
   line-height: 1.4;
   text-align: left;
@@ -72,7 +85,7 @@
 }
 
 .hero-search-btn-wrap {
-  padding: 10px 16px 10px 0;
+  padding: 8px 8px 8px 0;
   flex-shrink: 0;
 }
 
@@ -80,16 +93,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
+  gap: 8px;
   background: var(--bv-accent-strong, #15803d);
   color: #fff;
   border: none;
-  border-radius: 14px;
-  height: 52px;
-  padding: 0 28px;
-  font-size: 16px;
+  border-radius: 12px;
+  height: 46px;
+  padding: 0 24px;
+  font-size: clamp(13.5px, 1.5vw, 15px);
   font-weight: 700;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--hero-font, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, Roboto,
+      'Helvetica Neue', Arial, sans-serif);
   cursor: pointer;
   transition: background 0.2s;
   white-space: nowrap;
@@ -120,7 +134,7 @@ body.hero--search-sticky .hero-search-card {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  box-shadow: 0 0 0 3px rgba(23, 146, 55, 0.12);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.06);
   opacity: 0;
   pointer-events: none;
   animation: search-glow-fade 1.6s ease-in-out infinite;
@@ -588,19 +602,13 @@ body.hero--search-sticky .hero-search-card {
     gap: 11px;
   }
 
-  .hero-search-label {
-    font-size: 12px;
-  }
-
   .hero-search-input {
-    font-size: 15px;
     text-overflow: ellipsis;
   }
 
   .hero-search-submit {
     height: 46px;
     padding: 0 20px;
-    font-size: 14px;
   }
 
   .search-dropdown {
@@ -624,41 +632,64 @@ body.hero--search-sticky .hero-search-card {
   }
 }
 
-@media (max-width: 480px) {
+/* Phones: the field is a bordered rounded box with the pin split from the
+   text by a hairline, and the Search button spans the full card width below
+   it (matching the reference). */
+@media (max-width: 640px) {
   .hero-search-bar {
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 4px 4px 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 9px;
+    min-height: 0;
+    padding: 10px;
+    border-radius: 0 0 18px 18px;
   }
 
   .hero-search-input-wrap {
-    flex: 1 1 100%;
-    padding: 8px 12px 0 14px;
+    flex: 1 1 auto;
+    gap: 11px;
+    padding: 9px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  .hero-search-icon-slot {
+    align-self: stretch;
+    padding-right: 11px;
+    border-right: 1px solid #e2e8f0;
+  }
+
+  .hero-search-input-inner {
+    gap: 2px;
   }
 
   .hero-search-btn-wrap {
     width: 100%;
-    padding: 0 10px;
+    padding: 0;
+    flex-shrink: 1;
   }
 
   .hero-search-submit {
     width: 100%;
-    height: 48px;
+    height: 46px;
+    padding: 0 20px;
     border-radius: 12px;
   }
 }
 
+@media (max-width: 480px) {
+  .hero-search-bar {
+    border-radius: 0 0 16px 16px;
+  }
+}
+
 @media (max-width: 400px) {
-  .hero-search-input {
-    font-size: 14px;
+  .hero-search-icon-slot {
+    padding-right: 10px;
   }
 
-  .hero-search-label {
-    font-size: 11.5px;
-  }
-
-  .hero-search-icon {
-    width: 22px;
-    height: 22px;
+  .hero-search-submit {
+    height: 48px;
   }
 }

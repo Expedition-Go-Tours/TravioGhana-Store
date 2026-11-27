@@ -5,17 +5,17 @@
   left: 0;
   width: 100%;
   height: 64px;
-  /* Align the logo (left) and the right-hand items (List an Experience,
-     language/currency, Wishlist, Profile) with the homepage sections:
-     the section headings sit inside a centered viewport of
-     calc(295px * 5 + 16px * 4) with 32px gutters, so the navbar content
-     gets the same centered bounds (and 32px on narrower screens).
+  /* Keep the logo (left) and the right-hand items (List an Experience,
+     language/currency, Wishlist, Profile) on a contained 1200px column with
+     32px gutters. This is deliberately narrower than the old 1539px
+     homepage-grid bounds: the full-bleed logo-to-actions run read as a
+     stretched bar on wide screens.
      The formulas use `%`, not `vw`: the content columns are laid out in the
      viewport minus any classic scrollbar, while `100vw` includes it — using
      `vw` shifted the logo/items by half a scrollbar width (~7.5px) on
      Windows and on macOS with "Always show scroll bars". */
-  padding-left: max(32px, calc((100% - (295px * 5 + 16px * 4)) / 2));
-  padding-right: max(32px, calc((100% - (295px * 5 + 16px * 4)) / 2));
+  padding-left: max(32px, calc((100% - 1200px) / 2));
+  padding-right: max(32px, calc((100% - 1200px) / 2));
   display: flex;
   align-items: center;
   justify-content: space-between;

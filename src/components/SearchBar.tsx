@@ -412,11 +412,13 @@ export default function SearchBar({ variant = 'tours' }: SearchBarProps) {
       <form className="hero-search-form" onSubmit={handleSubmit}>
         <div id="hero-search-bar" className={`hero-search-bar${isFocused ? ' focused' : ''}`} ref={barRef}>
           <div className="hero-search-input-wrap">
-            {isSearching || isPersonalizing ? (
-              <span className="search-loading-spinner" aria-hidden="true" />
-            ) : (
-              <MapPin className="hero-search-icon" size={24} aria-hidden="true" />
-            )}
+            <span className="hero-search-icon-slot" aria-hidden="true">
+              {isSearching || isPersonalizing ? (
+                <span className="search-loading-spinner" />
+              ) : (
+                <MapPin className="hero-search-icon" size={24} />
+              )}
+            </span>
             <div className="hero-search-input-inner">
               <label className="hero-search-label" htmlFor="hero-search-input">
                 {isRestaurants

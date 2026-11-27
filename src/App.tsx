@@ -403,6 +403,7 @@ function AppContent() {
           page permanently invisible (blank white until a manual refresh). */}
       <div
         key={location.pathname.startsWith('/dashboard') ? '/dashboard' : location.pathname}
+        className="route-shell"
         style={{ isolation: 'isolate' }}
       >
         <RouteErrorBoundary>

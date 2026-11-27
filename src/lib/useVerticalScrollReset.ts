@@ -13,6 +13,7 @@ import { scrollToPosition } from './scrollToTop'
  * old page while the new one mounts.
  */
 let restoreSwitchChromeFrame = 0
+let verticalEnterTimer = 0
 
 export function prepareVerticalSwitch(): void {
   const navbar = document.querySelector<HTMLElement>('.navbar')
@@ -23,6 +24,16 @@ export function prepareVerticalSwitch(): void {
   // Navbar rewrites its own className on that commit, so a class added to the
   // <nav> itself would be wiped out before it could suppress the fade.
   document.body.classList.add('vertical-switching')
+  // The incoming route shell animates in from this class. It is removed after
+  // the animation so later (non-tab) navigations stay instant; CSS-only, with
+  // a fixed end state, so an interrupted switch can never leave a page
+  // invisible.
+  document.body.classList.add('vertical-switch-enter')
+  if (verticalEnterTimer) window.clearTimeout(verticalEnterTimer)
+  verticalEnterTimer = window.setTimeout(() => {
+    document.body.classList.remove('vertical-switch-enter')
+    verticalEnterTimer = 0
+  }, 420)
   if (navbar) {
     navbar.classList.remove('scrolled', 'navbar--elevated')
     navbar.classList.add('navbar--over-hero')
