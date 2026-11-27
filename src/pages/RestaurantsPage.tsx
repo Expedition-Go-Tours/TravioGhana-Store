@@ -21,6 +21,7 @@ import {
 import SEO from '../components/SEO'
 import Footer from '../components/Footer'
 import Hero from '../components/Hero'
+import VerticalPageTransition from '../components/VerticalPageTransition'
 import SectionHeading from '../components/SectionHeading'
 import StarRating from '../components/StarRating'
 import VerticalSwitch from '../components/VerticalSwitch'
@@ -906,6 +907,7 @@ function RestaurantHome() {
 
       <Hero />
 
+      <VerticalPageTransition className="vertical-page-content">
       <main className="restaurants-page__main">
         <div className="rh-popular-cities">
           <span>Popular cities:</span>
@@ -1000,6 +1002,7 @@ function RestaurantHome() {
       </main>
 
       <Footer />
+      </VerticalPageTransition>
     </div>
   )
 }

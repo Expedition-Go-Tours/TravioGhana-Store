@@ -5,6 +5,7 @@ import { Toaster } from 'sonner'
 import Navbar from './components/Navbar'
 import PreviewBanner from './components/PreviewBanner'
 import Hero from './components/Hero'
+import VerticalPageTransition from './components/VerticalPageTransition'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
 import ContinuePlanningSection from './components/ContinuePlanningSection'
 import MoodSection from './components/MoodSection'
@@ -213,6 +214,7 @@ function HomePage() {
       />
       <GoogleOneTapPrompt />
       <Hero />
+      <VerticalPageTransition className="vertical-page-content">
       <ContinuePlanningSection />
       {/* Show history when no active search and user has previous locations */}
       {!hasActiveSearch && previousLocations.length > 0 && <HistorySections />}
@@ -262,6 +264,7 @@ function HomePage() {
         </Suspense>
       </MountOnView>
       <Footer />
+      </VerticalPageTransition>
     </SellOutProvider>
   )
 }
@@ -398,9 +401,9 @@ function AppContent() {
           app's regular sonner toasts. */}
       <ConnectivityToaster />
       {!hideNav && <Navbar onOpenAuth={handleOpenAuth} />}
-      {/* Route shell: keyed so each navigation mounts a fresh subtree, but NOT
-          animated to opacity 0 — an interrupted fade used to leave the new
-          page permanently invisible (blank white until a manual refresh). */}
+      {/* Route shell: keyed so each navigation mounts a fresh subtree. The
+          page body animates itself (VerticalPageTransition); the shell itself
+          stays still so the shared Hero never moves. */}
       <div
         key={location.pathname.startsWith('/dashboard') ? '/dashboard' : location.pathname}
         className="route-shell"
@@ -573,9 +576,8 @@ function AppContent() {
               ) : (
                 <motion.div
                   key="home"
-                  initial={{ opacity: 0 }}
+                  initial={false}
                   animate={{ opacity: 1 }}
-                  transition={{ duration: 0.25, ease: 'easeInOut' }}
                 >
                   <HomePage />
                 </motion.div>

@@ -9,11 +9,21 @@ import { scrollToPosition } from './scrollToTop'
  * React Router commits the new route a frame later. Without this the old,
  * scrolled navbar (and its compact search dock) is still painted over the new
  * hero for that frame — the "navbar looks scrolled" flash. The scroll reset is
- * instant here as well, so an in-flight Lenis glide cannot keep dragging the
- * old page while the new one mounts.
+ * deliberately NOT done here: moving the outgoing page to the top made it jump
+ * visibly for a frame before the incoming page mounted. useVerticalScrollReset
+ * resets in a layout effect instead, which lands before the new page paints.
  */
 let restoreSwitchChromeFrame = 0
 let verticalEnterTimer = 0
+
+/**
+ * One-shot flag read while the incoming route mounts so App can animate only
+ * tab switches. Kept on <body> because Navbar rewrites its own className on
+ * the same commit.
+ */
+export function isVerticalSwitchEnter(): boolean {
+  return document.body.classList.contains('vertical-switch-enter')
+}
 
 export function prepareVerticalSwitch(): void {
   const navbar = document.querySelector<HTMLElement>('.navbar')
@@ -49,7 +59,6 @@ export function prepareVerticalSwitch(): void {
       restoreSwitchChromeFrame = 0
     })
   })
-  scrollToPosition(0)
 }
 
 /**

@@ -57,6 +57,10 @@
   margin-bottom: 16px;
   color: #64748b;
   max-width: 520px;
+  /* The restaurant tagline wraps to two lines on desktop while the tours one
+     is a single line. Reserve both lines so switching verticals never moves
+     the search card. */
+  min-height: calc(2 * 1.5em);
 }
 
 /* ── Search card — tabs + "where to" field + Search button, one white card ── */
@@ -91,6 +95,9 @@
   .hero-headline {
     font-size: clamp(26px, 6vw, 34px);
     letter-spacing: -0.02em;
+    /* On phones/tablets the tours title is forced onto two lines while the
+       restaurant title can fit on one. Reserve two lines on both. */
+    min-height: calc(2 * 1.12em);
   }
 
   .hero-tagline {
