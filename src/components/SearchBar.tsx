@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { AnimatePresence, MotionConfig, motion, type Variants } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { MapPin, UtensilsCrossed } from 'lucide-react'
+import { MapPin, Search, UtensilsCrossed } from 'lucide-react'
 import { tourPath } from '../lib/tourPath'
 import { useTranslation } from 'react-i18next'
 import { useSearchAutocomplete, type SearchSuggestion } from '../hooks/useSearchAutocomplete'
@@ -415,14 +415,17 @@ export default function SearchBar({ variant = 'tours' }: SearchBarProps) {
             {isSearching || isPersonalizing ? (
               <span className="search-loading-spinner" aria-hidden="true" />
             ) : (
-              <svg className="hero-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
+              <MapPin className="hero-search-icon" size={24} aria-hidden="true" />
             )}
             <div className="hero-search-input-inner">
+              <label className="hero-search-label" htmlFor="hero-search-input">
+                {isRestaurants
+                  ? t('hero.restaurantDestinationLabel', { defaultValue: 'Where do you want to eat?' })
+                  : t('hero.destinationLabel', { defaultValue: 'Where do you want to go?' })}
+              </label>
               <input
                 ref={inputRef}
+                id="hero-search-input"
                 type="text"
                 className="hero-search-input"
                 placeholder={isRestaurants
@@ -457,7 +460,8 @@ export default function SearchBar({ variant = 'tours' }: SearchBarProps) {
           </div>
           <div className="hero-search-btn-wrap">
             <button type="submit" className="hero-search-submit">
-              {isRestaurants ? 'Find a table' : t('hero.search')}
+              <Search size={18} className="hero-search-submit-icon" aria-hidden="true" />
+              <span>{isRestaurants ? 'Find a table' : t('hero.search')}</span>
             </button>
           </div>
         </div>

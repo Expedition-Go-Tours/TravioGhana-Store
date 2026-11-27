@@ -33,8 +33,11 @@ export default function Hero() {
             ? t('hero.restaurantSubtitle', { defaultValue: RESTAURANT_SUBTITLE })
             : t('hero.subtitle')}
         </p>
-        <SearchBar variant={variant} />
-        <VerticalSwitch />
+        <div className="hero-search-card">
+          <VerticalSwitch variant="hero" />
+          <div className="hero-search-card__divider" aria-hidden="true" />
+          <SearchBar variant={variant} />
+        </div>
       </div>
     </section>
   )

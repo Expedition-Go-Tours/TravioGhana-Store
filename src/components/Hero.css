@@ -45,6 +45,40 @@
   max-width: 500px;
 }
 
+/* ── Search card — tabs + "where to" field + Search button, one white card ── */
+
+.hero-search-card {
+  position: relative;
+  z-index: 104;
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  border: 1px solid rgba(23, 146, 55, 0.16);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease,
+    opacity 150ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hero-search-card:focus-within {
+  border-color: rgba(23, 146, 55, 0.45);
+  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.08), 0 0 0 3px rgba(23, 146, 55, 0.12);
+}
+
+.hero-search-card__divider {
+  height: 1px;
+  margin: 0 16px;
+  background: #e5e7eb;
+}
+
+@media (max-width: 480px) {
+  .hero-search-card {
+    border-radius: 16px;
+  }
+}
+
 /* Keep English tagline sizing independent from the responsive heading. */
 html:lang(en) .hero-tagline {
   font-size: clamp(10px, calc((100vw - 52px) / 25.27), 20px);

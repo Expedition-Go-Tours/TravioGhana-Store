@@ -14,6 +14,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   min-width: 150px;
   min-height: 38px;
   padding: 8px 18px;
@@ -44,6 +45,113 @@
   outline-offset: 2px;
 }
 
+/* ── Hero variant — tabs live inside the search card (icon + underline) ─── */
+
+.vertical-switch--hero {
+  position: relative;
+  display: flex;
+  width: 100%;
+  gap: 8px;
+  margin: 0;
+  padding: 14px 12px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.vertical-switch--hero::-webkit-scrollbar {
+  display: none;
+}
+
+.vertical-switch--hero .vertical-switch__option {
+  position: relative;
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: 48px;
+  gap: 10px;
+  padding: 10px 18px 14px;
+  border-radius: 14px 14px 0 0;
+  color: var(--bv-text);
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: left;
+}
+
+.vertical-switch--hero .vertical-switch__option:hover {
+  background: transparent;
+  color: var(--bv-forest);
+}
+
+.vertical-switch--hero .vertical-switch__option--active,
+.vertical-switch--hero .vertical-switch__option--active:hover {
+  background: var(--bv-accent-soft);
+  color: var(--bv-accent-strong);
+  box-shadow: none;
+}
+
+/* Green underline hugging the divider for the active tab. */
+.vertical-switch--hero .vertical-switch__option--active::after {
+  position: absolute;
+  right: 18px;
+  bottom: 0;
+  left: 18px;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--bv-accent);
+  content: '';
+}
+
+.vertical-switch--hero .vertical-switch__icon {
+  flex-shrink: 0;
+}
+
+.vertical-switch--hero .vertical-switch__label {
+  white-space: nowrap;
+}
+
+.vertical-switch__option--soon {
+  cursor: not-allowed;
+  color: var(--bv-muted);
+}
+
+.vertical-switch__soon-badge {
+  flex-shrink: 0;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--bv-warn-bg, #fff4e5);
+  color: var(--bv-warn-text, #b54708);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  /* The third tab ("Hotels & Accommodations") overflows the strip on phones;
+     a right-edge fade signals that more tabs sit off-screen and can be swiped. */
+  .vertical-switch--hero::after {
+    position: absolute;
+    top: 14px;
+    right: 0;
+    bottom: 0;
+    width: 34px;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0), #fff 78%);
+    content: '';
+    pointer-events: none;
+  }
+
+  .vertical-switch--hero {
+    padding-right: 20px;
+  }
+}
+
 @media (max-width: 480px) {
   .vertical-switch {
     width: 100%;
@@ -56,5 +164,21 @@
     min-width: 0;
     padding: 8px 10px;
     font-size: 13px;
+  }
+
+  .vertical-switch--hero {
+    padding: 6px 8px 0;
+    gap: 2px;
+  }
+
+  .vertical-switch--hero .vertical-switch__option {
+    padding: 9px 14px 12px;
+    font-size: 13.5px;
+    gap: 7px;
+  }
+
+  .vertical-switch--hero .vertical-switch__option--active::after {
+    right: 14px;
+    left: 14px;
   }
 }
